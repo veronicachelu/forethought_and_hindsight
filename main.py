@@ -9,6 +9,10 @@ import experiment
 import agents
 
 flags.DEFINE_string('run_mode', 'dyna', 'what agent to run')
+flags.DEFINE_string('env_type', 'discrete', 'discreate or continuous')
+flags.DEFINE_integer('continuous_discretization', 4, 'Num of bins for each dimension of the discretization')
+flags.DEFINE_integer('max_reward', 1, 'max reward')
+# flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
 flags.DEFINE_string('mdp', './mdps/maze.mdp',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
 flags.DEFINE_integer('env_size', 1, 'Env size: 1x, 2x, 4x, 10x, but without the x.')
@@ -18,18 +22,19 @@ flags.DEFINE_integer('num_test_episodes', 100, 'Number of test episodes to run f
 flags.DEFINE_integer('log_period', 10, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', 100, 'Maximum number of time steps an episode may last (default: 100).')
 flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
-flags.DEFINE_integer('num_units', 50, 'number of units per hidden layer')
-flags.DEFINE_integer('planning_iter', 1, 'Number of minibatches of model-based backups to run for planning')
+flags.DEFINE_integer('num_units', 0, 'number of units per hidden layer')
+flags.DEFINE_integer('planning_iter', 10, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')
 flags.DEFINE_integer('batch_size', 32, 'size of batches sampled from replay')
-flags.DEFINE_float('discount', .9, 'discounting on the agent side')
+flags.DEFINE_float('discount', .95, 'discounting on the agent side')
 flags.DEFINE_integer('replay_capacity', 1000, 'size of the replay buffer')
-flags.DEFINE_integer('min_replay_size', 128, 'min replay size before training.')
-flags.DEFINE_float('lr', 1e-1, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_model', 1e-1, 'learning rate for model optimizer')
-flags.DEFINE_float('epsilon', 0.05, 'fraction of exploratory random actions at the end of the decay')
+flags.DEFINE_integer('min_replay_size', 100, 'min replay size before training.')
+flags.DEFINE_float('lr', 1e-3, 'learning rate for q optimizer')
+flags.DEFINE_float('lr_model', 1e-3, 'learning rate for model optimizer')
+flags.DEFINE_float('epsilon', 0.1, 'fraction of exploratory random actions at the end of the decay')
+# flags.DEFINE_float('epsilon', 0.05, 'fraction of exploratory random actions at the end of the decay')
 flags.DEFINE_integer('seed', 42, 'seed for random number generation')
 flags.DEFINE_boolean('verbose', True, 'whether to log to std output')
 flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
@@ -49,18 +54,33 @@ def main(argv):
 
     run_mode_to_agent_prop = {
         "vanilla": {"class": "VanillaAgent"},
+        "vanilla_b": {"class": "VanillaAgentBackup"},
         "replay": {"class": "ReplayAgent"},
+        "priority_replay": {"class": "PriorityReplayAgent"},
         "dyna": {"class": "DynaAgent"},
         "priority": {"class": "PriorityAgent"},
         "onpolicy": {"class": "OnPolicyAgent"},
     }
+    nrng = np.random.RandomState(FLAGS.seed)
+    if FLAGS.env_type == "discrete":
+        env = MicroWorld(path=FLAGS.mdp,
+                         stochastic=FLAGS.stochastic,
+                         random_restarts=FLAGS.random_restarts,
+                         seed=FLAGS.seed,
+                         rng=nrng,
+                         obs_type="onehot",
+                         max_reward=FLAGS.max_reward,
+                         env_size=FLAGS.env_size)
+    elif FLAGS.env_type == "continuous":
+        env = ContinuousWorld(path=FLAGS.mdp,
+                         stochastic=FLAGS.stochastic,
+                         random_restarts=FLAGS.random_restarts,
+                         seed=FLAGS.seed,
+                         rng=nrng,
+                         obs_type="tile",
+                         bins_dim=FLAGS.continuous_discretization,
+                         env_size=FLAGS.env_size)
 
-    env = MicroWorld(path=FLAGS.mdp,
-                     stochastic=FLAGS.stochastic,
-                     random_restarts=FLAGS.random_restarts,
-                     seed=FLAGS.seed,
-                     obs_type="onehot",
-                     env_size=FLAGS.env_size)
     nA = env.action_spec().num_values
     input_dim = env.observation_spec().shape
 
@@ -77,7 +97,7 @@ def main(argv):
                                                                     num_units=FLAGS.num_units,
                                                                     nA=nA,
                                                                     input_dim=input_dim,
-                                                                    rng=rng_q)
+                                                                    rng=rng_model)
     agent_prop = run_mode_to_agent_prop[FLAGS.run_mode]
     run_mode = FLAGS.run_mode
     agent_class = getattr(agents, agent_prop["class"])
@@ -102,6 +122,7 @@ def main(argv):
         exploration_decay_period=FLAGS.num_episodes,
         seed=FLAGS.seed,
         rng=rng_agent,
+        nrng=nrng,
         logs=logs,
         log_period=FLAGS.log_period,
     )

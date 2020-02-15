@@ -12,25 +12,19 @@ from jax import random
 from jax.experimental import optimizers
 from jax.experimental import stax
 import numpy as np
-from agents.vanilla_agent import VanillaAgent
+from agents.dyna_agent import DynaAgent
 import tensorflow as tf
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class DynaAgent(VanillaAgent):
+class OnPolicyDynaAgent(DynaAgent):
     def __init__(
             self,
             **kwargs
     ):
-        super(DynaAgent, self).__init__(**kwargs)
-        self._reset_model_update = False
-        self._model_update_batch = {"o_tm1": [],
-                                   "a_tm1": [],
-                                   "o_t": [],
-                                   "r_t": [],
-                                   "d_t": []}
+        super(OnPolicyDynaAgent, self).__init__(**kwargs)
 
         def model_loss(online_params, transitions):
             o_tm1, a_tm1, r_t_target, d_t_target, o_t_target = transitions
@@ -103,17 +97,6 @@ class DynaAgent(VanillaAgent):
             self._model_opt_state = self._model_opt_update(self.total_steps, gradient,
                                                    self._model_opt_state)
             self._model_parameters = self._model_get_params(self._model_opt_state)
-
-            # if self.episode % self._log_period == 0:
-            #     o_tm1, a_tm1, r_t, d_t, o_t = transitions
-            #     model_tm1 = self._model_forward(self._model_parameters, o_tm1)
-            #     my_future_o_t = jax.vmap(lambda model, a: model[a][:-2])(model_tm1, a_tm1)
-            #     # crt_o_tm1 = np.reshape(o_tm1, (-1, , 6))
-            #     future_o_t = np.reshape(o_t, (-1, 6, 6))
-            #     my_future_o_t = np.reshape(np.asarray(my_future_o_t), (-1, 6, 6))
-            #     image = np.concatenate([crt_o_tm1, future_o_t, my_future_o_t], axis=-1)
-            #     image = image[..., None]
-            #     tf.summary.image("images/model", image, max_outputs=16, step=self.episode)
 
             loss_o = np.array(self._model_o_loss(self._model_parameters, transitions))
             loss_r = np.array(self._model_r_loss(self._model_parameters, transitions))

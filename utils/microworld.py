@@ -15,13 +15,8 @@ class Actions():
 
 
 class MicroWorld(dm_env.Environment):
-    def __init__(self, path=None, stochastic=False, random_restarts=False, seed=0, obs_type="tabular", env_size=1):
-        """Initializes a new Catch environment.
-        Args:
-          rows: number of rows.
-          columns: number of columns.
-          seed: random seed for the RNG.
-        """
+    def __init__(self, path=None, stochastic=False, random_restarts=False,
+                 seed=0, rng=None, obs_type="tabular", env_size=1, max_reward=1):
         self._str_MDP = ''
         self._height = -1
         self._width = -1
@@ -29,6 +24,7 @@ class MicroWorld(dm_env.Environment):
         self._mdp = None
         self._adj_matrix = None
         self._nX = env_size
+        self._max_reward = max_reward
 
         self._cX, self._cY = 0, 0
         self._sX, self._sY = 0, 0
@@ -43,7 +39,7 @@ class MicroWorld(dm_env.Environment):
         self._cY = self._sY
         self._nS = self._height * self._width
         self._nA = 4
-        self._rng = np.random.RandomState(seed)
+        self._rng = rng
         self._reset_next_step = True
         self._obs_type = obs_type
 
@@ -98,7 +94,7 @@ class MicroWorld(dm_env.Environment):
 
     def _get_next_reward(self, nX, nY):
         if nX == self._gX and nY == self._gY:
-            return 100
+            return self._max_reward
         else:
             return 0
 
@@ -147,12 +143,6 @@ class MicroWorld(dm_env.Environment):
     def _get_next_state(self, action):
         nX = self._cX
         nY = self._cY
-
-        # if action == 'terminate':
-        #     if nX == self._gX and nY == self._gY:
-        #         return -1, -1  # absorbing state
-        #     else:
-        #         return self._cX, self._cY
 
         self._possible_next_states = []
         if self._cX > 0 and self._mdp[self._cX - 1][self._cY] != -1:

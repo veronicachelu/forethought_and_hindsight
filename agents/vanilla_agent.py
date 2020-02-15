@@ -40,6 +40,7 @@ class VanillaAgent(Agent):
             epsilon: float,
             log_period: int,
             rng: Tuple,
+            nrng,
             exploration_decay_period: int,
             seed: int = None,
             logs: str = "logs",
@@ -55,7 +56,8 @@ class VanillaAgent(Agent):
         self._planning_period = planning_period
         self._epsilon = epsilon
         self._exploration_decay_period = exploration_decay_period
-        self._replay = Replay(capacity=replay_capacity)
+        self._nrng = nrng
+        self._replay = Replay(capacity=replay_capacity, nrng=self._nrng)
         self._min_replay_size = min_replay_size
         self._lr = lr
         self._lr_model = lr_model
@@ -69,17 +71,16 @@ class VanillaAgent(Agent):
             os.makedirs(self._checkpoint_dir)
 
         self._checkpoint_filename = "checkpoint.npy"
-        self._nrng = np.random.RandomState(seed)
+
         self._rng = rng
-        self._value_summaries_window = {"loss_q": [],
-                             "grad_norm_q": []}
+
         self.writer = tf.summary.create_file_writer(
             os.path.join(self._logs, '{}/summaries/seed_{}'.format(self._run_mode, seed)))
 
-        def q_loss(online_params, target_params, transitions):
+        def q_loss(q_params, transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
-            q_tm1 = q_network(online_params, o_tm1)
-            q_t = q_network(target_params, o_t)
+            q_tm1 = q_network(q_params, o_tm1)
+            q_t = q_network(q_params, o_t)
             q_target = r_t + d_t * discount * jnp.max(q_t, axis=-1)
             q_a_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
             td_error = q_a_tm1 - lax.stop_gradient(q_target)
@@ -108,8 +109,8 @@ class VanillaAgent(Agent):
                eval: bool = False
                ) -> int:
         # Epsilon-greedy policy if not test policy.
-        if not eval and np.random.rand() < self._epsilon:
-            return np.random.randint(self._nA)
+        if not eval and self._nrng.rand() < self._epsilon:
+            return self._nrng.randint(self._nA)
         q_values = self._q_forward(self._q_parameters, timestep.observation[None, ...])
         return int(np.argmax(q_values))
 
@@ -125,14 +126,14 @@ class VanillaAgent(Agent):
                        np.array([new_timestep.discount]),
                        np.array([new_timestep.observation])]
 
-        loss, gradient = self._q_loss_grad(self._q_parameters, self._q_parameters,
+        loss, gradient = self._q_loss_grad(self._q_parameters,
                                 transitions)
         self._q_opt_state = self._q_opt_update(self.total_steps, gradient,
                                                self._q_opt_state)
         self._q_parameters = self._q_get_params(self._q_opt_state)
 
-        losses_and_grads = {"losses": {"loss_q": loss},
-                            "gradients": {"grad_norm_q": gradient}}
+        losses_and_grads = {"losses": {"loss_q": np.array(loss)},
+                            "gradients": {"grad_norm_q": np.sum(np.sum([np.linalg.norm(np.asarray(g), ord=2) for g in gradient]))}}
         self._log_summaries(losses_and_grads, "value")
 
     def model_based_train(self):
@@ -186,53 +187,23 @@ class VanillaAgent(Agent):
         pass
 
     def _log_summaries(self, losses_and_grads, summary_name):
-        if summary_name == "model":
-            window = self._model_summaries_window
-        elif summary_name == "value":
-            window = self._value_summaries_window
-        elif summary_name == "planning":
-            window = self._planning_summaries_window
         losses = losses_and_grads["losses"]
         gradients = losses_and_grads["gradients"]
-        for k, v in losses.items():
-            window[k].append(np.asarray(v))
-        for k, v in gradients.items():
-            window[k].append(np.sum([np.linalg.norm(np.asarray(g_o), ord=2) for g_o in v]))
 
         if self.episode % self._log_period == 0:
             for k, v in losses.items():
-                tf.summary.scalar("train/losses/{}/{}".format(summary_name, k), np.mean(window[k]), step=self.episode)
+                tf.summary.scalar("train/losses/{}/{}".format(summary_name, k), losses[k], step=self.episode)
             for k, v in gradients.items():
-                tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k), np.mean(window[k]), step=self.episode)
+                tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k), gradients[k], step=self.episode)
             self.writer.flush()
-            for k, v in losses.items():
-                window[k].clear()
-            for k, v in gradients.items():
-                window[k].clear()
 
-# def default_agent(obs_spec: specs.Array, action_spec: specs.DiscreteArray):
-#     """Initialize a DQN agent with default parameters."""
-#     network_init, network = stax.serial(
-#         stax.Flatten,
-#         stax.Dense(50),
-#         stax.Relu,
-#         stax.Dense(50),
-#         stax.Relu,
-#         stax.Dense(action_spec.num_values),
-#     )
-#     _, network_params = network_init(
-#         random.PRNGKey(seed=1), (-1,) + obs_spec.shape)
-#
-#     return DQNJAX(
-#         action_spec=action_spec,
-#         network=network,
-#         parameters=network_params,
-#         batch_size=32,
-#         discount=0.99,
-#         replay_capacity=10000,
-#         min_replay_size=100,
-#         sgd_period=1,
-#         target_update_period=4,
-#         learning_rate=1e-3,
-#         epsilon=0.05,
-#         seed=42)
+    def td_error(self,
+                transitions):
+        o_tm1, a_tm1, r_t, d_t, o_t = transitions
+        q_tm1 = self._q_forward(self._q_parameters, o_tm1)
+        q_t = self._q_forward(self._q_parameters, o_t)
+        q_target = r_t + d_t * self._discount * jnp.max(q_t, axis=-1)
+        q_a_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
+
+        td_error = q_target - q_a_tm1
+        return td_error

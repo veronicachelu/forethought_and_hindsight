@@ -4,10 +4,11 @@ from typing import Any, Optional, Sequence
 
 class Replay(object):
 
-  def __init__(self, capacity: int):
+  def __init__(self, capacity: int, nrng):
     self._data = None  # type: Optional[Sequence[np.ndarray]]
     self._capacity = capacity
     self._num_added = 0
+    self._nrng = nrng
 
   def add(self, items: Sequence[Any]):
     """Adds a single sequence of items to the replay.
@@ -23,9 +24,13 @@ class Replay(object):
 
     self._num_added += 1
 
+  def peek_n_priority(self, n):
+    sorted_queue = sorted(self._data, key=lambda x: x[0])
+    return sorted_queue[:n]
+
   def sample(self, size: int) -> Sequence[np.ndarray]:
     """Returns a transposed/stacked minibatch. Each array has shape [B, ...]."""
-    indices = np.random.randint(self.size, size=size)
+    indices = self._nrng.randint(self.size, size=size)
     return [slot[indices] for slot in self._data]
 
   def reset(self,):

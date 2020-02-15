@@ -12,33 +12,19 @@ from jax import random
 from jax.experimental import optimizers
 from jax.experimental import stax
 import numpy as np
-from agents.vanilla_agent import VanillaAgent
+from agents.replay_agent import ReplayAgent
 import tensorflow as tf
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class ReplayAgent(VanillaAgent):
+class PriorityReplayAgent(ReplayAgent):
     def __init__(
             self,
             **kwargs
     ):
-        super(ReplayAgent, self).__init__(**kwargs)
-
-    def model_based_train(self):
-        return True
-
-    def model_free_train(self):
-        return True
-
-    def model_update(
-            self,
-            timestep: dm_env.TimeStep,
-            action: int,
-            new_timestep: dm_env.TimeStep,
-    ):
-        pass
+        super(PriorityReplayAgent, self).__init__(**kwargs)
 
     def planning_update(
             self
@@ -47,10 +33,11 @@ class ReplayAgent(VanillaAgent):
             return
 
         for k in range(self._planning_iter):
-            transitions = self._replay.sample(self._batch_size)
+            priority_transitions = self._replay.peek_n_priority(self._batch_size)
+            priority, transitions = priority_transitions
             # plan on batch of transitions
             loss, gradient = self._q_loss_grad(self._q_parameters,
-                                    transitions)
+                                               transitions)
             self._q_opt_state = self._q_opt_update(self.total_steps, gradient,
                                                    self._q_opt_state)
             self._q_parameters = self._q_get_params(self._q_opt_state)
@@ -65,8 +52,16 @@ class ReplayAgent(VanillaAgent):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
+        transitions = [np.array([timestep.observation]),
+                       np.array([action]),
+                       np.array([new_timestep.reward]),
+                       np.array([new_timestep.discount]),
+                       np.array([new_timestep.observation])]
+        td_error = self.td_error(transitions)[0]
+        priority = np.abs(td_error)
         # Add this transition to replay.
         self._replay.add([
+            priority,
             timestep.observation,
             action,
             new_timestep.reward,
@@ -74,27 +69,3 @@ class ReplayAgent(VanillaAgent):
             new_timestep.observation,
         ])
 
-    def load_model(self):
-        checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
-        if os.path.exists(checkpoint):
-            to_load = np.load(checkpoint, allow_pickle=True)[()]
-            self.episode = to_load["episode"]
-            self.total_steps = to_load["total_steps"]
-            self._q_parameters = to_load["q_parameters"]
-            self._replay = to_load["replay"]
-            print("Restored from {}".format(checkpoint))
-        else:
-            print("Initializing from scratch.")
-
-    def save_model(self):
-        checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
-        to_save = {
-            "episode": self.episode,
-            "total_steps": self.total_steps,
-            "q_parameters": self._q_parameters,
-            "replay": self._replay
-        }
-        np.save(checkpoint, to_save)
-        print("Saved checkpoint for episode {}, total_steps {}: {}".format(self.episode,
-                                                                           self.total_steps,
-                                                                           checkpoint))
