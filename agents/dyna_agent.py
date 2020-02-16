@@ -26,11 +26,6 @@ class DynaAgent(VanillaAgent):
     ):
         super(DynaAgent, self).__init__(**kwargs)
         self._reset_model_update = False
-        self._model_update_batch = {"o_tm1": [],
-                                   "a_tm1": [],
-                                   "o_t": [],
-                                   "r_t": [],
-                                   "d_t": []}
 
         def model_loss(online_params, transitions):
             o_tm1, a_tm1, r_t_target, d_t_target, o_t_target = transitions
@@ -51,6 +46,31 @@ class DynaAgent(VanillaAgent):
         self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss))
         self._model_forward = jax.jit(self._model_network)
 
+        def q_planning_loss(q_params, transitions):
+            o_tm1, a_tm1 = transitions
+            model_tm1 = self._model_forward(self._model_parameters, o_tm1)
+            model_o_t, model_r_t, model_d_t = jax.vmap(lambda model, a:
+                                                       (model[a][:-2],
+                                                        model[a][-2],
+                                                        random.bernoulli(self._rng,
+                                                                         p=jax.nn.sigmoid(model[a][-1])))
+                                                       )(model_tm1, a_tm1)
+            model_o_t, model_r_t, model_d_t = lax.stop_gradient(model_o_t),\
+                                              lax.stop_gradient(model_r_t),\
+                                              lax.stop_gradient(model_d_t)
+            q_tm1 = self._q_network(q_params, o_tm1)
+            q_t = self._q_network(q_params, model_o_t)
+            q_target = model_r_t + model_d_t * self._discount * jnp.max(q_t, axis=-1)
+            q_a_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
+            td_error = lax.stop_gradient(q_target) - q_a_tm1
+
+            return jnp.mean(td_error ** 2)
+
+            # Internalize the networks.
+
+        # This function computes dL/dTheta
+        self._q_planning_loss_grad = jax.jit(jax.value_and_grad(q_planning_loss))
+
         # Make an Adam optimizer.
         model_opt_init, model_opt_update, model_get_params = optimizers.adam(step_size=self._lr_model)
         self._model_opt_update = jax.jit(model_opt_update)
@@ -63,27 +83,27 @@ class DynaAgent(VanillaAgent):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        if not self._reset_model_update:
-            self._add_transition(timestep, action, new_timestep)
+        transitions = [np.array([timestep.observation]),
+                       np.array([action]),
+                       np.array([new_timestep.reward]),
+                       np.array([new_timestep.discount]),
+                       np.array([new_timestep.observation])]
 
-        if self._reset_model_update:
-            transitions = self._create_transition_batch()
+        loss, gradient = self._model_loss_grad(self._model_parameters,
+                                transitions)
+        self._model_opt_state = self._model_opt_update(self.total_steps, gradient,
+                                               self._model_opt_state)
+        self._model_parameters = self._model_get_params(self._model_opt_state)
 
-            loss, gradient = self._model_loss_grad(self._model_parameters,
-                                    transitions)
-            self._model_opt_state = self._model_opt_update(self.total_steps, gradient,
-                                                   self._model_opt_state)
-            self._model_parameters = self._model_get_params(self._model_opt_state)
-
-            loss = np.array(loss)
-            losses_and_grads = {"losses": {
-                                           "loss": loss
-                                           },
-                                "gradients": {
-                                    "grad_norm": np.sum(np.sum([np.linalg.norm(np.asarray(g), ord=2) for g in gradient]))
-                                              }
-                                }
-            self._log_summaries(losses_and_grads, "model")
+        loss = np.array(loss)
+        losses_and_grads = {"losses": {
+                                       "loss": loss
+                                       },
+                            "gradients": {
+                                "grad_norm": np.sum(np.sum([np.linalg.norm(np.asarray(g), ord=2) for g in gradient]))
+                                          }
+                            }
+        self._log_summaries(losses_and_grads, "model")
 
     def planning_update(
             self
@@ -93,18 +113,9 @@ class DynaAgent(VanillaAgent):
         if self.total_steps % self._planning_period == 0:
             for k in range(self._planning_iter):
                 transitions = self._replay.sample(self._batch_size)
-                o_tm1, a_tm1 = transitions
-                model_tm1 = self._model_forward(self._model_parameters, o_tm1)
-                model_o_t, model_r_t, model_d_t = jax.vmap(lambda model, a:
-                                                                    (model[a][:-2],
-                                                                     model[a][-2],
-                                                                     random.bernoulli(self._rng,
-                                                                                      p=jax.nn.sigmoid(model[a][-1])))
-                                                                    )(model_tm1, a_tm1)
-                transitions.extend([model_r_t, model_d_t, model_o_t])
                 # plan on batch of transitions
-                loss, gradient = self._q_loss_grad(self._q_parameters,
-                                        transitions)
+                loss, gradient = self._q_planning_loss_grad(self._q_parameters,
+                                                            transitions)
                 self._q_opt_state = self._q_opt_update(self.total_steps, gradient,
                                                        self._q_opt_state)
                 self._q_parameters = self._q_get_params(self._q_opt_state)
@@ -159,33 +170,3 @@ class DynaAgent(VanillaAgent):
 
     def model_free_train(self):
         return True
-
-    def _add_transition(self,
-            timestep: dm_env.TimeStep,
-            action: int,
-            new_timestep: dm_env.TimeStep,
-    ):
-        self._model_update_batch["o_tm1"].append(timestep.observation)
-        self._model_update_batch["a_tm1"].append(action)
-        self._model_update_batch["o_t"].append(new_timestep.observation)
-        self._model_update_batch["r_t"].append(new_timestep.reward)
-        self._model_update_batch["d_t"].append(new_timestep.discount)
-        if len(self._model_update_batch["o_tm1"]) == self._model_learning_period:
-            self._reset_model_update = True
-
-    def _create_transition_batch(self):
-        o_tm1 = np.array(self._model_update_batch["o_tm1"])
-        a_tm1 = np.array(self._model_update_batch["a_tm1"])
-        o_t = np.array(self._model_update_batch["o_t"])
-        r_t = np.array(self._model_update_batch["r_t"])
-        d_t = np.array(self._model_update_batch["d_t"])
-
-        transitions = [o_tm1, a_tm1, r_t, d_t, o_t]
-
-        self._model_update_batch["o_tm1"].clear()
-        self._model_update_batch["a_tm1"].clear()
-        self._model_update_batch["o_t"].clear()
-        self._model_update_batch["r_t"].clear()
-        self._model_update_batch["d_t"].clear()
-        self._reset_model_update = False
-        return transitions
