@@ -34,7 +34,8 @@ class PriorityReplayAgent(ReplayAgent):
 
         for k in range(self._planning_iter):
             priority_transitions = self._replay.peek_n_priority(self._batch_size)
-            priority, transitions = priority_transitions
+            priority = priority_transitions[0]
+            transitions = priority_transitions[1:]
             # plan on batch of transitions
             loss, gradient = self._q_loss_grad(self._q_parameters,
                                                transitions)

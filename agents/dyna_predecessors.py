@@ -19,12 +19,13 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class OnPolicyDynaAgent(DynaAgent):
+class PredecessorsDynaAgent(DynaAgent):
     def __init__(
             self,
             **kwargs
     ):
-        super(OnPolicyDynaAgent, self).__init__(**kwargs)
+        super(DynaAgent, self).__init__(**kwargs)
+
 
     def planning_update(
             self
@@ -33,11 +34,9 @@ class OnPolicyDynaAgent(DynaAgent):
             return
         if self.total_steps % self._planning_period == 0:
             for k in range(self._planning_iter):
-                transitions = self._replay.sample(self._batch_size)
-                # o_tm1, a_tm1, r_t_target, d_t_target, o_t_target
+                priority_transitions = self._replay.peek_n_priority(self._batch_size)
+                priority, transitions = priority_transitions
                 o_tm1, a_tm1 = transitions
-                model_a_tm1 = int(np.argmax(self._q_forward(self._q_parameters, o_tm1), axis=-1))
-                transitions[-1] = model_a_tm1
 
                 model_tm1 = self._model_forward(self._model_parameters, o_tm1)
                 model_o_t = np.array(jax.vmap(lambda model, a: model[a][:-2])(model_tm1, a_tm1))
@@ -58,4 +57,25 @@ class OnPolicyDynaAgent(DynaAgent):
                                                 },
                                     "gradients": {"grad_norm_q_plannin": np.sum(np.sum([np.linalg.norm(np.asarray(g), ord=2) for g in gradient]))}}
                 self._log_summaries(losses_and_grads, "value_planning")
+
+
+    def save_transition(
+            self,
+            timestep: dm_env.TimeStep,
+            action: int,
+            new_timestep: dm_env.TimeStep,
+    ):
+        transitions = [np.array([timestep.observation]),
+                       np.array([action]),
+                       np.array([new_timestep.reward]),
+                       np.array([new_timestep.discount]),
+                       np.array([new_timestep.observation])]
+        td_error = self.td_error(transitions)[0]
+        priority = np.abs(td_error)
+        # Add this states and actions to replay.
+        self._replay.add([
+            priority,
+            timestep.observation,
+            action
+        ])
 

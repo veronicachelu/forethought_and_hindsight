@@ -8,7 +8,7 @@ from utils import *
 import experiment
 import agents
 
-flags.DEFINE_string('run_mode', 'dyna', 'what agent to run')
+flags.DEFINE_string('run_mode', 'priority_replay', 'what agent to run')
 flags.DEFINE_string('env_type', 'discrete', 'discreate or continuous')
 flags.DEFINE_integer('continuous_discretization', 4, 'Num of bins for each dimension of the discretization')
 flags.DEFINE_integer('max_reward', 1, 'max reward')

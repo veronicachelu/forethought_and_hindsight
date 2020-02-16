@@ -83,7 +83,7 @@ class VanillaAgent(Agent):
             q_t = q_network(q_params, o_t)
             q_target = r_t + d_t * discount * jnp.max(q_t, axis=-1)
             q_a_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
-            td_error = q_a_tm1 - lax.stop_gradient(q_target)
+            td_error = lax.stop_gradient(q_target) - q_a_tm1
 
             return jnp.mean(td_error ** 2)
 

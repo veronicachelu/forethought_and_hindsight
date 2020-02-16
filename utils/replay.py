@@ -25,8 +25,12 @@ class Replay(object):
     self._num_added += 1
 
   def peek_n_priority(self, n):
-    sorted_queue = sorted(self._data, key=lambda x: x[0])
-    return sorted_queue[:n]
+    sorted_indices = np.argsort(self._data[0])[::-1]
+    peek_n = []
+    for k in range(len(self._data)):
+      peek_n.append(self._data[k][sorted_indices][:n])
+
+    return peek_n
 
   def sample(self, size: int) -> Sequence[np.ndarray]:
     """Returns a transposed/stacked minibatch. Each array has shape [B, ...]."""
