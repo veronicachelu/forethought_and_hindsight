@@ -86,7 +86,7 @@ class DynaAgent(VanillaAgent):
                                               lax.stop_gradient(model_d_t)
             d_t = jnp.array(d_t, dtype=np.int32)
             o_worst_case_loss = jnp.mean((jnp.argmax(model_o_t, axis=-1) - jnp.argmax(o_t)) ** 2)
-            reward_loss = jnp.mean((r_t - jnp.argmax(model_r_t)) ** 2)
+            reward_loss = jnp.mean((r_t - model_r_t) ** 2)
             d_decision_loss = jnp.mean((model_d_t - d_t) ** 2)
             d_loss = - jnp.mean(jnp.take_along_axis(model_d_logits, jnp.expand_dims(d_t, axis=-1), axis=-1))
             return o_worst_case_loss, reward_loss, d_decision_loss, d_loss
