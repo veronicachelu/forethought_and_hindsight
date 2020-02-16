@@ -1,0 +1,7 @@
+from agents.tabular_agents.tabular_agent import TabularAgent
+from agents.tabular_agents.vanilla_tabular_agent import VanillaTabularAgent
+from agents.tabular_agents.replay_tabular_agent import ReplayTabularAgent
+from agents.tabular_agents.priority_replay_tabular_agent import PriorityReplayTabularAgent
+from agents.tabular_agents.dyna_tabular_agent import DynaTabularAgent
+from agents.tabular_agents.priority_dyna_tabular_agent import PriorityDynaTabularAgent
+from agents.tabular_agents.onpolicy_tabular_agent import OnPolicyTabularAgent

@@ -25,7 +25,6 @@ class DynaAgent(VanillaAgent):
             **kwargs
     ):
         super(DynaAgent, self).__init__(**kwargs)
-        self._reset_model_update = False
 
         def model_loss(online_params, transitions):
             o_tm1, a_tm1, r_t_target, d_t_target, o_t_target = transitions
@@ -38,8 +37,8 @@ class DynaAgent(VanillaAgent):
                                       ))(model_tm1, a_tm1)
             o_error = lax.stop_gradient(o_t_target) - o_t
             r_error = lax.stop_gradient(r_t_target) - r_t
-            target_class = jnp.argmax(jnp.stack([d_t_target, 1 - d_t_target], axis=-1), axis=-1)
-            nll = jnp.take_along_axis(d_t_logits, jnp.expand_dims(target_class, axis=-1), axis=1)
+            # target_class = jnp.argmax(jnp.stack([d_t_target, 1 - d_t_target], axis=-1), axis=-1)
+            nll = jnp.take_along_axis(d_t_logits, jnp.expand_dims(d_t_target, axis=-1), axis=1)
             # d_error = - jnp.log(d_t) * d_t_target - jnp.log(1 - d_t) * (1 - d_t_target)
             d_error = - jnp.mean(nll)
             total_error = jnp.mean(o_error ** 2) + jnp.mean(r_error ** 2) + d_error
@@ -71,7 +70,6 @@ class DynaAgent(VanillaAgent):
             return jnp.mean(td_error ** 2)
 
             # Internalize the networks.
-
 
         # This function computes dL/dTheta
         self._q_planning_loss_grad = jax.jit(jax.value_and_grad(q_planning_loss))

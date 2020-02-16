@@ -15,11 +15,10 @@ class Actions():
 
 class ContinuousWorld(dm_env.Environment):
     def __init__(self, path=None, stochastic=False, random_restarts=False,
-                 seed=0, rng=None, obs_type="tile", bins_dim=16, env_size=1):
+                 seed=0, rng=None, obs_type="tile", env_size=16):
         self._str_MDP = ''
         self._height = -1
         self._width = -1
-        self._nX = env_size
 
         self._cPos = np.zeros((2,))
         self._sPos = np.zeros((2,))
@@ -38,8 +37,8 @@ class ContinuousWorld(dm_env.Environment):
         self._obs_type = obs_type
         self._low = [0.0, 0.0]
         self._high = [self._height, self._width]
-        self._bins = bins_dim ** 2
-        self._bins_dim = bins_dim
+        self._bins = env_size ** 2
+        self._bins_dim = env_size
 
         self._tilings = [create_tiling_grid(self._low, self._high,
                                            bins=(self._bins_dim, self._bins_dim),

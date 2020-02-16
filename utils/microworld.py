@@ -223,7 +223,7 @@ class MicroWorld(dm_env.Environment):
 
     def observation_spec(self):
         if self._obs_type == "tabular":
-            return specs.BoundedArray(shape=(1,), dtype=np.int32,
+            return specs.BoundedArray(shape=(self._nS,), dtype=np.int32,
                                   name="state", minimum=0, maximum=self._nS)
         elif self._obs_type == "onehot":
             return specs.BoundedArray(shape=(self._nS,), dtype=np.int32,

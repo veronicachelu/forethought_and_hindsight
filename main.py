@@ -7,15 +7,19 @@ import network
 from utils import *
 import experiment
 import agents
+import utils
 
 flags.DEFINE_string('run_mode', 'dyna', 'what agent to run')
+flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
 flags.DEFINE_string('env_type', 'discrete', 'discreate or continuous')
-flags.DEFINE_integer('continuous_discretization', 4, 'Num of bins for each dimension of the discretization')
+flags.DEFINE_string('obs_type', 'tabular', 'onhot, tabular, tile for continuous')
+flags.DEFINE_integer('continuous_discretization', 4, '')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
 flags.DEFINE_string('mdp', './mdps/maze.mdp',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
-flags.DEFINE_integer('env_size', 1, 'Env size: 1x, 2x, 4x, 10x, but without the x.')
+flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
+                                    'Continuous - Num of bins for each dimension of the discretization')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('num_episodes', 2000, 'Number of episodes to run for.')
 flags.DEFINE_integer('num_test_episodes', 100, 'Number of test episodes to run for.')
@@ -31,8 +35,8 @@ flags.DEFINE_integer('batch_size', 32, 'size of batches sampled from replay')
 flags.DEFINE_float('discount', .95, 'discounting on the agent side')
 flags.DEFINE_integer('replay_capacity', 1000, 'size of the replay buffer')
 flags.DEFINE_integer('min_replay_size', 100, 'min replay size before training.')
-flags.DEFINE_float('lr', 1e-3, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_model', 1e-3, 'learning rate for model optimizer')
+flags.DEFINE_float('lr', 1e-1, 'learning rate for q optimizer')
+flags.DEFINE_float('lr_model', 1e-2, 'learning rate for model optimizer')
 flags.DEFINE_float('epsilon', 0.1, 'fraction of exploratory random actions at the end of the decay')
 # flags.DEFINE_float('epsilon', 0.05, 'fraction of exploratory random actions at the end of the decay')
 flags.DEFINE_integer('seed', 42, 'seed for random number generation')
@@ -46,40 +50,56 @@ FLAGS = flags.FLAGS
 def main(argv):
     del argv  # Unused.
     mdp_filename = os.path.splitext(os.path.basename(FLAGS.mdp))[0]
-    logs = FLAGS.logs
+    logs = os.path.join(FLAGS.logs, FLAGS.model_class)
     logs = os.path.join(logs, os.path.join(mdp_filename, "stochastic" if FLAGS.stochastic else "deterministic"))
     logs = os.path.join(logs, "{}x".format(FLAGS.env_size))
     if not os.path.exists(logs):
         os.makedirs(logs)
 
     run_mode_to_agent_prop = {
-        "vanilla": {"class": "VanillaAgent"},
-        "vanilla_b": {"class": "VanillaAgentBackup"},
-        "replay": {"class": "ReplayAgent"},
-        "priority_replay": {"class": "PriorityReplayAgent"},
-        "dyna": {"class": "DynaAgent"},
-        "priority": {"class": "PriorityAgent"},
-        "onpolicy": {"class": "OnPolicyAgent"},
+        "vanilla": {"linear":
+                        {"class": "VanillaAgent"},
+                    "tabular":
+                        {"class": "VanillaTabularAgent"},
+                    },
+        "replay": {"linear":
+                       {"class": "ReplayAgent"},
+                   "tabular":
+                       {"class": "ReplayTabularAgent"},
+                   },
+        "priority_replay": {"linear":
+                       {"class": "PriorityReplayAgent"},
+                   "tabular":
+                       {"class": "PriorityReplayTabularAgent"},
+                   },
+        "dyna": {"linear":
+                       {"class": "DynaAgent"},
+                   "tabular":
+                       {"class": "DynaTabularAgent"},
+                   },
+        "priority_dyna": {"linear":
+                       {"class": "PriorityDynaAgent"},
+                   "tabular":
+                       {"class": "PriorityDynaTabularAgent"},
+                   },
+        "onpolicy": {"linear":
+                       {"class": "OnPolicyAgent"},
+                   "tabular":
+                       {"class": "OnPolicyTabularAgent"},
+                   },
     }
     nrng = np.random.RandomState(FLAGS.seed)
-    if FLAGS.env_type == "discrete":
-        env = MicroWorld(path=FLAGS.mdp,
-                         stochastic=FLAGS.stochastic,
-                         random_restarts=FLAGS.random_restarts,
-                         seed=FLAGS.seed,
-                         rng=nrng,
-                         obs_type="onehot",
-                         max_reward=FLAGS.max_reward,
-                         env_size=FLAGS.env_size)
-    elif FLAGS.env_type == "continuous":
-        env = ContinuousWorld(path=FLAGS.mdp,
-                         stochastic=FLAGS.stochastic,
-                         random_restarts=FLAGS.random_restarts,
-                         seed=FLAGS.seed,
-                         rng=nrng,
-                         obs_type="tile",
-                         bins_dim=FLAGS.continuous_discretization,
-                         env_size=FLAGS.env_size)
+    envs = {"discrete": {"class": "MicroWorld"},
+            "continuous": {"class": "ContinuousWorld"}
+            }
+    env_class = getattr(utils, envs[FLAGS.env_type]["class"])
+    env = env_class(path=FLAGS.mdp,
+                    stochastic=FLAGS.stochastic,
+                    random_restarts=FLAGS.random_restarts,
+                    seed=FLAGS.seed,
+                    rng=nrng,
+                    obs_type=FLAGS.obs_type,
+                    env_size=FLAGS.env_size)
 
     nA = env.action_spec().num_values
     input_dim = env.observation_spec().shape
@@ -87,20 +107,32 @@ def main(argv):
     rng = jrandom.PRNGKey(seed=FLAGS.seed)
     rng_q, rng_model, rng_agent = jrandom.split(rng, 3)
 
-    q_network, q_network_params = network.get_q_network(num_hidden_layers=FLAGS.num_hidden_layers,
-                                                        num_units=FLAGS.num_units,
-                                                        nA=nA,
-                                                        input_dim=input_dim,
-                                                        rng=rng_q)
+    if FLAGS.model_class == "tabular":
+        q_network, q_network_params = network.get_tabular_q_network(num_hidden_layers=FLAGS.num_hidden_layers,
+                                                            num_units=FLAGS.num_units,
+                                                            nA=nA,
+                                                            input_dim=input_dim,
+                                                            rng=rng_q)
+        model_network, model_network_params = network.get_tabular_model_network(num_hidden_layers=FLAGS.num_hidden_layers,
+                                                                        num_units=FLAGS.num_units,
+                                                                        nA=nA,
+                                                                        input_dim=input_dim,
+                                                                        rng=rng_model)
+    else:
+        q_network, q_network_params = network.get_q_network(num_hidden_layers=FLAGS.num_hidden_layers,
+                                                            num_units=FLAGS.num_units,
+                                                            nA=nA,
+                                                            input_dim=input_dim,
+                                                            rng=rng_q)
 
-    model_network, model_network_params = network.get_model_network(num_hidden_layers=FLAGS.num_hidden_layers,
-                                                                    num_units=FLAGS.num_units,
-                                                                    nA=nA,
-                                                                    input_dim=input_dim,
-                                                                    rng=rng_model)
+        model_network, model_network_params = network.get_model_network(num_hidden_layers=FLAGS.num_hidden_layers,
+                                                                        num_units=FLAGS.num_units,
+                                                                        nA=nA,
+                                                                        input_dim=input_dim,
+                                                                        rng=rng_model)
     agent_prop = run_mode_to_agent_prop[FLAGS.run_mode]
     run_mode = FLAGS.run_mode
-    agent_class = getattr(agents, agent_prop["class"])
+    agent_class = getattr(agents, agent_prop[FLAGS.model_class]["class"])
 
     agent = agent_class(
         run_mode=run_mode,
@@ -125,6 +157,7 @@ def main(argv):
         nrng=nrng,
         logs=logs,
         log_period=FLAGS.log_period,
+        input_dim=input_dim,
     )
 
     experiment.run(
