@@ -22,8 +22,7 @@ class PriorityDynaTabularAgent(DynaTabularAgent):
     ):
         super(PriorityDynaTabularAgent, self).__init__(**kwargs)
 
-        def td_error(self,
-                     transitions):
+        def td_error(transitions):
             o_tm1, a_tm1 = transitions
             o_t = self._model_network[o_tm1, a_tm1, :-3]
             r_t = self._model_network[o_tm1, a_tm1, -3]

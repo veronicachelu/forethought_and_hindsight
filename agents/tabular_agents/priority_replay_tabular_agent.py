@@ -22,8 +22,7 @@ class PriorityReplayTabularAgent(ReplayTabularAgent):
     ):
         super(PriorityReplayTabularAgent, self).__init__(**kwargs)
 
-        def td_error(self,
-                     transitions):
+        def td_error(transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
             q_tm1 = self._q_network[o_tm1, a_tm1]
             q_t = self._q_network[o_t]

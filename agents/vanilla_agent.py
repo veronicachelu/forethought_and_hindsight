@@ -41,22 +41,14 @@ class VanillaAgent(Agent):
             log_period: int,
             rng: Tuple,
             nrng,
+            input_dim: int,
             exploration_decay_period: int,
             seed: int = None,
             logs: str = "logs",
     ):
         super().__init__()
-        q_network, q_network_params = network.get_q_network(num_hidden_layers=FLAGS.num_hidden_layers,
-                                                            num_units=FLAGS.num_units,
-                                                            nA=nA,
-                                                            input_dim=input_dim,
-                                                            rng=rng_q)
 
-        model_network, model_network_params = network.get_model_network(num_hidden_layers=FLAGS.num_hidden_layers,
-                                                                        num_units=FLAGS.num_units,
-                                                                        nA=nA,
-                                                                        input_dim=input_dim,
-                                                                        rng=rng_model)
+        self._input_dim = input_dim
         self._run_mode = run_mode
         self._nA = action_spec.num_values
         self._discount = discount
