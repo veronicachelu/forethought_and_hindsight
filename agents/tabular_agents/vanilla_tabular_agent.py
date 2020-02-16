@@ -22,8 +22,10 @@ class VanillaTabularAgent(TabularAgent):
             action_spec: specs.DiscreteArray,
             q_network: Network,
             model_network: Network,
+            reverse_model_network: Network,
             q_parameters: NetworkParameters,
             model_parameters: NetworkParameters,
+            reverse_model_parameters: NetworkParameters,
             batch_size: int,
             discount: float,
             replay_capacity: int,
@@ -71,12 +73,14 @@ class VanillaTabularAgent(TabularAgent):
         self._checkpoint_filename = "checkpoint.npy"
 
         self._rng = rng
+        self._nrng = nrng
 
         self.writer = tf.summary.create_file_writer(
             os.path.join(self._logs, '{}/summaries/seed_{}'.format(self._run_mode, seed)))
 
         self._q_network = q_network
         self._model_network = model_network
+        self._reverse_model_network = reverse_model_network
 
         def q_loss(transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
@@ -115,7 +119,7 @@ class VanillaTabularAgent(TabularAgent):
         if not eval and self._nrng.rand() < self._epsilon:
             return self._nrng.randint(self._nA)
         q_values = self._q_network[timestep.observation]
-        a = np.random.choice(np.flatnonzero(q_values == np.max(q_values)))
+        a = self._nrng.choice(np.flatnonzero(q_values == np.max(q_values)))
         # return int(np.argmax(q_values))
         return a
 

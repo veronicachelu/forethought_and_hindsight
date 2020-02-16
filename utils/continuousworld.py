@@ -109,7 +109,7 @@ class ContinuousWorld(dm_env.Environment):
             self._cPos[1] -= self._step_size
 
         if self._stochastic:
-            self._cPos += np.random.normal(loc=self._mean_step_size,
+            self._cPos += self._rng.normal(loc=self._mean_step_size,
                                          scale=self._var_step_size, size=(2,))
         self._cPos = self._cPos.clip([0, 0], [self._height, self._width])
 
@@ -123,7 +123,7 @@ class ContinuousWorld(dm_env.Environment):
         reward = self._take_action(action)
 
         if self._stochastic:
-            reward += np.random.normal(scale=self._reward_noise)
+            reward += self._rng.normal(scale=self._reward_noise)
 
         if self._is_terminal():
             self._reset_next_step = True

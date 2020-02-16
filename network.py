@@ -60,3 +60,11 @@ def get_tabular_model_network(num_hidden_layers: int,
                   input_dim: Tuple):
 
     return np.zeros(shape=input_dim + (nA,) + (np.prod(input_dim) + 3, )), None
+
+def get_tabular_reverse_model_network(num_hidden_layers: int,
+                  num_units: int,
+                  nA: int,
+                  rng: List,
+                  input_dim: Tuple):
+
+    return np.zeros(shape=input_dim + (nA,) + (np.prod(input_dim) + 3, )), None

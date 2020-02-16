@@ -68,25 +68,25 @@ def main(argv):
                        {"class": "ReplayTabularAgent"},
                    },
         "priority_replay": {"linear":
-                       {"class": "PriorityReplayAgent"},
-                   "tabular":
-                       {"class": "PriorityReplayTabularAgent"},
-                   },
+                                {"class": "PriorityReplayAgent"},
+                            "tabular":
+                                {"class": "PriorityReplayTabularAgent"},
+                            },
         "dyna": {"linear":
-                       {"class": "DynaAgent"},
-                   "tabular":
-                       {"class": "DynaTabularAgent"},
-                   },
+                     {"class": "DynaAgent"},
+                 "tabular":
+                     {"class": "DynaTabularAgent"},
+                 },
         "priority_dyna": {"linear":
-                       {"class": "PriorityDynaAgent"},
-                   "tabular":
-                       {"class": "PriorityDynaTabularAgent"},
-                   },
+                              {"class": "PriorityDynaAgent"},
+                          "tabular":
+                              {"class": "PriorityDynaTabularAgent"},
+                          },
         "onpolicy": {"linear":
-                       {"class": "OnPolicyAgent"},
-                   "tabular":
-                       {"class": "OnPolicyTabularAgent"},
-                   },
+                         {"class": "OnPolicyAgent"},
+                     "tabular":
+                         {"class": "OnPolicyTabularAgent"},
+                     },
     }
     nrng = np.random.RandomState(FLAGS.seed)
     envs = {"discrete": {"class": "MicroWorld"},
@@ -109,15 +109,22 @@ def main(argv):
 
     if FLAGS.model_class == "tabular":
         q_network, q_network_params = network.get_tabular_q_network(num_hidden_layers=FLAGS.num_hidden_layers,
-                                                            num_units=FLAGS.num_units,
-                                                            nA=nA,
-                                                            input_dim=input_dim,
-                                                            rng=rng_q)
-        model_network, model_network_params = network.get_tabular_model_network(num_hidden_layers=FLAGS.num_hidden_layers,
-                                                                        num_units=FLAGS.num_units,
-                                                                        nA=nA,
-                                                                        input_dim=input_dim,
-                                                                        rng=rng_model)
+                                                                    num_units=FLAGS.num_units,
+                                                                    nA=nA,
+                                                                    input_dim=input_dim,
+                                                                    rng=rng_q)
+        model_network, model_network_params = network.get_tabular_model_network(
+            num_hidden_layers=FLAGS.num_hidden_layers,
+            num_units=FLAGS.num_units,
+            nA=nA,
+            input_dim=input_dim,
+            rng=rng_model)
+        reverse_model_network, reverse_model_network_params = network.get_tabular_model_network(
+            num_hidden_layers=FLAGS.num_hidden_layers,
+            num_units=FLAGS.num_units,
+            nA=nA,
+            input_dim=input_dim,
+            rng=rng_model)
     else:
         q_network, q_network_params = network.get_q_network(num_hidden_layers=FLAGS.num_hidden_layers,
                                                             num_units=FLAGS.num_units,
@@ -130,6 +137,8 @@ def main(argv):
                                                                         nA=nA,
                                                                         input_dim=input_dim,
                                                                         rng=rng_model)
+        reverse_model_network = None
+        reverse_model_network_params = None
     agent_prop = run_mode_to_agent_prop[FLAGS.run_mode]
     run_mode = FLAGS.run_mode
     agent_class = getattr(agents, agent_prop[FLAGS.model_class]["class"])
@@ -141,6 +150,8 @@ def main(argv):
         q_parameters=q_network_params,
         model_network=model_network,
         model_parameters=model_network_params,
+        reverse_model_network=reverse_model_network,
+        reverse_model_parameters=reverse_model_network_params,
         batch_size=FLAGS.batch_size,
         discount=FLAGS.discount,
         replay_capacity=FLAGS.replay_capacity,

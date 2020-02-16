@@ -26,8 +26,10 @@ class VanillaAgent(Agent):
             action_spec: specs.DiscreteArray,
             q_network: Network,
             model_network: Network,
+            reverse_model_network: Network,
             q_parameters: NetworkParameters,
             model_parameters: NetworkParameters,
+            reverse_model_parameters: NetworkParameters,
             batch_size: int,
             discount: float,
             replay_capacity: int,
@@ -86,6 +88,7 @@ class VanillaAgent(Agent):
             q_target = r_t + d_t * discount * jnp.max(q_t, axis=-1)
             q_a_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
             td_error = lax.stop_gradient(q_target) - q_a_tm1
+            td_error = q_a_tm1 - lax.stop_gradient(q_target)
 
             return jnp.mean(td_error ** 2)
 

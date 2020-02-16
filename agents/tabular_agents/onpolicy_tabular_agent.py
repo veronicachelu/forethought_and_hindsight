@@ -32,7 +32,7 @@ class OnPolicyTabularAgent(DynaTabularAgent):
             transitions = self._replay.sample(self._batch_size)
             # plan on batch of transitions
             o_tm1, a_tm1 = transitions
-            model_a_tm1 = [np.random.choice(np.flatnonzero(q_values == np.max(q_values))) for q_values in self._q_network[o_tm1]]
+            model_a_tm1 = [self._nrng.choice(np.flatnonzero(q_values == np.max(q_values))) for q_values in self._q_network[o_tm1]]
             transitions[-1] = np.array(model_a_tm1)
 
             loss, gradient = self._q_planning_loss_grad(transitions)
