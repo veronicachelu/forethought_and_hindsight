@@ -36,8 +36,8 @@ def get_model_network(num_hidden_layers: int,
     for _ in range(num_hidden_layers):
         layers.append(stax.Dense(num_units))
         layers.append(stax.Relu)
-    layers.append(stax.Dense((np.prod(input_dim) + 2) * nA))
-    layers.append(Reshape((-1, nA, (np.prod(input_dim) + 2))))
+    layers.append(stax.Dense((np.prod(input_dim) + 3) * nA))
+    layers.append(Reshape((-1, nA, (np.prod(input_dim) + 3))))
 
     model_network_init, model_network = stax.serial(*layers)
 

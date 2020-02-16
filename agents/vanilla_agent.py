@@ -197,13 +197,13 @@ class VanillaAgent(Agent):
                 tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k), gradients[k], step=self.episode)
             self.writer.flush()
 
-    def td_error(self,
-                transitions):
-        o_tm1, a_tm1, r_t, d_t, o_t = transitions
-        q_tm1 = self._q_forward(self._q_parameters, o_tm1)
-        q_t = self._q_forward(self._q_parameters, o_t)
-        q_target = r_t + d_t * self._discount * jnp.max(q_t, axis=-1)
-        q_a_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
-
-        td_error = q_target - q_a_tm1
-        return td_error
+    # def td_error(self,
+    #             transitions):
+    #     o_tm1, a_tm1, r_t, d_t, o_t = transitions
+    #     q_tm1 = self._q_forward(self._q_parameters, o_tm1)
+    #     q_t = self._q_forward(self._q_parameters, o_t)
+    #     q_target = r_t + d_t * self._discount * jnp.max(q_t, axis=-1)
+    #     q_a_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
+    #
+    #     td_error = q_target - q_a_tm1
+    #     return td_error

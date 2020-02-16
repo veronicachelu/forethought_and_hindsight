@@ -30,16 +30,19 @@ class DynaAgent(VanillaAgent):
         def model_loss(online_params, transitions):
             o_tm1, a_tm1, r_t_target, d_t_target, o_t_target = transitions
             model_tm1 = self._model_network(online_params, o_tm1)
-            o_t, r_t, d_t = jax.vmap(lambda model, a:
-                                     (model[a][:-2],
-                                      model[a][-2],
-                                      jax.nn.sigmoid(model[a][-1]))
-                                      )(model_tm1, a_tm1)
+            o_t, r_t, d_t_logits = jax.vmap(lambda model, a:
+                                     (model[a][:-3],
+                                      model[a][-3],
+                                      stax.logsoftmax(model[a][-2:])
+                                      # jax.nn.sigmoid(model[a][-1]))
+                                      ))(model_tm1, a_tm1)
             o_error = lax.stop_gradient(o_t_target) - o_t
             r_error = lax.stop_gradient(r_t_target) - r_t
-            d_error = - jnp.log(d_t) * d_t_target - jnp.log(1 - d_t) * (1 - d_t_target)
-
-            total_error = jnp.mean(o_error ** 2) + jnp.mean(r_error ** 2) + jnp.mean(d_error)
+            target_class = jnp.argmax(jnp.stack([d_t_target, 1 - d_t_target], axis=-1), axis=-1)
+            nll = jnp.take_along_axis(d_t_logits, jnp.expand_dims(target_class, axis=-1), axis=1)
+            # d_error = - jnp.log(d_t) * d_t_target - jnp.log(1 - d_t) * (1 - d_t_target)
+            d_error = - jnp.mean(nll)
+            total_error = jnp.mean(o_error ** 2) + jnp.mean(r_error ** 2) + d_error
             return total_error
 
         # This function computes dL/dTheta
@@ -50,11 +53,12 @@ class DynaAgent(VanillaAgent):
             o_tm1, a_tm1 = transitions
             model_tm1 = self._model_forward(self._model_parameters, o_tm1)
             model_o_t, model_r_t, model_d_t = jax.vmap(lambda model, a:
-                                                       (model[a][:-2],
-                                                        model[a][-2],
-                                                        random.bernoulli(self._rng,
-                                                                         p=jax.nn.sigmoid(model[a][-1])))
-                                                       )(model_tm1, a_tm1)
+                                                       (model[a][:-3],
+                                                        model[a][-3],
+                                                        jnp.argmax(model[a][-2:], axis=-1)
+                                                        # random.bernoulli(self._rng,
+                                                        #                  p=jax.nn.sigmoid(model[a][-1])))
+                                                        ))(model_tm1, a_tm1)
             model_o_t, model_r_t, model_d_t = lax.stop_gradient(model_o_t),\
                                               lax.stop_gradient(model_r_t),\
                                               lax.stop_gradient(model_d_t)
@@ -67,6 +71,7 @@ class DynaAgent(VanillaAgent):
             return jnp.mean(td_error ** 2)
 
             # Internalize the networks.
+
 
         # This function computes dL/dTheta
         self._q_planning_loss_grad = jax.jit(jax.value_and_grad(q_planning_loss))
