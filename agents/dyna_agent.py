@@ -37,6 +37,7 @@ class DynaAgent(VanillaAgent):
                                       ))(model_tm1, a_tm1)
             o_error = lax.stop_gradient(o_t_target) - o_t
             r_error = lax.stop_gradient(r_t_target) - r_t
+            d_t_target = jnp.array(d_t_target, dtype=np.int32)
             # target_class = jnp.argmax(jnp.stack([d_t_target, 1 - d_t_target], axis=-1), axis=-1)
             nll = jnp.take_along_axis(d_t_logits, jnp.expand_dims(d_t_target, axis=-1), axis=1)
             # d_error = - jnp.log(d_t) * d_t_target - jnp.log(1 - d_t) * (1 - d_t_target)

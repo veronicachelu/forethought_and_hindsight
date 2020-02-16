@@ -57,7 +57,7 @@ class PriorityReplayTabularAgent(ReplayTabularAgent):
             priority = np.abs(td_error)
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
             # Add transitions to replay.
-            for i in len(o_tm1):
+            for i in range(len(o_tm1)):
                 self._replay.add([
                     priority[i],
                     o_tm1[i],

@@ -9,10 +9,10 @@ import experiment
 import agents
 import utils
 
-flags.DEFINE_string('run_mode', 'priority_replay', 'what agent to run')
+flags.DEFINE_string('run_mode', 'priority_dyna', 'what agent to run')
 flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
 flags.DEFINE_string('env_type', 'discrete', 'discreate or continuous')
-flags.DEFINE_string('obs_type', 'tabular', 'onhot, tabular, tile for continuous')
+flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
 flags.DEFINE_integer('continuous_discretization', 4, '')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
