@@ -70,8 +70,30 @@ class DynaAgent(VanillaAgent):
 
             return jnp.mean(td_error ** 2)
 
+        def debugging(transitions):
+            o_tm1, a_tm1, r_t, d_t, o_t = transitions
+            model_tm1 = self._model_forward(self._model_parameters, o_tm1)
+            model_o_t, model_r_t, model_d_t, model_d_logits = jax.vmap(lambda model, a:
+                                                       (model[a][:-3],
+                                                        model[a][-3],
+                                                        jnp.argmax(model[a][-2:], axis=-1),
+                                                        model[a][-2:]
+                                                        # random.bernoulli(self._rng,
+                                                        #                  p=jax.nn.sigmoid(model[a][-1])))
+                                                        ))(model_tm1, a_tm1)
+            model_o_t, model_r_t, model_d_t = lax.stop_gradient(model_o_t), \
+                                              lax.stop_gradient(model_r_t), \
+                                              lax.stop_gradient(model_d_t)
+            d_t = jnp.array(d_t, dtype=np.int32)
+            o_worst_case_loss = jnp.mean((jnp.argmax(model_o_t, axis=-1) - jnp.argmax(o_t)) ** 2)
+            reward_loss = jnp.mean((r_t - jnp.argmax(model_r_t)) ** 2)
+            d_decision_loss = jnp.mean((model_d_t - d_t) ** 2)
+            d_loss = - jnp.mean(jnp.take_along_axis(model_d_logits, jnp.expand_dims(d_t, axis=-1), axis=-1))
+            return o_worst_case_loss, reward_loss, d_decision_loss, d_loss
+
             # Internalize the networks.
 
+        self._debugging = jax.jit(debugging)
         # This function computes dL/dTheta
         self._q_planning_loss_grad = jax.jit(jax.value_and_grad(q_planning_loss))
 
@@ -100,8 +122,18 @@ class DynaAgent(VanillaAgent):
         self._model_parameters = self._model_get_params(self._model_opt_state)
 
         loss = np.array(loss)
+        debugging_losses = self._debugging(transitions)
+        debugging_losses = list(debugging_losses)
+        for i in range(len(debugging_losses)):
+            debugging_losses[i] = np.array(debugging_losses[i])
+
+        o_worst_case_loss, reward_loss, d_decision_loss, d_loss = debugging_losses
         losses_and_grads = {"losses": {
-                                       "loss": loss
+                                       "loss": loss,
+                                        "o_worst_case_loss": o_worst_case_loss,
+                                        "reward_loss": reward_loss,
+                                        "d_decision_loss": d_decision_loss,
+                                        "d_loss": d_loss
                                        },
                             "gradients": {
                                 "grad_norm": np.sum(np.sum([np.linalg.norm(np.asarray(g), ord=2) for g in gradient]))
@@ -119,10 +151,11 @@ class DynaAgent(VanillaAgent):
                 transitions = self._replay.sample(self._batch_size)
                 # plan on batch of transitions
                 loss, gradient = self._q_planning_loss_grad(self._q_parameters,
-                                                            transitions)
+                                                            transitions[:2])
                 self._q_opt_state = self._q_opt_update(self.total_steps, gradient,
                                                        self._q_opt_state)
                 self._q_parameters = self._q_get_params(self._q_opt_state)
+
 
                 losses_and_grads = {"losses": {"loss_q_planning": np.array(loss),
                                                 },
@@ -136,9 +169,16 @@ class DynaAgent(VanillaAgent):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
+        # self._replay.add([
+        #     timestep.observation,
+        #     action
+        # ])
         self._replay.add([
             timestep.observation,
-            action
+            action,
+            new_timestep.reward,
+            new_timestep.discount,
+            new_timestep.observation,
         ])
 
 

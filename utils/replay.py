@@ -25,7 +25,7 @@ class Replay(object):
     self._num_added += 1
 
   def peek_n_priority(self, n):
-    sorted_indices = np.argsort(self._data[0])[::-1]
+    sorted_indices = np.flip(np.argsort(self._data[0])[:, 0], axis=0)
     peek_n = []
     for k in range(len(self._data)):
       peek_n.append(self._data[k][sorted_indices][:n])

@@ -9,7 +9,7 @@ import experiment
 import agents
 import utils
 
-flags.DEFINE_string('run_mode', 'priority_dyna', 'what agent to run')
+flags.DEFINE_string('run_mode', 'dyna', 'what agent to run')
 flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
 flags.DEFINE_string('env_type', 'discrete', 'discreate or continuous')
 flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
@@ -36,7 +36,7 @@ flags.DEFINE_float('discount', .95, 'discounting on the agent side')
 flags.DEFINE_integer('replay_capacity', 1000, 'size of the replay buffer')
 flags.DEFINE_integer('min_replay_size', 100, 'min replay size before training.')
 flags.DEFINE_float('lr', 1e-1, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_model', 1e-2, 'learning rate for model optimizer')
+flags.DEFINE_float('lr_model', 2e-2, 'learning rate for model optimizer')
 flags.DEFINE_float('epsilon', 0.1, 'fraction of exploratory random actions at the end of the decay')
 # flags.DEFINE_float('epsilon', 0.05, 'fraction of exploratory random actions at the end of the decay')
 flags.DEFINE_integer('seed', 42, 'seed for random number generation')

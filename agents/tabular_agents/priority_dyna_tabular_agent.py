@@ -31,7 +31,8 @@ class PriorityDynaTabularAgent(DynaTabularAgent):
             q_tm1 = self._q_network[o_tm1, a_tm1]
 
             q_target = r_t
-            o_t = o_t / np.sum(o_t, axis=-1, keepdims=True)
+            divisior = np.sum(o_t, axis=-1, keepdims=True)
+            o_t = np.divide(o_t, divisior, out=np.zeros_like(o_t), where=np.all(divisior != 0))
             for next_o_t in range(np.prod(self._input_dim)):
                 q_t = self._q_network[next_o_t]
                 q_target += d_t * self._discount * o_t[:, next_o_t] * np.max(q_t, axis=-1)
@@ -49,7 +50,8 @@ class PriorityDynaTabularAgent(DynaTabularAgent):
 
         for k in range(self._planning_iter):
             priority_transitions = self._replay.peek_n_priority(self._batch_size)
-            priority, transitions = priority_transitions
+            priority = priority_transitions[0]
+            transitions = priority_transitions[1:]
             # plan on batch of transitions
             o_tm1, a_tm1 = transitions
 
