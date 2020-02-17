@@ -51,28 +51,29 @@ class MicroWorld(dm_env.Environment):
 
     def _parse_string(self):
         data = self._str_MDP.split('\n')
-        self._height = int(data[0].split(',')[0]) * self._nX
-        self._width = int(data[0].split(',')[1]) * self._nX
+        self._height = int(data[0].split(',')[0]) #* self._nX
+        self._width = int(data[0].split(',')[1]) #* self._nX
         self._mdp = np.zeros((self._height, self._width))
 
         for i in np.arange(0, len(data) - 1):
             for j in np.arange(len(data[i + 1])):
                 if data[i+1][j] == 'X':
-                    for kx in range(self._nX):
-                        for ky in range(self._nX):
-                            self._mdp[i * self._nX + kx][j * self._nX + ky] = -1
+                    # for kx in range(self._nX):
+                    #     for ky in range(self._nX):
+                    #         self._mdp[i * self._nX + kx][j * self._nX + ky] = -1
+                    self._mdp[i][j] = -1
                 elif data[i+1][j] == '.':
-                    for kx in range(self._nX):
-                        for ky in range(self._nX):
-                            self._mdp[i * self._nX + kx][j * self._nX + ky] = 0
+                    # for kx in range(self._nX):
+                    #     for ky in range(self._nX):
+                    #         self._mdp[i * self._nX + kx][j * self._nX + ky] = 0
+                    self._mdp[i][j] = 0
                 elif data[i+1][j] == 'S':
-                    self._sX = i * self._nX
-                    self._sY = j * self._nX
-                    self._mdp[self._sX][self._sY] = 0
+                    self._sX = i# * self._nX
+                    self._sY = j# * self._nX
                 elif data[i+1][j] == 'G':
-                    self._gX = i * self._nX
-                    self._gY = j * self._nX
-                    self._mdp[ self._gX][self._gY] = 0
+                    self._gX = i# * self._nX
+                    self._gY = j# * self._nX
+                    # self._mdp[ self._gX][self._gY] = 0
 
 
     def _get_state_index(self, x, y):

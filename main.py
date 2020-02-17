@@ -16,12 +16,12 @@ flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous
 flags.DEFINE_integer('continuous_discretization', 4, '')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
-flags.DEFINE_string('mdp', './mdps/maze.mdp',
+flags.DEFINE_string('mdp', './mdps/maze_1.5x.mdp',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
-flags.DEFINE_integer('env_size', 10, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
+flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_integer('num_episodes', 2000, 'Number of episodes to run for.')
+flags.DEFINE_integer('num_episodes', 4000, 'Number of episodes to run for.')
 flags.DEFINE_integer('num_test_episodes', 100, 'Number of test episodes to run for.')
 flags.DEFINE_integer('log_period', 10, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', 100, 'Maximum number of time steps an episode may last (default: 100).')
@@ -41,7 +41,7 @@ flags.DEFINE_float('epsilon', 0.1, 'fraction of exploratory random actions at th
 # flags.DEFINE_float('epsilon', 0.05, 'fraction of exploratory random actions at the end of the decay')
 flags.DEFINE_integer('seed', 42, 'seed for random number generation')
 flags.DEFINE_boolean('verbose', True, 'whether to log to std output')
-flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
+flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
 flags.DEFINE_boolean('random_restarts', False, 'random_restarts or not.')
 
 FLAGS = flags.FLAGS
