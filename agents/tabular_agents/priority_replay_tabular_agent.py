@@ -22,10 +22,10 @@ class PriorityReplayTabularAgent(ReplayTabularAgent):
     ):
         super(PriorityReplayTabularAgent, self).__init__(**kwargs)
 
-        def td_error(transitions):
+        def td_error(q_params, transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
-            q_tm1 = self._q_network[o_tm1, a_tm1]
-            q_t = self._q_network[o_t]
+            q_tm1 = q_params[o_tm1, a_tm1]
+            q_t = q_params[o_t]
             q_target = r_t + d_t * self._discount * np.max(q_t, axis=-1)
             td_error = q_target - q_tm1
 
@@ -46,14 +46,15 @@ class PriorityReplayTabularAgent(ReplayTabularAgent):
             transitions = priority_transitions[1:]
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
 
-            loss, gradient = self._q_loss_grad(transitions)
+            loss, gradient = self._q_loss_grad(self._q_network,
+                                               transitions)
             self._q_network[o_tm1, a_tm1] = self._q_opt_update(gradient, self._q_network[o_tm1, a_tm1])
 
             losses_and_grads = {"losses": {"loss_q_planning": np.array(loss)},
                                 }
             self._log_summaries(losses_and_grads, "value_planning")
 
-            td_error = np.asarray(self._td_error(transitions))
+            td_error = np.asarray(self._td_error(self._q_network, transitions))
             priority = np.abs(td_error)
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
             # Add transitions to replay.
@@ -78,7 +79,7 @@ class PriorityReplayTabularAgent(ReplayTabularAgent):
                        np.array([new_timestep.reward]),
                        np.array([new_timestep.discount]),
                        np.array([new_timestep.observation])]
-        td_error = np.asarray(self._td_error(transitions))
+        td_error = np.asarray(self._td_error(self._q_network, transitions))
         priority = np.abs(td_error)
         # Add this transition to replay.
         self._replay.add([

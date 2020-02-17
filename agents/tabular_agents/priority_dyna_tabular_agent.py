@@ -22,19 +22,19 @@ class PriorityDynaTabularAgent(DynaTabularAgent):
     ):
         super(PriorityDynaTabularAgent, self).__init__(**kwargs)
 
-        def td_error(transitions):
+        def td_error(q_params, model_params, transitions):
             o_tm1, a_tm1 = transitions
-            o_t = self._model_network[o_tm1, a_tm1, :-3]
-            r_t = self._model_network[o_tm1, a_tm1, -3]
-            d_t = np.argmax(self._model_network[o_tm1, a_tm1, -2:], axis=-1)
+            o_t = model_params[o_tm1, a_tm1, :-3]
+            r_t = model_params[o_tm1, a_tm1, -3]
+            d_t = np.argmax(model_params[o_tm1, a_tm1, -2:], axis=-1)
 
-            q_tm1 = self._q_network[o_tm1, a_tm1]
+            q_tm1 = q_params[o_tm1, a_tm1]
 
             q_target = r_t
             divisior = np.sum(o_t, axis=-1, keepdims=True)
             o_t = np.divide(o_t, divisior, out=np.zeros_like(o_t), where=np.all(divisior != 0))
             for next_o_t in range(np.prod(self._input_dim)):
-                q_t = self._q_network[next_o_t]
+                q_t = q_params[next_o_t]
                 q_target += d_t * self._discount * o_t[:, next_o_t] * np.max(q_t, axis=-1)
             td_error = q_target - q_tm1
 
@@ -55,14 +55,18 @@ class PriorityDynaTabularAgent(DynaTabularAgent):
             # plan on batch of transitions
             o_tm1, a_tm1 = transitions
 
-            loss, gradient = self._q_planning_loss_grad(transitions)
+            loss, gradient = self._q_planning_loss_grad(self._q_network,
+                                                        self._model_network,
+                                                        transitions)
             self._q_network[o_tm1, a_tm1] = self._q_opt_update(gradient, self._q_network[o_tm1, a_tm1])
 
             losses_and_grads = {"losses": {"loss_q_planning": np.array(loss)},
                                 }
             self._log_summaries(losses_and_grads, "value_planning")
 
-            td_error = np.asarray(self._td_error(transitions))
+            td_error = np.asarray(self._td_error(self._q_network,
+                                                 self._model_network,
+                                                 transitions))
             priority = np.abs(td_error)
             o_tm1, a_tm1 = transitions
             for i in range(len(o_tm1)):
@@ -80,7 +84,9 @@ class PriorityDynaTabularAgent(DynaTabularAgent):
     ):
         transitions = [np.array([timestep.observation]),
                        np.array([action])]
-        td_error = np.asarray(self._td_error(transitions))
+        td_error = np.asarray(self._td_error(self._q_network,
+                                             self._model_network,
+                                             transitions))
         priority = np.abs(td_error)
         # Add this states and actions to replay.
         self._replay.add([
