@@ -82,9 +82,9 @@ class VanillaTabularAgent(TabularAgent):
         self._model_network = model_network
         self._reverse_model_network = reverse_model_network
 
-        def q_loss(transitions):
+        def q_loss(q_params, transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
-            q_tm1 = self._q_network[o_tm1, a_tm1]
+            q_tm1 = q_params[o_tm1, a_tm1]
             q_t = q_network[o_t]
             q_target = r_t + d_t * discount * np.max(q_t, axis=-1)
             td_error = q_target - q_tm1
@@ -136,7 +136,7 @@ class VanillaTabularAgent(TabularAgent):
         o_t = np.array([new_timestep.observation])
         transitions = [o_tm1, a_tm1, r_t, d_t, o_t]
 
-        loss, gradient = self._q_loss_grad(transitions)
+        loss, gradient = self._q_loss_grad(self._q_network, transitions)
         self._q_network[o_tm1, a_tm1] = self._q_opt_update(gradient, self._q_network[o_tm1, a_tm1] )
 
         losses_and_grads = {"losses": {"loss_q": np.array(loss)},

@@ -73,7 +73,7 @@ class ReplayTabularAgent(VanillaTabularAgent):
 
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
 
-            loss, gradient = self._q_loss_grad(transitions)
+            loss, gradient = self._q_loss_grad(self._q_network, transitions)
             self._q_network[o_tm1, a_tm1] = self._q_opt_update(gradient, self._q_network[o_tm1, a_tm1])
 
             losses_and_grads = {"losses": {"loss_q_planning": np.array(loss)},

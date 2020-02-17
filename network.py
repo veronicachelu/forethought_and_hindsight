@@ -67,4 +67,8 @@ def get_tabular_reverse_model_network(num_hidden_layers: int,
                   rng: List,
                   input_dim: Tuple):
 
-    return np.zeros(shape=input_dim + (nA,) + (np.prod(input_dim) + 3, )), None
+    return [np.zeros(shape=input_dim + (nA,) + (np.prod(input_dim),)),
+            np.zeros(shape=input_dim + (np.prod(input_dim), nA))], \
+           None
+        # np.zeros(shape=(self.nS, self.nA, self.nS))
+        # self._inverse_pi = np.zeros(shape=(self.nS, self.nS, self.nA))

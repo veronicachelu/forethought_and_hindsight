@@ -53,6 +53,7 @@ def main(argv):
     logs = os.path.join(FLAGS.logs, FLAGS.model_class)
     logs = os.path.join(logs, os.path.join(mdp_filename, "stochastic" if FLAGS.stochastic else "deterministic"))
     logs = os.path.join(logs, "{}x".format(FLAGS.env_size))
+    logs = os.path.join(logs, "lr{}_mlr{}".format(FLAGS.lr, FLAGS.model_lr))
     if not os.path.exists(logs):
         os.makedirs(logs)
 
