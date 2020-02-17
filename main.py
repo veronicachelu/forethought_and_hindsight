@@ -9,7 +9,7 @@ import experiment
 import agents
 import utils
 
-flags.DEFINE_string('run_mode', 'dyna', 'what agent to run')
+flags.DEFINE_string('run_mode', 'priority_replay', 'what agent to run')
 flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
 flags.DEFINE_string('env_type', 'discrete', 'discreate or continuous')
 flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
@@ -53,7 +53,8 @@ def main(argv):
     logs = os.path.join(FLAGS.logs, FLAGS.model_class)
     logs = os.path.join(logs, os.path.join(mdp_filename, "stochastic" if FLAGS.stochastic else "deterministic"))
     logs = os.path.join(logs, "{}x".format(FLAGS.env_size))
-    logs = os.path.join(logs, "lr{}_mlr{}".format(FLAGS.lr, FLAGS.model_lr))
+    if FLAGS.model_class == "linear":
+        logs = os.path.join(logs, "lr{}_lrm{}".format(FLAGS.lr, FLAGS.lr_model))
     if not os.path.exists(logs):
         os.makedirs(logs)
 
