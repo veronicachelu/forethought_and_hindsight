@@ -5,3 +5,4 @@ from agents.tabular_agents.priority_replay_tabular_agent import PriorityReplayTa
 from agents.tabular_agents.dyna_tabular_agent import DynaTabularAgent
 from agents.tabular_agents.priority_dyna_tabular_agent import PriorityDynaTabularAgent
 from agents.tabular_agents.onpolicy_tabular_agent import OnPolicyTabularAgent
+from agents.tabular_agents.predecessors_dyna_tabular_agent import PredecessorsDynaTabularAgent

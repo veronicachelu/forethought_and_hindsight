@@ -9,7 +9,7 @@ import experiment
 import agents
 import utils
 
-flags.DEFINE_string('run_mode', 'onpolicy', 'what agent to run')
+flags.DEFINE_string('run_mode', 'predecessors_dyna', 'what agent to run')
 flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
 flags.DEFINE_string('env_type', 'discrete', 'discreate or continuous')
 flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
@@ -89,6 +89,11 @@ def main(argv):
                      "tabular":
                          {"class": "OnPolicyTabularAgent"},
                      },
+        "predecessors_dyna": {"linear":
+                                  {"class": "PredecessorsDynaAgent"},
+                              "tabular":
+                                  {"class": "PredecessorsDynaTabularAgent"},
+                              },
     }
     nrng = np.random.RandomState(FLAGS.seed)
     envs = {"discrete": {"class": "MicroWorld"},
@@ -121,7 +126,7 @@ def main(argv):
             nA=nA,
             input_dim=input_dim,
             rng=rng_model)
-        reverse_model_network, reverse_model_network_params = network.get_tabular_model_network(
+        reverse_model_network, reverse_model_network_params = network.get_tabular_reverse_model_network(
             num_hidden_layers=FLAGS.num_hidden_layers,
             num_units=FLAGS.num_units,
             nA=nA,
