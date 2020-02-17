@@ -42,7 +42,7 @@ class DynaAgent(VanillaAgent):
             nll = jnp.take_along_axis(d_t_logits, jnp.expand_dims(d_t_target, axis=-1), axis=1)
             # d_error = - jnp.log(d_t) * d_t_target - jnp.log(1 - d_t) * (1 - d_t_target)
             d_error = - jnp.mean(nll)
-            total_error = 10 * jnp.mean(o_error ** 2) + jnp.mean(r_error ** 2) + d_error
+            total_error = jnp.mean(o_error ** 2) + jnp.mean(r_error ** 2) + d_error
             return total_error
 
         # This function computes dL/dTheta

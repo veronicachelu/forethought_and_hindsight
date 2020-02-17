@@ -5,7 +5,7 @@ from __future__ import print_function
 import dm_env
 from dm_env import specs
 import numpy as np
-
+import scipy
 
 class Actions():
     up = 0
@@ -55,24 +55,25 @@ class MicroWorld(dm_env.Environment):
         self._width = int(data[0].split(',')[1]) * self._nX
         self._mdp = np.zeros((self._height, self._width))
 
-        for i in np.arange(len(data) - 1):
+        for i in np.arange(0, len(data) - 1):
             for j in np.arange(len(data[i + 1])):
                 if data[i+1][j] == 'X':
                     for kx in range(self._nX):
                         for ky in range(self._nX):
-                            self._mdp[i+kx][j+ky] = -1
+                            self._mdp[i * self._nX + kx][j * self._nX + ky] = -1
                 elif data[i+1][j] == '.':
                     for kx in range(self._nX):
                         for ky in range(self._nX):
-                            self._mdp[i+kx][j+ky] = 0
+                            self._mdp[i * self._nX + kx][j * self._nX + ky] = 0
                 elif data[i+1][j] == 'S':
-                    self._mdp[i][j] = 0
-                    self._sX = i
-                    self._sY = j
+                    self._sX = i * self._nX
+                    self._sY = j * self._nX
+                    self._mdp[self._sX][self._sY] = 0
                 elif data[i+1][j] == 'G':
-                    self._mdp[i][j] = 0
-                    self._gX = i
-                    self._gY = j
+                    self._gX = i * self._nX
+                    self._gY = j * self._nX
+                    self._mdp[ self._gX][self._gY] = 0
+
 
     def _get_state_index(self, x, y):
         idx = y + x * self._width

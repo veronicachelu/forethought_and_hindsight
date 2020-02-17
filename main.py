@@ -9,7 +9,7 @@ import experiment
 import agents
 import utils
 
-flags.DEFINE_string('run_mode', 'predecessors_dyna', 'what agent to run')
+flags.DEFINE_string('run_mode', 'vanilla', 'what agent to run')
 flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
 flags.DEFINE_string('env_type', 'discrete', 'discreate or continuous')
 flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
@@ -18,7 +18,7 @@ flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
 flags.DEFINE_string('mdp', './mdps/maze.mdp',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
-flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
+flags.DEFINE_integer('env_size', 10, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('num_episodes', 2000, 'Number of episodes to run for.')

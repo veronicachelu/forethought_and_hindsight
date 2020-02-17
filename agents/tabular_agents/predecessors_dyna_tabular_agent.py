@@ -45,11 +45,11 @@ class PredecessorsDynaTabularAgent(PriorityDynaTabularAgent):
 
         def q_planning_loss(q_params, model_params, reverse_model_params, transitions):
             o_tm1, a_tm1 = transitions
-            o_t = q_params[o_tm1, a_tm1, :-3]
-            r_t = q_params[o_tm1, a_tm1, -3]
+            o_t = model_params[o_tm1, a_tm1, :-3]
+            r_t = model_params[o_tm1, a_tm1, -3]
             d_t = np.argmax(model_params[o_tm1, a_tm1, -2:], axis=-1)
 
-            q_tm1 = self._q_network[o_tm1, a_tm1]
+            q_tm1 = q_params[o_tm1, a_tm1]
 
             q_target = r_t
             divisior = np.sum(o_t, axis=-1, keepdims=True)
@@ -59,7 +59,7 @@ class PredecessorsDynaTabularAgent(PriorityDynaTabularAgent):
                 q_target += d_t * self._discount * o_t[:, next_o_t] * np.max(q_t, axis=-1)
             td_error = q_target - q_tm1
 
-            model_o_a_tm2 = np.minimum(reverse_model_params[o_tm1], 0)
+            model_o_a_tm2 = np.minimum(reverse_model_params[0][o_tm1], 0)
 
             for i in range(len(model_o_a_tm2)):
                 divisor = np.sum(model_o_a_tm2[i], keepdims=True)
@@ -113,7 +113,9 @@ class PredecessorsDynaTabularAgent(PriorityDynaTabularAgent):
                                 }
             self._log_summaries(losses_and_grads, "value_planning")
 
-            td_error = np.asarray(self._td_error(transitions))
+            td_error = np.asarray(self._td_error(self._q_network,
+                                                 self._model_network,
+                                                 transitions))
             priority = np.abs(td_error)
             o_tm1, a_tm1 = transitions
             for i in range(len(o_tm1)):
@@ -123,9 +125,7 @@ class PredecessorsDynaTabularAgent(PriorityDynaTabularAgent):
                     a_tm1[i],
                 ])
 
-    # python
-    # main.py - -run_mode = dyna - -model_class = linear -
-    # -obs_type = onehot - -lr = 1e-3 - -lr_model = 1e-3
+    # python main.py --run_mode=dyna --model_class=linear --obs_type=onehot --lr=1e-3 --lr_model=1e-3
     def model_update(
             self,
             timestep: dm_env.TimeStep,
@@ -146,11 +146,12 @@ class PredecessorsDynaTabularAgent(PriorityDynaTabularAgent):
                                                                         self._reverse_model_network[0][o_t, a_tm1])
         self._reverse_model_network[1][o_t, o_tm1] = self._model_opt_update(gradients[1],
                                                                             self._reverse_model_network[1][o_t, o_tm1])
-        total_loss_o, total_loss_a = losses
+        total_loss, total_loss_o, total_loss_a = losses
         grad_o, grad_a = gradients
         o_grad = np.sum(np.linalg.norm(np.asarray(grad_o), ord=2), axis=-1)
         a_grad = np.sum(np.linalg.norm(np.asarray(grad_a), ord=2), axis=-1)
         losses_and_grads = {"losses": {
+            "loss_reverse": total_loss,
             "loss_reverse_o": total_loss_o,
             "loss_reverse_a": total_loss_a,
             "reverse_o_grad": o_grad,
