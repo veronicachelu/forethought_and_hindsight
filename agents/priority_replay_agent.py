@@ -26,7 +26,7 @@ class PriorityReplayAgent(ReplayAgent):
     ):
         super(PriorityReplayAgent, self).__init__(**kwargs)
 
-        def td_error(self,
+        def priority(self,
                      transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
             q_tm1 = self._q_forward(self._q_parameters, o_tm1)
@@ -34,10 +34,11 @@ class PriorityReplayAgent(ReplayAgent):
             q_target = r_t + d_t * self._discount * jnp.max(q_t, axis=-1)
             q_a_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
             td_error = lax.stop_gradient(q_target) - q_a_tm1
-
+            td_error = np.abs(td_error)
+            td_error[np.all([q_target == 0, q_tm1 == 0])] = -np.infty
             return td_error
 
-        self._td_error = jax.jit(td_error)
+        self._priority = jax.jit(priority)
 
 
     def planning_update(
@@ -47,7 +48,7 @@ class PriorityReplayAgent(ReplayAgent):
             return
 
         for k in range(self._planning_iter):
-            priority_transitions = self._replay.peek_n_priority(self._batch_size)
+            priority_transitions = self._replay.sample_priority(self._batch_size)
             priority = priority_transitions[0]
             transitions = priority_transitions[1:]
             # plan on batch of transitions
@@ -86,8 +87,9 @@ class PriorityReplayAgent(ReplayAgent):
                        np.array([new_timestep.reward]),
                        np.array([new_timestep.discount]),
                        np.array([new_timestep.observation])]
-        td_error = np.asarray(self._td_error(transitions))
-        priority = np.abs(td_error)
+        priority = np.asarray(self._priority(self._q_network,
+                                             self._model_network,
+                                             transitions))
         # Add this transition to replay.
         self._replay.add([
             priority,

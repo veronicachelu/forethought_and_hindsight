@@ -28,7 +28,7 @@ class MicroWorld(dm_env.Environment):
 
         self._cX, self._cY = 0, 0
         self._sX, self._sY = 0, 0
-        self._gX, self._gY = 0, 0
+        self._g = []
 
         self._read_file(path)
         self._parse_string()
@@ -71,8 +71,9 @@ class MicroWorld(dm_env.Environment):
                     self._sX = i# * self._nX
                     self._sY = j# * self._nX
                 elif data[i+1][j] == 'G':
-                    self._gX = i# * self._nX
-                    self._gY = j# * self._nX
+                    self._g.append((i, j))
+                    # self._gX = i# * self._nX
+                    # self._gY = j# * self._nX
                     # self._mdp[ self._gX][self._gY] = 0
 
 
@@ -90,31 +91,14 @@ class MicroWorld(dm_env.Environment):
         s = self._get_state_index(self._cX, self._cY)
         return s
 
-    def _get_goal_state(self):
-        g = self._get_state_index(self._gX, self._gY)
-        return g
-
     def _get_next_reward(self, nX, nY):
-        if nX == self._gX and nY == self._gY:
+        if (nX, nY) in self._g:
             return self._max_reward
         else:
             return 0
 
     def _is_terminal(self):
-        return self._cX == self._gX and self._cY == self._gY
-
-    def _define_goal_state(self, g):
-        x, y = self._get_state_coords(g)
-
-        if g >= self._nS:
-            return False
-        elif self._mdp[x][y] == -1:
-            return False
-        else:
-            self._gX = x
-            self._gY = y
-            self.reset()
-            return True
+        return (self._cX, self._cY) in self._g
 
     def get_next_state_and_reward(self, s, action):
         if s == self._nS:
@@ -147,34 +131,34 @@ class MicroWorld(dm_env.Environment):
         nY = self._cY
 
         self._possible_next_states = []
-        if self._cX > 0 and self._mdp[self._cX - 1][self._cY] != -1:
+        if self._cX > 1 and self._mdp[self._cX - 1][self._cY] != -1:
             self._possible_next_states.append((self._cX - 1, self._cY))
         else:
             self._possible_next_states.append((self._cX, self._cY))
-        if self._cY < self._width - 1 and self._mdp[self._cX][self._cY + 1] != -1:
+        if self._cY < self._width - 2 and self._mdp[self._cX][self._cY + 1] != -1:
             self._possible_next_states.append((self._cX, self._cY + 1))
         else:
             self._possible_next_states.append((self._cX, self._cY))
-        if self._cX < self._height - 1 and self._mdp[self._cX + 1][self._cY] != -1:
+        if self._cX < self._height - 2 and self._mdp[self._cX + 1][self._cY] != -1:
             self._possible_next_states.append((self._cX + 1, self._cY))
         else:
             self._possible_next_states.append((self._cX, self._cY))
-        if self._cY > 0 and self._mdp[self._cX][self._cY - 1] != -1:
+        if self._cY > 1 and self._mdp[self._cX][self._cY - 1] != -1:
             self._possible_next_states.append((self._cX, self._cY - 1))
         else:
             self._possible_next_states.append((self._cX, self._cY))
 
         if self._mdp[self._cX][self._cY] != -1:
-            if action == Actions.up and self._cX > 0:
+            if action == Actions.up and self._cX > 1:
                 nX = self._cX - 1
                 nY = self._cY
-            elif action == Actions.right and self._cY < self._width - 1:
+            elif action == Actions.right and self._cY < self._width - 2:
                 nX = self._cX
                 nY = self._cY + 1
-            elif action == Actions.down and self._cX < self._height - 1:
+            elif action == Actions.down and self._cX < self._height - 2:
                 nX = self._cX + 1
                 nY = self._cY
-            elif action == Actions.left and self._cY > 0:
+            elif action == Actions.left and self._cY > 1:
                 nX = self._cX
                 nY = self._cY - 1
 
@@ -201,7 +185,7 @@ class MicroWorld(dm_env.Environment):
                 self._sX = self._rng.randint(self._height)
                 self._sY = self._rng.randint(self._width)
                 if self._mdp[self._sX][self._sY] != -1 and \
-                        (not (self._sX == self._gX and self.sY == self._gY)):
+                        (not ((self._sX, self.sY) in self._g)):
                     valid = True
         self._cX = self._sX
         self._cY = self._sY

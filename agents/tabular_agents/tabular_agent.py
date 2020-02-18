@@ -62,3 +62,8 @@ class TabularAgent(abc.ABC):
     def load_model(self
     ) -> None:
         pass
+
+    def update_hyper_params(self,
+                            step,
+                            total_steps):
+        pass

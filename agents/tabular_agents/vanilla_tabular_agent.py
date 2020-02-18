@@ -33,6 +33,8 @@ class VanillaTabularAgent(TabularAgent):
             model_learning_period: int,
             planning_iter: int,
             planning_period: int,
+            predecessor_iter: int,
+            planning_depth: int,
             lr: float,
             lr_model: float,
             epsilon: float,
@@ -53,6 +55,8 @@ class VanillaTabularAgent(TabularAgent):
         self._model_learning_period = model_learning_period
         self._planning_iter = planning_iter
         self._planning_period = planning_period
+        self._predecessor_iter = predecessor_iter
+        self._planning_depth = planning_depth
         self._epsilon = epsilon
         self._exploration_decay_period = exploration_decay_period
         self._nrng = nrng
@@ -87,7 +91,7 @@ class VanillaTabularAgent(TabularAgent):
             q_tm1 = q_params[o_tm1, a_tm1]
             q_t = q_network[o_t]
             q_target = r_t + d_t * discount * np.max(q_t, axis=-1)
-            td_error = q_target - q_tm1
+            td_error = (q_target - q_tm1)
             return np.mean(td_error ** 2), td_error
 
         self._q_loss_grad = q_loss
@@ -201,6 +205,8 @@ class VanillaTabularAgent(TabularAgent):
                 tf.summary.scalar("train/losses/{}/{}".format(summary_name, k), losses[k], step=self.episode)
             self.writer.flush()
 
+    def update_hyper_params(self, step, total_steps):
+        pass
     # def td_error(self,
     #             transitions):
     #     o_tm1, a_tm1, r_t, d_t, o_t = transitions

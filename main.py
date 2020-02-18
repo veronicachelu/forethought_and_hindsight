@@ -9,26 +9,29 @@ import experiment
 import agents
 import utils
 
-flags.DEFINE_string('run_mode', 'vanilla', 'what agent to run')
+flags.DEFINE_string('run_mode', 'priority_replay', 'what agent to run')
 flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
 flags.DEFINE_string('env_type', 'discrete', 'discreate or continuous')
 flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
 flags.DEFINE_integer('continuous_discretization', 4, '')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
-flags.DEFINE_string('mdp', './mdps/maze_1.5x.mdp',
+flags.DEFINE_string('mdp', './mdps/maze_486.mdp',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
 flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_integer('num_episodes', 4000, 'Number of episodes to run for.')
+flags.DEFINE_integer('num_episodes', 1000, 'Number of episodes to run for.')
+flags.DEFINE_integer('num_steps', 100000, 'Number of episodes to run for.')
 flags.DEFINE_integer('num_test_episodes', 100, 'Number of test episodes to run for.')
-flags.DEFINE_integer('log_period', 10, 'Log summaries every .... episodes.')
-flags.DEFINE_integer('max_len', 100, 'Maximum number of time steps an episode may last (default: 100).')
+flags.DEFINE_integer('log_period', 1000, 'Log summaries every .... episodes.')
+flags.DEFINE_integer('max_len', -1, 'Maximum number of time steps an episode may last (default: 100).')
 flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('num_units', 0, 'number of units per hidden layer')
 flags.DEFINE_integer('planning_iter', 10, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
+flags.DEFINE_integer('predecessor_iter', 10, 'Number of predecessors to add to queue')
+flags.DEFINE_integer('planning_depth', 1, 'Planning depth for MCTS')
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')
 flags.DEFINE_integer('batch_size', 32, 'size of batches sampled from replay')
@@ -41,7 +44,7 @@ flags.DEFINE_float('epsilon', 0.1, 'fraction of exploratory random actions at th
 # flags.DEFINE_float('epsilon', 0.05, 'fraction of exploratory random actions at the end of the decay')
 flags.DEFINE_integer('seed', 42, 'seed for random number generation')
 flags.DEFINE_boolean('verbose', True, 'whether to log to std output')
-flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
+flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
 flags.DEFINE_boolean('random_restarts', False, 'random_restarts or not.')
 
 FLAGS = flags.FLAGS
@@ -55,6 +58,11 @@ def main(argv):
     logs = os.path.join(logs, "{}x".format(FLAGS.env_size))
     if FLAGS.model_class == "linear":
         logs = os.path.join(logs, "lr{}_lrm{}".format(FLAGS.lr, FLAGS.lr_model))
+    if FLAGS.max_len == -1:
+        logs = os.path.join(logs, "nonepisodic")
+    else:
+        logs = os.path.join(logs, "episodic")
+
     if not os.path.exists(logs):
         os.makedirs(logs)
 
@@ -93,6 +101,11 @@ def main(argv):
                                   {"class": "PredecessorsDynaAgent"},
                               "tabular":
                                   {"class": "PredecessorsDynaTabularAgent"},
+                              },
+        "mcts_behaviour": {"linear":
+                                  {"class": "MctsBehaviourAgent"},
+                              "tabular":
+                                  {"class": "MctsBehaviourTabularAgent"},
                               },
     }
     nrng = np.random.RandomState(FLAGS.seed)
@@ -166,6 +179,8 @@ def main(argv):
         model_learning_period=FLAGS.model_learning_period,
         planning_iter=FLAGS.planning_iter,
         planning_period=FLAGS.planning_period,
+        predecessor_iter=FLAGS.predecessor_iter,
+        planning_depth=FLAGS.planning_depth,
         lr=FLAGS.lr,
         lr_model=FLAGS.lr_model,
         epsilon=FLAGS.epsilon,
@@ -178,15 +193,24 @@ def main(argv):
         input_dim=input_dim,
     )
 
-    experiment.run(
-        agent=agent,
-        environment=env,
-        num_episodes=FLAGS.num_episodes,
-        num_test_episodes=FLAGS.num_test_episodes,
-        max_len=FLAGS.max_len,
-        log_period=FLAGS.log_period,
-        verbose=FLAGS.verbose
-    )
+    if FLAGS.max_len == -1:
+        experiment.run(
+            agent=agent,
+            environment=env,
+            num_steps=FLAGS.num_steps,
+            log_period=FLAGS.log_period,
+            verbose=FLAGS.verbose
+        )
+    else:
+        experiment.run_episodic(
+            agent=agent,
+            environment=env,
+            num_episodes=FLAGS.num_episodes,
+            num_test_episodes=FLAGS.num_test_episodes,
+            max_len=FLAGS.max_len,
+            log_period=FLAGS.log_period,
+            verbose=FLAGS.verbose
+        )
 
 
 if __name__ == '__main__':

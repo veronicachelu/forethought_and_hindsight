@@ -24,6 +24,26 @@ class Replay(object):
 
     self._num_added += 1
 
+  def sample_priority(self, n):
+    priorities = np.power(self._data[0][:, 0] + 1e-12, self._alpha)
+
+    priority_probs = np.divide(priorities, np.sum(priorities),
+              out=np.zeros_like(priorities),
+              where=np.all(np.sum(priorities) != 0))
+    w = np.power(len(self._data) * priority_probs, -self._beta)
+    w /= np.max(w)
+    sampled = self._nrng.multinomial(n, priority_probs)
+    sampled_indices = np.where(sampled > 0)[0]
+    more_indices = []
+    multiple_sampled_indices = np.where(sampled > 1)[0]
+    how_many_times_more = sampled[multiple_sampled_indices] - 1
+    for i, how_many in zip(multiple_sampled_indices, how_many_times_more):
+      for _ in range(how_many):
+        more_indices.append(i)
+
+    sampled_indices = np.concatenate([sampled_indices, np.array(more_indices, dtype=np.int32)])
+    return w[sampled_indices], [slot[sampled_indices] for slot in self._data]
+
   def peek_n_priority(self, n):
     sorted_indices = np.flip(np.argsort(self._data[0])[:, 0], axis=0)
     peek_n = []

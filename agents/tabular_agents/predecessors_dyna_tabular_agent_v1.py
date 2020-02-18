@@ -55,37 +55,35 @@ class PredecessorsDynaTabularAgent(PriorityDynaTabularAgent):
                                      reverse_model_params,
                                      transitions):
             o_tm1, a_tm1 = transitions
+            model_o_a_tm2 = np.minimum(reverse_model_params[0][o_tm1], 0)
 
-            per_action_loss = []
-            per_action_priority = []
-            per_action_td_grad = []
-            per_action_o_tm2 = []
+            divisors = [np.sum(m, keepdims=True) for m in model_o_a_tm2]
+            model_o_a_tm2_prob = [np.divide(m, d,
+                                           out=np.zeros_like(m),
+                                           where=np.all(d != 0)) for m, d in zip(model_o_a_tm2, divisors)]
+
+            model_o_a_tm2_indices_flat = [self._nrng.choice(mp.ravel() == np.max(mp.ravel())) for mp in model_o_a_tm2_prob]
+            model_o_a_tm2_indices = [np.unravel_index(i, [np.prod(self._input_dim), self._nA]) for i in model_o_a_tm2_indices_flat]
+            model_o_tm2 = [m[0] for m in model_o_a_tm2_indices]
+            model_a_tm2 = [m[1] for m in model_o_a_tm2_indices]
+
             # compute an update
-            for a in np.arange(self._nA):
-                model_o_tm2 = np.minimum(reverse_model_params[0][o_tm1, a], 0) + 1e-12
-                model_o_tm2_prob = model_o_tm2 / np.sum(model_o_tm2, axis=-1, keepdims=True)
-                model_o_tm2 = [self._nrng.choice(np.flatnonzero(mp == np.max(mp))) for mp in model_o_tm2_prob]
+            model_r_tm1 = model_params[model_o_tm2, model_a_tm2, -3]
+            model_d_tm1 = np.argmax(model_params[model_o_tm2, model_a_tm2, -2:], axis=-1)
+            q_tm1 = q_params[o_tm1]
+            model_probs = np.array(model_o_a_tm2_prob)[np.arange(32), np.array(model_o_tm2), np.array(model_a_tm2)]
+            target = model_r_tm1 + model_d_tm1 * self._discount * np.max(q_tm1, axis=-1)
+            td_error = target - q_params[model_o_tm2, model_a_tm2]
+            td_error *= model_probs
+            loss = np.mean(td_error ** 2)
 
-                model_a_tm2 = self._softmax(reverse_model_params[1][o_tm1, model_o_tm2])[np.arange(len(model_o_tm2)), a]
-                model_r_tm1 = model_params[model_o_tm2, a, -3]
-                model_d_tm1 = np.argmax(model_params[model_o_tm2, a, -2:], axis=-1)
-                q_tm1 = q_params[o_tm1, a_tm1]
-                target = model_a_tm2 * (model_r_tm1 + model_d_tm1 * \
-                                       model_o_tm2_prob[np.arange(len(q_tm1)), model_o_tm2]*\
-                                       self._discount * q_tm1)
-                td_error = target - q_params[model_o_tm2, a]
-                loss = np.mean(td_error ** 2)
-                gradient = td_error
-                priority = np.abs(td_error)
-                per_action_loss.append(np.array(loss))
-                per_action_priority.append(np.array(priority))
-                per_action_td_grad.append(np.array(gradient))
-                per_action_o_tm2.append(np.array(model_o_tm2))
+            gradient = td_error
+            priority = np.abs(td_error)
 
-            return per_action_loss, \
-                   per_action_td_grad, \
-                   per_action_priority, \
-                   per_action_o_tm2
+            return np.array(loss),\
+                   np.array(gradient), \
+                   np.array(priority), \
+                   (np.array(model_o_tm2), np.array(model_a_tm2))
 
         # self._q_planning_loss_grad = q_planning_loss
         self._backward_q_planning_loss_grad = backward_q_planning_loss
@@ -102,29 +100,26 @@ class PredecessorsDynaTabularAgent(PriorityDynaTabularAgent):
             priority = priority_transitions[0]
             transitions = priority_transitions[1:]
 
-            loss, gradient, priority, o_tm2 = self._backward_q_planning_loss_grad(self._q_network,
+            loss, gradient, td_error, (o_tm2, a_tm2) = self._backward_q_planning_loss_grad(self._q_network,
                                                                        self._model_network,
                                                                        self._reverse_model_network,
                                                                        transitions)
-            loss = np.mean(loss)
+            gradient *= weights
+            self._q_network[o_tm2, a_tm2] = np.where(gradient == 0, self._q_network[o_tm2, a_tm2],
+                                                     self._q_opt_update(gradient,
+                                                               self._q_network[o_tm2, a_tm2]))
 
             losses_and_grads = {"losses": {"loss_backward_q_planning": np.array(loss)},
                                 }
             self._log_summaries(losses_and_grads, "value_planning")
 
-            for a in np.arange(self._nA):
-                gradient *= weights
-                self._q_network[o_tm2[a], a] = np.where(gradient[a] == 0, self._q_network[o_tm2[a], a],
-                                                         self._q_opt_update(gradient[a],
-                                                                   self._q_network[o_tm2[a], a]))
-
-                for i in range(len(o_tm2[a])):
-                    if gradient[a][i] == 0:
-                        self._replay.add([
-                            priority[a][i],
-                            o_tm2[a][i],
-                            a,
-                        ])
+            for i in range(len(o_tm2)):
+                if gradient[i] == 0:
+                    self._replay.add([
+                        priority[i],
+                        o_tm2[i],
+                        a_tm2[i],
+                    ])
 
 
     def model_update(
@@ -145,8 +140,8 @@ class PredecessorsDynaTabularAgent(PriorityDynaTabularAgent):
                                                           transitions)
         self._reverse_model_network[0][o_t, a_tm1] = self._model_opt_update(gradients[0],
                                                                         self._reverse_model_network[0][o_t, a_tm1])
-        self._reverse_model_network[1][o_t] = self._model_opt_update(gradients[1],
-                                                                    self._reverse_model_network[1][o_t])
+        self._reverse_model_network[1][o_t, o_tm1] = self._model_opt_update(gradients[1],
+                                                                            self._reverse_model_network[1][o_t, o_tm1])
         total_loss, total_loss_o, total_loss_a = losses
         grad_o, grad_a = gradients
         o_grad = np.sum(np.linalg.norm(np.asarray(grad_o), ord=2), axis=-1)

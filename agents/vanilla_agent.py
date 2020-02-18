@@ -37,6 +37,8 @@ class VanillaAgent(Agent):
             model_learning_period: int,
             planning_iter: int,
             planning_period: int,
+            predecessor_iter: int,
+            planning_depth: int,
             lr: float,
             lr_model: float,
             epsilon: float,
@@ -58,6 +60,8 @@ class VanillaAgent(Agent):
         self._model_learning_period = model_learning_period
         self._planning_iter = planning_iter
         self._planning_period = planning_period
+        self._predecessor_iter = predecessor_iter
+        self._planning_depth = planning_depth
         self._epsilon = epsilon
         self._exploration_decay_period = exploration_decay_period
         self._nrng = nrng
