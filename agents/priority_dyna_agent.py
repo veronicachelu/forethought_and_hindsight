@@ -46,11 +46,34 @@ class PriorityDynaAgent(DynaAgent):
             q_t = self._q_network(q_params, model_o_t)
             q_target = model_r_t + model_d_t * self._discount * jnp.max(q_t, axis=-1)
             q_a_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
-            td_error = lax.stop_gradient(q_target) - q_a_tm1
+            td_error = q_a_tm1 - lax.stop_gradient(q_target)
 
-            td_error = np.abs(td_error)
+            td_error = jnp.abs(td_error)
             return td_error
 
+        def q_planning_loss(q_params, model_params, transitions, weights=None):
+            o_tm1, a_tm1 = transitions
+            model_tm1 = self._model_network(model_params, o_tm1)
+            model_o_t, model_r_t, model_d_t = jax.vmap(lambda model, a:
+                                                       (model[a][:-3],
+                                                        model[a][-3],
+                                                        jnp.argmax(model[a][-2:], axis=-1)
+                                                        # random.bernoulli(self._rng,
+                                                        #                  p=jax.nn.sigmoid(model[a][-1])))
+                                                        ))(model_tm1, a_tm1)
+            model_o_t, model_r_t, model_d_t = lax.stop_gradient(model_o_t),\
+                                              lax.stop_gradient(model_r_t),\
+                                              lax.stop_gradient(model_d_t)
+            q_tm1 = self._q_network(q_params, o_tm1)
+            q_t = self._q_network(q_params, model_o_t)
+            q_target = model_r_t + model_d_t * self._discount * jnp.max(q_t, axis=-1)
+            q_a_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
+            td_error = q_a_tm1 - lax.stop_gradient(q_target)
+            if weights is not None:
+                td_error *= weights
+            return jnp.mean(td_error ** 2)
+
+        self._q_planning_loss_grad = jax.jit(jax.value_and_grad(q_planning_loss))
         self._priority = jax.jit(priority)
 
     def update_hyper_params(self, step, total_steps):
@@ -69,8 +92,10 @@ class PriorityDynaAgent(DynaAgent):
                 priority, transitions = priority_transitions
                 # plan on batch of transitions
                 loss, gradient = self._q_planning_loss_grad(self._q_parameters,
-                                                            transitions)
-                self._q_opt_state = self._q_opt_update(self.total_steps, gradient * weights,
+                                                            self._model_parameters,
+                                                            transitions,
+                                                            weights=weights)
+                self._q_opt_state = self._q_opt_update(self.total_steps, gradient,
                                                        self._q_opt_state)
                 self._q_parameters = self._q_get_params(self._q_opt_state)
 

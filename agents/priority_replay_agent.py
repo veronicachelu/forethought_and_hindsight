@@ -37,11 +37,23 @@ class PriorityReplayAgent(ReplayAgent):
             q_t = self._q_network(q_params, o_t)
             q_target = r_t + d_t * self._discount * jnp.max(q_t, axis=-1)
             q_a_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
-            td_error = lax.stop_gradient(q_target) - q_a_tm1
-            td_error = np.abs(td_error)
+            td_error = q_a_tm1 - lax.stop_gradient(q_target)
+            td_error = jnp.abs(td_error)
             return td_error
 
+        def q_loss(q_params, transitions, weights=None):
+            o_tm1, a_tm1, r_t, d_t, o_t = transitions
+            q_tm1 = self._q_network(q_params, o_tm1)
+            q_t = self._q_network(q_params, o_t)
+            q_target = r_t + d_t * self._discount * jnp.max(q_t, axis=-1)
+            q_a_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
+            td_error = q_a_tm1 - lax.stop_gradient(q_target)
+            if weights is not None:
+                td_error *= weights
+            return jnp.mean(td_error ** 2)
+
         self._priority = jax.jit(priority)
+        self._q_loss_grad = jax.jit(jax.value_and_grad(q_loss))
 
     def update_hyper_params(self, step, total_steps):
         steps_left = total_steps - step
@@ -61,8 +73,8 @@ class PriorityReplayAgent(ReplayAgent):
             transitions = priority_transitions[1:]
             # plan on batch of transitions
             loss, gradient = self._q_loss_grad(self._q_parameters,
-                                               transitions)
-            self._q_opt_state = self._q_opt_update(self.total_steps, gradient * weights,
+                                               transitions, weights=weights)
+            self._q_opt_state = self._q_opt_update(self.total_steps, gradient,
                                                    self._q_opt_state)
             self._q_parameters = self._q_get_params(self._q_opt_state)
 

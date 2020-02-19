@@ -25,14 +25,15 @@ class Replay(object):
     self._num_added += 1
 
   def sample_priority(self, n):
-    priorities = np.power(self._data[0][:, 0] + 1e-12, self._alpha)
+    priorities = np.array(np.power(self._data[0][:, 0] + 1e-12, self._alpha),
+                         dtype=np.float64)
 
     priority_probs = np.divide(priorities, np.sum(priorities),
               out=np.zeros_like(priorities),
-              where=np.all(np.sum(priorities) != 0))
+              where=np.sum(priorities) != 0)
     w = np.power(len(self._data) * priority_probs, -self._beta)
     w /= np.max(w)
-    sampled = self._nrng.multinomial(n, priority_probs)
+    sampled = self._nrng.multinomial(n=n, pvals=priority_probs)
     sampled_indices = np.where(sampled > 0)[0]
     more_indices = []
     multiple_sampled_indices = np.where(sampled > 1)[0]
