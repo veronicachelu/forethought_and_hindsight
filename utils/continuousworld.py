@@ -69,18 +69,18 @@ class ContinuousWorld(dm_env.Environment):
 
         self._obstacles = []
         for obstacle in np.arange(9, len(data)):
-            xsO = data[obstacle].split(' ')[0]
-            xfO = data[obstacle].split(' ')[1]
-            ysO = data[obstacle].split(' ')[2]
-            yfO = data[obstacle].split(' ')[3]
+            xsO = float(data[obstacle].split(' ')[0])
+            xfO = float(data[obstacle].split(' ')[1])
+            ysO = float(data[obstacle].split(' ')[2])
+            yfO = float(data[obstacle].split(' ')[3])
             self._obstacles.append((xsO, xfO, ysO, yfO))
 
     def _is_obstacle(self, pos):
-        ok = True
+        ok = False
         for obstacle in self._obstacles:
             if pos[0] >= obstacle[0] and pos[0] < obstacle[0] and \
                 pos[1] >= obstacle[1] and pos[1] > obstacle[1]:
-                    ok = False
+                    ok = True
         return ok
 
     def reset(self):
@@ -99,19 +99,23 @@ class ContinuousWorld(dm_env.Environment):
         return dm_env.restart(self._observation())
 
     def _take_action(self, action):
+        potential_pos = np.copy(self._cPos)
         if action == Actions.up:
-            self._cPos[0] += self._step_size
+            potential_pos[0] += self._step_size
         elif action == Actions.right:
-            self._cPos[1] += self._step_size
+            potential_pos[1] += self._step_size
         elif action == Actions.down:
-            self._cPos[0] -= self._step_size
+            potential_pos[0] -= self._step_size
         elif action == Actions.left:
-            self._cPos[1] -= self._step_size
+            potential_pos[1] -= self._step_size
 
         if self._stochastic:
-            self._cPos += self._rng.normal(loc=self._mean_step_size,
+            potential_pos += self._rng.normal(loc=self._mean_step_size,
                                          scale=self._var_step_size, size=(2,))
-        self._cPos = self._cPos.clip([0, 0], [self._height, self._width])
+        potential_pos = potential_pos.clip([0, 0], [self._height, self._width])
+
+        if not self._is_obstacle(potential_pos):
+            self._cPos = np.copy(potential_pos)
 
         return self._reward if self._is_terminal() else 0.0
 

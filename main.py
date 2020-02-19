@@ -9,7 +9,7 @@ import experiment
 import agents
 import utils
 
-flags.DEFINE_string('run_mode', 'onpolicy', 'what agent to run')
+flags.DEFINE_string('run_mode', 'replay', 'what agent to run')
 flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 flags.DEFINE_string('env_type', 'continuous', 'discrete or continuous')
 flags.DEFINE_string('obs_type', 'tile', 'onehot, tabular, tile for continuous')
@@ -46,7 +46,7 @@ flags.DEFINE_float('epsilon', 0.1, 'fraction of exploratory random actions at th
 # flags.DEFINE_float('epsilon', 0.05, 'fraction of exploratory random actions at the end of the decay')
 flags.DEFINE_integer('seed', 42, 'seed for random number generation')
 flags.DEFINE_boolean('verbose', True, 'whether to log to std output')
-flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
+flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
 flags.DEFINE_boolean('random_restarts', False, 'random_restarts or not.')
 
 FLAGS = flags.FLAGS
@@ -57,13 +57,13 @@ def main(argv):
     mdp_filename = os.path.splitext(os.path.basename(FLAGS.mdp))[0]
     logs = os.path.join(FLAGS.logs, FLAGS.model_class)
     logs = os.path.join(logs, os.path.join(mdp_filename, "stochastic" if FLAGS.stochastic else "deterministic"))
-    logs = os.path.join(logs, "{}x".format(FLAGS.env_size))
-    if FLAGS.model_class == "linear":
-        logs = os.path.join(logs, "lr{}_lrm{}".format(FLAGS.lr, FLAGS.lr_model))
-    if FLAGS.max_len == -1:
-        logs = os.path.join(logs, "nonepisodic")
-    else:
-        logs = os.path.join(logs, "episodic")
+    # logs = os.path.join(logs, "{}x".format(FLAGS.env_size))
+    # if FLAGS.model_class == "linear":
+    #     logs = os.path.join(logs, "lr{}_lrm{}".format(FLAGS.lr, FLAGS.lr_model))
+    # if FLAGS.max_len == -1:
+    #     logs = os.path.join(logs, "nonepisodic")
+    # else:
+    #     logs = os.path.join(logs, "episodic")
 
     if not os.path.exists(logs):
         os.makedirs(logs)
