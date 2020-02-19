@@ -95,7 +95,7 @@ def main(argv):
                               {"class": "PriorityDynaTabularAgent"},
                           },
         "onpolicy": {"linear":
-                         {"class": "OnPolicyAgent"},
+                         {"class": "OnPolicyDynaAgent"},
                      "tabular":
                          {"class": "OnPolicyTabularAgent"},
                      },
@@ -104,7 +104,7 @@ def main(argv):
                               "tabular":
                                   {"class": "PredecessorsDynaTabularAgent"},
                               },
-        "mcts_behaviour": {"linear":
+        "planning2explore": {"linear":
                                   {"class": "MctsBehaviourAgent"},
                               "tabular":
                                   {"class": "MctsBehaviourTabularAgent"},

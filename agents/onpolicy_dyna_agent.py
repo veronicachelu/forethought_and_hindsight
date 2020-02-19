@@ -35,19 +35,21 @@ class OnPolicyDynaAgent(DynaAgent):
             for k in range(self._planning_iter):
                 transitions = self._replay.sample(self._batch_size)
                 # o_tm1, a_tm1, r_t_target, d_t_target, o_t_target
+                transitions = transitions[:2]
                 o_tm1, a_tm1 = transitions
-                model_a_tm1 = int(np.argmax(self._q_forward(self._q_parameters, o_tm1), axis=-1))
+                model_a_tm1 = jnp.argmax(self._q_forward(self._q_parameters, o_tm1), axis=-1)
                 transitions[-1] = model_a_tm1
 
-                model_tm1 = self._model_forward(self._model_parameters, o_tm1)
-                model_o_t = np.array(jax.vmap(lambda model, a: model[a][:-3])(model_tm1, model_a_tm1))
-                model_r_t = np.array(jax.vmap(lambda model, a: model[a][-3])(model_tm1, model_a_tm1))
-                model_d_t = np.array(jax.vmap(lambda model, a: jnp.argmax(model[a][-2:], axis=-1))(model_tm1, model_a_tm1),
-                                     dtype=np.int32)
-                transitions.extend([model_r_t, model_d_t, model_o_t])
+                # model_tm1 = self._model_forward(self._model_parameters, o_tm1)
+                # model_o_t = np.array(jax.vmap(lambda model, a: model[a][:-3])(model_tm1, model_a_tm1))
+                # model_r_t = np.array(jax.vmap(lambda model, a: model[a][-3])(model_tm1, model_a_tm1))
+                # model_d_t = np.array(jax.vmap(lambda model, a: jnp.argmax(model[a][-2:], axis=-1))(model_tm1, model_a_tm1),
+                #                      dtype=np.int32)
+                # transitions.extend([model_r_t, model_d_t, model_o_t])
                 # plan on batch of transitions
-                loss, gradient = self._q_loss_grad(self._q_parameters,
-                                                   transitions)
+                loss, gradient = self._q_planning_loss_grad(self._q_parameters,
+                                                            self._model_parameters,
+                                                            transitions)
                 self._q_opt_state = self._q_opt_update(self.total_steps, gradient,
                                                        self._q_opt_state)
                 self._q_parameters = self._q_get_params(self._q_opt_state)

@@ -15,12 +15,12 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class MctsBehaviourTabularAgent(DynaTabularAgent):
+class Planning2ExploreTabularAgent(DynaTabularAgent):
     def __init__(
             self,
             **kwargs
     ):
-        super(MctsBehaviourTabularAgent, self).__init__(**kwargs)
+        super(Planning2ExploreTabularAgent, self).__init__(**kwargs)
 
     def planning_update(
             self
