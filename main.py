@@ -11,7 +11,7 @@ import utils
 
 flags.DEFINE_string('run_mode', 'onpolicy', 'what agent to run')
 flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
-flags.DEFINE_string('env_type', 'continuous', 'discreate or continuous')
+flags.DEFINE_string('env_type', 'continuous', 'discrete or continuous')
 flags.DEFINE_string('obs_type', 'tile', 'onehot, tabular, tile for continuous')
 flags.DEFINE_integer('continuous_discretization', 4, '')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
