@@ -37,7 +37,7 @@ class OnPolicyDynaAgent(DynaAgent):
                 # o_tm1, a_tm1, r_t_target, d_t_target, o_t_target
                 transitions = transitions[:2]
                 o_tm1, a_tm1 = transitions
-                model_a_tm1 = jnp.argmax(self._q_forward(self._q_parameters, o_tm1), axis=-1)
+                model_a_tm1 = int(np.argmax(self._q_forward(self._q_parameters, o_tm1)))
                 transitions[-1] = model_a_tm1
 
                 # model_tm1 = self._model_forward(self._model_parameters, o_tm1)

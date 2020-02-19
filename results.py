@@ -37,7 +37,7 @@ def parse_filename(filename):
     properties = {}
     i = 0
     properties["stochastic"] = filename_list[i]
-    i += 3
+    i += 1
     properties["run_mode"] = filename_list[i]
     i += 1
     while filename_list[i] != "summaries":

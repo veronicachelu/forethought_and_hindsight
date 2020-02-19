@@ -47,7 +47,7 @@ class Planning2ExploreAgent(DynaAgent):
                 q_t = r_t + d_t * self._discount * backup_q
                 q_ts.append(q_t)
 
-            q_ts = np.array(q_ts)
+            q_ts = jnp.array(q_ts)
 
         max_a_tm1 = jnp.argmax(q_ts)
         max_q_t = jnp.max(q_ts)
