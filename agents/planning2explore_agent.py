@@ -34,19 +34,15 @@ class Planning2ExploreAgent(DynaAgent):
     def _structured_exploration(self,
                                observation: int,
                                depth: int):
-        q_ts = self._q_network(self._q_parameters, observation)
+        q_ts = self._q_network(self._q_parameters, observation[None, :])[0]
         if depth > 0:
             depth -= 1
             o_tm1 = observation
 
             q_ts = []
             for a_tm1 in range(self._nA):
-                model_tm1 = self._model_network(self._model_parameters, o_tm1)
-                o_t, r_t, d_t = jax.vmap(lambda model, a:
-                                                           (model[a][:-3],
-                                                            model[a][-3],
-                                                            jnp.argmax(model[a][-2:], axis=-1)
-                                                            ))(model_tm1, a_tm1)
+                model_tm1 = self._model_network(self._model_parameters, o_tm1[None, :])[0]
+                o_t, r_t, d_t = model_tm1[a_tm1][:-3],  model_tm1[a_tm1][-3], jnp.argmax(model_tm1[a_tm1][-2:], axis=-1)
                 backup_q, backup_q = self._structured_exploration(o_t, depth)
                 q_t = r_t + d_t * self._discount * backup_q
                 q_ts.append(q_t)
