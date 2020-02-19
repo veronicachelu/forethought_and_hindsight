@@ -30,11 +30,11 @@ class PriorityReplayAgent(ReplayAgent):
         self._replay._initial_beta = 1.0
         self._replay._beta = self._replay._initial_beta
 
-        def priority(self,
+        def priority(self, q_params,
                      transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
-            q_tm1 = self._q_forward(self._q_parameters, o_tm1)
-            q_t = self._q_forward(self._q_parameters, o_t)
+            q_tm1 = self._q_network(q_params, o_tm1)
+            q_t = self._q_network(q_params, o_t)
             q_target = r_t + d_t * self._discount * jnp.max(q_t, axis=-1)
             q_a_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
             td_error = lax.stop_gradient(q_target) - q_a_tm1
@@ -82,8 +82,7 @@ class PriorityReplayAgent(ReplayAgent):
                        np.array([new_timestep.reward]),
                        np.array([new_timestep.discount]),
                        np.array([new_timestep.observation])]
-        priority = np.asarray(self._priority(self._q_network,
-                                             self._model_network,
+        priority = np.asarray(self._priority(self._q_parameters,
                                              transitions))
         # Add this transition to replay.
         self._replay.add([

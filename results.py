@@ -35,27 +35,14 @@ COLORS = {"vanilla": 'r',
 def parse_filename(filename):
     filename_list = filename.split("-")[1].split("_")
     properties = {}
-
-    properties["model_class"] = filename_list[0]
-    properties["mdp"] = filename_list[1]
-    i = 2
-    if filename_list[i] != "stochastic" and filename_list[i] != "deterministic":
-        properties["mdp"] += filename_list[i]
-        i += 1
+    i = 0
     properties["stochastic"] = filename_list[i]
-    i += 1
-    properties["env_size"] = filename_list[i]
-    i += 1
-    if filename_list[i].startswith("lr"):
-        properties["lr"] = filename_list[i]
-        properties["lrm"] = filename_list[i+1]
-        i += 2
+    i += 3
     properties["run_mode"] = filename_list[i]
     i += 1
     while filename_list[i] != "summaries":
         properties["run_mode"] += "_" + filename_list[i]
         i += 1
-    properties["seed"] = filename_list[i+2]
     return properties
 
 def parse_folder(folder):
@@ -107,6 +94,16 @@ def main(argv):
                 select_cols=[1, 2] , # Only parse last two columns
             )
 
+            def smooth(scalars, weight=0.6):  # Weight between 0 and 1
+                last = scalars[0]  # First value in the plot (first timestep)
+                smoothed = list()
+                for point in scalars:
+                    smoothed_val = last * weight + (1 - weight) * point  # Calculate smoothed value
+                    smoothed.append(smoothed_val)  # Save it
+                    last = smoothed_val  # Anchor the last smoothed value
+
+                return smoothed
+
             def movingaverage(values, window):
                 weights = np.repeat(1.0, window) / window
                 sma = np.convolve(values, weights, 'valid')
@@ -115,14 +112,16 @@ def main(argv):
             x_axis = np.array([np.array(element[0]) for element in dataset][:200])
             y_axis = np.array([np.array(element[1]) for element in dataset][:200])
 
-            y_axis_smooth = movingaverage(y_axis, 10)
-            y_axis_smooth = np.concatenate([y_axis[:9], y_axis_smooth])
+            y_axis_smooth = smooth(y_axis)
+            # y_axis_smooth = np.concatenate([y_axis[:9], y_axis_smooth])
 
-            plot.plot(x_axis, y_axis, COLORS[properties["run_mode"]], alpha=0.1, linestyle='-')
-            plot.plot(x_axis, y_axis_smooth, COLORS[properties["run_mode"]], label=run_mode, alpha=0.5, linestyle='-')
+            # plot.plot(x_axis, y_axis, COLORS[properties["run_mode"]], alpha=0.5, linestyle='-')
+            plot.plot(x_axis, y_axis_smooth, COLORS[properties["run_mode"]], label=run_mode, alpha=1.0, linestyle='-')
             plot.yaxis.set_minor_formatter(NullFormatter())
-            plot.set_ylabel('Episode Steps')
-            plot.set_xlabel('Episode Count')
+            plot.set_ylabel('Cumulative Reward')
+            plot.set_xlabel('Steps')
+
+        plot.grid(0)
 
         plot.set_title(title)
         plot.legend()

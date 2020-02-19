@@ -30,21 +30,20 @@ class PriorityDynaAgent(DynaAgent):
         self._replay._initial_beta = 1.0
         self._replay._beta = self._replay._initial_beta
 
-        def priority(self,
+        def priority(self, q_params, model_params,
                      transitions):
             o_tm1, a_tm1 = transitions
-            model_tm1 = self._model_forward(self._model_parameters, o_tm1)
+            model_tm1 = self._model_network(model_params, o_tm1)
             model_o_t, model_r_t, model_d_t = jax.vmap(lambda model, a:
                                                        (model[a][:-2],
                                                         model[a][-2],
-                                                        random.bernoulli(self._rng,
-                                                                         p=jax.nn.sigmoid(model[a][-1])))
+                                                        jnp.argmax(model[a][-2:], axis=-1))
                                                        )(model_tm1, a_tm1)
             model_o_t, model_r_t, model_d_t = lax.stop_gradient(model_o_t), \
                                               lax.stop_gradient(model_r_t), \
                                               lax.stop_gradient(model_d_t)
-            q_tm1 = self._q_network(self._q_parameters, o_tm1)
-            q_t = self._q_network(self._q_parameters, model_o_t)
+            q_tm1 = model_params(q_params, o_tm1)
+            q_t = self._q_network(q_params, model_o_t)
             q_target = model_r_t + model_d_t * self._discount * jnp.max(q_t, axis=-1)
             q_a_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
             td_error = lax.stop_gradient(q_target) - q_a_tm1
@@ -90,7 +89,9 @@ class PriorityDynaAgent(DynaAgent):
     ):
         transitions = [np.array([timestep.observation]),
                        np.array([action])]
-        priority = np.asarray(self._priority(transitions))
+        priority = np.asarray(self._priority(self._q_parameters,
+                                             self._model_parameters,
+                                             transitions))
         # Add this states and actions to replay.
         self._replay.add([
             priority,

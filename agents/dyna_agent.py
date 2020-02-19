@@ -35,7 +35,7 @@ class DynaAgent(VanillaAgent):
                                       stax.logsoftmax(model[a][-2:])
                                       # jax.nn.sigmoid(model[a][-1]))
                                       ))(model_tm1, a_tm1)
-            o_error = (o_t - lax.stop_gradient(o_t_target))
+            o_error = o_t - lax.stop_gradient(o_t_target)
             r_error = r_t - lax.stop_gradient(r_t_target)
             d_t_target = jnp.array(lax.stop_gradient(d_t_target), dtype=np.int32)
             # target_class = jnp.argmax(jnp.stack([d_t_target, 1 - d_t_target], axis=-1), axis=-1)
@@ -51,7 +51,7 @@ class DynaAgent(VanillaAgent):
 
         def q_planning_loss(q_params, model_params, transitions):
             o_tm1, a_tm1 = transitions
-            model_tm1 = self._model_forward(model_params, o_tm1)
+            model_tm1 = self._model_network(model_params, o_tm1)
             model_o_t, model_r_t, model_d_t = jax.vmap(lambda model, a:
                                                        (model[a][:-3],
                                                         model[a][-3],
@@ -86,7 +86,7 @@ class DynaAgent(VanillaAgent):
                                               lax.stop_gradient(model_r_t), \
                                               lax.stop_gradient(model_d_t)
             d_t = jnp.array(d_t, dtype=np.int32)
-            o_loss = 10 * jnp.mean((model_o_t - o_t) ** 2)
+            o_loss = jnp.mean((model_o_t - o_t) ** 2)
             reward_loss = jnp.mean((r_t - model_r_t) ** 2)
             d_decision_loss = jnp.mean((model_d_t - d_t) ** 2)
             d_loss = - jnp.mean(jnp.take_along_axis(model_d_logits, jnp.expand_dims(d_t, axis=-1), axis=-1))

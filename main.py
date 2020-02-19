@@ -9,7 +9,7 @@ import experiment
 import agents
 import utils
 
-flags.DEFINE_string('run_mode', 'dyna', 'what agent to run')
+flags.DEFINE_string('run_mode', 'replay', 'what agent to run')
 flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 flags.DEFINE_string('env_type', 'continuous', 'discreate or continuous')
 flags.DEFINE_string('obs_type', 'tile', 'onehot, tabular, tile for continuous')
