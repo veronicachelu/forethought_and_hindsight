@@ -30,7 +30,7 @@ class PriorityReplayAgent(ReplayAgent):
         self._replay._initial_beta = 1.0
         self._replay._beta = self._replay._initial_beta
 
-        def priority(self, q_params,
+        def priority(q_params,
                      transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
             q_tm1 = self._q_network(q_params, o_tm1)

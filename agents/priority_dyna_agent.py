@@ -30,7 +30,7 @@ class PriorityDynaAgent(DynaAgent):
         self._replay._initial_beta = 1.0
         self._replay._beta = self._replay._initial_beta
 
-        def priority(self, q_params, model_params,
+        def priority(q_params, model_params,
                      transitions):
             o_tm1, a_tm1 = transitions
             model_tm1 = self._model_network(model_params, o_tm1)
