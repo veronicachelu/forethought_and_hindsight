@@ -26,6 +26,10 @@ class PriorityReplayAgent(ReplayAgent):
     ):
         super(PriorityReplayAgent, self).__init__(**kwargs)
 
+        self._replay._alpha = 1.0
+        self._replay._initial_beta = 1.0
+        self._replay._beta = self._replay._initial_beta
+
         def priority(self,
                      transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
@@ -35,10 +39,14 @@ class PriorityReplayAgent(ReplayAgent):
             q_a_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
             td_error = lax.stop_gradient(q_target) - q_a_tm1
             td_error = np.abs(td_error)
-            td_error[np.all([q_target == 0, q_tm1 == 0])] = -np.infty
             return td_error
 
         self._priority = jax.jit(priority)
+
+    def update_hyper_params(self, step, total_steps):
+        steps_left = total_steps - step
+        bonus = (self._replay._initial_beta - 1.0) * steps_left / total_steps
+        self._replay._beta = 1.0 - bonus
 
 
     def planning_update(
@@ -48,13 +56,13 @@ class PriorityReplayAgent(ReplayAgent):
             return
 
         for k in range(self._planning_iter):
-            priority_transitions = self._replay.sample_priority(self._batch_size)
+            weights, priority_transitions = self._replay.sample_priority(self._batch_size)
             priority = priority_transitions[0]
             transitions = priority_transitions[1:]
             # plan on batch of transitions
             loss, gradient = self._q_loss_grad(self._q_parameters,
                                                transitions)
-            self._q_opt_state = self._q_opt_update(self.total_steps, gradient,
+            self._q_opt_state = self._q_opt_update(self.total_steps, gradient * weights,
                                                    self._q_opt_state)
             self._q_parameters = self._q_get_params(self._q_opt_state)
 
@@ -62,19 +70,6 @@ class PriorityReplayAgent(ReplayAgent):
                                 "gradients": {"grad_norm_q_planning": np.sum(np.sum([np.linalg.norm(np.asarray(g), ord=2) for g in gradient]))}}
             self._log_summaries(losses_and_grads, "value_planning")
 
-            td_error = np.asarray(self._td_error(transitions))
-            priority = np.abs(td_error)
-            o_tm1, a_tm1, r_t, d_t, o_t = transitions
-            # Add transitions to replay.
-            for i in len(o_tm1):
-                self._replay.add([
-                    priority[i],
-                    o_tm1[i],
-                    a_tm1[i],
-                    r_t[i],
-                    d_t[i],
-                    o_t[i],
-                ])
 
     def save_transition(
             self,

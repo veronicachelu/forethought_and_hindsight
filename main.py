@@ -9,14 +9,14 @@ import experiment
 import agents
 import utils
 
-flags.DEFINE_string('run_mode', 'predecessors_dyna', 'what agent to run')
-flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
-flags.DEFINE_string('env_type', 'discrete', 'discreate or continuous')
-flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
+flags.DEFINE_string('run_mode', 'dyna', 'what agent to run')
+flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
+flags.DEFINE_string('env_type', 'continuous', 'discreate or continuous')
+flags.DEFINE_string('obs_type', 'tile', 'onehot, tabular, tile for continuous')
 flags.DEFINE_integer('continuous_discretization', 4, '')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
-# flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
-flags.DEFINE_string('mdp', './mdps/maze_486.mdp',
+flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
+# flags.DEFINE_string('mdp', './mdps/maze_486.mdp',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
 flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
@@ -38,8 +38,10 @@ flags.DEFINE_integer('batch_size', 32, 'size of batches sampled from replay')
 flags.DEFINE_float('discount', .95, 'discounting on the agent side')
 flags.DEFINE_integer('replay_capacity', 1000, 'size of the replay buffer')
 flags.DEFINE_integer('min_replay_size', 100, 'min replay size before training.')
-flags.DEFINE_float('lr', 1e-1, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_model', 2e-2, 'learning rate for model optimizer')
+# flags.DEFINE_float('lr', 1e-1, 'learning rate for q optimizer')
+flags.DEFINE_float('lr', 1e-3, 'learning rate for q optimizer')
+# flags.DEFINE_float('lr_model', 2e-2, 'learning rate for model optimizer')
+flags.DEFINE_float('lr_model', 2e-4, 'learning rate for model optimizer')
 flags.DEFINE_float('epsilon', 0.1, 'fraction of exploratory random actions at the end of the decay')
 # flags.DEFINE_float('epsilon', 0.05, 'fraction of exploratory random actions at the end of the decay')
 flags.DEFINE_integer('seed', 42, 'seed for random number generation')

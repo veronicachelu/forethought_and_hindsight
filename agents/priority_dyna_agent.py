@@ -26,7 +26,11 @@ class PriorityDynaAgent(DynaAgent):
     ):
         super(DynaAgent, self).__init__(**kwargs)
 
-        def td_error(self,
+        self._replay._alpha = 1.0
+        self._replay._initial_beta = 1.0
+        self._replay._beta = self._replay._initial_beta
+
+        def priority(self,
                      transitions):
             o_tm1, a_tm1 = transitions
             model_tm1 = self._model_forward(self._model_parameters, o_tm1)
@@ -45,9 +49,15 @@ class PriorityDynaAgent(DynaAgent):
             q_a_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
             td_error = lax.stop_gradient(q_target) - q_a_tm1
 
+            td_error = np.abs(td_error)
             return td_error
 
-        self._td_error = jax.jit(td_error)
+        self._priority = jax.jit(priority)
+
+    def update_hyper_params(self, step, total_steps):
+        steps_left = total_steps - step
+        bonus = (self._replay._initial_beta - 1.0) * steps_left / total_steps
+        self._replay._beta = 1.0 - bonus
 
     def planning_update(
             self
@@ -56,12 +66,12 @@ class PriorityDynaAgent(DynaAgent):
             return
         if self.total_steps % self._planning_period == 0:
             for k in range(self._planning_iter):
-                priority_transitions = self._replay.peek_n_priority(self._batch_size)
+                weights, priority_transitions = self._replay.sample_priority(self._batch_size)
                 priority, transitions = priority_transitions
                 # plan on batch of transitions
                 loss, gradient = self._q_planning_loss_grad(self._q_parameters,
                                                             transitions)
-                self._q_opt_state = self._q_opt_update(self.total_steps, gradient,
+                self._q_opt_state = self._q_opt_update(self.total_steps, gradient * weights,
                                                        self._q_opt_state)
                 self._q_parameters = self._q_get_params(self._q_opt_state)
 
@@ -70,16 +80,6 @@ class PriorityDynaAgent(DynaAgent):
                                     "gradients": {"grad_norm_q_plannin": np.sum(
                                         np.sum([np.linalg.norm(np.asarray(g), ord=2) for g in gradient]))}}
                 self._log_summaries(losses_and_grads, "value_planning")
-
-                td_error = np.asarray(self._td_error(transitions))
-                priority = np.abs(td_error)
-                o_tm1, a_tm1 = transitions
-                for i in len(o_tm1):
-                    self._replay.add([
-                        priority[i],
-                        o_tm1[i],
-                        a_tm1[i],
-                    ])
 
 
     def save_transition(
@@ -90,8 +90,7 @@ class PriorityDynaAgent(DynaAgent):
     ):
         transitions = [np.array([timestep.observation]),
                        np.array([action])]
-        td_error = np.asarray(self._td_error(transitions))
-        priority = np.abs(td_error)
+        priority = np.asarray(self._priority(transitions))
         # Add this states and actions to replay.
         self._replay.add([
             priority,
