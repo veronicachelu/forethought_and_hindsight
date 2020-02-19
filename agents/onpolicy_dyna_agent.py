@@ -40,22 +40,20 @@ class OnPolicyDynaAgent(DynaAgent):
                 transitions[-1] = model_a_tm1
 
                 model_tm1 = self._model_forward(self._model_parameters, o_tm1)
-                model_o_t = np.array(jax.vmap(lambda model, a: model[a][:-2])(model_tm1, a_tm1))
-                model_r_t = np.array(jax.vmap(lambda model, a: model[a][-2])(model_tm1, a_tm1))
-                model_d_t = np.array(jax.vmap(lambda model, a:
-                                        random.bernoulli(self._rng,
-                                                         p=jax.nn.sigmoid(model[a][-1])
-                                                         ))(model_tm1, a_tm1), dtype=np.int32)
+                model_o_t = np.array(jax.vmap(lambda model, a: model[a][:-3])(model_tm1, model_a_tm1))
+                model_r_t = np.array(jax.vmap(lambda model, a: model[a][-3])(model_tm1, model_a_tm1))
+                model_d_t = np.array(jax.vmap(lambda model, a: jnp.argmax(model[a][-2:], axis=-1))(model_tm1, model_a_tm1),
+                                     dtype=np.int32)
                 transitions.extend([model_r_t, model_d_t, model_o_t])
                 # plan on batch of transitions
                 loss, gradient = self._q_loss_grad(self._q_parameters,
-                                        transitions)
+                                                   transitions)
                 self._q_opt_state = self._q_opt_update(self.total_steps, gradient,
                                                        self._q_opt_state)
                 self._q_parameters = self._q_get_params(self._q_opt_state)
 
                 losses_and_grads = {"losses": {"loss_q_planning": np.array(loss),
-                                                },
-                                    "gradients": {"grad_norm_q_plannin": np.sum(np.sum([np.linalg.norm(np.asarray(g), ord=2) for g in gradient]))}}
+                                               },
+                                    "gradients": {"grad_norm_q_plannin": np.sum(
+                                        np.sum([np.linalg.norm(np.asarray(g), ord=2) for g in gradient]))}}
                 self._log_summaries(losses_and_grads, "value_planning")
-

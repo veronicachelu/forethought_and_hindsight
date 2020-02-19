@@ -24,7 +24,7 @@ class PriorityDynaAgent(DynaAgent):
             self,
             **kwargs
     ):
-        super(DynaAgent, self).__init__(**kwargs)
+        super(PriorityDynaAgent, self).__init__(**kwargs)
 
         self._replay._alpha = 1.0
         self._replay._initial_beta = 1.0
@@ -35,14 +35,14 @@ class PriorityDynaAgent(DynaAgent):
             o_tm1, a_tm1 = transitions
             model_tm1 = self._model_network(model_params, o_tm1)
             model_o_t, model_r_t, model_d_t = jax.vmap(lambda model, a:
-                                                       (model[a][:-2],
-                                                        model[a][-2],
-                                                        jnp.argmax(model[a][-2:], axis=-1))
-                                                       )(model_tm1, a_tm1)
+                                                       (model[a][:-3],
+                                                        model[a][-3],
+                                                        jnp.argmax(model[a][-2:], axis=-1)
+                                                        ))(model_tm1, a_tm1)
             model_o_t, model_r_t, model_d_t = lax.stop_gradient(model_o_t), \
                                               lax.stop_gradient(model_r_t), \
                                               lax.stop_gradient(model_d_t)
-            q_tm1 = model_params(q_params, o_tm1)
+            q_tm1 = self._q_network(q_params, o_tm1)
             q_t = self._q_network(q_params, model_o_t)
             q_target = model_r_t + model_d_t * self._discount * jnp.max(q_t, axis=-1)
             q_a_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
@@ -89,7 +89,8 @@ class PriorityDynaAgent(DynaAgent):
         if self.total_steps % self._planning_period == 0:
             for k in range(self._planning_iter):
                 weights, priority_transitions = self._replay.sample_priority(self._batch_size)
-                priority, transitions = priority_transitions
+                priority = priority_transitions[0]
+                transitions = priority_transitions[1:]
                 # plan on batch of transitions
                 loss, gradient = self._q_planning_loss_grad(self._q_parameters,
                                                             self._model_parameters,

@@ -56,8 +56,6 @@ class DynaAgent(VanillaAgent):
                                                        (model[a][:-3],
                                                         model[a][-3],
                                                         jnp.argmax(model[a][-2:], axis=-1)
-                                                        # random.bernoulli(self._rng,
-                                                        #                  p=jax.nn.sigmoid(model[a][-1])))
                                                         ))(model_tm1, a_tm1)
             model_o_t, model_r_t, model_d_t = lax.stop_gradient(model_o_t),\
                                               lax.stop_gradient(model_r_t),\
