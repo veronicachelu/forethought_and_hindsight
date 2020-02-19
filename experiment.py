@@ -88,11 +88,6 @@ def run(agent: Agent,
 
             cumulative_reward += new_timestep.reward
 
-            if new_timestep.last():
-                timestep = environment.reset()
-            else:
-                timestep = new_timestep
-
             if agent.model_based_train:
                 agent.planning_update()
 
@@ -101,6 +96,11 @@ def run(agent: Agent,
 
                 tf.summary.scalar("train/cumulative_reward", cumulative_reward, step=agent.total_steps)
                 agent.writer.flush()
+
+            if new_timestep.last():
+                timestep = environment.reset()
+            else:
+                timestep = new_timestep
 
             agent.total_steps += 1
 
