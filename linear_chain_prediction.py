@@ -66,20 +66,20 @@ run_mode_to_agent_prop = {
                 "tabular":
                     {"class": "VanillaTabularPrediction"},
                 },
-    # "nstep_v1": {"linear":
-    #                  {"class": "nStepLinearPredictionV1"},
-    #              "tabular":
-    #                  {"class": "nStepTabularPredictionV1"},
-    #              },
-    # "nstep_v2": {"linear":
-    #                  {"class": "nStepLinearPredictionV2"},
-    #              "tabular":
-    #                  {"class": "nStepTabularPredictionV2"},
-    #              },
+    "nstep_v1": {"linear":
+                     {"class": "nStepLinearPredictionV1"},
+                 "tabular":
+                     {"class": "nStepTabularPredictionV1"},
+                 },
+    "nstep_v2": {"linear":
+                     {"class": "nStepLinearPredictionV2"},
+                 "tabular":
+                     {"class": "nStepTabularPredictionV2"},
+                 },
 }
 best_hyperparams = {"vanilla": {"alpha": 0.1, "n": 0},
-                    "nstep_v1": {"alpha": 0.2, "n": 1},
-                    "nstep_v2": {"alpha": 0.2, "n": 2}
+                    "nstep_v1": {"alpha": 0.2, "alpha_model": 0.1, "n": 1},
+                    "nstep_v2": {"alpha": 0.2, "alpha_model": 0.1, "n": 1}
                     }
 
 def run_episodic(agent: Agent,
