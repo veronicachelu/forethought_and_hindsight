@@ -1,0 +1,4 @@
+from prediction_agents.linear.linear_prediction import LinearPrediction
+from prediction_agents.linear.nstep_linear_prediction_v1 import nStepLinearPredictionV1
+from prediction_agents.linear.nstep_linear_prediction_v2 import nStepLinearPredictionV2
+from prediction_agents.linear.vanillar_linear_prediction import VanillaLinearPrediction

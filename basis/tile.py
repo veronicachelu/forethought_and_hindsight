@@ -40,9 +40,6 @@ def tile_encode(sample, tilings, flatten=False):
     return np.concatenate(encoded_sample) if flatten else encoded_sample
 
 
-
-
-
 def visualize_encoded_samples(samples, encoded_samples, tilings, low=None, high=None):
     """Visualize samples by activating the respective tiles."""
     samples = np.array(samples)  # for ease of indexing

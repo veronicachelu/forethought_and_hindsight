@@ -24,6 +24,12 @@ class Replay(object):
 
     self._num_added += 1
 
+  def peekFirst(self):
+    return self._data[0]
+
+  def peekLast(self):
+    return self._data[-1]
+
   def sample_priority(self, n):
     priorities = np.array(np.power(self._data[0][:, 0] + 1e-12, self._alpha),
                          dtype=np.float64)

@@ -5,7 +5,7 @@ from jax import random as jrandom
 import network
 
 from utils import *
-import experiment
+import prediction_experiment
 import agents
 import utils
 import tensorflow as tf

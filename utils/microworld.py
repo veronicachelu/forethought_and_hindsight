@@ -34,7 +34,7 @@ class MicroWorld(dm_env.Environment):
         self._parse_string()
         self._stochastic = stochastic
         self._random_restarts = random_restarts
-        self._p = 0.2
+        self._slip_prob = 0.2
         self._cX = self._sX
         self._cY = self._sY
         self._nS = self._height * self._width
@@ -42,7 +42,8 @@ class MicroWorld(dm_env.Environment):
         self._rng = rng
         self._reset_next_step = True
         self._obs_type = obs_type
-
+        self._P = None
+        self._R = None
 
     def _read_file(self, path):
         file = open(path, 'r')
@@ -51,31 +52,21 @@ class MicroWorld(dm_env.Environment):
 
     def _parse_string(self):
         data = self._str_MDP.split('\n')
-        self._height = int(data[0].split(',')[0]) #* self._nX
-        self._width = int(data[0].split(',')[1]) #* self._nX
+        self._height = int(data[0].split(',')[0])
+        self._width = int(data[0].split(',')[1])
         self._mdp = np.zeros((self._height, self._width))
 
         for i in np.arange(0, len(data) - 1):
             for j in np.arange(len(data[i + 1])):
                 if data[i+1][j] == 'X':
-                    # for kx in range(self._nX):
-                    #     for ky in range(self._nX):
-                    #         self._mdp[i * self._nX + kx][j * self._nX + ky] = -1
                     self._mdp[i][j] = -1
                 elif data[i+1][j] == '.':
-                    # for kx in range(self._nX):
-                    #     for ky in range(self._nX):
-                    #         self._mdp[i * self._nX + kx][j * self._nX + ky] = 0
                     self._mdp[i][j] = 0
                 elif data[i+1][j] == 'S':
-                    self._sX = i# * self._nX
-                    self._sY = j# * self._nX
+                    self._sX = i
+                    self._sY = j
                 elif data[i+1][j] == 'G':
                     self._g.append((i, j))
-                    # self._gX = i# * self._nX
-                    # self._gY = j# * self._nX
-                    # self._mdp[ self._gX][self._gY] = 0
-
 
     def _get_state_index(self, x, y):
         idx = y + x * self._width
@@ -163,11 +154,11 @@ class MicroWorld(dm_env.Environment):
                 nY = self._cY - 1
 
         if self._stochastic:
-            p = [self._p, 1 - self._p]
+            slip_prob = [self.__slip_prob, 1 - self.__slip_prob]
             random_move = self._rng.choice(a=np.arange(4),
                              p=[1/4] * 4)
             next_states = [self._possible_next_states[random_move], (nX, nY)]
-            next_state = self._rng.choice([0, 1], p=p)
+            next_state = self._rng.choice([0, 1], p=slip_prob)
             next_state = next_states[next_state]
         else:
             next_state = (nX, nY)
@@ -232,3 +223,80 @@ class MicroWorld(dm_env.Environment):
             board[self._mdp == -1] = 0.5
             board[self._cX][self._cY] = 1
             return board
+
+
+    def _fill_P_R(self):
+        self._P = np.zeros((self._nA, self._nS, self._nS), dtype=np.int)
+        self._P_absorbing = np.zeros((self._nA, self._nS, self._nS), dtype=np.int)
+        self._R = np.zeros((self._nA, self._nS, self._nS), dtype=np.int)
+        self._index_matrix = np.zeros((self._height, self._width), dtype=np.int)
+
+        for i in range(self._height):
+            for j in range(self._width):
+                self._index_matrix[i][j] = np.ravel_multi_index((i, j), (self._height, self._width))
+
+        DIR_TO_VEC = [
+            # up
+            np.array((-1, 0)),
+            # right
+            np.array((0, 1)),
+            # down
+            np.array((1, 0)),
+            #left
+            np.array((0, -1)),
+        ]
+        for i in range(self._height):
+            for j in range(self._width):
+                for k in range(self._nA):
+                    fwd_pos = np.array([i, j]) + DIR_TO_VEC[k]
+                    fwd_i, fwd_j = fwd_pos
+                    if self._mdp[i][j] != -1:
+                        if not ((i, j) in self._g):
+                            if fwd_i >= 0 and fwd_i < self._height and\
+                                fwd_j >= 0 and fwd_j < self._width and self._mdp[fwd_i][fwd_j] != -1:
+                                if self._stochastic:
+                                    slip_prob = [self._slip_prob, 1 - self._slip_prob]
+                                else:
+                                    slip_prob = [0, 1]
+                                self._P[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = slip_prob[1]
+                                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = slip_prob[1]
+                                self._R[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = \
+                                    self._max_reward if (fwd_i, fwd_j) in self._g else 0
+                                self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = slip_prob[0]
+                                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = slip_prob[0]
+                                self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
+                                    self._max_reward if (i, j) in self._g else 0
+                            else:
+                                self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
+                                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
+                                self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
+                                    self._max_reward if (i, j) in self._g else 0
+                        else:
+                            self._P[k][self._index_matrix[i][j]][self._index_matrix[self._sX][self._sY]] = 1
+                            self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
+                            self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 0
+                            # \
+                            #     self._max_reward if (i, j) in self._g else 0
+
+
+    def _get_dynamics(self):
+        if self._P == None or self._R == None or self._P_absrobing == None:
+            self._fill_P_R()
+
+        return self._P, self._P_absorbing, self._R
+
+    def reshape_v(self, v):
+        return np.reshape(v, (self._height, self._width))
+
+    def reshape_pi(self, pi):
+        return np.reshape(pi, (self._height, self._width, self._nA))
+
+    def get_all_states(self):
+        states = []
+        for i in range(self._height):
+            for j in range(self._width):
+                index = self._get_state_index(i, j)
+                # index = np.ravel_multi_index((i, j), (self._height, self._width))
+                onehotstate = np.eye(self._nS)[index]
+                states.append(onehotstate)
+        return states

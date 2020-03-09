@@ -40,9 +40,42 @@ class ContinuousWorld(dm_env.Environment):
         self._bins = env_size ** 2
         self._bins_dim = env_size
 
+        self._P = None
+        self._R = None
+
         self._tilings = [create_tiling_grid(self._low, self._high,
                                            bins=(self._bins_dim, self._bins_dim),
                                            offsets=(0.0, 0.0))]
+        self._h = int(self._height // self._step_size)
+        self._w = int(self._width // self._step_size)
+
+        self._mdp = np.zeros((self._h, self._w))
+
+        self._hh = self._bins_dim
+        self._ww = self._bins_dim
+        self._nS = self._hh * self._ww
+        self._mdp_tilings = np.zeros((self._hh, self._ww))
+
+        for obstacle in self._obstacles:
+            xsO, xfO, ysO, yfO = obstacle
+            for i in range(int(xsO//self._step_size),
+                           int(xfO // self._step_size)):
+                for j in range(int(ysO//self._step_size),
+                               int(yfO//self._step_size)):
+                    self._mdp[i][j] = -1
+                    encoded_obs = tile_encode((i * self._step_size, j * self._step_size), self._tilings)[0]
+                    self._mdp_tilings[encoded_obs[0]][encoded_obs[1]] = -1
+
+
+        self._sX = int(self._sPos[0]//self._step_size)
+        self._sY = int(self._sPos[1]//self._step_size)
+        self._sX_tilings, self._sY_tilings = tile_encode(self._sPos, self._tilings)[0]
+        self._sX_tilings = self._sX_tilings
+        self._g = [(int(self._gPos[0]//self._step_size),
+                    int(self._gPos[1]//self._step_size)
+                    )]
+        self._g_tilings = [tile_encode(self._gPos, self._tilings)[0]]
+        self._g_tilings = [(self._g_tilings[0][0], self._g_tilings[0][1])]
 
     def _read_file(self, path):
         file = open(path, 'r')
@@ -76,12 +109,12 @@ class ContinuousWorld(dm_env.Environment):
             self._obstacles.append((xsO, xfO, ysO, yfO))
 
     def _is_obstacle(self, pos):
-        ok = False
+        isit = False
         for obstacle in self._obstacles:
-            if pos[0] >= obstacle[0] and pos[0] < obstacle[0] and \
-                pos[1] >= obstacle[1] and pos[1] > obstacle[1]:
-                    ok = True
-        return ok
+            if pos[0] >= obstacle[0] and pos[0] < obstacle[1] and \
+                pos[1] >= obstacle[1] and pos[1] < obstacle[2]:
+                isit = True
+        return isit
 
     def reset(self):
         """Returns the first `TimeStep` of a new episode."""
@@ -101,11 +134,11 @@ class ContinuousWorld(dm_env.Environment):
     def _take_action(self, action):
         potential_pos = np.copy(self._cPos)
         if action == Actions.up:
-            potential_pos[0] += self._step_size
+            potential_pos[0] -= self._step_size
         elif action == Actions.right:
             potential_pos[1] += self._step_size
         elif action == Actions.down:
-            potential_pos[0] -= self._step_size
+            potential_pos[0] += self._step_size
         elif action == Actions.left:
             potential_pos[1] -= self._step_size
 
@@ -157,3 +190,73 @@ class ContinuousWorld(dm_env.Environment):
     def action_spec(self):
         return specs.DiscreteArray(
             dtype=int, num_values=self._nA, name="action")
+
+    def _fill_P_R(self):
+        self._P = np.zeros((self._nA, self._nS, self._nS), dtype=np.int)
+        self._P_absorbing = np.zeros((self._nA, self._nS, self._nS), dtype=np.int)
+        self._R = np.zeros((self._nA, self._nS, self._nS), dtype=np.int)
+        self._index_matrix = np.zeros((self._h, self._w), dtype=np.int)
+
+        for i in range(self._hh):
+            for j in range(self._ww):
+                self._index_matrix[i][j] = np.ravel_multi_index((i, j), (self._hh, self._ww))
+
+        DIR_TO_VEC = [
+            # up
+            np.array((-1, 0)),
+            # right
+            np.array((0, 1)),
+            # down
+            np.array((1, 0)),
+            #left
+            np.array((0, -1)),
+        ]
+        for i in range(self._hh):
+            for j in range(self._ww):
+                for k in range(self._nA):
+                    fwd_pos = np.array([i, j]) + DIR_TO_VEC[k]
+                    fwd_i, fwd_j = fwd_pos
+                    if self._mdp_tilings[i][j] != -1:
+                        if not ((i, j) in self._g_tilings):
+                            if fwd_i >= 0 and fwd_i < self._h and\
+                                fwd_j >= 0 and fwd_j < self._w and self._mdp[fwd_i][fwd_j] != -1:
+                                self._P[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = 1
+                                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = 1
+                                self._R[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = \
+                                    self._reward if (fwd_i, fwd_j) in self._g_tilings else 0
+                                self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 0
+                                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 0
+                                self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
+                                    self._reward if (i, j) in self._g_tilings else 0
+                            else:
+                                self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
+                                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
+                                self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
+                                    self._reward if (i, j) in self._g_tilings else 0
+                        else:
+                            self._P[k][self._index_matrix[i][j]][self._index_matrix[self._sX_tilings][self._sY_tilings]] = 1
+                            self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
+                            self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 0
+                            # \
+                            #     self._reward if (i, j) in self._g_tilings else 0
+
+    def _get_dynamics(self):
+        if self._P == None or self._R == None or self._P_absorbing == None:
+            self._fill_P_R()
+
+        return self._P, self._P_absorbing, self._R
+
+    def reshape_v(self, v):
+        return np.reshape(v, (self._hh, self._ww))
+
+    def reshape_pi(self, pi):
+        return np.reshape(pi, (self._hh, self._ww, self._nA))
+
+    def get_all_states(self):
+        states = []
+        for i in range(self._mdp_tilings.shape[0]):
+            for j in range(self._mdp_tilings.shape[1]):
+                index = np.ravel_multi_index((i, j), (self._bins_dim, self._bins_dim))
+                onehotstate = np.eye(self._bins)[index]
+                states.append(onehotstate)
+        return states
