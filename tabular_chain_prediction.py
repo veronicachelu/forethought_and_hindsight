@@ -26,7 +26,7 @@ flags.DEFINE_string('env_type', 'discrete', 'discrete or continuous')
 # flags.DEFINE_string('obs_type', 'tile', 'onehot, tabular, tile for continuous')
 flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
-# flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
+flags.DEFINE_string('mdp', 'boyan_chain', '')
 flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
 # flags.DEFINE_integer('env_size', 5, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
@@ -43,7 +43,7 @@ flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experien
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')
 flags.DEFINE_integer('batch_size', 32, 'size of batches sampled from replay')
-flags.DEFINE_float('discount', 1, 'discounting on the agent side')
+flags.DEFINE_float('discount', 0.99, 'discounting on the agent side')
 flags.DEFINE_integer('replay_capacity', 1000, 'size of the replay buffer')
 flags.DEFINE_integer('min_replay_size', 100, 'min replay size before training.')
 flags.DEFINE_float('lr_model', 1, 'learning rate for model optimizer')
@@ -75,9 +75,9 @@ run_mode_to_agent_prop = {
                      {"class": "nStepTabularPredictionV2"},
                  },
 }
-best_hyperparams = {"vanilla": {"alpha": 0.1, "n": 0},
-                    "nstep_v1": {"alpha": 0.1, "n": 1},
-                    "nstep_v2": {"alpha": 0.1, "n": 1}
+best_hyperparams = {"vanilla": {"alpha": 0.6, "n": 0},
+                    "nstep_v1": {"alpha": 0.4, "n": 1},
+                    "nstep_v2": {"alpha": 0.4, "n": 1}
                     }
 
 def run_episodic(agent: Agent,
@@ -91,7 +91,10 @@ def run_episodic(agent: Agent,
         timestep = environment.reset()
         while True:
             # action = agent.policy(timestep)
-            action = agent._nrng.choice([0, 1], p=agent._pi[timestep.observation])
+            if FLAGS.mdp == "random_chain":
+                action = agent._nrng.choice([0, 1], p=agent._pi[timestep.observation])
+            elif FLAGS.mdp == "boyan_chain":
+                action = 0
             new_timestep = environment.step(action)
 
             if agent.model_based_train():
@@ -123,10 +126,17 @@ def run_episodic(agent: Agent,
 
 def run_experiment(run_mode, run, logs):
     nrng = np.random.RandomState(run)
-    env = RandomChain(rng=nrng,
-                      nS=5,
-                      obs_type=FLAGS.obs_type
-                      )
+    if FLAGS.mdp == "random_chain":
+        env = RandomChain(rng=nrng,
+                          nS=19,
+                          obs_type=FLAGS.obs_type
+                          )
+    elif FLAGS.mdp == "boyan_chain":
+        env = BoyanChain(rng=nrng,
+                          nS=5,
+                          nF=3,
+                          obs_type=FLAGS.obs_type
+                          )
     nA = env.action_spec().num_values
     input_dim = env.observation_spec().shape
     nS = env._nS
@@ -190,7 +200,7 @@ def run_experiment(run_mode, run, logs):
 
 def main(argv):
     del argv  # Unused.
-    logs = os.path.join(FLAGS.logs, "chain")
+    logs = os.path.join(os.path.join(FLAGS.logs, FLAGS.model_class), "chain")
 
     if not os.path.exists(logs):
         os.makedirs(logs)

@@ -12,11 +12,12 @@ class MdpSolver:
         self._pi = None
         self._eta_pi = None
         self._theta = 1e-8
+        self._pi = np.full((self._nS, self._nA), 1 / self._nA)
 
     def _solve_mdp(self):
         ppi = np.einsum('kij, ik->ij', self._p_absorbing, self._pi)
         rpi = np.einsum('kij, kij, ik->i', self._r, self._p_absorbing, self._pi)
-        self._v = np.linalg.solve(np.eye(self._r.shape[1]) - self._discount * ppi, rpi)
+        self._v = np.linalg.solve(np.eye(self._r.shape[0]) - self._discount * ppi, rpi)
 
     def _improve_policy(self):
         done = True

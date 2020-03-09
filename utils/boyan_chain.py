@@ -2,6 +2,7 @@ import dm_env
 from dm_env import specs
 import numpy as np
 import scipy
+from utils.solve_mdp import MdpSolver
 
 class BoyanChain(dm_env.Environment):
     """
@@ -44,6 +45,12 @@ class BoyanChain(dm_env.Environment):
         self._valid_actions = np.abs(sums_s - 1) < 0.0001
         self._s_terminal = np.asarray([np.all(self._P[s, :, s] == 1)
                                       for s in self._states])
+        mdp_solver = MdpSolver(self, nS, self._nA, 0.99)
+        # policy = mdp_solver.get_optimal_policy()
+        ppi = np.squeeze(self._P, axis=1)
+        rpi = np.squeeze(self._r, axis=1)
+        rppi = np.einsum('ij, ij ->i', rpi, ppi)
+        self._true_v = np.linalg.solve(np.eye(nS) - 0.99 * ppi, rppi)
 
     def reset(self):
         """Returns the first `TimeStep` of a new episode."""
@@ -53,7 +60,6 @@ class BoyanChain(dm_env.Environment):
 
     def _get_next_state(self, action):
         next_state = self._rng.choice(np.arange(self._nS), p=self._P[self._state, action])
-
         return next_state
 
     def _get_next_reward(self, a, next_state):
@@ -71,7 +77,7 @@ class BoyanChain(dm_env.Environment):
             return self.reset()
 
         next_state = self._get_next_state(action)
-        reward = self._get_next_reward(next_state)
+        reward = self._get_next_reward(action, next_state)
         self._state = next_state
 
         if self._is_terminal():
@@ -85,6 +91,9 @@ class BoyanChain(dm_env.Environment):
                                       name="state", minimum=0, maximum=self._nS)
         elif self._obs_type == "onehot":
             return specs.BoundedArray(shape=(self._nS,), dtype=np.int32,
+                                      name="state", minimum=0, maximum=1)
+        elif self._obs_type == "spikes":
+            return specs.BoundedArray(shape=(self._nF,), dtype=np.int32,
                                       name="state", minimum=0, maximum=1)
 
     def action_spec(self):
@@ -112,4 +121,8 @@ class BoyanChain(dm_env.Environment):
         return np.reshape(pi, (self._nS, self._nA))
 
     def get_all_states(self):
-        return np.arange(0, self._nS)
+        states = []
+        for s in np.arange(0, self._nS):
+            self._state = s
+            states.append(self._observation())
+        return states

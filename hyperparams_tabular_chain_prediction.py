@@ -28,7 +28,7 @@ flags.DEFINE_string('env_type', 'discrete', 'discrete or continuous')
 flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
-flags.DEFINE_string('mdp', 'random_chain', '')
+flags.DEFINE_string('mdp', 'boyan_chain', '')
 flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
 # flags.DEFINE_integer('env_size', 5, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
@@ -37,7 +37,7 @@ flags.DEFINE_integer('num_episodes', 10, 'Number of episodes to run for.')
 flags.DEFINE_integer('num_steps', 1000, 'Number of episodes to run for.')
 flags.DEFINE_integer('runs', 100, 'Number of runs for each episode.')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
-flags.DEFINE_integer('max_len', 100, 'Maximum number of time steps an episode may last (default: 100).')
+flags.DEFINE_integer('max_len', -1, 'Maximum number of time steps an episode may last (default: 100).')
 flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('num_units', 0, 'number of units per hidden layer')
 flags.DEFINE_integer('planning_iter', 10, 'Number of minibatches of model-based backups to run for planning')
@@ -45,7 +45,7 @@ flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experien
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')
 flags.DEFINE_integer('batch_size', 32, 'size of batches sampled from replay')
-flags.DEFINE_float('discount', 1, 'discounting on the agent side')
+flags.DEFINE_float('discount', 0.99, 'discounting on the agent side')
 flags.DEFINE_integer('replay_capacity', 1000, 'size of the replay buffer')
 flags.DEFINE_integer('min_replay_size', 100, 'min replay size before training.')
 flags.DEFINE_float('lr_model', 1, 'learning rate for model optimizer')
@@ -71,7 +71,10 @@ def run_episodic(agent: Agent,
         timestep = environment.reset()
         while True:
             # action = agent.policy(timestep)
-            action = agent._nrng.choice([0, 1], p=agent._pi[timestep.observation])
+            if FLAGS.mdp == "random_chain":
+                action = agent._nrng.choice([0, 1], p=agent._pi[timestep.observation])
+            elif FLAGS.mdp == "boyan_chain":
+                action = 0
             new_timestep = environment.step(action)
 
             if agent.model_based_train():
@@ -109,8 +112,8 @@ def run_experiment(run_mode, run, step, alpha, logs):
                           )
     elif FLAGS.mdp == "boyan_chain":
         env = BoyanChain(rng=nrng,
-                          nS=14,
-                          nF=4,
+                          nS=5,
+                          nF=3,
                           obs_type=FLAGS.obs_type
                           )
     nA = env.action_spec().num_values
@@ -118,7 +121,7 @@ def run_experiment(run_mode, run, step, alpha, logs):
     nS = env._nS
     policy = np.full((nS, nA), 1 / nA)
 
-    rng = jrandom.PRNGKey(seed=FLAGS.seed)
+    rng = jrandom.PRNGKey(seed=run)
     rng_q, rng_model, rng_agent = jrandom.split(rng, 3)
 
     v_network, v_network_params = prediction_network.get_prediction_v_network(
@@ -194,7 +197,7 @@ def run_experiment(run_mode, run, step, alpha, logs):
 def main(argv):
     fig = plt.figure(figsize=(8, 4))
     del argv  # Unused.
-    logs = os.path.join(FLAGS.logs, "chain")
+    logs = os.path.join(os.path.join(FLAGS.logs, FLAGS.model_class), "chain")
 
     if not os.path.exists(logs):
         os.makedirs(logs)
@@ -240,7 +243,7 @@ def main(argv):
     plt.xlabel('alpha')
     plt.ylabel('RMS error')
     # plt.ylim([0.064, 0.082])
-    plt.ylim([0.025, 0.06])
+    # plt.ylim([0.025, 0.06])
     plt.legend()
 
     plt.savefig(os.path.join(logs, 'hyperparams_tabular_chain_prediction_{}.png'.format(FLAGS.run_mode)))
