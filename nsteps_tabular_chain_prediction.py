@@ -1,7 +1,7 @@
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+
+from cycler import cycler
+
 from tqdm import tqdm
 import os
 from absl import app
@@ -16,8 +16,11 @@ import agents
 import prediction_agents
 import utils
 from agents import Agent
-import matplotlib.style as style
 import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+import matplotlib.style as style
+mpl.use('Agg')
 import cycler
 style.available
 style.use('seaborn-poster') #sets the size of the charts
@@ -212,11 +215,18 @@ def run_experiment(run_mode, run, logs):
     return rmsve
 
 def main(argv):
-    fig = plt.figure(figsize=(8, 4))
+    n = 4
+    color = plt.cm.Blues(np.linspace(0.5, 0.9, n))  # This returns RGBA; convert:
+    hexcolor = map(lambda rgb: '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
+                   tuple(color[:, 0:-1]))
+    color = hexcolor  # plt.cm.viridis(np.linspace(0, 1, n))
+    mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
+
+    # fig = plt.figure(figsize=(8, 4))
     del argv  # Unused.
     logs = os.path.join(os.path.join(FLAGS.logs, FLAGS.model_class), "chain")
 
-    n = 4
+
     steps = np.power(2, np.arange(0, n))
 
     if not os.path.exists(logs):
@@ -230,8 +240,8 @@ def main(argv):
             rmsve_vanilla += run_experiment("vanilla", run, logs)
         # take average
         rmsve_vanilla /= FLAGS.runs
-        checkpoint = os.path.join(logs, "nstep_training_{}_vanilla.npy".format(FLAGS.mdp))
-        np.save(checkpoint, rmsve_vanilla)
+        checkpoint_vanilla = os.path.join(logs, "nstep_training_{}_vanilla.npy".format(FLAGS.mdp))
+        np.save(checkpoint_vanilla, rmsve_vanilla)
 
     checkpoint_nsteps = os.path.join(logs, "nstep_training_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
     if os.path.exists(checkpoint_nsteps):
@@ -247,23 +257,21 @@ def main(argv):
         np.save(checkpoint_nsteps, rmsve_nsteps)
 
     x_axis = [ep * FLAGS.log_period for ep in np.arange(FLAGS.num_episodes // FLAGS.log_period)]
-    plt.plot(x_axis, rmsve_vanilla, label="vanilla", c="r", alpha=1, linestyle=':', marker='v')
-
-    color = plt.cm.Blues(np.linspace(0.5, 0.9, n))  # This returns RGBA; convert:
-    hexcolor = map(lambda rgb: '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
-                   tuple(color[:, 0:-1]))
-    color = hexcolor  # plt.cm.viridis(np.linspace(0, 1, n))
-    mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
+    plt.plot(x_axis, rmsve_vanilla, label="vanilla", c="r", alpha=1, linestyle=':')#, marker='v')
 
     for step_ind, step in enumerate(steps):
-        plt.plot(x_axis, rmsve_nsteps[step_ind, :], label="{}_n{}".format(FLAGS.run_mode, step))
+        plt.plot(x_axis, rmsve_nsteps[step_ind, :], label="{}_n{}".format(FLAGS.run_mode, step),
+                 alpha=1, linestyle='-')
 
     plt.xlabel('episodes')
-    plt.ylabel('RMS error')
+    # plt.ylabel('RMS error')
+    plt.ylabel('RMS error (log)')
+    plt.yscale('log')
     # plt.ylim([0.25, 0.55])
     plt.legend()
 
-    plt.savefig(os.path.join(logs, 'nstep_tabular_{}_{}.png'.format(FLAGS.mdp, FLAGS.run_mode)))
+    plt.savefig(os.path.join(logs, 'nstep_tabular_{}_{}_log.png'.format(FLAGS.mdp, FLAGS.run_mode)))
+    # plt.savefig(os.path.join(logs, 'nstep_tabular_{}_{}.png'.format(FLAGS.mdp, FLAGS.run_mode)))
     plt.close()
 
 if __name__ == '__main__':
