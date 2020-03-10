@@ -27,11 +27,13 @@ flags.DEFINE_string('env_type', 'discrete', 'discrete or continuous')
 flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
 flags.DEFINE_string('mdp', 'boyan_chain', '')
+flags.DEFINE_integer('n_hidden_states', 14, 'num_states')
+flags.DEFINE_integer('nS', 4, 'num_States')
 flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
 # flags.DEFINE_integer('env_size', 5, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_integer('num_episodes', 50, 'Number of episodes to run for.')
+flags.DEFINE_integer('num_episodes', 20, 'Number of episodes to run for.')
 flags.DEFINE_integer('num_steps', 1000, 'Number of episodes to run for.')
 flags.DEFINE_integer('runs', 100, 'Number of runs for each episode.')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
@@ -109,15 +111,16 @@ def run_episodic(agent: Agent,
             if agent.model_based_train:
                 agent.planning_update(timestep)
 
-            if episode % FLAGS.log_period == 0:
-                hat_v = agent._v_network
-                rmsve[episode//FLAGS.log_period] = np.sqrt(np.sum(np.power(hat_v - true_v, 2)) / environment._nS)
 
             if new_timestep.last():
                 break
 
             timestep = new_timestep
             agent.total_steps += 1
+
+        if episode % FLAGS.log_period == 0:
+            hat_v = agent._v_network
+            rmsve[episode//FLAGS.log_period] = np.sqrt(np.sum(np.power(hat_v - true_v, 2)) / environment._nS)
 
         cumulative_reward += rewards
         agent.episode += 1
@@ -128,18 +131,20 @@ def run_experiment(run_mode, run, logs):
     nrng = np.random.RandomState(run)
     if FLAGS.mdp == "random_chain":
         env = RandomChain(rng=nrng,
-                          nS=19,
+                          nS=FLAGS.nS,
                           obs_type=FLAGS.obs_type
                           )
+        nS = env._nS
     elif FLAGS.mdp == "boyan_chain":
         env = BoyanChain(rng=nrng,
                           nS=5,
                           nF=3,
                           obs_type=FLAGS.obs_type
                           )
+        nS = env._nF
+
     nA = env.action_spec().num_values
     input_dim = env.observation_spec().shape
-    nS = env._nS
     policy = np.full((nS, nA), 1 / nA)
 
     rng = jrandom.PRNGKey(seed=run)
@@ -211,7 +216,7 @@ def main(argv):
         rmsve = np.zeros((len(run_mode_to_agent_prop.keys()), FLAGS.num_episodes//FLAGS.log_period))
         for idx_alg, alg in enumerate(run_mode_to_agent_prop.keys()):
             for run in tqdm(range(0, FLAGS.runs)):
-                rmsve[idx_alg, :] += run_experiment(alg, run, logs)
+                rmsve[idx_alg] += run_experiment(alg, run, logs)
         # take average
         rmsve /= FLAGS.runs
         checkpoint = os.path.join(logs, "training_rmsve.npy")

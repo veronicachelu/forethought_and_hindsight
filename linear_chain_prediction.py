@@ -49,7 +49,7 @@ flags.DEFINE_float('discount', 0.99, 'discounting on the agent side')
 flags.DEFINE_integer('replay_capacity', 1000, 'size of the replay buffer')
 flags.DEFINE_integer('min_replay_size', 100, 'min replay size before training.')
 # flags.DEFINE_float('lr_model', 1, 'learning rate for model optimizer')
-flags.DEFINE_float('lr_model', 1e-2, 'learning rate for model optimizer')
+# flags.DEFINE_float('lr_model', 1e-2, 'learning rate for model optimizer')
 flags.DEFINE_float('epsilon', 0.1, 'fraction of exploratory random actions at the end of the decay')
 # flags.DEFINE_float('epsilon', 0.05, 'fraction of exploratory random actions at the end of the decay')
 flags.DEFINE_integer('seed', 42, 'seed for random number generation')
@@ -78,8 +78,8 @@ run_mode_to_agent_prop = {
                  },
 }
 best_hyperparams = {"vanilla": {"alpha": 0.1, "n": 0},
-                    "nstep_v1": {"alpha": 0.2, "alpha_model": 0.1, "n": 1},
-                    "nstep_v2": {"alpha": 0.2, "alpha_model": 0.1, "n": 1}
+                    "nstep_v1": {"alpha": 0.1, "alpha_model": 0.1, "n": 1},
+                    "nstep_v2": {"alpha": 0.1, "alpha_model": 0.1, "n": 1}
                     }
 
 def run_episodic(agent: Agent,
@@ -184,7 +184,7 @@ def run_experiment(run_mode, run, logs):
                        planning_period=FLAGS.planning_period,
                        planning_depth=best_hyperparams[run_mode]["n"],
                        lr=best_hyperparams[run_mode]["alpha"],
-                       lr_model=FLAGS.lr_model,
+                       lr_model=best_hyperparams[run_mode]["alpha_model"],
                        epsilon=FLAGS.epsilon,
                        exploration_decay_period=FLAGS.num_episodes,
                        seed=run,
@@ -210,15 +210,18 @@ def main(argv):
 
     if not os.path.exists(logs):
         os.makedirs(logs)
-
-    rmsve = np.zeros((len(run_mode_to_agent_prop.keys()), FLAGS.num_episodes//FLAGS.log_period))
-    for idx_alg, alg in enumerate(run_mode_to_agent_prop.keys()):
-        for run in tqdm(range(0, FLAGS.runs)):
-            rmsve[idx_alg] += run_experiment(alg, run, logs)
-    # take average
-    rmsve /= FLAGS.runs
-    checkpoint = os.path.join(logs, "linear_training_rmsve.npy")
-    np.save(checkpoint, rmsve)
+    checkpoint = os.path.join(logs, "training_rmsve.npy")
+    if os.path.exists(checkpoint):
+        rmsve = np.load(checkpoint)
+    else:
+        rmsve = np.zeros((len(run_mode_to_agent_prop.keys()), FLAGS.num_episodes//FLAGS.log_period))
+        for idx_alg, alg in enumerate(run_mode_to_agent_prop.keys()):
+            for run in tqdm(range(0, FLAGS.runs)):
+                rmsve[idx_alg] += run_experiment(alg, run, logs)
+        # take average
+        rmsve /= FLAGS.runs
+        checkpoint = os.path.join(logs, "linear_training_rmsve.npy")
+        np.save(checkpoint, rmsve)
 
     x_axis = [ep * FLAGS.log_period for ep in np.arange(FLAGS.num_episodes//FLAGS.log_period)]
     for idx_alg, alg in enumerate(run_mode_to_agent_prop.keys()):
