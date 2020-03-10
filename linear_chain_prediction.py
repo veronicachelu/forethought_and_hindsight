@@ -234,7 +234,7 @@ def main(argv):
     # plt.ylim([0.25, 0.55])
     plt.legend()
 
-    plt.savefig(os.path.join(logs, 'linear_training_{}_{}.png'.format(FLAGS.mdp, , FLAGS.obs_type)))
+    plt.savefig(os.path.join(logs, 'linear_training_{}_{}.png'.format(FLAGS.mdp, FLAGS.obs_type)))
     plt.close()
 
 if __name__ == '__main__':
