@@ -29,6 +29,7 @@ flags.DEFINE_string('obs_type', 'onehot', 'onehot, tabular, tile for continuous'
 # flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
+# flags.DEFINE_string('mdp', 'random_chain', '')
 flags.DEFINE_string('mdp', 'random_chain', '')
 flags.DEFINE_integer('n_hidden_states', 14, 'num_states')
 flags.DEFINE_integer('nS', 5, 'num_States')
