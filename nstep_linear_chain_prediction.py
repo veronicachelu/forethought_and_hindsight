@@ -140,7 +140,7 @@ def run_episodic(agent: Agent,
 
     return rmsve
 
-def run_experiment(run_mode, run, logs):
+def run_experiment(run_mode, step, run, logs):
     nrng = np.random.RandomState(run)
     if FLAGS.mdp == "random_chain":
         env = RandomChain(rng=nrng,
@@ -195,7 +195,7 @@ def run_experiment(run_mode, run, logs):
                        model_learning_period=FLAGS.model_learning_period,
                        planning_iter=FLAGS.planning_iter,
                        planning_period=FLAGS.planning_period,
-                       planning_depth=best_hyperparams[run_mode]["n"],
+                       planning_depth=step,
                        lr=best_hyperparams[run_mode]["alpha"],
                        lr_model=best_hyperparams[run_mode]["alpha_model"],
                        epsilon=FLAGS.epsilon,
@@ -228,7 +228,6 @@ def main(argv):
     del argv  # Unused.
     logs = os.path.join(os.path.join(FLAGS.logs, FLAGS.model_class), "chain")
 
-
     steps = np.power(2, np.arange(0, n))
 
     if not os.path.exists(logs):
@@ -252,9 +251,9 @@ def main(argv):
         rmsve_nsteps = np.zeros((len(steps), FLAGS.num_episodes//FLAGS.log_period))
         for step_ind, step in enumerate(steps):
             for run in tqdm(range(0, FLAGS.runs)):
-                rmsve_nsteps[step_ind] += run_experiment(FLAGS.run_mode, run, logs)
+                rmsve_nsteps[step_ind] += run_experiment(FLAGS.run_mode, step, run, logs)
             # take average
-            rmsve_nsteps /= FLAGS.runs
+            rmsve_nsteps[step_ind] /= FLAGS.runs
         checkpoint_nsteps = os.path.join(logs, "nstep_linear_training_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
         np.save(checkpoint_nsteps, rmsve_nsteps)
 

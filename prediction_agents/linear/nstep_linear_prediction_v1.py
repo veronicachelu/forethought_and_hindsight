@@ -125,7 +125,7 @@ class nStepLinearPredictionV1(VanillaLinearPrediction):
         td_error = self._td_error(self._v_parameters, transitions)
         # dv_dtheta_o_tmnm1 = jax.jacfwd(self._v_network)(self._v_parameters, o_tmnm1)
         # v_gradient = 2 * td_error * (self._discount ** self._n) * dv_dtheta_o_tmnm1
-        y, vjp_fun = jax.vjp(self._v_network, self._v_parameters,o_tmnm1)
+        y, vjp_fun = jax.vjp(self._v_network, self._v_parameters, o_tmnm1)
         v_gradient = vjp_fun(2 * td_error * (self._discount ** self._n))[0]
         self._v_opt_state = self._v_opt_update(self.total_steps, v_gradient,
                                                self._v_opt_state)

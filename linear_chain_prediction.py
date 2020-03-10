@@ -22,7 +22,7 @@ flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 # flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
 # flags.DEFINE_string('env_type', 'continuous', 'discrete or continuous')
 flags.DEFINE_string('env_type', 'discrete', 'discrete or continuous')
-flags.DEFINE_string('obs_type', 'onehot', 'onehot, tabular, tile for continuous')
+flags.DEFINE_string('obs_type', 'dependent_features', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'spikes', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'tile', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
@@ -137,7 +137,10 @@ def run_experiment(run_mode, run, logs):
                           nS=FLAGS.nS,
                           obs_type=FLAGS.obs_type
                           )
-        nS = env._nS
+        if FLAGS.obs_type == "dependent_features":
+            nS = env._nF
+        else:
+            nS = env._nS
     elif FLAGS.mdp == "boyan_chain":
         env = BoyanChain(rng=nrng,
                           nS=FLAGS.n_hidden_states,

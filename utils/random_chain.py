@@ -27,6 +27,7 @@ class RandomChain(dm_env.Environment):
                           [1/np.sqrt(3), 1/np.sqrt(3), 1/np.sqrt(3)],
                           [0, 1/np.sqrt(2), 1/np.sqrt(2)],
                           [0, 0, 1]]
+        self._nF = 3
         self._inverted_features = [[0, 1/2, 1/2, 1/2, 1/2],
                                   [1/2, 0, 1/2, 1/2, 1/2],
                                   [1/2, 1/2, 0, 1/2, 1/2],
@@ -91,6 +92,9 @@ class RandomChain(dm_env.Environment):
         elif self._obs_type == "inverted_features":
             return specs.BoundedArray(shape=(self._nS,), dtype=np.int32,
                                       name="state", minimum=0, maximum=1)
+        elif self._obs_type == "dependent_features":
+            return specs.BoundedArray(shape=(self._nF,), dtype=np.int32,
+                                      name="state", minimum=0, maximum=1)
 
     def action_spec(self):
         return specs.DiscreteArray(
@@ -102,7 +106,7 @@ class RandomChain(dm_env.Environment):
         elif self._obs_type == "onehot":
             return np.eye(self._nS)[self._state]
         elif self._obs_type == "dependent_features":
-            return self._features[self.state]
+            return self._dependent_features[self._state]
         elif self._obs_type == "inverted_features":
             return self._inverted_features[self._state]
 
