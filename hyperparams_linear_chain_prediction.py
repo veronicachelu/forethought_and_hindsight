@@ -17,20 +17,21 @@ import prediction_agents
 import utils
 from agents import Agent
 
-flags.DEFINE_string('run_mode', 'nstep_v1', 'what agent to run')
+flags.DEFINE_string('run_mode', 'vanilla', 'what agent to run')
 flags.DEFINE_string('policy', 'optimal', 'optimal or random')
 flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 # flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
 # flags.DEFINE_string('env_type', 'continuous', 'discrete or continuous')
 flags.DEFINE_string('env_type', 'discrete', 'discrete or continuous')
-flags.DEFINE_string('obs_type', 'spikes', 'onehot, tabular, tile for continuous')
+# flags.DEFINE_string('obs_type', 'spikes', 'onehot, tabular, tile for continuous')
+flags.DEFINE_string('obs_type', 'onehot', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'tile', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
-flags.DEFINE_string('mdp', 'boyan_chain', '')
+flags.DEFINE_string('mdp', 'random_chain', '')
 flags.DEFINE_integer('n_hidden_states', 14, 'num_states')
-flags.DEFINE_integer('nS', 4, 'num_States')
+flags.DEFINE_integer('nS', 5, 'num_States')
 flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
 # flags.DEFINE_integer('env_size', 5, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
@@ -73,7 +74,7 @@ def run_episodic(agent: Agent,
         while True:
             # action = agent.policy(timestep)
             if FLAGS.mdp == "random_chain":
-                action = agent._nrng.choice([0, 1], p=agent._pi[timestep.observation])
+                action = agent._nrng.choice([0, 1], p=[0.5, 0.5])
             elif FLAGS.mdp == "boyan_chain":
                 action = 0
             new_timestep = environment.step(action)
@@ -209,13 +210,13 @@ def main(argv):
     # all possible steps
     if FLAGS.run_mode == "vanilla":
         steps = [0]
-        alphas = np.arange(0, 1.1, 0.1)
+        alphas = np.arange(0, 0.1, 0.01)
         alphas_model = [0.1]
     else:
-        steps = np.power(2, np.arange(0, 8))
-        alphas = [0.1]
-        # alphas_model = np.arange(0.05, 0.15, 0.01)
-        alphas_model = np.arange(0.05, 0.15, 0.01)
+        steps = np.power(2, np.arange(0, 4))
+        alphas = np.arange(0, 1.1, 0.1)
+        # alphas = [0.8]
+        alphas_model = np.arange(0, 1.1, 0.1)
 
     checkpoint = os.path.join(logs, "hyperparams_linear_rmsve_{}.npy".format(FLAGS.run_mode))
     if os.path.exists(checkpoint):
@@ -244,7 +245,7 @@ def main(argv):
             plt.xlabel('alpha')
         else:
             ticks = np.arange(len(list(itertools.product(alphas, alphas_model))))
-            ticks_labels = [str(a) for a in itertools.product(alphas, alphas_model)]
+            ticks_labels = ["{:.1f}|{:.1f}".format(a1, a2) for (a1, a2) in itertools.product(alphas, alphas_model)]
             plt.plot(ticks, np.reshape(rmsve[i, :], (-1)), label='n = %d' % (steps[i]))
             plt.xlabel('alpha/alpha_model')
             plt.xticks(ticks, ticks_labels)

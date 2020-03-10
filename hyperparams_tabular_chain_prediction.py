@@ -17,7 +17,7 @@ import prediction_agents
 import utils
 from agents import Agent
 
-flags.DEFINE_string('run_mode', 'nstep_v2', 'what agent to run')
+flags.DEFINE_string('run_mode', 'nstep_v1', 'what agent to run')
 flags.DEFINE_string('policy', 'optimal', 'optimal or random')
 # flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
@@ -113,15 +113,17 @@ def run_experiment(run_mode, run, step, alpha, alpha_model, logs):
                           nS=FLAGS.nS,
                           obs_type=FLAGS.obs_type
                           )
+        nS = env._nS
     elif FLAGS.mdp == "boyan_chain":
         env = BoyanChain(rng=nrng,
                           nS=FLAGS.n_hidden_states,
                           nF=FLAGS.nS,
                           obs_type=FLAGS.obs_type
                           )
+        nS = env._nF
+
     nA = env.action_spec().num_values
     input_dim = env.observation_spec().shape
-    nS = env._nS
     policy = np.full((nS, nA), 1 / nA)
 
     rng = jrandom.PRNGKey(seed=run)
@@ -181,7 +183,7 @@ def run_experiment(run_mode, run, step, alpha, alpha_model, logs):
                        lr_model=alpha_model,
                        epsilon=FLAGS.epsilon,
                        exploration_decay_period=FLAGS.num_episodes,
-                       seed=FLAGS.seed,
+                       seed=run,
                        rng=rng_agent,
                        nrng=nrng,
                        logs=logs,
@@ -212,9 +214,9 @@ def main(argv):
         alphas_model = [0.1]
     else:
         steps = np.power(2, np.arange(0, 6))
-        # alphas = np.arange(0, 1.1, 0.1)
-        alphas = [0.8]
-        alphas_model = np.arange(0.5, 1.1, 0.1)
+        alphas = np.arange(0, 1.1, 0.1)
+        # alphas = [0.8]
+        alphas_model = np.arange(0, 1.1, 0.1)
 
     checkpoint = os.path.join(logs, "hyperparams_rmsve_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
     if os.path.exists(checkpoint):
@@ -243,11 +245,12 @@ def main(argv):
             plt.xlabel('alpha')
         else:
             ticks = np.arange(len(list(itertools.product(alphas, alphas_model))))
-            ticks_labels = [str(a) for a in itertools.product(alphas, alphas_model)]
+            ticks_labels = ["{:.1f}|{:.1f}".format(a1, a2) for (a1, a2) in itertools.product(alphas, alphas_model)]
             plt.plot(ticks, np.reshape(rmsve[i, :], (-1)), label='n = %d' % (steps[i]))
             plt.xlabel('alpha/alpha_model')
             plt.xticks(ticks, ticks_labels)
     plt.ylabel('RMS error')
+    plt.yscale("log")
     # plt.ylim([0.064, 0.082])
     # plt.ylim([0.025, 0.06])
     plt.legend()
