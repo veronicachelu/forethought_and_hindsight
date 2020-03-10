@@ -238,7 +238,7 @@ def main(argv):
     else:
         rmsve_vanilla = np.zeros((FLAGS.num_episodes // FLAGS.log_period))
         for run in tqdm(range(0, FLAGS.runs)):
-            rmsve_vanilla += run_experiment("vanilla", run, logs)
+            rmsve_vanilla += run_experiment("vanilla", 0, run, logs)
         # take average
         rmsve_vanilla /= FLAGS.runs
         checkpoint_vanilla = os.path.join(logs, "nstep_linear_training_{}_vanilla.npy".format(FLAGS.mdp))
