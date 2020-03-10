@@ -17,22 +17,22 @@ import prediction_agents
 import utils
 from agents import Agent
 
-flags.DEFINE_string('run_mode', 'nstep_v2', 'what agent to run')
+flags.DEFINE_string('run_mode', 'vanilla', 'what agent to run')
 flags.DEFINE_string('policy', 'optimal', 'optimal or random')
 flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 # flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
 # flags.DEFINE_string('env_type', 'continuous', 'discrete or continuous')
 flags.DEFINE_string('env_type', 'discrete', 'discrete or continuous')
 # flags.DEFINE_string('obs_type', 'spikes', 'onehot, tabular, tile for continuous')
-flags.DEFINE_string('obs_type', 'onehot', 'onehot, tabular, tile for continuous')
+flags.DEFINE_string('obs_type', 'spikes', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'tile', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
 # flags.DEFINE_string('mdp', 'random_chain', '')
-flags.DEFINE_string('mdp', 'random_chain', '')
+flags.DEFINE_string('mdp', 'boyan_chain', '')
 flags.DEFINE_integer('n_hidden_states', 14, 'num_states')
-flags.DEFINE_integer('nS', 5, 'num_States')
+flags.DEFINE_integer('nS', 4, 'num_States')
 flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
 # flags.DEFINE_integer('env_size', 5, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
@@ -211,14 +211,14 @@ def main(argv):
     # all possible steps
     if FLAGS.run_mode == "vanilla":
         steps = [0]
-        alphas = np.arange(0, 0.1, 0.01)
+        alphas = np.arange(0.1, 0.9, 0.1)
         alphas_model = [0.1]
     else:
         steps = np.power(2, np.arange(0, 4))
         alphas = np.arange(0.01, 0.03, 0.01)
         alphas_model = np.arange(0.01, 0.03, 0.01)
 
-    checkpoint = os.path.join(logs, "hyperparams_linear_rmsve_{}.npy".format(FLAGS.run_mode))
+    checkpoint = os.path.join(logs, "hyperparams_linear_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
     if os.path.exists(checkpoint):
         rmsve = np.load(checkpoint)
     else:
@@ -236,7 +236,7 @@ def main(argv):
                                                                      logs)
         # take average
         rmsve /= FLAGS.runs
-        checkpoint = os.path.join(logs, "hyperparams_linear_rmsve_{}.npy".format(FLAGS.run_mode))
+        checkpoint = os.path.join(logs, "hyperparams_linear_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
         np.save(checkpoint, rmsve)
 
     for i in range(0, len(steps)):
@@ -253,7 +253,7 @@ def main(argv):
     # plt.ylim([0.25, 0.55])
     plt.legend()
 
-    plt.savefig(os.path.join(logs, 'hyperparams_linear_chain_prediction_{}.png'.format(FLAGS.run_mode)))
+    plt.savefig(os.path.join(logs, 'hyperparams_linear_{}_{}.png'.format(FLAGS.mdp, FLAGS.run_mode)))
     plt.close()
 
 if __name__ == '__main__':
