@@ -215,7 +215,8 @@ def main(argv):
         steps = np.power(2, np.arange(0, 4))
         # alphas = np.arange(0, 1.1, 0.1)
         alphas = [0.2]
-        alphas_model = np.arange(0.1, 0.4, 0.1)
+        # alphas_model = np.arange(0.1, 0.4, 0.1)
+        alphas_model = [0.2]
 
     checkpoint = os.path.join(logs, "hyperparams_rmsve_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
     if os.path.exists(checkpoint):
