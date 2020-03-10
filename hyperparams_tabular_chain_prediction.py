@@ -17,7 +17,7 @@ import prediction_agents
 import utils
 from agents import Agent
 
-flags.DEFINE_string('run_mode', 'vanilla', 'what agent to run')
+flags.DEFINE_string('run_mode', 'nstep_v1', 'what agent to run')
 flags.DEFINE_string('policy', 'optimal', 'optimal or random')
 # flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
@@ -205,17 +205,16 @@ def main(argv):
     if not os.path.exists(logs):
         os.makedirs(logs)
 
-
     # all possible steps
     if FLAGS.run_mode == "vanilla":
         steps = [0]
         alphas = np.arange(0, 1.1, 0.1)
         alphas_model = [0.1]
     else:
-        steps = np.power(2, np.arange(0, 8))
-        alphas = [0.1]
-        # alphas_model = np.arange(0.05, 0.15, 0.01)
-        alphas_model = np.arange(0.05, 0.15, 0.01)
+        steps = np.power(2, np.arange(0, 6))
+        # alphas = np.arange(0, 1.1, 0.1)
+        alphas = [0.8]
+        alphas_model = np.arange(0.5, 1.1, 0.1)
 
     checkpoint = os.path.join(logs, "hyperparams_rmsve_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
     if os.path.exists(checkpoint):
