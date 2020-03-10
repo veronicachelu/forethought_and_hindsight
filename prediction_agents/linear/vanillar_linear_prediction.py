@@ -173,6 +173,7 @@ class VanillaLinearPrediction(LinearPrediction):
             print("Initializing from scratch.")
 
     def save_model(self):
+        return
         checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
         to_save = {
             "episode": self.episode,
@@ -207,6 +208,7 @@ class VanillaLinearPrediction(LinearPrediction):
         pass
 
     def _log_summaries(self, losses_and_grads, summary_name):
+        return
         losses = losses_and_grads["losses"]
         gradients = losses_and_grads["gradients"]
         if self._max_len == -1:

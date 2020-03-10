@@ -26,14 +26,15 @@ flags.DEFINE_string('env_type', 'discrete', 'discrete or continuous')
 # flags.DEFINE_string('obs_type', 'tile', 'onehot, tabular, tile for continuous')
 flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
-flags.DEFINE_string('mdp', 'boyan_chain', '')
+# flags.DEFINE_string('mdp', 'boyan_chain', '')
+flags.DEFINE_string('mdp', 'random_chain', '')
 flags.DEFINE_integer('n_hidden_states', 14, 'num_states')
-flags.DEFINE_integer('nS', 4, 'num_States')
+flags.DEFINE_integer('nS', 19, 'num_States')
 flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
 # flags.DEFINE_integer('env_size', 5, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_integer('num_episodes', 20, 'Number of episodes to run for.')
+flags.DEFINE_integer('num_episodes', 30, 'Number of episodes to run for.')
 flags.DEFINE_integer('num_steps', 1000, 'Number of episodes to run for.')
 flags.DEFINE_integer('runs', 100, 'Number of runs for each episode.')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
@@ -71,15 +72,15 @@ run_mode_to_agent_prop = {
                  "tabular":
                      {"class": "nStepTabularPredictionV1"},
                  },
-    "nstep_v2": {"linear":
-                     {"class": "nStepLinearPredictionV2"},
-                 "tabular":
-                     {"class": "nStepTabularPredictionV2"},
-                 },
+    # "nstep_v2": {"linear":
+    #                  {"class": "nStepLinearPredictionV2"},
+    #              "tabular":
+    #                  {"class": "nStepTabularPredictionV2"},
+    #              },
 }
-best_hyperparams = {"vanilla": {"alpha": 0.6, "n": 0},
-                    "nstep_v1": {"alpha": 0.4, "n": 1},
-                    "nstep_v2": {"alpha": 0.4, "n": 1}
+best_hyperparams = {"vanilla": {"alpha": 0.2, "alpha_model": 0.1, "n": 0},
+                    "nstep_v1": {"alpha": 0.2, "alpha_model": 0.2, "n": 1},
+                    "nstep_v2": {"alpha": 0.4, "alpha_model": 0.1, "n": 1}
                     }
 
 def run_episodic(agent: Agent,
@@ -137,8 +138,8 @@ def run_experiment(run_mode, run, logs):
         nS = env._nS
     elif FLAGS.mdp == "boyan_chain":
         env = BoyanChain(rng=nrng,
-                          nS=5,
-                          nF=3,
+                          nS=FLAGS.n_hidden_states,
+                          nF=FLAGS.nS,
                           obs_type=FLAGS.obs_type
                           )
         nS = env._nF
@@ -184,7 +185,7 @@ def run_experiment(run_mode, run, logs):
                        planning_period=FLAGS.planning_period,
                        planning_depth=best_hyperparams[run_mode]["n"],
                        lr=best_hyperparams[run_mode]["alpha"],
-                       lr_model=FLAGS.lr_model,
+                       lr_model=best_hyperparams[run_mode]["alpha_model"],
                        epsilon=FLAGS.epsilon,
                        exploration_decay_period=FLAGS.num_episodes,
                        seed=run,

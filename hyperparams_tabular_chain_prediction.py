@@ -17,7 +17,7 @@ import prediction_agents
 import utils
 from agents import Agent
 
-flags.DEFINE_string('run_mode', 'vanilla', 'what agent to run')
+flags.DEFINE_string('run_mode', 'nstep_v1', 'what agent to run')
 flags.DEFINE_string('policy', 'optimal', 'optimal or random')
 # flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
@@ -36,7 +36,7 @@ flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but 
 # flags.DEFINE_integer('env_size', 5, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_integer('num_episodes', 10, 'Number of episodes to run for.')
+flags.DEFINE_integer('num_episodes', 100, 'Number of episodes to run for.')
 flags.DEFINE_integer('num_steps', 1000, 'Number of episodes to run for.')
 flags.DEFINE_integer('runs', 100, 'Number of runs for each episode.')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
@@ -113,15 +113,17 @@ def run_experiment(run_mode, run, step, alpha, alpha_model, logs):
                           nS=FLAGS.nS,
                           obs_type=FLAGS.obs_type
                           )
+        nS = env._nS
     elif FLAGS.mdp == "boyan_chain":
         env = BoyanChain(rng=nrng,
                           nS=FLAGS.n_hidden_states,
                           nF=FLAGS.nS,
                           obs_type=FLAGS.obs_type
                           )
+        nS = env._nF
+
     nA = env.action_spec().num_values
     input_dim = env.observation_spec().shape
-    nS = env._nS
     policy = np.full((nS, nA), 1 / nA)
 
     rng = jrandom.PRNGKey(seed=run)
@@ -159,7 +161,6 @@ def run_experiment(run_mode, run, step, alpha, alpha_model, logs):
                      },
     }
     agent_prop = run_mode_to_agent_prop[FLAGS.run_mode]
-    run_mode = FLAGS.run_mode
     agent_class = getattr(prediction_agents, agent_prop[FLAGS.model_class]["class"])
 
     agent = agent_class(run_mode=run_mode,
@@ -181,7 +182,7 @@ def run_experiment(run_mode, run, step, alpha, alpha_model, logs):
                        lr_model=alpha_model,
                        epsilon=FLAGS.epsilon,
                        exploration_decay_period=FLAGS.num_episodes,
-                       seed=FLAGS.seed,
+                       seed=run,
                        rng=rng_agent,
                        nrng=nrng,
                        logs=logs,
@@ -205,17 +206,16 @@ def main(argv):
     if not os.path.exists(logs):
         os.makedirs(logs)
 
-
     # all possible steps
     if FLAGS.run_mode == "vanilla":
         steps = [0]
-        alphas = np.arange(0, 1.1, 0.1)
+        alphas = np.arange(0.1, 1.1, 0.1)
         alphas_model = [0.1]
     else:
-        steps = np.power(2, np.arange(0, 8))
-        alphas = [0.1]
-        # alphas_model = np.arange(0.05, 0.15, 0.01)
-        alphas_model = np.arange(0.05, 0.15, 0.01)
+        steps = np.power(2, np.arange(0, 4))
+        # alphas = np.arange(0, 1.1, 0.1)
+        alphas = [0.2]
+        alphas_model = np.arange(0.1, 1.0, 0.1)
 
     checkpoint = os.path.join(logs, "hyperparams_rmsve_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
     if os.path.exists(checkpoint):
@@ -234,7 +234,7 @@ def main(argv):
                                                                      alpha_model,
                                                                      logs)
         # take average
-        rmsve /= FLAGS.num_episodes * FLAGS.runs
+        rmsve /= FLAGS.runs
         checkpoint = os.path.join(logs, "hyperparams_rmsve_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
         np.save(checkpoint, rmsve)
 
@@ -244,7 +244,7 @@ def main(argv):
             plt.xlabel('alpha')
         else:
             ticks = np.arange(len(list(itertools.product(alphas, alphas_model))))
-            ticks_labels = [str(a) for a in itertools.product(alphas, alphas_model)]
+            ticks_labels = ["{:g}|{:g}".format(a1, a2) for (a1, a2) in itertools.product(alphas, alphas_model)]
             plt.plot(ticks, np.reshape(rmsve[i, :], (-1)), label='n = %d' % (steps[i]))
             plt.xlabel('alpha/alpha_model')
             plt.xticks(ticks, ticks_labels)
