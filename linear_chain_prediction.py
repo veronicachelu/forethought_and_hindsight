@@ -22,14 +22,16 @@ flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 # flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
 # flags.DEFINE_string('env_type', 'continuous', 'discrete or continuous')
 flags.DEFINE_string('env_type', 'discrete', 'discrete or continuous')
-flags.DEFINE_string('obs_type', 'spikes', 'onehot, tabular, tile for continuous')
+flags.DEFINE_string('obs_type', 'onehot', 'onehot, tabular, tile for continuous')
+# flags.DEFINE_string('obs_type', 'spikes', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'tile', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
-flags.DEFINE_string('mdp', 'boyan_chain', '')
+# flags.DEFINE_string('mdp', 'boyan_chain', '')
+flags.DEFINE_string('mdp', 'random_chain', '')
 flags.DEFINE_integer('n_hidden_states', 14, 'num_states')
-flags.DEFINE_integer('nS', 4, 'num_States')
+flags.DEFINE_integer('nS', 5, 'num_States')
 flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
 # flags.DEFINE_integer('env_size', 5, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
@@ -66,18 +68,18 @@ run_mode_to_agent_prop = {
                 "tabular":
                     {"class": "VanillaTabularPrediction"},
                 },
-    "nstep_v1": {"linear":
-                     {"class": "nStepLinearPredictionV1"},
-                 "tabular":
-                     {"class": "nStepTabularPredictionV1"},
-                 },
-    "nstep_v2": {"linear":
-                     {"class": "nStepLinearPredictionV2"},
-                 "tabular":
-                     {"class": "nStepTabularPredictionV2"},
-                 },
+    # "nstep_v1": {"linear":
+    #                  {"class": "nStepLinearPredictionV1"},
+    #              "tabular":
+    #                  {"class": "nStepTabularPredictionV1"},
+    #              },
+    # "nstep_v2": {"linear":
+    #                  {"class": "nStepLinearPredictionV2"},
+    #              "tabular":
+    #                  {"class": "nStepTabularPredictionV2"},
+    #              },
 }
-best_hyperparams = {"vanilla": {"alpha": 0.1, "alpha_model": 0.1, "n": 0},
+best_hyperparams = {"vanilla": {"alpha": 0.01, "alpha_model": 0.1, "n": 0},
                     "nstep_v1": {"alpha": 0.1, "alpha_model": 0.1, "n": 1},
                     "nstep_v2": {"alpha": 0.1, "alpha_model": 0.1, "n": 1}
                     }
@@ -94,7 +96,7 @@ def run_episodic(agent: Agent,
         while True:
             # action = agent.policy(timestep)
             if FLAGS.mdp == "random_chain":
-                action = agent._nrng.choice([0, 1], p=agent._pi[timestep.observation])
+                action = agent._nrng.choice([0, 1], p=[0.5, 0.5])
             elif FLAGS.mdp == "boyan_chain":
                 action = 0
             new_timestep = environment.step(action)
@@ -210,7 +212,7 @@ def main(argv):
 
     if not os.path.exists(logs):
         os.makedirs(logs)
-    checkpoint = os.path.join(logs, "training_rmsve.npy")
+    checkpoint = os.path.join(logs, "linear_training_rmsve.npy")
     if os.path.exists(checkpoint):
         rmsve = np.load(checkpoint)
     else:

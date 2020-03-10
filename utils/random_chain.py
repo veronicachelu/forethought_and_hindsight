@@ -144,4 +144,8 @@ class RandomChain(dm_env.Environment):
         return np.reshape(pi, (self._nS, self._nA))
 
     def get_all_states(self):
-        return np.arange(1, self._nS + 1)
+        states = []
+        for s in np.arange(0, self._nS):
+            self._state = s
+            states.append(self._observation())
+        return states
