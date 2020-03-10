@@ -28,7 +28,8 @@ flags.DEFINE_string('env_type', 'discrete', 'discrete or continuous')
 flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
-flags.DEFINE_string('mdp', 'boyan_chain', '')
+# flags.DEFINE_string('mdp', 'boyan_chain', '')
+flags.DEFINE_string('mdp', 'random_chain', '')
 flags.DEFINE_integer('n_hidden_states', 14, 'num_states')
 flags.DEFINE_integer('nS', 19, 'num_States')
 flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
