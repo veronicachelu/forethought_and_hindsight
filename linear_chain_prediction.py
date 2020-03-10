@@ -73,11 +73,11 @@ run_mode_to_agent_prop = {
                  "tabular":
                      {"class": "nStepTabularPredictionV1"},
                  },
-    # "nstep_v2": {"linear":
-    #                  {"class": "nStepLinearPredictionV2"},
-    #              "tabular":
-    #                  {"class": "nStepTabularPredictionV2"},
-    #              },
+    "nstep_v2": {"linear":
+                     {"class": "nStepLinearPredictionV2"},
+                 "tabular":
+                     {"class": "nStepTabularPredictionV2"},
+                 },
 }
 best_hyperparams = {"vanilla": {"alpha": 0.01, "alpha_model": 0.1, "n": 0},
                     "nstep_v1": {"alpha": 0.01, "alpha_model": 0.02, "n": 2},

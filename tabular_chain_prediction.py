@@ -34,7 +34,7 @@ flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but 
 # flags.DEFINE_integer('env_size', 5, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_integer('num_episodes', 30, 'Number of episodes to run for.')
+flags.DEFINE_integer('num_episodes', 100, 'Number of episodes to run for.')
 flags.DEFINE_integer('num_steps', 1000, 'Number of episodes to run for.')
 flags.DEFINE_integer('runs', 100, 'Number of runs for each episode.')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
@@ -72,11 +72,11 @@ run_mode_to_agent_prop = {
                  "tabular":
                      {"class": "nStepTabularPredictionV1"},
                  },
-    # "nstep_v2": {"linear":
-    #                  {"class": "nStepLinearPredictionV2"},
-    #              "tabular":
-    #                  {"class": "nStepTabularPredictionV2"},
-    #              },
+    "nstep_v2": {"linear":
+                     {"class": "nStepLinearPredictionV2"},
+                 "tabular":
+                     {"class": "nStepTabularPredictionV2"},
+                 },
 }
 best_hyperparams = {"vanilla": {"alpha": 0.2, "alpha_model": 0.1, "n": 0},
                     "nstep_v1": {"alpha": 0.2, "alpha_model": 0.2, "n": 1},
