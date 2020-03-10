@@ -223,7 +223,7 @@ def main(argv):
                 rmsve[idx_alg] += run_experiment(alg, run, logs)
         # take average
         rmsve /= FLAGS.runs
-        checkpoint = os.path.join(logs, "linear_training_{}_{}.npy".format(FLAGS.mdp, , FLAGS.obs_type))
+        checkpoint = os.path.join(logs, "linear_training_{}_{}.npy".format(FLAGS.mdp, FLAGS.obs_type))
         np.save(checkpoint, rmsve)
 
     x_axis = [ep * FLAGS.log_period for ep in np.arange(FLAGS.num_episodes//FLAGS.log_period)]
