@@ -210,11 +210,11 @@ def main(argv):
     # all possible steps
     if FLAGS.run_mode == "vanilla":
         steps = [0]
-        alphas = np.arange(0, 0.1, 0.01)
+        alphas = np.arange(0, 0.01, 0.001)
         alphas_model = [0.1]
     else:
         steps = np.power(2, np.arange(0, 4))
-        alphas = np.arange(0, 1.1, 0.1)
+        alphas = np.arange(0, 0.1, 0.01)
         # alphas = [0.8]
         alphas_model = np.arange(0, 1.1, 0.1)
 
