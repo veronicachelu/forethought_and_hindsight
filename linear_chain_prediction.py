@@ -212,7 +212,7 @@ def main(argv):
 
     if not os.path.exists(logs):
         os.makedirs(logs)
-    checkpoint = os.path.join(logs, "linear_training_rmsve.npy")
+    checkpoint = os.path.join(logs, "linear_training_{}.npy".format(FLAGS.mdp))
     if os.path.exists(checkpoint):
         rmsve = np.load(checkpoint)
     else:
@@ -222,7 +222,7 @@ def main(argv):
                 rmsve[idx_alg] += run_experiment(alg, run, logs)
         # take average
         rmsve /= FLAGS.runs
-        checkpoint = os.path.join(logs, "linear_training_rmsve.npy")
+        checkpoint = os.path.join(logs, "linear_training_{}.npy".format(FLAGS.mdp))
         np.save(checkpoint, rmsve)
 
     x_axis = [ep * FLAGS.log_period for ep in np.arange(FLAGS.num_episodes//FLAGS.log_period)]
@@ -233,7 +233,7 @@ def main(argv):
     # plt.ylim([0.25, 0.55])
     plt.legend()
 
-    plt.savefig(os.path.join(logs, 'linear_chain_prediction.png'))
+    plt.savefig(os.path.join(logs, 'linear_training_{}.png'.format(FLAGS.mdp)))
     plt.close()
 
 if __name__ == '__main__':
