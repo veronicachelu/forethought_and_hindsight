@@ -32,17 +32,17 @@ flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 # flags.DEFINE_string('env_type', 'continuous', 'discrete or continuous')
 flags.DEFINE_string('env_type', 'discrete', 'discrete or continuous')
 # flags.DEFINE_string('obs_type', 'dependent_features', 'onehot, tabular, tile for continuous')
-flags.DEFINE_string('obs_type', 'spikes', 'onehot, tabular, tile for continuous')
-# flags.DEFINE_string('obs_type', 'onehot', 'onehot, tabular, tile for continuous')
+# flags.DEFINE_string('obs_type', 'spikes', 'onehot, tabular, tile for continuous')
+flags.DEFINE_string('obs_type', 'onehot', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'tile', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
-flags.DEFINE_string('mdp', 'boyan_chain', '')
-# flags.DEFINE_string('mdp', 'random_chain', '')
+# flags.DEFINE_string('mdp', 'boyan_chain', '')
+flags.DEFINE_string('mdp', 'random_chain', '')
 flags.DEFINE_integer('n_hidden_states', 14, 'num_states')
-flags.DEFINE_integer('nS', 4, 'num_States')
-# flags.DEFINE_integer('nS', 5, 'num_States')
+# flags.DEFINE_integer('nS', 4, 'num_States')
+flags.DEFINE_integer('nS', 5, 'num_States')
 flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
 # flags.DEFINE_integer('env_size', 5, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
@@ -90,9 +90,9 @@ run_mode_to_agent_prop = {
                      {"class": "nStepTabularPredictionV2"},
                  },
 }
-best_hyperparams = {"vanilla": {"alpha": 0.1, "alpha_model": 0.1, "n": 0},
-                    "nstep_v1": {"alpha": 0.1, "alpha_model": 0.2, "n": 1},
-                    "nstep_v2": {"alpha": 0.1, "alpha_model": 0.2, "n": 1}
+best_hyperparams = {"vanilla": {"alpha": 0.01, "alpha_model": 0.1, "n": 0},
+                    "nstep_v1": {"alpha": 0.01, "alpha_model": 0.05, "n": 1},
+                    "nstep_v2": {"alpha": 0.01, "alpha_model": 0.05, "n": 1}
                     }
 
 def run_episodic(agent: Agent,
@@ -220,7 +220,7 @@ def run_experiment(run_mode, run, logs):
     return rmsve
 
 def main(argv):
-    plt.figure(figsize=(8, 4))
+    fig = plt.figure(figsize=(8, 4))
     del argv  # Unused.
     color = plt.cm.winter(np.linspace(0.5, 0.9, 2))  # This returns RGBA; convert:
     hexcolor = map(lambda rgb: '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
@@ -232,16 +232,21 @@ def main(argv):
 
     if not os.path.exists(logs):
         os.makedirs(logs)
+
     checkpoint = os.path.join(logs, "linear_training_{}_{}.npy".format(FLAGS.mdp, FLAGS.obs_type))
     if os.path.exists(checkpoint):
         rmsve = np.load(checkpoint)
     else:
-        rmsve = np.zeros((len(run_mode_to_agent_prop.keys()), FLAGS.num_episodes//FLAGS.log_period))
+        rmsve = np.zeros((len(run_mode_to_agent_prop.keys()), FLAGS.num_episodes // FLAGS.log_period))
         for idx_alg, alg in enumerate(run_mode_to_agent_prop.keys()):
-            for run in tqdm(range(0, FLAGS.runs)):
-                rmsve[idx_alg] += run_experiment(alg, run, logs)
-        # take average
-        rmsve /= FLAGS.runs
+            iterim_checkpoint = os.path.join(logs, "linear_training_{}_{}_{}.npy".format(FLAGS.mdp, FLAGS.obs_type, alg))
+            if os.path.exists(iterim_checkpoint):
+                rmsve[idx_alg] = np.load(iterim_checkpoint)[0]
+            else:
+                for run in tqdm(range(0, FLAGS.runs)):
+                    rmsve[idx_alg] += run_experiment(alg, run, logs)
+                # take average
+                rmsve[idx_alg] /= FLAGS.runs
         checkpoint = os.path.join(logs, "linear_training_{}_{}.npy".format(FLAGS.mdp, FLAGS.obs_type))
         np.save(checkpoint, rmsve)
 

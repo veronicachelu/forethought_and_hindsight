@@ -15,11 +15,12 @@ style.use('ggplot')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 # flags.DEFINE_string('run_mode', 'nstep', 'what agent to run')
-# flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
-flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
-flags.DEFINE_string('env_type', 'discrete', 'discrete or continuous')
+flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
+# flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
+flags.DEFINE_string('env_type', 'continuous', 'discrete or continuous')
 flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
-flags.DEFINE_string('mdp', './mdps/maze.mdp',
+flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
+# flags.DEFINE_string('mdp', './mdps/maze.mdp',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
 flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
 FLAGS = flags.FLAGS
@@ -70,9 +71,9 @@ def plot_tensorflow_log(path, run_mode):
     tf_size_guidance = {
         'compressedHistograms': 10,
         'images': 0,
-        'scalars': 20,
+        'scalars': 200,
         'histograms': 1,
-        'tensors': 20,
+        'tensors': 200,
     }
     logs = os.path.join(os.path.join(path, "summaries"), "seed_42")
     filename = os.listdir(logs)[0]
@@ -93,9 +94,9 @@ def plot_tensorflow_log(path, run_mode):
     y = [tf.make_ndarray(m[2]) for m in msve]
 
     if run_mode == "vanilla":
-        plt.plot(x, y, label=run_mode, c="r", alpha=1, linestyle=':', marker='v')
+        plt.plot(x, y, label=run_mode, c="r", alpha=1, linestyle=':')#, marker='v')
     else:
-        plt.plot(x, y, label=run_mode, alpha=1, linestyle='-', marker='v')
+        plt.plot(x, y, label=run_mode, alpha=1, linestyle='-')#, marker='v')
 
 if __name__ == '__main__':
     app.run(main)

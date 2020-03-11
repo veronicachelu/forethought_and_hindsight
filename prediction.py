@@ -11,7 +11,7 @@ import agents
 import prediction_agents
 import utils
 
-flags.DEFINE_string('run_mode', 'nstep_v2', 'what agent to run')
+flags.DEFINE_string('run_mode', 'nstep_v1', 'what agent to run')
 flags.DEFINE_string('policy', 'optimal', 'optimal or random')
 flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 # flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
@@ -40,7 +40,7 @@ flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('num_units', 0, 'number of units per hidden layer')
 flags.DEFINE_integer('planning_iter', 10, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
-flags.DEFINE_integer('planning_depth', 16, 'Planning depth for MCTS')
+flags.DEFINE_integer('planning_depth', 1, 'Planning depth for MCTS')
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')
 flags.DEFINE_integer('batch_size', 32, 'size of batches sampled from replay')
@@ -79,21 +79,11 @@ def main(argv):
                     "tabular":
                         {"class": "VanillaTabularPrediction"},
                     },
-        "nstep_v11": {"linear":
-                       {"class": "nStepLinearPredictionV11"},
+        "nstep_v1": {"linear":
+                       {"class": "nStepLinearPredictionV1"},
                    "tabular":
-                       {"class": "nStepTabularPredictionV11"},
+                       {"class": "nStepTabularPredictionV1"},
                    },
-        "nstep_v12": {"linear":
-                         {"class": "nStepLinearPredictionV12"},
-                     "tabular":
-                         {"class": "nStepTabularPredictionV12"},
-                     },
-        "nstep_v13": {"linear":
-                          {"class": "nStepLinearPredictionV13"},
-                      "tabular":
-                          {"class": "nStepTabularPredictionV13"},
-                      },
         "nstep_v2": {"linear":
                       {"class": "nStepLinearPredictionV2"},
                   "tabular":

@@ -246,15 +246,18 @@ def main(argv):
     checkpoint_nsteps = os.path.join(logs, "nstep_training_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
     if os.path.exists(checkpoint_nsteps):
         rmsve_nsteps = np.load(checkpoint_nsteps)
-        # for i in range(n):
-        #     rmsve_nsteps[i] *= FLAGS.runs ** (n-(i+1))
     else:
         rmsve_nsteps = np.zeros((len(steps), FLAGS.num_episodes//FLAGS.log_period))
         for step_ind, step in enumerate(steps):
-            for run in tqdm(range(0, FLAGS.runs)):
-                rmsve_nsteps[step_ind] += run_experiment(FLAGS.run_mode, step, run, logs)
-            # take average
-            rmsve_nsteps[step_ind] /= FLAGS.runs
+            checkpoint_step = os.path.join(logs, "nstep_training_{}_{}_n{}.npy".format(FLAGS.mdp, FLAGS.run_mode, step))
+            if os.path.exists(checkpoint_step):
+                rmsve_nsteps[step_ind] = np.load(checkpoint_step)
+            else:
+                for run in tqdm(range(0, FLAGS.runs)):
+                    rmsve_nsteps[step_ind] += run_experiment(FLAGS.run_mode, step, run, logs)
+                # take average
+                rmsve_nsteps[step_ind] /= FLAGS.runs
+                np.save(checkpoint_step, rmsve_nsteps[step_ind])
         checkpoint_nsteps = os.path.join(logs, "nstep_training_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
         np.save(checkpoint_nsteps, rmsve_nsteps)
 
