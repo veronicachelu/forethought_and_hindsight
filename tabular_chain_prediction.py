@@ -89,7 +89,7 @@ run_mode_to_agent_prop = {
 }
 best_hyperparams = {"vanilla": {"alpha": 0.2, "alpha_model": 0.1, "n": 0},
                     "nstep_v1": {"alpha": 0.2, "alpha_model": 0.2, "n": 8},
-                    "nstep_v2": {"alpha": 0.2, "alpha_model": 0.2, "n": 8}
+                    "nstep_v2": {"alpha": 0.2, "alpha_model": 0.1, "n": 8}
                     }
 
 def run_episodic(agent: Agent,
@@ -230,11 +230,17 @@ def main(argv):
         rmsve = np.load(checkpoint)
     else:
         rmsve = np.zeros((len(run_mode_to_agent_prop.keys()), FLAGS.num_episodes//FLAGS.log_period))
+
         for idx_alg, alg in enumerate(run_mode_to_agent_prop.keys()):
-            for run in tqdm(range(0, FLAGS.runs)):
-                rmsve[idx_alg] += run_experiment(alg, run, logs)
-        # take average
-        rmsve /= FLAGS.runs
+            checkpoint_interm = os.path.join(logs, "training_{}_{}.npy".format(FLAGS.mdp, alg))
+            if os.path.exists(checkpoint_interm):
+                rmsve[idx_alg] = np.load(checkpoint_interm)
+            else:
+                for run in tqdm(range(0, FLAGS.runs)):
+                    rmsve[idx_alg] += run_experiment(alg, run, logs)
+                # take average
+                rmsve[idx_alg] /= FLAGS.runs
+                np.save(checkpoint_interm, rmsve[idx_alg])
         checkpoint = os.path.join(logs, "training_{}.npy".format(FLAGS.mdp))
         np.save(checkpoint, rmsve)
 
