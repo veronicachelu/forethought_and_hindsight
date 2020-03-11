@@ -40,7 +40,7 @@ flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('num_units', 0, 'number of units per hidden layer')
 flags.DEFINE_integer('planning_iter', 10, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
-flags.DEFINE_integer('planning_depth', 1, 'Planning depth for MCTS')
+flags.DEFINE_integer('planning_depth', 4, 'Planning depth for MCTS')
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')
 flags.DEFINE_integer('batch_size', 32, 'size of batches sampled from replay')

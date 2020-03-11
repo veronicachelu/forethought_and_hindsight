@@ -18,7 +18,7 @@ flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results'
 flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 # flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
 flags.DEFINE_string('env_type', 'continuous', 'discrete or continuous')
-flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
+flags.DEFINE_string('obs_type', 'tile', 'onehot, tabular, tile for continuous')
 flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze.mdp',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
