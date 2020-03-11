@@ -16,6 +16,15 @@ import agents
 import prediction_agents
 import utils
 from agents import Agent
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+import matplotlib.style as style
+mpl.use('Agg')
+import cycler
+style.available
+style.use('seaborn-poster') #sets the size of the charts
+style.use('ggplot')
 
 flags.DEFINE_string('policy', 'optimal', 'optimal or random')
 # flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
@@ -49,8 +58,8 @@ flags.DEFINE_integer('batch_size', 32, 'size of batches sampled from replay')
 flags.DEFINE_float('discount', 0.99, 'discounting on the agent side')
 flags.DEFINE_integer('replay_capacity', 1000, 'size of the replay buffer')
 flags.DEFINE_integer('min_replay_size', 100, 'min replay size before training.')
-flags.DEFINE_float('lr_model', 1, 'learning rate for model optimizer')
-# flags.DEFINE_float('lr_model', 1e-3, 'learning rate for model optimizer')
+# flags.DEFINE_float('lr_model', 1, 'learning rate for model optimizer')
+# flags.DEFINE_float('lr_model', 1e-2, 'learning rate for model optimizer')
 flags.DEFINE_float('epsilon', 0.1, 'fraction of exploratory random actions at the end of the decay')
 # flags.DEFINE_float('epsilon', 0.05, 'fraction of exploratory random actions at the end of the decay')
 flags.DEFINE_integer('seed', 42, 'seed for random number generation')
@@ -206,6 +215,12 @@ def run_experiment(run_mode, run, logs):
 
 def main(argv):
     del argv  # Unused.
+    color = plt.cm.winter(np.linspace(0.5, 0.9, 2))  # This returns RGBA; convert:
+    hexcolor = map(lambda rgb: '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
+                   tuple(color[:, 0:-1]))
+    color = hexcolor  # plt.cm.viridis(np.linspace(0, 1, n))
+    mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
+
     logs = os.path.join(os.path.join(FLAGS.logs, FLAGS.model_class), "chain")
 
     if not os.path.exists(logs):
@@ -225,7 +240,10 @@ def main(argv):
 
     x_axis = [ep * FLAGS.log_period for ep in np.arange(FLAGS.num_episodes//FLAGS.log_period)]
     for idx_alg, alg in enumerate(run_mode_to_agent_prop.keys()):
-        plt.plot(x_axis, rmsve[idx_alg, :], label=alg)
+        if alg == "vanilla":
+            plt.plot(x_axis, rmsve[idx_alg, :], label=alg, c="r", alpha=1, linestyle=':')
+        else:
+            plt.plot(x_axis, rmsve[idx_alg, :], label=alg)
     plt.xlabel('episodes')
     plt.ylabel('RMS error')
     # plt.ylim([0.25, 0.55])

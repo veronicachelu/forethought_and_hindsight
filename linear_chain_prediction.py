@@ -16,23 +16,33 @@ import agents
 import prediction_agents
 import utils
 from agents import Agent
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+import matplotlib.style as style
+mpl.use('Agg')
+import cycler
+style.available
+style.use('seaborn-poster') #sets the size of the charts
+style.use('ggplot')
 
 flags.DEFINE_string('policy', 'optimal', 'optimal or random')
 flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 # flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
 # flags.DEFINE_string('env_type', 'continuous', 'discrete or continuous')
 flags.DEFINE_string('env_type', 'discrete', 'discrete or continuous')
-flags.DEFINE_string('obs_type', 'dependent_features', 'onehot, tabular, tile for continuous')
-# flags.DEFINE_string('obs_type', 'spikes', 'onehot, tabular, tile for continuous')
+# flags.DEFINE_string('obs_type', 'dependent_features', 'onehot, tabular, tile for continuous')
+flags.DEFINE_string('obs_type', 'spikes', 'onehot, tabular, tile for continuous')
+# flags.DEFINE_string('obs_type', 'onehot', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'tile', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
-# flags.DEFINE_string('mdp', 'boyan_chain', '')
-flags.DEFINE_string('mdp', 'random_chain', '')
+flags.DEFINE_string('mdp', 'boyan_chain', '')
+# flags.DEFINE_string('mdp', 'random_chain', '')
 flags.DEFINE_integer('n_hidden_states', 14, 'num_states')
-# flags.DEFINE_integer('nS', 4, 'num_States')
-flags.DEFINE_integer('nS', 5, 'num_States')
+flags.DEFINE_integer('nS', 4, 'num_States')
+# flags.DEFINE_integer('nS', 5, 'num_States')
 flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
 # flags.DEFINE_integer('env_size', 5, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
@@ -80,9 +90,9 @@ run_mode_to_agent_prop = {
                      {"class": "nStepTabularPredictionV2"},
                  },
 }
-best_hyperparams = {"vanilla": {"alpha": 0.01, "alpha_model": 0.1, "n": 0},
-                    "nstep_v1": {"alpha": 0.01, "alpha_model": 0.01, "n": 1},
-                    "nstep_v2": {"alpha": 0.01, "alpha_model": 0.01, "n": 1}
+best_hyperparams = {"vanilla": {"alpha": 0.1, "alpha_model": 0.1, "n": 0},
+                    "nstep_v1": {"alpha": 0.1, "alpha_model": 0.2, "n": 1},
+                    "nstep_v2": {"alpha": 0.1, "alpha_model": 0.2, "n": 1}
                     }
 
 def run_episodic(agent: Agent,
@@ -210,8 +220,14 @@ def run_experiment(run_mode, run, logs):
     return rmsve
 
 def main(argv):
-    fig = plt.figure(figsize=(8, 4))
+    plt.figure(figsize=(8, 4))
     del argv  # Unused.
+    color = plt.cm.winter(np.linspace(0.5, 0.9, 2))  # This returns RGBA; convert:
+    hexcolor = map(lambda rgb: '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
+                   tuple(color[:, 0:-1]))
+    color = hexcolor  # plt.cm.viridis(np.linspace(0, 1, n))
+    mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
+
     logs = os.path.join(os.path.join(FLAGS.logs, FLAGS.model_class), "chain")
 
     if not os.path.exists(logs):
@@ -231,7 +247,10 @@ def main(argv):
 
     x_axis = [ep * FLAGS.log_period for ep in np.arange(FLAGS.num_episodes//FLAGS.log_period)]
     for idx_alg, alg in enumerate(run_mode_to_agent_prop.keys()):
-        plt.plot(x_axis, rmsve[idx_alg, :], label=alg)
+        if alg == "vanilla":
+            plt.plot(x_axis, rmsve[idx_alg, :], label=alg, c="r", alpha=1, linestyle=':')
+        else:
+            plt.plot(x_axis, rmsve[idx_alg, :], label=alg)
     plt.xlabel('episodes')
     plt.ylabel('RMS error')
     # plt.ylim([0.25, 0.55])
