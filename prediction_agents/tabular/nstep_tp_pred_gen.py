@@ -173,6 +173,27 @@ class nStepTpPredGen(VanillaTabularPrediction):
                 tf.summary.scalar("train/losses/{}/{}".format(summary_name, k), losses[k], step=self.total_steps)
             self.writer.flush()
 
-    def update_hyper_params(self, step, total_steps):
-        pass
+    def update_hyper_params(self, episode, total_episodes):
+        # pass
+        # self._lr_model = self._initial_lr_model / (1 + episode /
+        #                                            total_episodes * 0.96)
+        # decay_rate = 0.1
+        # self._lr_planning = self._initial_l_lr_planning / (1 + episode /
+        #                                            total_episodes * decay_rate)
+        # self._lr_planning = self._initial_lr_planning * \
+        #                      (decay_rate ** (episode / total_episodes))
+        warmup_episodes = total_episodes//3
+        flat_period = total_episodes//3
+        decay_period = total_episodes - warmup_episodes - flat_period
+        if episode > warmup_episodes:
+            steps_left = total_episodes - episode - flat_period
+            if steps_left <= 0:
+                return
+
+        # step_decay =
+        # step_decay = np.clip(step_decay, 0.,  self._lr_planning)
+            self._lr_planning = self._initial_lr_planning * (steps_left / decay_period)
+            # self._lr_model = self._initial_lr_model * (steps_left / decay_period)
+        # bonus = np.clip(bonus, 0., 1. - epsilon)
+        # return epsilon + bonus
 

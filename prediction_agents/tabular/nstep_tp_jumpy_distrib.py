@@ -25,7 +25,6 @@ class nStepTpJumpyDistrib(VanillaTabularPrediction):
         self._sequence = []
         self._should_reset_sequence = False
 
-
         def model_loss(o_params, r_params, transitions):
             o_tmn_target = transitions[0][0]
             o_t = transitions[-1][-1]
@@ -43,7 +42,7 @@ class nStepTpJumpyDistrib(VanillaTabularPrediction):
             for i, t in enumerate(transitions):
                 r_tmn_target += (self._discount ** i) * t[2]
 
-            r_error = (r_tmn_target - r_tmn)
+            r_error = r_tmn_target - r_tmn
             r_loss = np.mean(r_error ** 2)
 
             total_error = o_loss + r_loss
