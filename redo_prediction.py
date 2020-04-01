@@ -9,7 +9,7 @@ import prediction_network
 import utils
 from utils import *
 
-flags.DEFINE_string('run_mode', 'jumpy_exp', 'what agent to run')
+flags.DEFINE_string('run_mode', 'forward', 'what agent to run')
 flags.DEFINE_string('policy', 'optimal', 'optimal or random')
 # flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
@@ -23,16 +23,16 @@ flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', './mdps/simple.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze.mdp',
 # flags.DEFINE_string('mdp', 'boyan_chain',
-flags.DEFINE_string('mdp', 'random_chain',
+# flags.DEFINE_string('mdp', 'random_chain',
 # flags.DEFINE_string('mdp', './mdps/maze.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_48.mdp',
-# flags.DEFINE_string('mdp', './mdps/maze_80.mdp',
+flags.DEFINE_string('mdp', './mdps/maze_80.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_221.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_486.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_864.mdp',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
-flags.DEFINE_integer('env_size', 20, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
-# flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
+# flags.DEFINE_integer('env_size', 20, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
+flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
 # flags.DEFINE_integer('env_size', 5, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
 # flags.DEFINE_integer('n_hidden_states', 5, 'max reward')
@@ -41,8 +41,8 @@ flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 # flags.DEFINE_integer('num_episodes', 180, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_episodes', 100, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_episodes', 70, 'Number of episodes to run for.')
-flags.DEFINE_integer('num_episodes', 100, 'Number of episodes to run for.')
-flags.DEFINE_integer('num_runs', 100, 'Number of episodes to run for.')
+flags.DEFINE_integer('num_episodes', 50, 'Number of episodes to run for.')
+flags.DEFINE_integer('num_runs', 1, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_runs', 0, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_steps', 2000, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_steps', 1000, 'Number of episodes to run for.')
@@ -55,7 +55,7 @@ flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('num_units', 0, 'number of units per hidden layer')
 flags.DEFINE_integer('planning_iter', 1, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
-flags.DEFINE_integer('planning_depth', 8, 'Planning depth for MCTS')
+flags.DEFINE_integer('planning_depth', 1, 'Planning depth for MCTS')
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')
 flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
@@ -63,12 +63,12 @@ flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
 flags.DEFINE_float('discount', .95, 'discounting on the agent side')
 flags.DEFINE_integer('replay_capacity', 1000, 'size of the replay buffer')
 flags.DEFINE_integer('min_replay_size', 100, 'min replay size before training.')
-flags.DEFINE_float('lr', 2e-1, 'learning rate for q optimizer')
+flags.DEFINE_float('lr', 5e-1, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 5e-3, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 1, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 0.2, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 0.2, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_planning', 2e-1, 'learning rate for q optimizer')
+flags.DEFINE_float('lr_planning', 5e-2, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 1e-3, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr_model', 1e-2, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 0.01, 'learning rate for model optimizer')
@@ -83,9 +83,9 @@ flags.DEFINE_float('epsilon', 0.1, 'fraction of exploratory random actions at th
 flags.DEFINE_integer('seed', 42, 'seed for random number generation')
 flags.DEFINE_boolean('verbose', True, 'whether to log to std output')
 # flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
-flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
+flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
 flags.DEFINE_boolean('random_restarts', False, 'random_restarts or not.')
-flags.DEFINE_boolean('double_input_reward_model', True, 'double_input_reward_model or not.')
+flags.DEFINE_boolean('double_input_reward_model', False, 'double_input_reward_model or not.')
 
 FLAGS = flags.FLAGS
 
@@ -125,6 +125,11 @@ run_mode_to_agent_prop = {
                   "tabular":
                       {"class": "nStepTpJumpyFwBwGen"},
                   },
+        "forward": {"linear":
+                            {"class": "nStepLpForward"},
+                        "tabular":
+                            {"class": "nStepTpForward"},
+                        },
     }
 
 def get_env(nrng, logs):

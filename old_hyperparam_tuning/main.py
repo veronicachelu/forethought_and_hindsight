@@ -1,13 +1,12 @@
-import os
 from absl import app
 from absl import flags
 from jax import random as jrandom
-import network
 
-from utils import *
-import prediction_experiment
 import agents
+import prediction_experiment
 import utils
+from old_hyperparam_tuning import network
+from utils import *
 
 flags.DEFINE_string('run_mode', 'onpolicy', 'what agent to run')
 flags.DEFINE_string('model_class', 'linear', 'tabular or linear')

@@ -1,51 +1,46 @@
-import numpy as np
-
 from cycler import cycler
 
-from tqdm import tqdm
-import os
+import matplotlib.pyplot as plt
+import matplotlib.style as style
 from absl import app
 from absl import flags
+from cycler import cycler
 from jax import random as jrandom
-import network
-import prediction_network
+from tqdm import tqdm
 
-from utils import *
-import prediction_experiment
-import agents
 import prediction_agents
-import utils
+import prediction_network
 from agents import Agent
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-import matplotlib.style as style
+from utils import *
+
 mpl.use('Agg')
 import cycler
 style.available
 style.use('seaborn-poster') #sets the size of the charts
 style.use('ggplot')
 
-flags.DEFINE_string('run_mode', 'nstep_v1', 'optimal or random')
+flags.DEFINE_string('run_mode', 'nstep_v2', 'optimal or random')
 flags.DEFINE_string('policy', 'optimal', 'optimal or random')
-# flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
-flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
+flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
+# flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
 # flags.DEFINE_string('env_type', 'continuous', 'discrete or continuous')
 flags.DEFINE_string('env_type', 'discrete', 'discrete or continuous')
-# flags.DEFINE_string('obs_type', 'onehot', 'onehot, tabular, tile for continuous')
+flags.DEFINE_string('obs_type', 'onehot', 'onehot, tabular, tile for continuous')
+# flags.DEFINE_string('obs_type', 'spikes', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'tile', 'onehot, tabular, tile for continuous')
-flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
+# flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
+# flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
 # flags.DEFINE_string('mdp', 'boyan_chain', '')
 flags.DEFINE_string('mdp', 'random_chain', '')
 flags.DEFINE_integer('n_hidden_states', 14, 'num_states')
-flags.DEFINE_integer('nS', 19, 'num_States')
+# flags.DEFINE_integer('nS', 4, 'num_States')
+flags.DEFINE_integer('nS', 5, 'num_States')
 flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
 # flags.DEFINE_integer('env_size', 5, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('num_episodes', 100, 'Number of episodes to run for.')
-flags.DEFINE_integer('num_steps', 1000, 'Number of episodes to run for.')
 flags.DEFINE_integer('runs', 100, 'Number of runs for each episode.')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', -1, 'Maximum number of time steps an episode may last (default: 100).')
@@ -88,9 +83,9 @@ run_mode_to_agent_prop = {
                      {"class": "nStepTabularPredictionV2"},
                  },
 }
-best_hyperparams = {"vanilla": {"alpha": 0.2, "alpha_model": 0.1, "n": 0},
-                    "nstep_v1": {"alpha": 0.2, "alpha_model": 0.2, "n": 8},
-                    "nstep_v2": {"alpha": 0.2, "alpha_model": 0.2, "n": 8}
+best_hyperparams = {"vanilla": {"alpha": 0.01, "alpha_model": 0.1, "n": 0},
+                    "nstep_v1": {"alpha": 0.01, "alpha_model": 0.01, "n": 1},
+                    "nstep_v2": {"alpha": 0.01, "alpha_model": 0.01, "n": 1}
                     }
 
 def run_episodic(agent: Agent,
@@ -105,7 +100,7 @@ def run_episodic(agent: Agent,
         while True:
             # action = agent.policy(timestep)
             if FLAGS.mdp == "random_chain":
-                action = agent._nrng.choice([0, 1], p=agent._pi[timestep.observation])
+                action = agent._nrng.choice([0, 1], p=[0.5, 0.5])
             elif FLAGS.mdp == "boyan_chain":
                 action = 0
             new_timestep = environment.step(action)
@@ -122,7 +117,6 @@ def run_episodic(agent: Agent,
             if agent.model_based_train:
                 agent.planning_update(timestep)
 
-
             if new_timestep.last():
                 break
 
@@ -130,8 +124,9 @@ def run_episodic(agent: Agent,
             agent.total_steps += 1
 
         if episode % FLAGS.log_period == 0:
-            hat_v = agent._v_network
-            rmsve[episode//FLAGS.log_period] = np.sqrt(np.sum(np.power(hat_v - true_v, 2)) / environment._nS)
+            hat_v = agent._v_network if FLAGS.model_class == "tabular" \
+                else agent.get_values_for_all_states(environment.get_all_states())
+            rmsve[episode // FLAGS.log_period] = np.sqrt(np.sum(np.power(hat_v - true_v, 2)) / environment._nS)
 
         cumulative_reward += rewards
         agent.episode += 1
@@ -226,12 +221,11 @@ def main(argv):
     del argv  # Unused.
     logs = os.path.join(os.path.join(FLAGS.logs, FLAGS.model_class), "chain")
 
-
     steps = np.power(2, np.arange(0, n))
 
     if not os.path.exists(logs):
         os.makedirs(logs)
-    checkpoint_vanilla = os.path.join(logs, "nstep_training_{}_vanilla.npy".format(FLAGS.mdp))
+    checkpoint_vanilla = os.path.join(logs, "nstep_linear_training_{}_vanilla.npy".format(FLAGS.mdp))
     if os.path.exists(checkpoint_vanilla):
         rmsve_vanilla = np.load(checkpoint_vanilla)
     else:
@@ -240,25 +234,20 @@ def main(argv):
             rmsve_vanilla += run_experiment("vanilla", 0, run, logs)
         # take average
         rmsve_vanilla /= FLAGS.runs
-        checkpoint_vanilla = os.path.join(logs, "nstep_training_{}_vanilla.npy".format(FLAGS.mdp))
+        checkpoint_vanilla = os.path.join(logs, "nstep_linear_training_{}_vanilla.npy".format(FLAGS.mdp))
         np.save(checkpoint_vanilla, rmsve_vanilla)
 
-    checkpoint_nsteps = os.path.join(logs, "nstep_training_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
+    checkpoint_nsteps = os.path.join(logs, "nstep_linear_training_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
     if os.path.exists(checkpoint_nsteps):
         rmsve_nsteps = np.load(checkpoint_nsteps)
     else:
         rmsve_nsteps = np.zeros((len(steps), FLAGS.num_episodes//FLAGS.log_period))
         for step_ind, step in enumerate(steps):
-            checkpoint_step = os.path.join(logs, "nstep_training_{}_{}_n{}.npy".format(FLAGS.mdp, FLAGS.run_mode, step))
-            if os.path.exists(checkpoint_step):
-                rmsve_nsteps[step_ind] = np.load(checkpoint_step)
-            else:
-                for run in tqdm(range(0, FLAGS.runs)):
-                    rmsve_nsteps[step_ind] += run_experiment(FLAGS.run_mode, step, run, logs)
-                # take average
-                rmsve_nsteps[step_ind] /= FLAGS.runs
-                np.save(checkpoint_step, rmsve_nsteps[step_ind])
-        checkpoint_nsteps = os.path.join(logs, "nstep_training_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
+            for run in tqdm(range(0, FLAGS.runs)):
+                rmsve_nsteps[step_ind] += run_experiment(FLAGS.run_mode, step, run, logs)
+            # take average
+            rmsve_nsteps[step_ind] /= FLAGS.runs
+        checkpoint_nsteps = os.path.join(logs, "nstep_linear_training_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
         np.save(checkpoint_nsteps, rmsve_nsteps)
 
     x_axis = [ep * FLAGS.log_period for ep in np.arange(FLAGS.num_episodes // FLAGS.log_period)]
@@ -275,8 +264,8 @@ def main(argv):
     # plt.ylim([0.25, 0.55])
     plt.legend()
 
-    # plt.savefig(os.path.join(logs, 'nstep_tabular_{}_{}_log.png'.format(FLAGS.mdp, FLAGS.run_mode)))
-    plt.savefig(os.path.join(logs, 'nstep_tabular_{}_{}.png'.format(FLAGS.mdp, FLAGS.run_mode)))
+    # plt.savefig(os.path.join(logs, 'nstep_linear_tabular_{}_{}_log.png'.format(FLAGS.mdp, FLAGS.run_mode)))
+    plt.savefig(os.path.join(logs, 'nstep_linear_tabular_{}_{}.png'.format(FLAGS.mdp, FLAGS.run_mode)))
     plt.close()
 
 if __name__ == '__main__':

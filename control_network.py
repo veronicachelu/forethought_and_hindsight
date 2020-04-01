@@ -10,16 +10,15 @@ def Reshape(newshape):
   apply_fun = lambda params, inputs, **kwargs: jnp.reshape(inputs, newshape)
   return init_fun, apply_fun
 
-def get_prediction_v_network(num_hidden_layers: int,
+def get_control_v_network(num_hidden_layers: int,
                   num_units: int,
                   nA: int,
                   rng: List,
                   input_dim: Tuple,
                   model_class="tabular"):
     if model_class == "tabular":
-        return np.zeros(shape=input_dim), None
+        return np.zeros(shape=input_dim + (nA,)), None
     else:
-        # layers = [stax.Flatten]
         layers = []
         for _ in range(num_hidden_layers):
             layers.append(stax.Dense(num_units))
@@ -27,11 +26,11 @@ def get_prediction_v_network(num_hidden_layers: int,
         layers.append(stax.Dense(1))
         layers.append(Reshape((-1)))
 
-        v_network_init, v_network = stax.serial(*layers)
+        q_network_init, q_network = stax.serial(*layers)
 
-        _, v_network_params = v_network_init(rng, (-1,) + input_dim)
+        _, q_network_params = q_network_init(rng, (-1,) + input_dim + (nA, ))
 
-        return v_network, v_network_params        # layers = [stax.Flatten]
+        return q_network, q_network_params        # layers = [stax.Flatten]
 
 
 def get_prediction_model_network(num_hidden_layers: int,

@@ -23,7 +23,7 @@ def run_episodic(agent: Agent,
             # Run an episode.
             rewards = 0
             timestep = environment.reset()
-            agent.update_hyper_params(episode, num_episodes)
+            # agent.update_hyper_params(episode, num_episodes)
             for t in range(max_len):
 
                 action = agent.policy(timestep)
@@ -60,6 +60,11 @@ def run_episodic(agent: Agent,
             if agent.episode % log_period == 0:
                 agent.save_model()
 
+                # plot_v(env=environment,
+                #        values=environment.reshape_v(agent._v_network),
+                #        logs=agent._images_dir,
+                #        true_v=mdp_solver.get_optimal_v(),
+                #        filename="v_{}.png".format(agent.episode))
                 hat_v = agent._v_network if model_class == "tabular" \
                     else agent.get_values_for_all_states(environment.get_all_states())
                 plot_v(env=environment,
@@ -77,9 +82,9 @@ def run_episodic(agent: Agent,
                                                          hat_v),
                                   step=agent.episode)
 
-                tf.summary.scalar("train/rewards", np.mean(rewards), step=episode)
-                tf.summary.scalar("train/num_steps", np.mean(t), step=episode)
-                tf.summary.scalar("train/cumulative_reward", cumulative_reward, step=episode)
+                tf.summary.scalar("train/rewards", np.mean(rewards), step=agent.episode)
+                tf.summary.scalar("train/num_steps", np.mean(t), step=agent.episode)
+                tf.summary.scalar("train/cumulative_reward", cumulative_reward, step=agent.episode)
                 agent.writer.flush()
 
                 # test(agent, environment, agent.episode, max_len=max_len, num_episodes=num_test_episodes)
@@ -100,7 +105,7 @@ def run(agent: Agent,
     timestep = environment.reset()
     with agent.writer.as_default():
         for step in np.arange(start=agent.total_steps, stop=num_steps):
-            agent.update_hyper_params(step, num_steps)
+            # agent.update_hyper_params(step, num_steps)
             action = agent.policy(timestep)
             new_timestep = environment.step(action)
 
@@ -118,9 +123,9 @@ def run(agent: Agent,
 
             if agent.total_steps % log_period == 0:
                 agent.save_model()
-                print("Plotting v for episode {}, total_steps {}".format(agent.episode,
-
-                                                                            agent.total_steps))
+                # print("Plotting v for episode {}, total_steps {}".format(agent.episode,
+                #
+                #                                                             agent.total_steps))
                 hat_v = agent._v_network if model_class == "tabular" \
                     else agent.get_values_for_all_states(environment.get_all_states())
                 plot_v(env=environment,
@@ -183,3 +188,66 @@ def test(agent: Agent,
     tf.summary.scalar("test/cumulative_reward", cumulative_reward, step=episode)
     tf.summary.scalar("test/reward", total_reward, step=episode)
     agent.writer.flush()
+
+
+def run_chain(agent: Agent,
+        environment: dm_env.Environment,
+        mdp,
+        model_class,
+        seed: int,
+        # num_runs: int,
+        num_episodes: int,
+        log_period: 1,
+        # total_rmsve
+              ):
+
+    cumulative_reward = 0
+    rmsve = np.zeros((num_episodes//log_period))
+    with agent.writer.as_default():
+        for episode in np.arange(start=agent.episode, stop=num_episodes):
+            rewards = 0
+            timestep = environment.reset()
+            timesteps = 0
+            agent.update_hyper_params(episode, num_episodes)
+            while True:
+                # action = agent.policy(timestep)
+                if mdp == "random_chain":
+                    action = agent._nrng.choice([0, 1], p=[0.5, 0.5])
+                elif mdp == "boyan_chain":
+                    action = 0
+                new_timestep = environment.step(action)
+
+                if agent.model_based_train():
+                    agent.save_transition(timestep, action, new_timestep)
+                    agent.model_update(timestep, action, new_timestep)
+
+                if agent.model_free_train():
+                    agent.value_update(timestep, action, new_timestep)
+
+                rewards += new_timestep.reward
+
+                if agent.model_based_train:
+                    agent.planning_update(timestep)
+
+                if new_timestep.last():
+                    break
+
+                timestep = new_timestep
+                agent.total_steps += 1
+                timesteps += 1
+
+            if agent.episode % log_period == 0:
+                hat_v = agent._v_network if model_class == "tabular" \
+                    else agent.get_values_for_all_states(environment.get_all_states())
+
+                rmsve[episode//log_period] = np.sqrt(np.sum(np.power(hat_v - environment._true_v, 2)) / environment._nS)
+                # total_rmsve[episode // log_period] += (1 / num_runs) * rmsve[episode // log_period]
+                tf.summary.scalar("train/rmsve", rmsve[episode // log_period], step=agent.episode)
+                tf.summary.scalar("train/steps", timesteps, step=agent.episode)
+                # tf.summary.scalar("train/total_rmsve_{}".format(seed), total_rmsve[episode // log_period], step=agent.episode)
+                agent.writer.flush()
+
+            cumulative_reward += rewards
+            agent.episode += 1
+
+    # return total_rmsve

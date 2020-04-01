@@ -1,4 +1,5 @@
 import numpy as np
+import os
 
 class MdpSolver:
     def __init__(self, env,
@@ -13,11 +14,28 @@ class MdpSolver:
         self._eta_pi = None
         self._theta = 1e-8
         self._pi = np.full((self._nS, self._nA), 1 / self._nA)
+        self._assigned_pi = False
+
+        mdp_root_path = os.path.split(os.path.split(env._path)[0])[0]
+        baseline = os.path.basename(env._path)
+        mdp_name = os.path.splitext(baseline)[0]
+        policy_dir = os.path.join(mdp_root_path, "policies")
+        if not os.path.exists(policy_dir):
+            os.makedirs(policy_dir)
+        self.policy_path = os.path.join(policy_dir, "{}_{}.npy".format(mdp_name,
+                                                                       "stochastic"
+                                                                       if env._stochastic
+                                                                       else "deterministic"))
+
+        if os.path.exists(self.policy_path):
+            self._pi = np.load(self.policy_path, allow_pickle=True)#[()]
+            self._assigned_pi = True
+            self._solve_mdp()
 
     def _solve_mdp(self):
         ppi = np.einsum('kij, ik->ij', self._p_absorbing, self._pi)
         rpi = np.einsum('kij, kij, ik->i', self._r, self._p_absorbing, self._pi)
-        self._v = np.linalg.solve(np.eye(self._nS) - self._discount * ppi, rpi)
+        self._v = np.linalg.solve(np.eye(self._r.shape[1]) - self._discount * ppi, rpi)
 
     def _improve_policy(self):
         done = True
@@ -58,8 +76,10 @@ class MdpSolver:
         return self._eta_pi
 
     def get_optimal_policy(self):
-        if self._pi is None:
+        if self._pi is None or self._assigned_pi is False:
             self._policy_iteration()
+            np.save(self.policy_path, self._pi)
+            self._assigned_pi = True
 
         return self._pi
 

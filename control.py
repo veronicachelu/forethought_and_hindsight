@@ -3,13 +3,12 @@ from absl import flags
 from jax import random as jrandom
 from tqdm import tqdm
 
-import prediction_agents
-import prediction_experiment
-import prediction_network
+import control_agents
+import control_experiment
 import utils
 from utils import *
 
-flags.DEFINE_string('run_mode', 'jumpy_exp', 'what agent to run')
+flags.DEFINE_string('run_mode', 'vanilla', 'what agent to run')
 flags.DEFINE_string('policy', 'optimal', 'optimal or random')
 # flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
@@ -23,16 +22,16 @@ flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', './mdps/simple.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze.mdp',
 # flags.DEFINE_string('mdp', 'boyan_chain',
-flags.DEFINE_string('mdp', 'random_chain',
+# flags.DEFINE_string('mdp', 'random_chain',
 # flags.DEFINE_string('mdp', './mdps/maze.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_48.mdp',
-# flags.DEFINE_string('mdp', './mdps/maze_80.mdp',
+flags.DEFINE_string('mdp', './mdps/maze_80.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_221.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_486.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_864.mdp',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
-flags.DEFINE_integer('env_size', 20, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
-# flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
+# flags.DEFINE_integer('env_size', 20, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
+flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
 # flags.DEFINE_integer('env_size', 5, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
 # flags.DEFINE_integer('n_hidden_states', 5, 'max reward')
@@ -41,12 +40,12 @@ flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 # flags.DEFINE_integer('num_episodes', 180, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_episodes', 100, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_episodes', 70, 'Number of episodes to run for.')
-flags.DEFINE_integer('num_episodes', 100, 'Number of episodes to run for.')
-flags.DEFINE_integer('num_runs', 100, 'Number of episodes to run for.')
+flags.DEFINE_integer('num_episodes', 50, 'Number of episodes to run for.')
+flags.DEFINE_integer('num_runs', 1, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_runs', 0, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_steps', 2000, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_steps', 1000, 'Number of episodes to run for.')
-flags.DEFINE_integer('num_steps', 300, 'Number of episodes to run for.')
+flags.DEFINE_integer('num_steps', 500, 'Number of episodes to run for.')
 flags.DEFINE_integer('num_test_episodes', 100, 'Number of test episodes to run for.')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', 100, 'Maximum number of time steps an episode may last (default: 100).')
@@ -55,7 +54,7 @@ flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('num_units', 0, 'number of units per hidden layer')
 flags.DEFINE_integer('planning_iter', 1, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
-flags.DEFINE_integer('planning_depth', 8, 'Planning depth for MCTS')
+flags.DEFINE_integer('planning_depth', 0, 'Planning depth for MCTS')
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')
 flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
@@ -63,18 +62,18 @@ flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
 flags.DEFINE_float('discount', .95, 'discounting on the agent side')
 flags.DEFINE_integer('replay_capacity', 1000, 'size of the replay buffer')
 flags.DEFINE_integer('min_replay_size', 100, 'min replay size before training.')
-flags.DEFINE_float('lr', 2e-1, 'learning rate for q optimizer')
+flags.DEFINE_float('lr', 5e-1, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 5e-3, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 1, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 0.2, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 0.2, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_planning', 2e-1, 'learning rate for q optimizer')
+flags.DEFINE_float('lr_planning', 5e-1, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 1e-3, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr_model', 1e-2, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 0.01, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 1e-3, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 1e-3, 'learning rate for model optimizer')
-flags.DEFINE_float('lr_model',  5e-1, 'learning rate for model optimizer')
+flags.DEFINE_float('lr_model',  1e-1, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 0.1, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 5e-4, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 1e-3, 'learning rate for model optimizer')
@@ -82,48 +81,42 @@ flags.DEFINE_float('epsilon', 0.1, 'fraction of exploratory random actions at th
 # flags.DEFINE_float('epsilon', 0.05, 'fraction of exploratory random actions at the end of the decay')
 flags.DEFINE_integer('seed', 42, 'seed for random number generation')
 flags.DEFINE_boolean('verbose', True, 'whether to log to std output')
-# flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
-flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
+flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
+# flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
 flags.DEFINE_boolean('random_restarts', False, 'random_restarts or not.')
-flags.DEFINE_boolean('double_input_reward_model', True, 'double_input_reward_model or not.')
 
 FLAGS = flags.FLAGS
 
 run_mode_to_agent_prop = {
         "vanilla": {"linear":
-                        {"class": "VanillaLinearPrediction"},
+                        {"class": "VanillaLinearControl"},
                     "tabular":
-                        {"class": "VanillaTabularPrediction"},
+                        {"class": "VanillaTabularControl"},
                     },
         "pred_exp": {"linear":
-                       {"class": "nStepLpPredExp"},
+                       {"class": "nStepLcPredExp"},
                    "tabular":
-                       {"class": "nStepTpPredDistrib"},
+                       {"class": "nStepTcPredDistrib"},
                    },
         "pred_gen": {"linear":
-                       {"class": "nStepLpPredGen"},
+                       {"class": "nStepLcPredGen"},
                    "tabular":
-                       {"class": "nStepTpPredGen"},
+                       {"class": "nStepTcPredGen"},
                    },
         "jumpy_exp": {"linear":
-                      {"class": "nStepLpJumpyExp"},
+                      {"class": "nStepLcJumpyExp"},
                   "tabular":
-                      {"class": "nStepTpJumpyDistrib"},
+                      {"class": "nStepTcJumpyDistrib"},
                   },
         "jumpy_gen": {"linear":
-                      {"class": "nStepLpJumpyGen"},
+                      {"class": "nStepLcJumpyGen"},
                   "tabular":
-                      {"class": "nStepTpJumpyGen"},
+                      {"class": "nStepTcJumpyGen"},
                   },
-        "jumpy_fw_bw_exp": {"linear":
-                      {"class": "nStepLpJumpyFwBwExp"},
+        "jumpy_fwbw_gen": {"linear":
+                      {"class": "nStepLcJumpyFwBwGen"},
                   "tabular":
-                      {"class": "nStepTpJumpyFwBwDistrib"},
-                  },
-        "jumpy_fw_bw_gen": {"linear":
-                      {"class": "nStepLpJumpyFwBwGen"},
-                  "tabular":
-                      {"class": "nStepTpJumpyFwBwGen"},
+                      {"class": "nStepTcJumpyFwBwGen"},
                   },
     }
 
@@ -177,31 +170,30 @@ def get_env(nrng, logs):
 def get_agent(env, seed, nrng, nA, input_dim, policy, logs):
     rng = jrandom.PRNGKey(seed=seed)
     rng_q, rng_model, rng_agent = jrandom.split(rng, 3)
-    v_network, v_network_params = prediction_network.get_prediction_v_network(num_hidden_layers=FLAGS.num_hidden_layers,
+    q_network, q_network_params = prediction_network.get_control_v_network(num_hidden_layers=FLAGS.num_hidden_layers,
                                                                               num_units=FLAGS.num_units,
                                                                               nA=nA,
                                                                               input_dim=input_dim,
                                                                               rng=rng_q,
                                                                               model_class=FLAGS.model_class)
-    model_network, model_network_params = prediction_network.get_prediction_model_network(
+    model_network, model_network_params = prediction_network.get_control_model_network(
         num_hidden_layers=FLAGS.num_hidden_layers,
         num_units=FLAGS.num_units,
         nA=nA,
         input_dim=input_dim,
         rng=rng_model,
-        model_class=FLAGS.model_class,
-        double_input_reward_model=FLAGS.double_input_reward_model)
+        model_class=FLAGS.model_class)
 
     agent_prop = run_mode_to_agent_prop[FLAGS.run_mode]
     run_mode = FLAGS.run_mode
-    agent_class = getattr(prediction_agents, agent_prop[FLAGS.model_class]["class"])
+    agent_class = getattr(control_agents, agent_prop[FLAGS.model_class]["class"])
 
     agent = agent_class(
         run_mode=run_mode,
         policy=policy,
         action_spec=env.action_spec(),
-        v_network=v_network,
-        v_parameters=v_network_params,
+        q_network=q_network,
+        q_parameters=q_network_params,
         model_network=model_network,
         model_parameters=model_network_params,
         batch_size=FLAGS.batch_size,
@@ -224,7 +216,6 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, logs):
         max_len=FLAGS.max_len,
         log_period=FLAGS.log_period,
         input_dim=input_dim,
-        double_input_reward_model=FLAGS.double_input_reward_model
     )
     return agent
 
@@ -250,34 +241,23 @@ def main(argv):
         os.makedirs(logs)
 
     if FLAGS.mdp == "random_chain" or FLAGS.mdp == "boyan_chain":
-        # checkpoint = os.path.join(logs,
-        #                           "total_rmsve_{}_{}_{}_{}.npy".format(FLAGS.mdp,
-        #                                                                FLAGS.obs_type,
-        #                                                                FLAGS.run_mode,
-        #                                                                FLAGS.planning_depth))
-        # if os.path.exists(checkpoint):
-        #     total_rmsve = np.load(checkpoint)
-        # else:
         for seed in tqdm(range(0, FLAGS.num_runs)):
-            # rmsve = np.zeros((FLAGS.num_episodes // FLAGS.log_period))
             env, agent, _ = run_experiment(seed, logs)
 
-            prediction_experiment.run_chain(
+            control_experiment.run_chain(
                 agent=agent,
                 mdp=FLAGS.mdp,
                 model_class=FLAGS.model_class,
                 seed=seed,
-                # num_runs=FLAGS.num_runs,
                 environment=env,
                 num_episodes=FLAGS.num_episodes,
-                # total_rmsve=total_rmsve,
                 log_period=FLAGS.log_period,
             )
     else:
         for seed in tqdm(range(0, FLAGS.num_runs)):
             env, agent, mdp_solver = run_experiment(seed, logs)
             if FLAGS.max_len == -1:
-                prediction_experiment.run(
+                control_experiment.run(
                     agent=agent,
                     environment=env,
                     mdp_solver=mdp_solver,
@@ -287,7 +267,7 @@ def main(argv):
                     verbose=FLAGS.verbose
                 )
             else:
-                prediction_experiment.run_episodic(
+                control_experiment.run_episodic(
                     agent=agent,
                     environment=env,
                     mdp_solver=mdp_solver,

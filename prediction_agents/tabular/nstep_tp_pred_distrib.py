@@ -15,113 +15,32 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class nStepTabularPredictionV1(VanillaTabularPrediction):
+class nStepTpPredDistrib(VanillaTabularPrediction):
     def __init__(
             self,
             **kwargs
     ):
-        super(nStepTabularPredictionV1, self).__init__(**kwargs)
+        super(nStepTpPredDistrib, self).__init__(**kwargs)
 
         self._sequence = []
         self._should_reset_sequence = False
 
-        def softmax(x):
-            """Compute softmax values for each sets of scores in x."""
-            e_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
-            return e_x / np.sum(e_x, axis=-1, keepdims=True) + 1e-8
-
-        self._softmax = softmax
-
-        def sigmoid(x):
-            """Compute sigmoid values for each sets of scores in x."""
-            "Numerically stable sigmoid function."
-            if x >= 0:
-                z = np.exp(-x)
-                return 1 / (1 + z)
-            else:
-                # if x is less than zero then z will be small, denom can't be
-                # zero because it's 1+z.
-                z = np.exp(x)
-                return z / (1 + z)
-
-        self._sigmoid = sigmoid
-
-        def model_loss(o_params, r_params, d_params, transitions):
-            o_tmn_target = transitions[0][0]
+        def model_loss(o_params, transitions):
+            o_tmn_target = np.zeros_like(np.eye(np.prod(self._input_dim))[transitions[-1][-1]])
             o_t = transitions[-1][-1]
             for i, t in enumerate(np.flip(transitions, axis=0)):
-                if t[3] == 0:
-                    o_tmn_target = transitions[i][0]
-                    break
+                o_tmn_target += (self._discount ** (i + 1)) * \
+                                np.eye(np.prod(self._input_dim))[int(t[0])]
             o_tmn = o_params[o_t]
-            o_error = np.eye(np.prod(self._input_dim))[o_tmn_target] - o_tmn
+            o_target = o_tmn_target - o_tmn
+            o_error = o_target - o_tmn
             o_loss = np.mean(o_error ** 2)
 
-            r_tmn = r_params[o_tmn_target]
-            r_tmn_target = 0
-            for i, t in enumerate(transitions):
-                r_tmn_target += (self._discount ** i) * t[2]
-                if t[3] == 0:
-                    break
+            return o_loss, o_error
 
-            r_error = r_tmn_target - r_tmn
-            r_loss = np.mean(r_error ** 2)
-
-            d_tmn_logit = d_params[o_tmn_target]
-            d_tmn_target = 1
-            for i, t in enumerate(transitions):
-                d_tmn_target *= self._discount * t[3]
-                # if t[3] == 0:
-                #     break
-            d_tmn_prob = sigmoid(d_tmn_logit)
-            # d_error = - 10 * d_tmn_prob * (1 - d_tmn_prob)
-            d_error = - (d_tmn_prob - d_tmn_target)
-            d_loss = -(np.maximum(d_tmn_logit, 0) - d_tmn_logit * d_tmn_target + np.log(1 + np.exp(-np.abs(d_tmn_logit))))
-            # d_error = d_tmn_target - d_tmn
-            # d_loss = np.mean(d_error ** 2)
-
-            # d_tmn_logits = d_params[o_tmn_target]
-            # d_tmn_target = np.all([bool(t[3]) for t in transitions])
-            # d_tmn_probs = softmax(d_tmn_logits)
-            # d_tmn_target = np.array(d_tmn_target, dtype=np.int32)
-            # # nll = np.take_along_axis(d_tmn_logits, np.expand_dims(d_tmn_target, axis=-1), axis=1)
-            # nll = d_tmn_logits[d_tmn_target]
-            # # d_error = - np.mean(nll)
-            # d_error = - nll
-            # # d_tmn_probs[np.arange(len(d_tmn_probs)), d_tmn_target] -= 1
-            # d_tmn_probs[d_tmn_target] -= 1
-            # # d_tmn_probs /= len(d_tmn_probs)
-            # d_tmn_probs = -d_tmn_probs
-
-            total_error = o_loss + r_loss + d_loss
-            return (total_error, o_loss, r_loss, d_loss), (o_error, r_error, d_error)
-
-        # This function computes dL/dTheta
         self._model_loss_grad = model_loss
         self._model_opt_update = lambda gradients, params:\
             [param + self._lr_model * grad for grad, param in zip(gradients, params)]
-
-        def v_planning_loss(v_params, o_params, r_params, d_params, o):
-            o_tmn = o_params[o]
-            td_errors = []
-            losses = []
-
-            divisior = np.sum(o_tmn, axis=-1, keepdims=True)
-            o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0))
-            for prev_o_tmn in range(np.prod(self._input_dim)):
-                v_tmmn = v_params[prev_o_tmn]
-                r_tmn = r_params[prev_o_tmn]
-                d_tmn = self._sigmoid(d_params[prev_o_tmn])
-
-                td_error = (r_tmn + d_tmn * v_params[o] - v_tmmn)
-
-                td_errors.append(o_tmn[:, prev_o_tmn] * td_error)
-                loss = td_error ** 2
-                losses.append(o_tmn[:, prev_o_tmn] * loss)
-
-            return losses, td_errors
-
-        self._v_planning_loss_grad = v_planning_loss
 
     def model_update(
             self,
@@ -134,22 +53,13 @@ class nStepTabularPredictionV1(VanillaTabularPrediction):
         if len(self._sequence) >= self._n:
             o_tmn = self._sequence[0][0]
             o_t = self._sequence[-1][-1]
-            losses, gradients = self._model_loss_grad(self._o_network, self._r_network, self._d_network, self._sequence)
-            self._o_network[o_t], self._r_network[o_tmn], self._d_network[o_tmn] = \
-                self._model_opt_update(gradients, [self._o_network[o_t],
-                                                   self._r_network[o_tmn],
-                                                   self._d_network[o_tmn]])
-            total_loss, o_loss, r_loss, d_loss = losses
-            o_grad, r_grad, d_grad = gradients
-            o_grad = np.linalg.norm(np.asarray(o_grad), ord=2)
+            losses, gradients = self._model_loss_grad(self._o_network, self._sequence)
+            self._o_network[o_t] = \
+                self._model_opt_update(gradients, self._o_network[o_t])
+            o_grad = np.linalg.norm(np.asarray(gradients), ord=2)
             losses_and_grads = {"losses": {
-                "loss": total_loss,
-                "o_loss": o_loss,
-                "r_loss": r_loss,
-                "d_loss": d_loss,
-                "o_grad": o_grad,
-                "r_grad": r_grad,
-                "d_grad": d_grad
+                "loss": losses,
+                "o_loss": losses,
             },
             }
             self._log_summaries(losses_and_grads, "model")
@@ -192,8 +102,7 @@ class nStepTabularPredictionV1(VanillaTabularPrediction):
         divisior = np.sum(o_tmnm1, axis=-1, keepdims=True)
         o_tmnm1 = np.divide(o_tmnm1, divisior, out=np.zeros_like(o_tmnm1), where=np.all(divisior != 0))
         for prev_o_tmn in range(np.prod(self._input_dim)):
-            self._v_network[[prev_o_tmn]] = self._v_opt_update(gradient *
-                                                             (self._discount ** self._n) *
+            self._v_network[[prev_o_tmn]] = self._v_planning_opt_update(gradient *
                                                              o_tmnm1[:, prev_o_tmn],
                                                              self._v_network[[prev_o_tmn]])
         losses_and_grads = {"losses": {"loss_v": np.array(loss)},
@@ -207,10 +116,7 @@ class nStepTabularPredictionV1(VanillaTabularPrediction):
             self.episode = to_load["episode"]
             self.total_steps = to_load["total_steps"]
             self._v_network = to_load["v_parameters"]
-            self._replay = to_load["replay"]
             self._o_network = to_load["o_parameters"]
-            self._r_network = to_load["r_parameters"]
-            self._d_network = to_load["d_parameters"]
             print("Restored from {}".format(checkpoint))
         else:
             print("Initializing from scratch.")
@@ -221,10 +127,7 @@ class nStepTabularPredictionV1(VanillaTabularPrediction):
             "episode": self.episode,
             "total_steps": self.total_steps,
             "v_parameters": self._v_network,
-            "replay": self._replay,
             "o_parameters": self._o_network,
-            "r_parameters": self._r_network,
-            "d_parameters": self._d_network,
         }
         np.save(checkpoint, to_save)
         print("Saved checkpoint for episode {}, total_steps {}: {}".format(self.episode,
@@ -243,10 +146,6 @@ class nStepTabularPredictionV1(VanillaTabularPrediction):
                                new_timestep.observation])
         if new_timestep.discount == 0:
             self._should_reset_sequence = True
-
-        # self._replay.add([
-        #     timestep.observation,
-        # ])
 
     def _log_summaries(self, losses_and_grads, summary_name):
         losses = losses_and_grads["losses"]

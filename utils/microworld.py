@@ -30,6 +30,7 @@ class MicroWorld(dm_env.Environment):
         self._sX, self._sY = 0, 0
         self._g = []
 
+        self._path = path
         self._read_file(path)
         self._parse_string()
         self._stochastic = stochastic
@@ -121,51 +122,39 @@ class MicroWorld(dm_env.Environment):
         nX = self._cX
         nY = self._cY
 
-        self._possible_next_states = []
-        if self._cX > 1 and self._mdp[self._cX - 1][self._cY] != -1:
-            self._possible_next_states.append((self._cX - 1, self._cY))
-        else:
-            self._possible_next_states.append((self._cX, self._cY))
-        if self._cY < self._width - 2 and self._mdp[self._cX][self._cY + 1] != -1:
-            self._possible_next_states.append((self._cX, self._cY + 1))
-        else:
-            self._possible_next_states.append((self._cX, self._cY))
-        if self._cX < self._height - 2 and self._mdp[self._cX + 1][self._cY] != -1:
-            self._possible_next_states.append((self._cX + 1, self._cY))
-        else:
-            self._possible_next_states.append((self._cX, self._cY))
-        if self._cY > 1 and self._mdp[self._cX][self._cY - 1] != -1:
-            self._possible_next_states.append((self._cX, self._cY - 1))
-        else:
-            self._possible_next_states.append((self._cX, self._cY))
+        DIR_TO_VEC = [
+            # up
+            np.array((-1, 0)),
+            # right
+            np.array((0, 1)),
+            # down
+            np.array((1, 0)),
+            # left
+            np.array((0, -1)),
+        ]
+        self._possible_next_states = [np.add(np.array([self._cX, self._cY]), dir) for dir in DIR_TO_VEC]
+        self._possible_next_states = [c if (np.all(c >= 0) and
+                                            (c[0] < self._height and
+                                             c[1] < self._width) and
+                                            self._mdp[c[0], c[1]] != -1)
+                                      else np.array([self._cX, self._cY])
+                                      for c in self._possible_next_states]
 
-        if self._mdp[self._cX][self._cY] != -1:
-            if action == Actions.up and self._cX > 1:
-                nX = self._cX - 1
-                nY = self._cY
-            elif action == Actions.right and self._cY < self._width - 2:
-                nX = self._cX
-                nY = self._cY + 1
-            elif action == Actions.down and self._cX < self._height - 2:
-                nX = self._cX + 1
-                nY = self._cY
-            elif action == Actions.left and self._cY > 1:
-                nX = self._cX
-                nY = self._cY - 1
+        next_state = np.add(np.array([self._cX, self._cY]), DIR_TO_VEC[action])
+        next_state = next_state if (np.all(next_state >= 0) and
+                                            (next_state[0] < self._height and
+                                             next_state[1] < self._width) and
+                                            self._mdp[next_state[0], next_state[1]] != -1) else np.array([self._cX, self._cY])
 
         if self._stochastic:
-            slip_prob = [self.__slip_prob, 1 - self.__slip_prob]
+            slip_prob = [self._slip_prob, 1 - self._slip_prob]
             random_move = self._rng.choice(a=np.arange(4),
                              p=[1/4] * 4)
-            next_states = [self._possible_next_states[random_move], (nX, nY)]
+            next_states = [self._possible_next_states[random_move], next_state]
             next_state = self._rng.choice([0, 1], p=slip_prob)
             next_state = next_states[next_state]
-        else:
-            next_state = (nX, nY)
-        if self._mdp[next_state[0]][next_state[1]] != -1:
-            return next_state
-        else:
-            return self._cX, self._cY
+
+        return next_state[0], next_state[1]
 
     def reset(self):
         """Returns the first `TimeStep` of a new episode."""
@@ -226,9 +215,9 @@ class MicroWorld(dm_env.Environment):
 
 
     def _fill_P_R(self):
-        self._P = np.zeros((self._nA, self._nS, self._nS), dtype=np.int)
-        self._P_absorbing = np.zeros((self._nA, self._nS, self._nS), dtype=np.int)
-        self._R = np.zeros((self._nA, self._nS, self._nS), dtype=np.int)
+        self._P = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
+        self._P_absorbing = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
+        self._R = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
         self._index_matrix = np.zeros((self._height, self._width), dtype=np.int)
 
         for i in range(self._height):
@@ -258,25 +247,34 @@ class MicroWorld(dm_env.Environment):
                                     slip_prob = [self._slip_prob, 1 - self._slip_prob]
                                 else:
                                     slip_prob = [0, 1]
+                                # prob of transitioning to the next state
                                 self._P[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = slip_prob[1]
                                 self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = slip_prob[1]
+
+                                # reward incurred if transitioning to the next state
                                 self._R[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = \
                                     self._max_reward if (fwd_i, fwd_j) in self._g else 0
+
+                                # prob of slipping and staying in the current state
                                 self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = slip_prob[0]
                                 self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = slip_prob[0]
+
+                                # reward incurred in the current state
                                 self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
                                     self._max_reward if (i, j) in self._g else 0
                             else:
+                                # automatically staying in the current state because you bumped into the edge of the world
                                 self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
                                 self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
                                 self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
                                     self._max_reward if (i, j) in self._g else 0
                         else:
+                            # the modified ergodic MDP resets to the starting state with probability 1 if at the goal
                             self._P[k][self._index_matrix[i][j]][self._index_matrix[self._sX][self._sY]] = 1
+                            # the original absorbing MDP stays at the goal forever
                             self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
+                            # reward upon transitioning at the goal forever, or reseting to the starting state is 0
                             self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 0
-                            # \
-                            #     self._max_reward if (i, j) in self._g else 0
 
 
     def _get_dynamics(self):

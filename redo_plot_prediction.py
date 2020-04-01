@@ -17,13 +17,13 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_string('plot_filename', "tp_nstep_jumpy_exp_3", 'where to save results')
+flags.DEFINE_string('plot_filename', "tp_nstep_forward", 'where to save results')
 flags.DEFINE_bool('nstep', True, 'n-step plot or comparison plt')
 # flags.DEFINE_bool('nstep', False, 'n-step plot or comparison plt')
 # flags.DEFINE_bool('all', True, 'n-step plot or comparison plt')
 flags.DEFINE_bool('all', False, 'n-step plot or comparison plt')
 # flags.DEFINE_integer('num_runs', 20, '')
-flags.DEFINE_integer('num_runs', 100, '')
+flags.DEFINE_integer('num_runs', 1, '')
 # flags.DEFINE_bool('nstep', True, 'n-step plot or comparison plt')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 # flags.DEFINE_string('run_mode', 'nstep', 'what agent to run')
@@ -39,11 +39,11 @@ flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous
 # flags.DEFINE_string('mdp', './mdps/maze.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_486.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_864.mdp',
-# flags.DEFINE_string('mdp', './mdps/maze_80.mdp',
-flags.DEFINE_string('mdp', 'random_chain',
+flags.DEFINE_string('mdp', './mdps/maze_80.mdp',
+# flags.DEFINE_string('mdp', 'random_chain',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
-# flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
-flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
+flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
+# flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
 FLAGS = flags.FLAGS
 FONTSIZE = 25
 LINEWIDTH = 4
@@ -54,6 +54,7 @@ naming_convention = { "tabular":
                          "jumpy_exp":  'distribution/explicit',
                          "jumpy_gen":  'generative/explicit',
                          "jumpy_fw_bw_gen":  'generative/search control',
+                         "jumpy_fw_bw_exp":  'generative/search control',
                          "vanilla": "vanilla"},
                        "linear":
                         {"pred_exp":  'expectation/implici',
@@ -236,9 +237,9 @@ def plot_tensorflow_log(path, run_mode, linestyle, colors=None):
         # x = np.arange(steps)
         x = [m[1] for m in msve]
         y = [tf.make_ndarray(m[2]) for m in msve]
-        # if mean_y_over_seeds is None:
-        #     mean_y_over_seeds = np.zeros_like(y)
-        # mean_y_over_seeds += 1/FLAGS.num_runs + np.array(y)
+        if mean_y_over_seeds is None:
+            mean_y_over_seeds = np.zeros_like(y)
+        mean_y_over_seeds += 1/FLAGS.num_runs + np.array(y)
         all_y_over_seeds.append(np.array(y))
 
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)

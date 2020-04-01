@@ -1,24 +1,19 @@
+from absl import app
 import os
+
+import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt
+import numpy as np
+import tensorflow as tf
 from absl import app
 from absl import flags
-from jax import random as jrandom
-import network
 
 from utils import *
-import prediction_experiment
-import agents
-import utils
-import tensorflow as tf
-import numpy as np
-import matplotlib.pyplot as plt
-import os
-import matplotlib.gridspec as gridspec
-import matplotlib.gridspec as gridspec
+
 plt.style.use('ggplot')
 np.set_printoptions(precision=3, suppress=1)
 plt.style.use('seaborn-notebook')
 plt.style.use('seaborn-whitegrid')
-from matplotlib.pyplot import cm
 from matplotlib.ticker import NullFormatter
 
 flags.DEFINE_string('results', str((os.environ['RESULTS'])), 'where to load results')

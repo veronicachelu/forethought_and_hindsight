@@ -1,45 +1,29 @@
-import numpy as np
-
-from cycler import cycler
-
+import matplotlib
+matplotlib.use('Agg')
 from tqdm import tqdm
-import os
 from absl import app
 from absl import flags
 from jax import random as jrandom
-import network
 import prediction_network
-
+import itertools
 from utils import *
-import prediction_experiment
-import agents
 import prediction_agents
-import utils
 from agents import Agent
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-import matplotlib.style as style
-mpl.use('Agg')
-import cycler
-style.available
-style.use('seaborn-poster') #sets the size of the charts
-style.use('ggplot')
 
-flags.DEFINE_string('run_mode', 'nstep_v2', 'optimal or random')
+flags.DEFINE_string('run_mode', 'vanilla', 'what agent to run')
 flags.DEFINE_string('policy', 'optimal', 'optimal or random')
 flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 # flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
 # flags.DEFINE_string('env_type', 'continuous', 'discrete or continuous')
 flags.DEFINE_string('env_type', 'discrete', 'discrete or continuous')
-flags.DEFINE_string('obs_type', 'onehot', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'spikes', 'onehot, tabular, tile for continuous')
+flags.DEFINE_string('obs_type', 'onehot', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'tile', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
-# flags.DEFINE_string('mdp', 'boyan_chain', '')
 flags.DEFINE_string('mdp', 'random_chain', '')
+# flags.DEFINE_string('mdp', 'boyan_chain', '')
 flags.DEFINE_integer('n_hidden_states', 14, 'num_states')
 # flags.DEFINE_integer('nS', 4, 'num_States')
 flags.DEFINE_integer('nS', 5, 'num_States')
@@ -73,34 +57,12 @@ flags.DEFINE_boolean('random_restarts', False, 'random_restarts or not.')
 
 FLAGS = flags.FLAGS
 
-run_mode_to_agent_prop = {
-    "vanilla": {"linear":
-                    {"class": "VanillaLinearPrediction"},
-                "tabular":
-                    {"class": "VanillaTabularPrediction"},
-                },
-    "nstep_v1": {"linear":
-                     {"class": "nStepLinearPredictionV1"},
-                 "tabular":
-                     {"class": "nStepTabularPredictionV1"},
-                 },
-    "nstep_v2": {"linear":
-                     {"class": "nStepLinearPredictionV2"},
-                 "tabular":
-                     {"class": "nStepTabularPredictionV2"},
-                 },
-}
-best_hyperparams = {"vanilla": {"alpha": 0.01, "alpha_model": 0.1, "n": 0},
-                    "nstep_v1": {"alpha": 0.01, "alpha_model": 0.01, "n": 1},
-                    "nstep_v2": {"alpha": 0.01, "alpha_model": 0.01, "n": 1}
-                    }
 
 def run_episodic(agent: Agent,
         environment: dm_env.Environment,
         num_episodes: int,
         true_v):
     cumulative_reward = 0
-    rmsve = np.zeros((num_episodes//FLAGS.log_period))
     for episode in range(0, num_episodes):
         rewards = 0
         timestep = environment.reset()
@@ -130,17 +92,16 @@ def run_episodic(agent: Agent,
             timestep = new_timestep
             agent.total_steps += 1
 
-        if episode % FLAGS.log_period == 0:
-            hat_v = agent._v_network if FLAGS.model_class == "tabular" \
-                else agent.get_values_for_all_states(environment.get_all_states())
-            rmsve[episode // FLAGS.log_period] = np.sqrt(np.sum(np.power(hat_v - true_v, 2)) / environment._nS)
-
         cumulative_reward += rewards
         agent.episode += 1
 
+    hat_v = agent._v_network if FLAGS.model_class == "tabular" \
+                    else agent.get_values_for_all_states(environment.get_all_states())
+    rmsve = np.sqrt(np.sum(np.power(hat_v - true_v, 2)) / environment._nS)
+
     return rmsve
 
-def run_experiment(run_mode, step, run, logs):
+def run_experiment(run_mode, run, step, alpha, alpha_model, logs):
     nrng = np.random.RandomState(run)
     if FLAGS.mdp == "random_chain":
         env = RandomChain(rng=nrng,
@@ -177,8 +138,25 @@ def run_experiment(run_mode, step, run, logs):
         input_dim=input_dim,
         rng=rng_model,
         model_class=FLAGS.model_class)
-
-    agent_prop = run_mode_to_agent_prop[run_mode]
+    run_mode_to_agent_prop = {
+        "vanilla": {"linear":
+                        {"class": "VanillaLinearPrediction"},
+                    "tabular":
+                        {"class": "VanillaTabularPrediction"},
+                    },
+        "nstep_v1": {"linear":
+                          {"class": "nStepLinearPredictionV1"},
+                      "tabular":
+                          {"class": "nStepTabularPredictionV1"},
+                      },
+        "nstep_v2": {"linear":
+                         {"class": "nStepLinearPredictionV2"},
+                     "tabular":
+                         {"class": "nStepTabularPredictionV2"},
+                     },
+    }
+    agent_prop = run_mode_to_agent_prop[FLAGS.run_mode]
+    run_mode = FLAGS.run_mode
     agent_class = getattr(prediction_agents, agent_prop[FLAGS.model_class]["class"])
 
     agent = agent_class(run_mode=run_mode,
@@ -196,8 +174,8 @@ def run_experiment(run_mode, step, run, logs):
                        planning_iter=FLAGS.planning_iter,
                        planning_period=FLAGS.planning_period,
                        planning_depth=step,
-                       lr=best_hyperparams[run_mode]["alpha"],
-                       lr_model=best_hyperparams[run_mode]["alpha_model"],
+                       lr=alpha,
+                       lr_model=alpha_model,
                        epsilon=FLAGS.epsilon,
                        exploration_decay_period=FLAGS.num_episodes,
                        seed=run,
@@ -217,62 +195,59 @@ def run_experiment(run_mode, step, run, logs):
     return rmsve
 
 def main(argv):
-    n = 4
-    color = plt.cm.Blues(np.linspace(0.5, 0.9, n))  # This returns RGBA; convert:
-    hexcolor = map(lambda rgb: '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
-                   tuple(color[:, 0:-1]))
-    color = hexcolor  # plt.cm.viridis(np.linspace(0, 1, n))
-    mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
-
-    # fig = plt.figure(figsize=(8, 4))
+    fig = plt.figure(figsize=(8, 4))
     del argv  # Unused.
     logs = os.path.join(os.path.join(FLAGS.logs, FLAGS.model_class), "chain")
 
-    steps = np.power(2, np.arange(0, n))
-
     if not os.path.exists(logs):
         os.makedirs(logs)
-    checkpoint_vanilla = os.path.join(logs, "nstep_linear_training_{}_vanilla.npy".format(FLAGS.mdp))
-    if os.path.exists(checkpoint_vanilla):
-        rmsve_vanilla = np.load(checkpoint_vanilla)
+
+    # all possible steps
+    if FLAGS.run_mode == "vanilla":
+        steps = [0]
+        alphas = np.arange(0.001, 0.01, 0.001)
+        alphas_model = [0.1]
     else:
-        rmsve_vanilla = np.zeros((FLAGS.num_episodes // FLAGS.log_period))
+        steps = np.power(2, np.arange(0, 4))
+        alphas = np.arange(0.01, 0.03, 0.01)
+        alphas_model = np.arange(0.01, 0.03, 0.01)
+
+    checkpoint = os.path.join(logs, "hyperparams_linear_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
+    if os.path.exists(checkpoint):
+        rmsve = np.load(checkpoint)
+    else:
+        # track the errors for each (step, alpha) combination
+        rmsve = np.zeros((len(steps), len(alphas), len(alphas_model)))
         for run in tqdm(range(0, FLAGS.runs)):
-            rmsve_vanilla += run_experiment("vanilla", 0, run, logs)
+            for step_ind, step in enumerate(steps):
+                for alpha_ind, alpha in enumerate(alphas):
+                    for alpha_ind_model, alpha_model in enumerate(alphas_model):
+                        rmsve[step_ind, alpha_ind, alpha_ind_model] += run_experiment(FLAGS.run_mode,
+                                                                     run,
+                                                                     step,
+                                                                     alpha,
+                                                                     alpha_model,
+                                                                     logs)
         # take average
-        rmsve_vanilla /= FLAGS.runs
-        checkpoint_vanilla = os.path.join(logs, "nstep_linear_training_{}_vanilla.npy".format(FLAGS.mdp))
-        np.save(checkpoint_vanilla, rmsve_vanilla)
+        rmsve /= FLAGS.runs
+        checkpoint = os.path.join(logs, "hyperparams_linear_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
+        np.save(checkpoint, rmsve)
 
-    checkpoint_nsteps = os.path.join(logs, "nstep_linear_training_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
-    if os.path.exists(checkpoint_nsteps):
-        rmsve_nsteps = np.load(checkpoint_nsteps)
-    else:
-        rmsve_nsteps = np.zeros((len(steps), FLAGS.num_episodes//FLAGS.log_period))
-        for step_ind, step in enumerate(steps):
-            for run in tqdm(range(0, FLAGS.runs)):
-                rmsve_nsteps[step_ind] += run_experiment(FLAGS.run_mode, step, run, logs)
-            # take average
-            rmsve_nsteps[step_ind] /= FLAGS.runs
-        checkpoint_nsteps = os.path.join(logs, "nstep_linear_training_{}_{}.npy".format(FLAGS.mdp, FLAGS.run_mode))
-        np.save(checkpoint_nsteps, rmsve_nsteps)
-
-    x_axis = [ep * FLAGS.log_period for ep in np.arange(FLAGS.num_episodes // FLAGS.log_period)]
-    plt.plot(x_axis, rmsve_vanilla, label="vanilla", c="r", alpha=1, linestyle=':')#, marker='v')
-
-    for step_ind, step in enumerate(steps):
-        plt.plot(x_axis, rmsve_nsteps[step_ind, :], label="{}_n{}".format(FLAGS.run_mode, step),
-                 alpha=1, linestyle='-')
-
-    plt.xlabel('episodes')
+    for i in range(0, len(steps)):
+        if FLAGS.run_mode == "vanilla":
+            plt.plot(alphas, rmsve[i, :], label='vanilla')
+            plt.xlabel('alpha')
+        else:
+            ticks = np.arange(len(list(itertools.product(alphas, alphas_model))))
+            ticks_labels = ["{:g}|{:g}".format(a1, a2) for (a1, a2) in itertools.product(alphas, alphas_model)]
+            plt.plot(ticks, np.reshape(rmsve[i, :], (-1)), label='n = %d' % (steps[i]))
+            plt.xlabel('alpha/alpha_model')
+            plt.xticks(ticks, ticks_labels)
     plt.ylabel('RMS error')
-    # plt.ylabel('RMS error (log)')
-    # plt.yscale('log')
     # plt.ylim([0.25, 0.55])
     plt.legend()
 
-    # plt.savefig(os.path.join(logs, 'nstep_linear_tabular_{}_{}_log.png'.format(FLAGS.mdp, FLAGS.run_mode)))
-    plt.savefig(os.path.join(logs, 'nstep_linear_tabular_{}_{}.png'.format(FLAGS.mdp, FLAGS.run_mode)))
+    plt.savefig(os.path.join(logs, 'hyperparams_linear_{}_{}.png'.format(FLAGS.mdp, FLAGS.run_mode)))
     plt.close()
 
 if __name__ == '__main__':

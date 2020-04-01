@@ -1,20 +1,13 @@
-import numpy as np
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 from tqdm import tqdm
-import os
 from absl import app
 from absl import flags
 from jax import random as jrandom
-import network
 import prediction_network
 
 from utils import *
-import prediction_experiment
-import agents
 import prediction_agents
-import utils
 from agents import Agent
 
 flags.DEFINE_string('run_mode', 'nstep_v1', 'what agent to run')

@@ -20,71 +20,41 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class nStepLinearPredictionV1(VanillaLinearPrediction):
+class nStepLpPredGen(VanillaLinearPrediction):
     def __init__(
             self,
             **kwargs
     ):
-        super(nStepLinearPredictionV1, self).__init__(**kwargs)
+        super(nStepLpPredGen, self).__init__(**kwargs)
 
         self._sequence = []
         self._should_reset_sequence = False
 
         def model_loss(o_online_params,
-                       r_online_params,
-                       d_online_params,
                        transitions):
-            o_tmn_target = transitions[0][0]
+            o_tmn_target = jnp.zeros_like(transitions[0][0])
+            for i, t in enumerate(transitions[::-1]):
+                o_tmn_target += (self._discount ** (i + 1)) * t[0]
             o_t = transitions[-1][-1]
-            # o_tm1, a_tm1, r_t_target, d_t_target, o_t_target = transitions
             model_o_tmn = self._o_network(o_online_params, o_t)
 
             o_error = model_o_tmn - lax.stop_gradient(o_tmn_target)
             o_error = jnp.mean(o_error ** 2)
 
-            r_input = jnp.hstack([lax.stop_gradient(model_o_tmn), o_t])
-            model_r_tmn = self._r_network(r_online_params, r_input)
-            r_t_target = 0
-            for i, t in enumerate(transitions):
-                r_t_target += (self._discount ** i) * t[2]
+            return o_error
 
-            r_error = model_r_tmn - lax.stop_gradient(r_t_target)
-            r_error = jnp.mean(r_error ** 2)
-
-            d_t_target = 1
-            for i, t in enumerate(transitions):
-                d_t_target *= self._discount * t[3]
-            d_t_target = jnp.array(lax.stop_gradient(d_t_target), dtype=np.int32)
-            d_t_logit = self._d_network(d_online_params, o_t)
-            d_error = - jnp.mean(
-            jnp.maximum(d_t_logit, 0) - d_t_logit * d_t_target + jnp.log(1 + jnp.exp(-jnp.abs(d_t_logit))))
-
-            total_error = o_error + r_error + d_error
-            return total_error
-
-        # This function computes dL/dTheta
         self._o_loss_grad = jax.jit(jax.value_and_grad(model_loss, 0))
-        self._r_loss_grad = jax.jit(jax.value_and_grad(model_loss, 1))
-        self._d_loss_grad = jax.jit(jax.value_and_grad(model_loss, 2))
         self._o_forward = jax.jit(self._o_network)
-        self._r_forward = jax.jit(self._r_network)
-        self._d_forward = jax.jit(self._d_network)
 
-        # Make an Adam optimizer.
-        o_opt_init, o_opt_update, o_get_params = optimizers.adam(step_size=self._lr_model)
+        self._step_schedule = optimizers.inverse_time_decay(self._lr_model,
+                                                            self._exploration_decay_period
+                                                            * 17,
+                                                            27.0)
+        o_opt_init, o_opt_update, o_get_params = optimizers.adam(step_size=self._step_schedule)
+        # o_opt_init, o_opt_update, o_get_params = optimizers.adam(step_size=self._lr_model)
         self._o_opt_update = jax.jit(o_opt_update)
         self._o_opt_state = o_opt_init(self._o_parameters)
         self._o_get_params = o_get_params
-
-        r_opt_init, r_opt_update, r_get_params = optimizers.adam(step_size=self._lr_model)
-        self._r_opt_update = jax.jit(r_opt_update)
-        self._r_opt_state = r_opt_init(self._r_parameters)
-        self._r_get_params = r_get_params
-
-        d_opt_init, d_opt_update, d_get_params = optimizers.adam(step_size=self._lr_model)
-        self._d_opt_update = jax.jit(d_opt_update)
-        self._d_opt_state = d_opt_init(self._d_parameters)
-        self._d_get_params = d_get_params
 
         def td_error(v_params, transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
@@ -122,14 +92,31 @@ class nStepLinearPredictionV1(VanillaLinearPrediction):
         self._v_parameters = self._v_get_params(self._v_opt_state)
 
         o_tmnm1 = self._o_forward(self._o_parameters, transitions[0])
+        normalized_expected_o_tmn = (o_tmnm1 -
+                                     np.min(o_tmnm1, axis=-1, keepdims=True)) / \
+                                    (np.max(o_tmnm1, axis=-1, keepdims=True) -
+                                     np.min(o_tmnm1, axis=-1, keepdims=True))
+        divisior = np.sum(normalized_expected_o_tmn, axis=-1, keepdims=True)
+        prob_o_tmnm = np.divide(normalized_expected_o_tmn, divisior,
+                                out=np.zeros_like(o_tmnm1),
+                                where=np.all(divisior != 0))
+
+        sampled_o_tmn = np.array(
+            [[np.eye(np.prod(self._input_dim))[x]
+              for x in self._nrng.choice(a=range(np.prod(self._input_dim)),
+                                         size=self._planning_iter,
+                                         p=p_o_tmn)]
+             for d, p_o_tmn in zip(divisior, prob_o_tmnm)
+             if d != 0])
+        sampled_o_tmn = np.reshape(sampled_o_tmn, (-1, np.prod(self._input_dim)))
         td_error = self._td_error(self._v_parameters, transitions)
-        # dv_dtheta_o_tmnm1 = jax.jacfwd(self._v_network)(self._v_parameters, o_tmnm1)
-        # v_gradient = 2 * td_error * (self._discount ** self._n) * dv_dtheta_o_tmnm1
-        y, vjp_fun = jax.vjp(self._v_network, self._v_parameters, o_tmnm1)
-        v_gradient = vjp_fun(2 * td_error * (self._discount ** self._n))[0]
-        self._v_opt_state = self._v_opt_update(self.total_steps, v_gradient,
-                                               self._v_opt_state)
-        self._v_parameters = self._v_get_params(self._v_opt_state)
+        td_error = np.tile(td_error[..., None], (1, self._planning_iter))
+        if len(sampled_o_tmn) > 0:
+            y, vjp_fun = jax.vjp(self._v_network, self._v_parameters, sampled_o_tmn)
+            v_gradient = vjp_fun(2 * td_error)[0]
+            self._v_opt_state = self._v_opt_update(self.total_steps, v_gradient,
+                                                   self._v_opt_state)
+            self._v_parameters = self._v_get_params(self._v_opt_state)
 
         losses_and_grads = {"losses": {"loss_v": np.array(loss)},
                             "gradients": {"grad_norm_q":
@@ -151,8 +138,6 @@ class nStepLinearPredictionV1(VanillaLinearPrediction):
             self.total_steps = to_load["total_steps"]
             self._v_parameters = to_load["v_parameters"]
             self._o_parameters = to_load["o_parameters"]
-            self._r_parameters = to_load["r_parameters"]
-            self._d_parameters = to_load["d_parameters"]
             print("Restored from {}".format(checkpoint))
         else:
             print("Initializing from scratch.")
@@ -164,8 +149,6 @@ class nStepLinearPredictionV1(VanillaLinearPrediction):
             "total_steps": self.total_steps,
             "v_parameters": self._v_parameters,
             "o_parameters": self._o_parameters,
-            "r_parameters": self._r_parameters,
-            "d_parameters": self._d_parameters,
         }
         np.save(checkpoint, to_save)
         print("Saved checkpoint for episode {}, total_steps {}: {}".format(self.episode,
@@ -182,8 +165,6 @@ class nStepLinearPredictionV1(VanillaLinearPrediction):
             return
         if len(self._sequence) >= self._n:
             loss, gradient = self._o_loss_grad(self._o_parameters,
-                                                  self._r_parameters,
-                                                  self._d_parameters,
                                                   self._sequence)
             self._o_opt_state = self._o_opt_update(self.total_steps, gradient,
                                                            self._o_opt_state)

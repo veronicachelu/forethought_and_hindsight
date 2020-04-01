@@ -19,6 +19,7 @@ class ContinuousWorld(dm_env.Environment):
         self._str_MDP = ''
         self._height = -1
         self._width = -1
+        self._path = path
 
         self._cPos = np.zeros((2,))
         self._sPos = np.zeros((2,))

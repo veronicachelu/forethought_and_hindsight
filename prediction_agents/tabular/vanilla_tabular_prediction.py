@@ -36,6 +36,7 @@ class VanillaTabularPrediction(TabularPrediction):
             lr: float,
             max_len: int,
             lr_model: float,
+            lr_planning: float,
             epsilon: float,
             log_period: int,
             rng: Tuple,
@@ -44,6 +45,7 @@ class VanillaTabularPrediction(TabularPrediction):
             exploration_decay_period: int,
             seed: int = None,
             logs: str = "logs",
+            double_input_reward_model=False
     ):
         super().__init__()
 
@@ -56,7 +58,7 @@ class VanillaTabularPrediction(TabularPrediction):
         self._planning_iter = planning_iter
         self._planning_period = planning_period
         self._n = planning_depth
-
+        self._double_input_reward_model = double_input_reward_model
         if self._n != 0:
             self._run_mode = "{}_n{}".format(self._run_mode, self._n)
 
@@ -67,6 +69,9 @@ class VanillaTabularPrediction(TabularPrediction):
         self._min_replay_size = min_replay_size
         self._lr = lr
         self._lr_model = lr_model
+        self._initial_lr_model = lr_model
+        self._lr_planning = lr_planning
+        self._initial_lr_planning = lr_planning
         self._warmup_steps = 0
         self._logs = logs
         self._seed = seed
@@ -93,9 +98,9 @@ class VanillaTabularPrediction(TabularPrediction):
         self._v_network = v_network
 
         self._o_network = model_network[0]
-        self._r_network = model_network[1]
-        self._d_network = model_network[2]
-
+        self._fw_o_network = model_network[1]
+        self._r_network = model_network[2]
+        self._d_network = model_network[3]
 
         def v_loss(v_params, transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
@@ -106,7 +111,8 @@ class VanillaTabularPrediction(TabularPrediction):
             return np.mean(td_error ** 2), td_error
 
         self._v_loss_grad = v_loss
-        self._v_opt_update = lambda gradient, params: params + self._lr * gradient
+        self._v_opt_update = lambda gradient, params: np.add(params, self._lr * gradient)
+        self._v_planning_opt_update = lambda gradient, params: np.add(params, self._lr_planning * gradient)
 
     def policy(self,
                timestep: dm_env.TimeStep,

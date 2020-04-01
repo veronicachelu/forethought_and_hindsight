@@ -20,57 +20,47 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class nStepLinearPredictionV2(VanillaLinearPrediction):
+class nStepLpJumpyExp(VanillaLinearPrediction):
     def __init__(
             self,
             **kwargs
     ):
-        super(nStepLinearPredictionV2, self).__init__(**kwargs)
+        super(nStepLpJumpyExp, self).__init__(**kwargs)
 
         self._sequence = []
         self._should_reset_sequence = False
 
         def model_loss(o_online_params,
                        r_online_params,
-                       d_online_params,
                        transitions):
             o_tmn_target = transitions[0][0]
             o_t = transitions[-1][-1]
-            # o_tm1, a_tm1, r_t_target, d_t_target, o_t_target = transitions
             model_o_tmn = self._o_network(o_online_params, o_t)
 
-            o_error = model_o_tmn - lax.stop_gradient(o_tmn_target)
+            o_error = model_o_tmn - \
+                      lax.stop_gradient(o_tmn_target)
+                      # (self._discount ** self._n) * lax.stop_gradient(o_tmn_target)
             o_error = jnp.mean(o_error ** 2)
 
-            r_input = jnp.hstack([lax.stop_gradient(model_o_tmn), o_t])
-            model_r_tmn = self._r_network(r_online_params, r_input)
+            model_r_tmn = self._r_network(r_online_params, model_o_tmn)
             r_t_target = 0
             for i, t in enumerate(transitions):
                 r_t_target += (self._discount ** i) * t[2]
 
             r_error = model_r_tmn - lax.stop_gradient(r_t_target)
-            r_error = 10 * jnp.mean(r_error ** 2)
+            r_error = jnp.mean(r_error ** 2)
 
-            d_t_target = 1
-            for i, t in enumerate(transitions):
-                d_t_target *= self._discount * t[3]
-            d_t_target = jnp.array(lax.stop_gradient(d_t_target), dtype=np.int32)
-            d_t_logit = self._d_network(d_online_params, o_t)
-            d_error = - jnp.mean(
-            jnp.maximum(d_t_logit, 0) - d_t_logit * d_t_target + jnp.log(1 + jnp.exp(-jnp.abs(d_t_logit))))
-
-            total_error = o_error + r_error + d_error
+            total_error = o_error + r_error
             return total_error
 
-        def v_planning_loss(v_params, o_params, r_params, d_params, o_t):
+        def v_planning_loss(v_params, o_params, r_params, o_t):
             o_tmn = lax.stop_gradient(self._o_forward(o_params, o_t))
 
             v_tmn = self._v_network(v_params, o_tmn)
-            r_input = jnp.hstack([o_tmn, o_t])
-            r_tmn = self._r_forward(r_params, r_input)
+            r_tmn = self._r_forward(r_params, o_tmn)
 
-            d_tmn = self._discount ** self._n
-            td_error = v_tmn - lax.stop_gradient(r_tmn + d_tmn * self._v_network(v_params, o_t))
+            td_error = v_tmn - lax.stop_gradient(r_tmn + (self._discount ** self._n) *
+                                                 self._v_network(v_params, o_t))
 
             return jnp.mean(td_error ** 2)
 
@@ -79,26 +69,30 @@ class nStepLinearPredictionV2(VanillaLinearPrediction):
         # This function computes dL/dTheta
         self._o_loss_grad = jax.jit(jax.value_and_grad(model_loss, 0))
         self._r_loss_grad = jax.jit(jax.value_and_grad(model_loss, 1))
-        self._d_loss_grad = jax.jit(jax.value_and_grad(model_loss, 2))
         self._o_forward = jax.jit(self._o_network)
         self._r_forward = jax.jit(self._r_network)
-        self._d_forward = jax.jit(self._d_network)
 
         # Make an Adam optimizer.
-        o_opt_init, o_opt_update, o_get_params = optimizers.adam(step_size=self._lr_model)
+        # self._o_step_schedule = optimizers.inverse_time_decay(self._lr_model,
+        #                                                       self._exploration_decay_period
+        #                                                       * 17,
+        #                                                       100.0)
+        self._o_step_schedule = self._lr_model
+        o_opt_init, o_opt_update, o_get_params = optimizers.adam(step_size=self._o_step_schedule)
+        # o_opt_init, o_opt_update, o_get_params = optimizers.adam(step_size=self._lr_model)
         self._o_opt_update = jax.jit(o_opt_update)
         self._o_opt_state = o_opt_init(self._o_parameters)
         self._o_get_params = o_get_params
-
-        r_opt_init, r_opt_update, r_get_params = optimizers.adam(step_size=self._lr_model)
+        # self._r_step_schedule = optimizers.inverse_time_decay(self._lr_model,
+        #                                                       self._exploration_decay_period
+        #                                                       * 17,
+        #                                                       100.0)
+        self._r_step_schedule = self._lr_model
+        r_opt_init, r_opt_update, r_get_params = optimizers.adam(step_size=self._r_step_schedule)
+        # r_opt_init, r_opt_update, r_get_params = optimizers.adam(step_size=self._lr_model)
         self._r_opt_update = jax.jit(r_opt_update)
         self._r_opt_state = r_opt_init(self._r_parameters)
         self._r_get_params = r_get_params
-
-        d_opt_init, d_opt_update, d_get_params = optimizers.adam(step_size=self._lr_model)
-        self._d_opt_update = jax.jit(d_opt_update)
-        self._d_opt_state = d_opt_init(self._d_parameters)
-        self._d_get_params = d_get_params
 
     def policy(self,
                timestep: dm_env.TimeStep,
@@ -152,7 +146,6 @@ class nStepLinearPredictionV2(VanillaLinearPrediction):
         if len(self._sequence) >= self._n:
             loss_o, gradient_o = self._o_loss_grad(self._o_parameters,
                                                   self._r_parameters,
-                                                  self._d_parameters,
                                                   self._sequence)
             self._o_opt_state = self._o_opt_update(self.total_steps, gradient_o,
                                                            self._o_opt_state)
@@ -160,7 +153,6 @@ class nStepLinearPredictionV2(VanillaLinearPrediction):
 
             loss_r, gradient_r = self._r_loss_grad(self._o_parameters,
                                                self._r_parameters,
-                                               self._d_parameters,
                                                self._sequence)
             self._r_opt_state = self._r_opt_update(self.total_steps, gradient_r,
                                                    self._r_opt_state)
@@ -190,7 +182,6 @@ class nStepLinearPredictionV2(VanillaLinearPrediction):
         loss, gradient = self._v_planning_loss_grad(self._v_parameters,
                                                     self._o_parameters,
                                                     self._r_parameters,
-                                                    self._d_parameters,
                                                     o_t)
         self._v_opt_state = self._v_opt_update(self.total_steps, gradient,
                                                self._v_opt_state)
