@@ -2,6 +2,7 @@ import numpy as np
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 import tensorflow as tf
 import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 import os
 from absl import app
@@ -17,7 +18,7 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_string('plot_filename', "tp_nstep_jumpy_exp_3", 'where to save results')
+flags.DEFINE_string('plot_filename', "tp_nstep_pred_exp", 'where to save results')
 flags.DEFINE_bool('nstep', True, 'n-step plot or comparison plt')
 # flags.DEFINE_bool('nstep', False, 'n-step plot or comparison plt')
 # flags.DEFINE_bool('all', True, 'n-step plot or comparison plt')
@@ -96,7 +97,7 @@ def main(argv):
             # prefix_suffix = FLAGS.plot_filename.split("_")
             # prefix = "_".join(prefix_suffix[-2:])
             # if prefix == "pred_exp":
-            color = plt.cm.winter(np.linspace(0.3, 1.0, n))#[::-1])
+            color = plt.cm.Blues(np.linspace(0.5, 1.0, n)[::-1])
             # elif prefix == "pred_gen":
             #     color = plt.cm.winter(np.linspace(0.3, 1.0, n))#[::-1])
             # elif prefix == "jumpy_exp":
@@ -109,11 +110,16 @@ def main(argv):
             mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
             colors = None
         else:
-            # color = plt.cm.jet(np.linspace(0.0, 0.8, n)[::-1])  # This returns RGBA; convert:
-            colors = {"pred_exp":  'blue',
-                         "pred_gen":  'deepskyblue',
-                         "jumpy_exp":  'forestgreen',
-                         "jumpy_gen":  'limegreen'}
+            # color = plt.cm.winter(np.linspace(0.0, 1.0, n)[::-1])  # This returns RGBA; convert:
+            # hexcolor = map(lambda rgb: '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
+            #                tuple(color[:, 0:-1]))
+            # color = hexcolor  # plt.cm.viridis(np.linspace(0, 1, n))
+            # mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
+            # colors = None
+            colors = {"pred_exp":  'midnightblue',
+                     "pred_gen":  'deepskyblue',
+                     "jumpy_exp":  'lightseagreen',
+                     "jumpy_gen":  'turquoise'}
                 # , "limegreen", "orange", "blueviolet"]  # This returns RGBA; convert:
 
         # folders.append([0, "vanilla", os.path.join(logs, "vanilla"), ':'])
@@ -253,11 +259,13 @@ def plot_tensorflow_log(path, run_mode, linestyle, colors=None):
             prefix = "_".join(prefix_suffix[:-1])
             plt.plot(x, mean_y_over_seeds, label=print_name(run_mode), alpha=1, linewidth=LINEWIDTH,
                      linestyle=linestyle, c=colors[prefix])#, marker='v')
+            plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
+                             alpha=0.2, color=colors[prefix])
         else:
             plt.plot(x, mean_y_over_seeds, label=print_name(run_mode), alpha=1, linewidth=LINEWIDTH,
                      linestyle=linestyle)  # , marker='v')
-        plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
-                         alpha=0.2)
+            plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
+                             alpha=0.2)
 
 if __name__ == '__main__':
     app.run(main)

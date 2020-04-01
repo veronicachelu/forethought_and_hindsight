@@ -9,7 +9,7 @@ import prediction_network
 import utils
 from utils import *
 
-flags.DEFINE_string('run_mode', 'forward', 'what agent to run')
+flags.DEFINE_string('run_mode', 'jumpy_gen', 'what agent to run')
 flags.DEFINE_string('policy', 'optimal', 'optimal or random')
 # flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
@@ -55,7 +55,7 @@ flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('num_units', 0, 'number of units per hidden layer')
 flags.DEFINE_integer('planning_iter', 1, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
-flags.DEFINE_integer('planning_depth', 1, 'Planning depth for MCTS')
+flags.DEFINE_integer('planning_depth', 8, 'Planning depth for MCTS')
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')
 flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
@@ -68,7 +68,7 @@ flags.DEFINE_float('lr', 5e-1, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 1, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 0.2, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 0.2, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_planning', 5e-2, 'learning rate for q optimizer')
+flags.DEFINE_float('lr_planning', 5e-1, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 1e-3, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr_model', 1e-2, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 0.01, 'learning rate for model optimizer')
@@ -85,7 +85,7 @@ flags.DEFINE_boolean('verbose', True, 'whether to log to std output')
 # flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
 flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
 flags.DEFINE_boolean('random_restarts', False, 'random_restarts or not.')
-flags.DEFINE_boolean('double_input_reward_model', False, 'double_input_reward_model or not.')
+flags.DEFINE_boolean('double_input_reward_model', True, 'double_input_reward_model or not.')
 
 FLAGS = flags.FLAGS
 

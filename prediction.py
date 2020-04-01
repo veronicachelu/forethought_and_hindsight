@@ -9,7 +9,7 @@ import prediction_network
 import utils
 from utils import *
 
-flags.DEFINE_string('run_mode', 'jumpy_exp', 'what agent to run')
+flags.DEFINE_string('run_mode', 'pred_exp', 'what agent to run')
 flags.DEFINE_string('policy', 'optimal', 'optimal or random')
 # flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
