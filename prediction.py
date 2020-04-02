@@ -9,7 +9,7 @@ import prediction_network
 import utils
 from utils import *
 
-flags.DEFINE_string('run_mode', 'pred_exp', 'what agent to run')
+flags.DEFINE_string('run_mode', 'jumpy_exp', 'what agent to run')
 flags.DEFINE_string('policy', 'optimal', 'optimal or random')
 # flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
@@ -42,7 +42,7 @@ flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 # flags.DEFINE_integer('num_episodes', 100, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_episodes', 70, 'Number of episodes to run for.')
 flags.DEFINE_integer('num_episodes', 100, 'Number of episodes to run for.')
-flags.DEFINE_integer('num_runs', 100, 'Number of episodes to run for.')
+flags.DEFINE_integer('num_runs', 20, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_runs', 0, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_steps', 2000, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_steps', 1000, 'Number of episodes to run for.')
@@ -55,7 +55,7 @@ flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('num_units', 0, 'number of units per hidden layer')
 flags.DEFINE_integer('planning_iter', 1, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
-flags.DEFINE_integer('planning_depth', 8, 'Planning depth for MCTS')
+flags.DEFINE_integer('planning_depth', 1, 'Planning depth for MCTS')
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')
 flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
@@ -133,6 +133,9 @@ def get_env(nrng, logs):
                           nS=FLAGS.env_size,
                           obs_type=FLAGS.obs_type
                           )
+        mdp_solver = ChainSolver(env, FLAGS.env_size, 2, FLAGS.discount)
+        # policy = mdp_solver.get_optimal_policy()
+        env._true_v = mdp_solver.get_optimal_v()
         nS = env._nS
     elif FLAGS.mdp == "boyan_chain":
         env = BoyanChain(rng=nrng,

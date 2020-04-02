@@ -208,7 +208,7 @@ def run_chain(agent: Agent,
             rewards = 0
             timestep = environment.reset()
             timesteps = 0
-            agent.update_hyper_params(episode, num_episodes)
+            # agent.update_hyper_params(episode, num_episodes)
             while True:
                 # action = agent.policy(timestep)
                 if mdp == "random_chain":

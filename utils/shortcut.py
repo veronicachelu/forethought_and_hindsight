@@ -5,22 +5,19 @@ import scipy
 from utils.solve_chain import ChainSolver
 
 
-class RandomChain(dm_env.Environment):
-    def __init__(self, rng=None, obs_type="tabular", nS = 5,
-                 left_reward=-1, right_reward=1):
+class ShortcutChain(dm_env.Environment):
+    def __init__(self, rng=None, obs_type="tabular", nS = 5, right_reward=1):
         self._P = None
         self._R = None
         self._stochastic = False
         self._nS = nS
-        self._start_state = nS // 2
-        self._end_states = [0, self._nS - 1]
+        self._start_state = 0
+        self._end_states = [self._nS - 1]
         self._rng = rng
         self._nA = 2
-        self._left_reward = left_reward
         self._right_reward = right_reward
         self._slip_prob = 0
         self._obs_type = obs_type
-        self._pi = np.full((self._nS, self._nA), 1 / 2)
 
         self._reset_next_step = True
         # self._true_v = np.linspace(left_reward * nS, right_reward * nS, nS) / nS
@@ -35,7 +32,7 @@ class RandomChain(dm_env.Environment):
         #                           [1/2, 1/2, 0, 1/2, 1/2],
         #                           [1/2, 1/2, 1/2, 0, 1/2],
         #                           [1/2, 1/2, 1/2, 1/2, 0]]
-        # # np.arange(left_reward * nS,
+        # np.arange(left_reward * nS,
         #                          right_reward * (nS+1),
         #                          2) / nS
         # self._true_v[0] = self._true_v[-1] = 0
@@ -50,14 +47,12 @@ class RandomChain(dm_env.Environment):
         if action == 1:
             next_state = self._state + 1
         else:
-            next_state = self._state - 1
+            next_state = self._nS - 1
 
         return next_state
 
     def _get_next_reward(self, next_state):
-        if next_state == 0:
-            reward = self._left_reward
-        elif next_state == self._nS - 1:
+        if next_state == self._nS - 1:
             reward = self._right_reward
         else:
             reward = 0
@@ -91,12 +86,6 @@ class RandomChain(dm_env.Environment):
         elif self._obs_type == "onehot":
             return specs.BoundedArray(shape=(self._nS,), dtype=np.int32,
                                   name="state", minimum=0, maximum=1)
-        elif self._obs_type == "inverted_features":
-            return specs.BoundedArray(shape=(self._nS,), dtype=np.int32,
-                                      name="state", minimum=0, maximum=1)
-        elif self._obs_type == "dependent_features":
-            return specs.BoundedArray(shape=(self._nF,), dtype=np.int32,
-                                      name="state", minimum=0, maximum=1)
 
     def action_spec(self):
         return specs.DiscreteArray(
@@ -107,10 +96,6 @@ class RandomChain(dm_env.Environment):
             return self._state
         elif self._obs_type == "onehot":
             return np.eye(self._nS)[self._state]
-        elif self._obs_type == "dependent_features":
-            return self._dependent_features[self._state]
-        elif self._obs_type == "inverted_features":
-            return self._inverted_features[self._state]
 
     def _fill_P_R(self):
         self._P = np.zeros((self._nA, self._nS, self._nS), dtype=np.int)
@@ -119,14 +104,17 @@ class RandomChain(dm_env.Environment):
 
         DIR_TO_VEC = [
             # left
-            -1,
+            +self._nS,
             # right
             +1
         ]
         for s in range(self._nS):
             for k in range(self._nA):
-                fwd_s = s + DIR_TO_VEC[k]
-                fwd_s = np.clip(a=fwd_s, a_min=0, a_max= self._nS - 1)
+                if s == self._nS - 1:
+                    fwd_s = self._start_state
+                else:
+                    fwd_s = s + DIR_TO_VEC[k]
+                    fwd_s = np.clip(a=fwd_s, a_min=0, a_max=self._nS - 1)
                 if not (s in self._end_states):
                     if self._stochastic:
                         slip_prob = [self._slip_prob, 1 - self._slip_prob]
@@ -167,9 +155,9 @@ if __name__ == "__main__":
     nS = 5
     nA = 2
     discount = 0.9
-    env = RandomChain(rng=nrng, obs_type="tabular", nS=nS, left_reward=-1, right_reward=1)
+    env = ShortcutChain(rng=nrng, obs_type="tabular", nS=nS, right_reward=1)
     mdp_solver = ChainSolver(env, nS, nA, discount)
-    # policy = mdp_solver.get_optimal_policy()
+    policy = mdp_solver.get_optimal_policy()
     v = mdp_solver.get_optimal_v()
     v = env.reshape_v(v)
     # plot_v(env, v, logs, env_type=FLAGS.env_type)
