@@ -8,19 +8,19 @@ import tensorflow as tf
 from dm_env import specs
 from jax import numpy as jnp
 
-from prediction_agents.tabular.vanilla_tabular_prediction import VanillaTabularPrediction
+from prediction_agents.tabular.tp_vanilla import TpVanilla
 from utils.replay import Replay
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class nStepTpPredDistrib(VanillaTabularPrediction):
+class TpImplicitDistrib(TpVanilla):
     def __init__(
             self,
             **kwargs
     ):
-        super(nStepTpPredDistrib, self).__init__(**kwargs)
+        super(TpImplicitDistrib, self).__init__(**kwargs)
 
         self._sequence = []
         self._should_reset_sequence = False
@@ -168,8 +168,8 @@ class nStepTpPredDistrib(VanillaTabularPrediction):
         #                                            total_episodes * decay_rate)
         # self._lr_planning = self._initial_lr_planning * \
         #                      (decay_rate ** (episode / total_episodes))
-        warmup_episodes = total_episodes//3
-        flat_period = total_episodes//3
+        warmup_episodes = 0 #total_episodes//3
+        flat_period = 0 #total_episodes//3
         decay_period = total_episodes - warmup_episodes - flat_period
         if episode > warmup_episodes:
             steps_left = total_episodes - episode - flat_period

@@ -1,9 +1,9 @@
-from agents import Agent
 import dm_env
 import tensorflow as tf
-import numpy as np
+
+from agents import Agent
 from utils.visualizer import *
-from utils.solve_mdp import MdpSolver
+NON_GRIDWORLD_MDPS = ["random_chain", "boyan_chain", "bandit", "loopy_chain", "tree"]
 
 def run_episodic(agent: Agent,
         environment: dm_env.Environment,
@@ -78,7 +78,7 @@ def run_episodic(agent: Agent,
                 #        true_v=mdp_solver.get_optimal_v(),
                 #        filename="v_{}.png".format(agent.episode))
 
-                tf.summary.scalar("train/msve", get_msve(mdp_solver, agent._pi,
+                tf.summary.scalar("train/msve", get_msve(mdp_solver,
                                                          hat_v),
                                   step=agent.episode)
 
@@ -145,8 +145,8 @@ def run(agent: Agent,
 
             agent.total_steps += 1
 
-def get_msve(mdp_solver, pi, hat_v):
-    eta_pi = mdp_solver.get_eta_pi(pi)
+def get_msve(mdp_solver, hat_v):
+    eta_pi = mdp_solver.get_eta_pi(mdp_solver._pi)
     v = mdp_solver.get_optimal_v()
     # msve = np.sum([eta_pi[s] * ((v[s] - hat_v[s]) ** 2) for s in range(mdp_solver._nS)])
     msve = np.sum(eta_pi * (v - hat_v) ** 2)
@@ -202,19 +202,17 @@ def run_chain(agent: Agent,
               ):
 
     cumulative_reward = 0
+    cumulative_rmsve = 0
+    pred_timestep = None
     rmsve = np.zeros((num_episodes//log_period))
     with agent.writer.as_default():
         for episode in np.arange(start=agent.episode, stop=num_episodes):
             rewards = 0
             timestep = environment.reset()
             timesteps = 0
-            # agent.update_hyper_params(episode, num_episodes)
+            agent.update_hyper_params(episode, num_episodes)
             while True:
-                # action = agent.policy(timestep)
-                if mdp == "random_chain":
-                    action = agent._nrng.choice([0, 1], p=[0.5, 0.5])
-                elif mdp == "boyan_chain":
-                    action = 0
+                action = agent.policy(timestep)
                 new_timestep = environment.step(action)
 
                 if agent.model_based_train():
@@ -227,22 +225,25 @@ def run_chain(agent: Agent,
                 rewards += new_timestep.reward
 
                 if agent.model_based_train:
-                    agent.planning_update(timestep)
+                    agent.planning_update(timestep, pred_timestep)
 
                 if new_timestep.last():
                     break
 
+                pred_timestep = timestep
                 timestep = new_timestep
                 agent.total_steps += 1
                 timesteps += 1
 
+            hat_v = agent._v_network if model_class == "tabular" \
+                else agent.get_values_for_all_states(environment.get_all_states())
+            cumulative_rmsve += np.sqrt(np.sum(np.power(hat_v - environment._true_v, 2)) / environment._nS)
             if agent.episode % log_period == 0:
-                hat_v = agent._v_network if model_class == "tabular" \
-                    else agent.get_values_for_all_states(environment.get_all_states())
-
-                rmsve[episode//log_period] = np.sqrt(np.sum(np.power(hat_v - environment._true_v, 2)) / environment._nS)
+                rmsve[episode // log_period] = np.sqrt(
+                    np.sum(np.power(hat_v - environment._true_v, 2)) / environment._nS)
                 # total_rmsve[episode // log_period] += (1 / num_runs) * rmsve[episode // log_period]
                 tf.summary.scalar("train/rmsve", rmsve[episode // log_period], step=agent.episode)
+                tf.summary.scalar("train/cumulative_rmsve", cumulative_rmsve, step=agent.episode)
                 tf.summary.scalar("train/steps", timesteps, step=agent.episode)
                 # tf.summary.scalar("train/total_rmsve_{}".format(seed), total_rmsve[episode // log_period], step=agent.episode)
                 agent.writer.flush()

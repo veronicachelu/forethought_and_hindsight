@@ -2,6 +2,7 @@ import numpy as np
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 import tensorflow as tf
 import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 import os
 from absl import app
@@ -17,16 +18,18 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_string('plot_filename', "tp_nstep_jumpy_gen", 'where to save results')
+flags.DEFINE_string('plot_filename', "tp_bw_exp", 'where to save results')
+# flags.DEFINE_string('comarison_scheme', "fw_bw", 'fw_bw or bw')
+flags.DEFINE_string('comarison_scheme', "final", 'fw_bw or bw')
 flags.DEFINE_bool('nstep', True, 'n-step plot or comparison plt')
-# flags.DEFINE_bool('nstep', False, 'n-step plot or comparison plt')
+# flags.DEFINE_bool('nstep', False, 'sn-step plot or comparison plt')
+flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
+# flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
 # flags.DEFINE_bool('all', True, 'n-step plot or comparison plt')
 flags.DEFINE_bool('all', False, 'n-step plot or comparison plt')
-# flags.DEFINE_integer('num_runs', 20, '')
-flags.DEFINE_integer('num_runs', 1, '')
-# flags.DEFINE_bool('nstep', True, 'n-step plot or comparison plt')
+flags.DEFINE_integer('num_runs', 20, '')
+# flags.DEFINE_integer('num_runs', 1, '')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
-# flags.DEFINE_string('run_mode', 'nstep', 'what agent to run')
 # flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
 flags.DEFINE_string('mdp_type', 'episodic', 'episodic or absorbing')
@@ -38,30 +41,81 @@ flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous
 # flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_486.mdp',
-flags.DEFINE_string('mdp', './mdps/maze_864.mdp',
+# flags.DEFINE_string('mdp', './mdps/maze_864.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_80.mdp',
-# flags.DEFINE_string('mdp', 'random_chain',
+# flags.DEFINE_string('mdp', 'full_loop',
+flags.DEFINE_string('mdp', 'last_state_loop',
+# flags.DEFINE_string('mdp', 'tree',
+# flags.DEFINE_string('mdp', 'shortcut',
+# flags.DEFINE_string('mdp', 'shortcut',
+# flags.DEFINE_string('mdp', 'po',
+# flags.DEFINE_string('mdp', 'bandit',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
-flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
-# flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
+# flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
+flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
 FLAGS = flags.FLAGS
 FONTSIZE = 25
 LINEWIDTH = 4
+NON_GRIDWORLD_MDPS = ["random_chain", "boyan_chain", "bandit", "shortcut",
+                      "last_state_loop", "tree", "full_loop", "serial",
+                      "po"]
 
-naming_convention = { "tabular":
+naming_convention = {"bw":
+                    {"tabular":
                         {"pred_exp":  'distribution/implicit',
                          "pred_gen":  'generative/implicit',
                          "jumpy_exp":  'distribution/explicit',
                          "jumpy_gen":  'generative/explicit',
                          "jumpy_fw_bw_gen":  'generative/search control',
-                         "jumpy_fw_bw_exp":  'generative/search control',
                          "vanilla": "vanilla"},
                        "linear":
                         {"pred_exp":  'expectation/implici',
                          "jumpy_exp":  'expectation/explicit',
                          "vanilla": 'vanilla'
                        }
+                      },
+                    "fw_bw":
+                            {"tabular":
+                                {"explicit_exp":  'distribution/bw',
+                                 "explicit_gen":  'generative/bw',
+                                 "explicit_true":  'true_sample/bw',
+                                 "explicit_iterat":  'iterate_generative/bw',
+                                 "fw":  'distribution/fw_online',
+                                 "fw_rnd":  'distribution/fw_random_buff',
+                                 "fw_pri":  'distribution/fw_prioritized_buff',
+                                 "bw_fw_exp":  'distribution/bw_fw',
+                                 "bw_fw_gen":  'generative/bw_fw',
+                                 "fw_bw_PWMA":  'distribution/fw_bw_buff_PWMA',
+                                 "fw_bw_MG":  'distribution/fw_bw_buff_MG',
+                                 "fw_bw_Imprv":  'distribution/fw_bw_buff_Imprv',
+                                 },
+                               "linear":
+                                   {"jumpy_exp": 'expectation/backward',
+                                    "jumpy_gen": 'generative/backward',
+                                    "fw_exp": 'expectation/forward',
+                                    "fw_gen": 'generative/forward'},
+                              },
+                     "final": {"tabular":
+                          {"explicit_exp": 'distribution/bw',
+                           "explicit_gen": 'generative/bw',
+                           "explicit_true": 'true_sample/bw',
+                           "explicit_iterat": 'iterate_generative/bw',
+                           "fw": 'distribution/fw_online',
+                           "fw_rnd": 'distribution/fw_random_buff',
+                           "fw_pri": 'distribution/fw_prioritized_buff',
+                           "bw_fw_exp": 'distribution/bw_fw',
+                           "bw_fw_gen": 'generative/bw_fw',
+                           "fw_bw_PWMA": 'distribution/fw_bw_buff_PWMA',
+                           "fw_bw_MG": 'distribution/fw_bw_buff_MG',
+                           "fw_bw_Imprv": 'distribution/fw_bw_buff_Imprv',
+                           },
+                      "linear":
+                          {"jumpy_exp": 'expectation/backward',
+                           "jumpy_gen": 'generative/backward',
+                           "fw_exp": 'expectation/forward',
+                           "fw_gen": 'generative/forward'},
                       }
+                        }
 
 
 def print_name(run_mode):
@@ -70,7 +124,7 @@ def print_name(run_mode):
     prefix_suffix = run_mode.split("_")
     suffix = prefix_suffix[-1]
     prefix = "_".join(prefix_suffix[:-1])
-    return "{}_{}".format(naming_convention[FLAGS.model_class][prefix], suffix)
+    return "{}_{}".format(naming_convention[FLAGS.comarison_scheme][FLAGS.model_class][prefix], suffix)
 
 def main(argv):
     del argv  # Unused.
@@ -110,19 +164,51 @@ def main(argv):
             mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
             colors = None
         else:
-            # color = plt.cm.winter(np.linspace(0.0, 1.0, n)[::-1])  # This returns RGBA; convert:
-            # hexcolor = map(lambda rgb: '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
-            #                tuple(color[:, 0:-1]))
-            # color = hexcolor  # plt.cm.viridis(np.linspace(0, 1, n))
-            # mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
-            # colors = None
-            colors = {"pred_exp":  'midnightblue',
-                     "pred_gen":  'deepskyblue',
-                     "jumpy_exp":  'lightseagreen',
-                     "jumpy_gen":  'turquoise'}
-                # , "limegreen", "orange", "blueviolet"]  # This returns RGBA; convert:
 
-        # folders.append([0, "vanilla", os.path.join(logs, "vanilla"), ':'])
+            all_colors = {"bw":
+                          {"pred_exp":  'midnightblue',
+                           "pred_gen":  'deepskyblue',
+                           "jumpy_exp":  'lightseagreen',
+                           "jumpy_gen":  'turquoise'},
+                       "fw_bw":
+                           {
+                               # "fw":  'midnightblue',
+                            # "fw_gen": 'deepskyblue',
+
+                            "bw_fw_exp": 'darkorange',
+                            "bw_fw_gen": 'gold',
+
+                            # "fw_rnd": 'purple',
+                            # "fw_pri": 'violet',
+                            # "fw_bw_PWMA": 'mediumvioletred',
+                            # "fw_bw_MG": 'deeppink',
+                            # "fw_bw_Imprv": 'pink',
+
+                            "fw_rnd": 'purple',
+                            "fw_pri": 'violet',
+                            "fw_bw_PWMA": 'mediumvioletred',
+                            "fw_bw_MG": 'deeppink',
+                            "fw_bw_Imprv": 'pink',
+
+                            "explicit_exp": 'lightseagreen',
+                            "explicit_gen": 'turquoise',
+                            "explicit_true": 'black',
+
+                            "explicit_iterat": 'chocolate',
+                            },
+                        "final":{
+                            "explicit_exp": 'turquoise',
+                            "bw_fw_exp": 'deepskyblue',
+                            "fw_rnd": 'green',
+                            "fw_pri": 'olive',
+                            "fw_bw_PWMA": 'blue',
+                            "fw_bw_MG": 'darkblue',
+                            "fw_bw_Imprv": 'black',
+
+                        }
+                      }
+            colors = all_colors[FLAGS.comarison_scheme]
+
         for i in range(len(folders)):
             _, run_mode_folder, folder_path, linestyle = folders[i]
             plot_tensorflow_log(folder_path, run_mode_folder, linestyle, colors)
@@ -131,18 +217,27 @@ def main(argv):
 
         plt.xlabel("Episode count", fontsize=FONTSIZE)
 
-        if FLAGS.mdp == "random_chain" or FLAGS.mdp == "boyan_chain":
-            yaxis = 'RMSVE'
+        if FLAGS.mdp in NON_GRIDWORLD_MDPS:
+            if FLAGS.cumulative_rmsve:
+                yaxis = 'Cumulative RMSVE'
+            else:
+                yaxis = 'RMSVE'
         else:
             yaxis = 'MSVE'
 
         plt.ylabel(yaxis, fontsize=FONTSIZE)
-        plt.legend(loc='upper right', frameon=True, prop={'size': FONTSIZE})
+        plt.legend(loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
+                   frameon=True,
+                   prop={'size': FONTSIZE})
         # plt.show()
         if not os.path.exists(plots):
             os.makedirs(plots)
 
-        plt.savefig(os.path.join(plots, "{}.png".format(FLAGS.plot_filename)))
+        plt.savefig(os.path.join(plots,
+                                 "{}_{}.png".format(FLAGS.plot_filename,
+                                                    "CumRMSVE" if
+                                                    FLAGS.cumulative_rmsve else
+                                                    "RMSVE")))
     else:
 
         folders_pred_exp = [f for f in folders if f[1].startswith("pred_exp")]
@@ -187,8 +282,11 @@ def main(argv):
 
         plt.xlabel("Episode count", fontsize=FONTSIZE)
 
-        if FLAGS.mdp == "random_chain" or FLAGS.mdp == "boyan_chain":
-            yaxis = 'RMSVE'
+        if FLAGS.mdp in NON_GRIDWORLD_MDPS:
+            if FLAGS.cumulative_rmsve:
+                yaxis = 'Cumulative RMSVE'
+            else:
+                yaxis = 'RMSVE'
         else:
             yaxis = 'MSVE'
 
@@ -198,7 +296,11 @@ def main(argv):
         if not os.path.exists(plots):
             os.makedirs(plots)
 
-        plt.savefig(os.path.join(plots, "{}.png".format(FLAGS.plot_filename)))
+        plt.savefig(os.path.join(plots,
+                                 "{}_{}.png".format(FLAGS.plot_filename,
+                                                    "CumRMSVE" if
+                                                    FLAGS.cumulative_rmsve else
+                                                    "RMSVE")))
 
 
 def plot_tensorflow_log(path, run_mode, linestyle, colors=None):
@@ -229,8 +331,11 @@ def plot_tensorflow_log(path, run_mode, linestyle, colors=None):
 
         # Show all tags in the log file
         print(event_acc.Tags())
-        if FLAGS.mdp == "random_chain" or FLAGS.mdp == "boyan_chain":
-            tag = 'train/rmsve'
+        if FLAGS.mdp in NON_GRIDWORLD_MDPS:
+            if FLAGS.cumulative_rmsve:
+                tag = 'train/cumulative_rmsve'
+            else:
+                tag = 'train/rmsve'
         else:
             tag = 'train/msve'
         if not tag in event_acc.Tags()["tensors"]:

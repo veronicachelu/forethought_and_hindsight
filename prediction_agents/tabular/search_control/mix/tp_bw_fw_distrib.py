@@ -8,20 +8,20 @@ import tensorflow as tf
 from dm_env import specs
 from jax import numpy as jnp
 
-from prediction_agents.tabular.vanilla_tabular_prediction import VanillaTabularPrediction
+from prediction_agents.tabular.tp_vanilla import TpVanilla
 from utils.replay import Replay
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class nStepTpJumpyFwBwDistrib(VanillaTabularPrediction):
+class TpBwFwDistrib(TpVanilla):
     def __init__(
             self,
             **kwargs
     ):
 
-        super(nStepTpJumpyFwBwDistrib, self).__init__(**kwargs)
+        super(TpBwFwDistrib, self).__init__(**kwargs)
         self._sequence = []
         self._should_reset_sequence = False
 
@@ -74,27 +74,29 @@ class nStepTpJumpyFwBwDistrib(VanillaTabularPrediction):
                     target = 0
                 else:
                     target = r_tmn
-
-                # for next_o_t in range(np.prod(self._input_dim)):
-                #     if self._double_input_reward_model:
-                #         target_per_next_o = o_t[next_o_t] * \
-                #         (r_tmn[next_o_t] + (self._discount ** self._n) *\
-                #               v_params[next_o_t])
-                #     else:
-                #         target_per_next_o = o_t[next_o_t] * \
-                #               (self._discount ** self._n) *\
-                #               v_params[next_o_t]
-                #     target += target_per_next_o
-                # td_error = (target - v_tmn)
-                if self._double_input_reward_model:
-                    target += o_t[o] * \
-                                        (r_tmn[o] + (self._discount ** self._n) * \
-                                         v_params[o])
-                else:
-                    target += o_t[o] * \
-                                        (self._discount ** self._n) * \
-                                        v_params[o]
+                divisior = np.sum(o_t, axis=-1, keepdims=True)
+                o_t = np.divide(o_t, divisior, out=np.zeros_like(o_t), where=np.all(divisior != 0))
+                for next_o_t in range(np.prod(self._input_dim)):
+                    if self._double_input_reward_model:
+                        target_per_next_o = o_t[next_o_t] * \
+                        (r_tmn[next_o_t] + (self._discount ** self._n) *\
+                              v_params[next_o_t])
+                    else:
+                        target_per_next_o = o_t[next_o_t] * \
+                              (self._discount ** self._n) *\
+                              v_params[next_o_t]
+                    target += target_per_next_o
                 td_error = (target - v_tmn)
+
+                # if self._double_input_reward_model:
+                #     target += o_t[o] * \
+                #                         (r_tmn[o] + (self._discount ** self._n) * \
+                #                          v_params[o])
+                # else:
+                #     target += o_t[o] * \
+                #                         (self._discount ** self._n) * \
+                #                         v_params[o]
+                # td_error = (target - v_tmn)
                 td_errors.append(o_tmn[:, prev_o_tmn] * td_error)
                 loss = td_error ** 2
                 losses.append(o_tmn[:, prev_o_tmn] * loss)
@@ -171,7 +173,8 @@ class nStepTpJumpyFwBwDistrib(VanillaTabularPrediction):
 
     def planning_update(
             self,
-            timestep: dm_env.TimeStep
+            timestep: dm_env.TimeStep,
+            prev_timestep=None
     ):
         o_tm1 = np.array([timestep.observation])
         losses, gradients = self._v_planning_loss_grad(self._v_network,
@@ -249,6 +252,14 @@ class nStepTpJumpyFwBwDistrib(VanillaTabularPrediction):
                 tf.summary.scalar("train/losses/{}/{}".format(summary_name, k), losses[k], step=self.total_steps)
             self.writer.flush()
 
-    def update_hyper_params(self, step, total_steps):
-        pass
+    def update_hyper_params(self, episode, total_episodes):
+        warmup_episodes = 0
+        flat_period = 0
+        decay_period = total_episodes - warmup_episodes - flat_period
+        if episode > warmup_episodes:
+            steps_left = total_episodes - episode - flat_period
+            if steps_left <= 0:
+                return
+
+            self._lr_planning = self._initial_lr_planning * (steps_left / decay_period)
 

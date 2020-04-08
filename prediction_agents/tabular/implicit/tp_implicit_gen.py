@@ -8,19 +8,19 @@ import tensorflow as tf
 from dm_env import specs
 from jax import numpy as jnp
 
-from prediction_agents.tabular.vanilla_tabular_prediction import VanillaTabularPrediction
+from prediction_agents.tabular.tp_vanilla import TpVanilla
 from utils.replay import Replay
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class nStepTpPredGen(VanillaTabularPrediction):
+class TpImplicitGen(TpVanilla):
     def __init__(
             self,
             **kwargs
     ):
-        super(nStepTpPredGen, self).__init__(**kwargs)
+        super(TpImplicitGen, self).__init__(**kwargs)
 
         self._sequence = []
         self._should_reset_sequence = False

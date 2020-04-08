@@ -5,12 +5,11 @@ from tqdm import tqdm
 
 import prediction_agents
 import prediction_experiment
-import prediction_network
+import qprediction_network
 import utils
 from utils import *
 
-flags.DEFINE_string('run_mode', 'fw_bw_Imprv', 'what agent to run')
-flags.DEFINE_boolean('optimal_policy', True, 'optimal_policy')
+flags.DEFINE_string('run_mode', 'qvanilla', 'what agent to run')
 flags.DEFINE_string('policy', 'optimal', 'optimal or random')
 # flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
@@ -26,12 +25,8 @@ flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', 'boyan_chain',
 # flags.DEFINE_string('mdp', 'random_chain',
 # flags.DEFINE_string('mdp', 'loopy_chain',
-# flags.DEFINE_string('mdp', 'po',
-# flags.DEFINE_string('mdp', 'full_loop',
-flags.DEFINE_string('mdp', 'last_state_loop',
-# flags.DEFINE_string('mdp', 'shortcut',
-# flags.DEFINE_string('mdp', 'serial'   ,
-# flags.DEFINE_string('mdp', 'bandit',
+# flags.DEFINE_string('mdp', 'tree',
+flags.DEFINE_string('mdp', 'action_noisy_bandit',
 # flags.DEFINE_string('mdp', './mdps/maze.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_48.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_80.mdp',
@@ -39,11 +34,11 @@ flags.DEFINE_string('mdp', 'last_state_loop',
 # flags.DEFINE_string('mdp', './mdps/maze_486.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_864.mdp',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
-flags.DEFINE_integer('env_size', 6, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
+flags.DEFINE_integer('env_size', 2, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
 # flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
 # flags.DEFINE_integer('env_size', 5, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
-# flags.DEFINE_integer('n_hidden_states', 6, 'max reward')
+flags.DEFINE_integer('n_hidden_states', 6, 'max reward')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 # flags.DEFINE_integer('num_episodes', 1800, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_episodes', 180, 'Number of episodes to run for.')
@@ -61,9 +56,9 @@ flags.DEFINE_integer('max_len', 100, 'Maximum number of time steps an episode ma
 # flags.DEFINE_integer('max_len', 100, 'Maximum number of time steps an episode may last (default: 100).')
 flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('num_units', 0, 'number of units per hidden layer')
-flags.DEFINE_integer('planning_iter', 1, 'Number of minibatches of model-based backups to run for planning')
+flags.DEFINE_integer('planning_iter', 100, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
-flags.DEFINE_integer('planning_depth', 1, 'Planning depth for MCTS')
+flags.DEFINE_integer('planning_depth', 0, 'Planning depth for MCTS')
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')
 flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
@@ -71,40 +66,39 @@ flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
 flags.DEFINE_float('discount', .95, 'discounting on the agent side')
 flags.DEFINE_integer('replay_capacity', 50, 'size of the replay buffer')
 flags.DEFINE_integer('min_replay_size', 1, 'min replay size before training.')
-flags.DEFINE_float('lr', 1e-1, 'learning rate for q optimizer')
+flags.DEFINE_float('lr', 5e-1, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 5e-3, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 1, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 0.2, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 0.2, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_planning', 1e-1, 'learning rate for q optimizer')
+flags.DEFINE_float('lr_planning', 5e-1, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 1e-3, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr_model', 1e-2, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 0.01, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 1e-3, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 1e-3, 'learning rate for model optimizer')
-flags.DEFINE_float('lr_model',  1e-1, 'learning rate for model optimizer')
+flags.DEFINE_float('lr_model',  5e-1, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 0.1, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 5e-4, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 1e-3, 'learning rate for model optimizer')
 flags.DEFINE_float('epsilon', 0.1, 'fraction of exploratory random actions at the end of the decay')
 # flags.DEFINE_float('epsilon', 0.05, 'fraction of exploratory random actions at the end of the decay')
 flags.DEFINE_integer('seed', 42, 'seed for random number generation')
-flags.DEFINE_boolean('verbose', True, 'whetherx to log to std output')
+flags.DEFINE_boolean('verbose', True, 'whether to log to std output')
 # flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
 flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
 flags.DEFINE_boolean('random_restarts', False, 'random_restarts or not.')
 flags.DEFINE_boolean('double_input_reward_model', True, 'double_input_reward_model or not.')
 
 FLAGS = flags.FLAGS
-NON_GRIDWORLD_MDPS = ["random_chain", "boyan_chain", "bandit", "shortcut",
-                      "last_state_loop", "tree", "full_loop", "serial",
-                      "po"]
+NON_GRIDWORLD_MDPS = ["random_chain", "boyan_chain", "bandit",
+                      "loopy_chain", "tree", "action_noisy_bandit"]
 
 run_mode_to_agent_prop = {
-        "vanilla": {"linear":
-                        {"class": "LpVanilla"},
+        "qvanilla": {"linear":
+                        {"class": "LpQVanilla"},
                     "tabular":
-                        {"class": "TpVanilla"},
+                        {"class": "TpQVanilla"},
                     },
         "fw": {"linear":
                         {"class": "LpFw"},
@@ -141,16 +135,6 @@ run_mode_to_agent_prop = {
                   "tabular":
                       {"class": "TpExplicitGen"},
                   },
-         "explicit_true": {"linear":
-                         {"class": "LpExplicitTrue"},
-                     "tabular":
-                         {"class": "TpExplicitTrue"},
-                     },
-        "explicit_iterat": {"linear":
-                         {"class": "LpExplicitIterat"},
-                     "tabular":
-                         {"class": "TpExplicitIterat"},
-                     },
         "fw_bw_PWMA": {"linear":
                       {"class": "LpFwBwPWMA"},
                   "tabular":
@@ -211,32 +195,14 @@ def get_env(nrng, logs):
         nA = env._nA
         mdp_solver = ChainSolver(env, nS, nA, FLAGS.discount)
         env._true_v = mdp_solver.get_optimal_v()
-    elif FLAGS.mdp == "last_state_loop":
-        env = LastStateLoop(rng=nrng, nS=FLAGS.env_size, obs_type=FLAGS.obs_type)
+    elif FLAGS.mdp == "action_noisy_bandit":
+        env = ActionNoisyBandit(rng=nrng)
         nS = env._nS
-        nA = 1
+        nA = env._nA
         mdp_solver = ChainSolver(env, nS, nA, FLAGS.discount)
         env._true_v = mdp_solver.get_optimal_v()
-    elif FLAGS.mdp == "full_loop":
-        env = FullLoop(rng=nrng, nS=FLAGS.env_size, obs_type=FLAGS.obs_type)
-        nS = env._nS
-        nA = 1
-        mdp_solver = ChainSolver(env, nS, nA, FLAGS.discount)
-        env._true_v = mdp_solver.get_optimal_v()
-    elif FLAGS.mdp == "po":
-        env = PO(rng=nrng, nS=FLAGS.env_size)
-        nS = env._nS
-        nA = 1
-        mdp_solver = ChainSolver(env, nS, nA, FLAGS.discount)
-        env._true_v = mdp_solver.get_optimal_v()
-    elif FLAGS.mdp == "shortcut":
-        env = Shortcut(rng=nrng, nS=FLAGS.env_size, obs_type=FLAGS.obs_type)
-        nS = env._nS
-        nA = 2
-        mdp_solver = ChainSolver(env, nS, nA, FLAGS.discount)
-        env._true_v = mdp_solver.get_optimal_v()
-    elif FLAGS.mdp == "serial":
-        env = Serial(rng=nrng, nS=FLAGS.env_size, obs_type=FLAGS.obs_type)
+    elif FLAGS.mdp == "loopy_chain":
+        env = LoopyChain(rng=nrng, nS=FLAGS.env_size, obs_type=FLAGS.obs_type)
         nS = env._nS
         nA = 1
         mdp_solver = ChainSolver(env, nS, nA, FLAGS.discount)
@@ -264,30 +230,27 @@ def get_env(nrng, logs):
     else:
         plot_grid(env, logs, env_type=FLAGS.env_type)
         mdp_solver = MdpSolver(env, nS, nA, FLAGS.discount)
-        if FLAGS.optimal_policy:
-            pi = mdp_solver.get_optimal_policy()
-            policy = lambda x: np.argmax(pi[x])
-        else:
-            policy = lambda x: nrng.choice(range(env._nA), p=env._nA * [1 / env._nA])
+        pi = mdp_solver.get_optimal_policy()
+        policy = lambda x: np.argmax(pi[x])
         v = mdp_solver.get_optimal_v()
-        # v = env.reshape_v(v)
-        # plot_v(env, v, logs, env_type=FLAGS.env_type)
-        # plot_policy(env, env.reshape_pi(policy), logs, env_type=FLAGS.env_type)
-        # eta_pi = mdp_solver.get_eta_pi(policy)
-        # plot_eta_pi(env, env.reshape_v(eta_pi), logs, env_type=FLAGS.env_type)
+        v = env.reshape_v(v)
+        plot_v(env, v, logs, env_type=FLAGS.env_type)
+        plot_policy(env, env.reshape_pi(policy), logs, env_type=FLAGS.env_type)
+        eta_pi = mdp_solver.get_eta_pi(policy)
+        plot_eta_pi(env, env.reshape_v(eta_pi), logs, env_type=FLAGS.env_type)
 
     return env, nS, nA, input_dim, policy, mdp_solver
 
 def get_agent(env, seed, nrng, nA, input_dim, policy, logs):
     rng = jrandom.PRNGKey(seed=seed)
     rng_q, rng_model, rng_agent = jrandom.split(rng, 3)
-    v_network, v_network_params = prediction_network.get_prediction_v_network(num_hidden_layers=FLAGS.num_hidden_layers,
+    q_network, q_network_params = qprediction_network.get_prediction_q_network(num_hidden_layers=FLAGS.num_hidden_layers,
                                                                               num_units=FLAGS.num_units,
                                                                               nA=nA,
                                                                               input_dim=input_dim,
                                                                               rng=rng_q,
                                                                               model_class=FLAGS.model_class)
-    model_network, model_network_params = prediction_network.get_prediction_model_network(
+    model_network, model_network_params = qprediction_network.get_prediction_model_network(
         num_hidden_layers=FLAGS.num_hidden_layers,
         num_units=FLAGS.num_units,
         nA=nA,
@@ -304,10 +267,9 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, logs):
         run_mode=run_mode,
         policy=policy,
         action_spec=env.action_spec(),
-        v_network=v_network,
-        v_parameters=v_network_params,
+        q_network=q_network,
+        q_parameters=q_network_params,
         model_network=model_network,
-        model_parameters=model_network_params,
         batch_size=FLAGS.batch_size,
         discount=FLAGS.discount,
         replay_capacity=FLAGS.replay_capacity,

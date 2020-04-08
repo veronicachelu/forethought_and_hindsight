@@ -1,8 +1,8 @@
 import dm_env
-from dm_env import specs
 import numpy as np
-import scipy
-from utils.solve_chain import ChainSolver
+from dm_env import specs
+
+from utils.mdp_solvers.solve_chain import ChainSolver
 
 
 class RandomChain(dm_env.Environment):
@@ -113,9 +113,9 @@ class RandomChain(dm_env.Environment):
             return self._inverted_features[self._state]
 
     def _fill_P_R(self):
-        self._P = np.zeros((self._nA, self._nS, self._nS), dtype=np.int)
-        self._P_absorbing = np.zeros((self._nA, self._nS, self._nS), dtype=np.int)
-        self._R = np.zeros((self._nA, self._nS, self._nS), dtype=np.int)
+        self._P = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
+        self._P_absorbing = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
+        self._R = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
 
         DIR_TO_VEC = [
             # left

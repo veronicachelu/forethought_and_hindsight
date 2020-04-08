@@ -1,9 +1,9 @@
-from agents import Agent
 import dm_env
 import tensorflow as tf
-import numpy as np
+
+from agents import Agent
 from utils.visualizer import *
-from utils.solve_mdp import MdpSolver
+
 
 def run_episodic(agent: Agent,
         environment: dm_env.Environment,

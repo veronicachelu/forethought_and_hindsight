@@ -193,10 +193,10 @@ class ContinuousWorld(dm_env.Environment):
             dtype=int, num_values=self._nA, name="action")
 
     def _fill_P_R(self):
-        self._P = np.zeros((self._nA, self._nS, self._nS), dtype=np.int)
-        self._P_absorbing = np.zeros((self._nA, self._nS, self._nS), dtype=np.int)
-        self._R = np.zeros((self._nA, self._nS, self._nS), dtype=np.int)
-        self._index_matrix = np.zeros((self._h, self._w), dtype=np.int)
+        self._P = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
+        self._P_absorbing = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
+        self._R = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
+        self._index_matrix = np.zeros((self._h, self._w), dtype=np.float)
 
         for i in range(self._hh):
             for j in range(self._ww):

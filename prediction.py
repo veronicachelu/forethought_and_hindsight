@@ -9,7 +9,8 @@ import prediction_network
 import utils
 from utils import *
 
-flags.DEFINE_string('run_mode', 'jumpy_exp', 'what agent to run')
+flags.DEFINE_string('run_mode', 'fw_bw_Imprv', 'what agent to run')
+flags.DEFINE_boolean('optimal_policy', True, 'optimal_policy')
 flags.DEFINE_string('policy', 'optimal', 'optimal or random')
 # flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
 flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
@@ -23,19 +24,25 @@ flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', './mdps/simple.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze.mdp',
 # flags.DEFINE_string('mdp', 'boyan_chain',
-flags.DEFINE_string('mdp', 'random_chain',
+# flags.DEFINE_string('mdp', 'random_chain',
+# flags.DEFINE_string('mdp', 'loopy_chain',
+# flags.DEFINE_string('mdp', 'po',
+# flags.DEFINE_string('mdp', 'full_loop',
+# flags.DEFINE_string('mdp', 'shortcut',
+# flags.DEFINE_string('mdp', 'serial'   ,
+# flags.DEFINE_string('mdp', 'bandit',
 # flags.DEFINE_string('mdp', './mdps/maze.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_48.mdp',
-# flags.DEFINE_string('mdp', './mdps/maze_80.mdp',
+flags.DEFINE_string('mdp', './mdps/maze_80.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_221.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_486.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_864.mdp',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
-flags.DEFINE_integer('env_size', 20, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
+flags.DEFINE_integer('env_size', 80, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
 # flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
 # flags.DEFINE_integer('env_size', 5, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
                                     'Continuous - Num of bins for each dimension of the discretization')
-# flags.DEFINE_integer('n_hidden_states', 5, 'max reward')
+# flags.DEFINE_integer('n_hidden_states', 6, 'max reward')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 # flags.DEFINE_integer('num_episodes', 1800, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_episodes', 180, 'Number of episodes to run for.')
@@ -53,22 +60,22 @@ flags.DEFINE_integer('max_len', 100, 'Maximum number of time steps an episode ma
 # flags.DEFINE_integer('max_len', 100, 'Maximum number of time steps an episode may last (default: 100).')
 flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('num_units', 0, 'number of units per hidden layer')
-flags.DEFINE_integer('planning_iter', 1, 'Number of minibatches of model-based backups to run for planning')
+flags.DEFINE_integer('planning_iter', 10, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
-flags.DEFINE_integer('planning_depth', 1, 'Planning depth for MCTS')
+flags.DEFINE_integer('planning_depth', 4, 'Planning depth for MCTS')
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')
 flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
 # flags.DEFINE_float('discount', .99, 'discounting on the agent side')
 flags.DEFINE_float('discount', .95, 'discounting on the agent side')
-flags.DEFINE_integer('replay_capacity', 1000, 'size of the replay buffer')
-flags.DEFINE_integer('min_replay_size', 100, 'min replay size before training.')
-flags.DEFINE_float('lr', 2e-1, 'learning rate for q optimizer')
+flags.DEFINE_integer('replay_capacity', 50, 'size of the replay buffer')
+flags.DEFINE_integer('min_replay_size', 1, 'min replay size before training.')
+flags.DEFINE_float('lr', 5e-1, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 5e-3, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 1, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 0.2, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 0.2, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_planning', 2e-1, 'learning rate for q optimizer')
+flags.DEFINE_float('lr_planning', 5e-1, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 1e-3, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr_model', 1e-2, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 0.01, 'learning rate for model optimizer')
@@ -81,49 +88,92 @@ flags.DEFINE_float('lr_model',  5e-1, 'learning rate for model optimizer')
 flags.DEFINE_float('epsilon', 0.1, 'fraction of exploratory random actions at the end of the decay')
 # flags.DEFINE_float('epsilon', 0.05, 'fraction of exploratory random actions at the end of the decay')
 flags.DEFINE_integer('seed', 42, 'seed for random number generation')
-flags.DEFINE_boolean('verbose', True, 'whether to log to std output')
+flags.DEFINE_boolean('verbose', True, 'whetherx to log to std output')
 # flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
 flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
 flags.DEFINE_boolean('random_restarts', False, 'random_restarts or not.')
 flags.DEFINE_boolean('double_input_reward_model', True, 'double_input_reward_model or not.')
 
 FLAGS = flags.FLAGS
+NON_GRIDWORLD_MDPS = ["random_chain", "boyan_chain", "bandit", "shortcut",
+                      "last_state_loop", "tree", "full_loop", "serial",
+                      "po"]
 
 run_mode_to_agent_prop = {
         "vanilla": {"linear":
-                        {"class": "VanillaLinearPrediction"},
+                        {"class": "LpVanilla"},
                     "tabular":
-                        {"class": "VanillaTabularPrediction"},
+                        {"class": "TpVanilla"},
+                    },
+        "fw": {"linear":
+                        {"class": "LpFw"},
+                    "tabular":
+                        {"class": "TpFw"},
+                    },
+        "fw_rnd": {"linear":
+                        {"class": "LpFwRnd"},
+                    "tabular":
+                        {"class": "TpFwRnd"},
+                    },
+        "fw_pri": {"linear":
+                        {"class": "LpFwPri"},
+                    "tabular":
+                        {"class": "TpFwPri"},
                     },
         "pred_exp": {"linear":
                        {"class": "nStepLpPredExp"},
                    "tabular":
                        {"class": "nStepTpPredDistrib"},
                    },
-        "pred_gen": {"linear":
-                       {"class": "nStepLpPredGen"},
+        "implicit_gen": {"linear":
+                       {"class": "LpImplicitGen"},
                    "tabular":
-                       {"class": "nStepTpPredGen"},
+                       {"class": "TpImplicitGen"},
                    },
-        "jumpy_exp": {"linear":
-                      {"class": "nStepLpJumpyExp"},
+        "explicit_exp": {"linear":
+                      {"class": "LpExplicitExp"},
                   "tabular":
-                      {"class": "nStepTpJumpyDistrib"},
+                      {"class": "TpExplicitDistrib"},
                   },
-        "jumpy_gen": {"linear":
-                      {"class": "nStepLpJumpyGen"},
+        "explicit_gen": {"linear":
+                      {"class": "LpExplicitGen"},
                   "tabular":
-                      {"class": "nStepTpJumpyGen"},
+                      {"class": "TpExplicitGen"},
                   },
-        "jumpy_fw_bw_exp": {"linear":
-                      {"class": "nStepLpJumpyFwBwExp"},
+         "explicit_true": {"linear":
+                         {"class": "LpExplicitTrue"},
+                     "tabular":
+                         {"class": "TpExplicitTrue"},
+                     },
+        "explicit_iterat": {"linear":
+                         {"class": "LpExplicitIterat"},
+                     "tabular":
+                         {"class": "TpExplicitIterat"},
+                     },
+        "fw_bw_PWMA": {"linear":
+                      {"class": "LpFwBwPWMA"},
                   "tabular":
-                      {"class": "nStepTpJumpyFwBwDistrib"},
+                      {"class": "TpFwBwPWMA"},
                   },
-        "jumpy_fw_bw_gen": {"linear":
-                      {"class": "nStepLpJumpyFwBwGen"},
+        "fw_bw_MG": {"linear":
+                      {"class": "LpFwBwMG"},
                   "tabular":
-                      {"class": "nStepTpJumpyFwBwGen"},
+                      {"class": "TpFwBwMG"},
+                  },
+        "fw_bw_Imprv": {"linear":
+                     {"class": "LpFwBwImprv"},
+                 "tabular":
+                     {"class": "TpFwBwImprv"},
+                 },
+        "bw_fw_exp": {"linear":
+                      {"class": "LpBwFwExp"},
+                  "tabular":
+                      {"class": "TpBwFwDistrib"},
+                  },
+        "bw_fw_gen": {"linear":
+                      {"class": "LpBwFwGen"},
+                  "tabular":
+                      {"class": "TpBwFwGen"},
                   },
     }
 
@@ -144,6 +194,52 @@ def get_env(nrng, logs):
                           obs_type=FLAGS.obs_type
                           )
         nS = env._nF
+    elif FLAGS.mdp == "tree":
+        env = Tree(rng=nrng,
+                         nA=FLAGS.n_hidden_states,
+                         h=FLAGS.env_size,
+                         obs_type=FLAGS.obs_type
+                         )
+        nS = env._nS
+        nA = env._nA
+        mdp_solver = ChainSolver(env, nS, nA, FLAGS.discount)
+        env._true_v = mdp_solver.get_optimal_v()
+    elif FLAGS.mdp == "bandit":
+        env = Bandit(rng=nrng)
+        nS = env._nS
+        nA = env._nA
+        mdp_solver = ChainSolver(env, nS, nA, FLAGS.discount)
+        env._true_v = mdp_solver.get_optimal_v()
+    elif FLAGS.mdp == "last_state_loop":
+        env = LastStateLoop(rng=nrng, nS=FLAGS.env_size, obs_type=FLAGS.obs_type)
+        nS = env._nS
+        nA = 1
+        mdp_solver = ChainSolver(env, nS, nA, FLAGS.discount)
+        env._true_v = mdp_solver.get_optimal_v()
+    elif FLAGS.mdp == "full_loop":
+        env = FullLoop(rng=nrng, nS=FLAGS.env_size, obs_type=FLAGS.obs_type)
+        nS = env._nS
+        nA = 1
+        mdp_solver = ChainSolver(env, nS, nA, FLAGS.discount)
+        env._true_v = mdp_solver.get_optimal_v()
+    elif FLAGS.mdp == "po":
+        env = PO(rng=nrng, nS=FLAGS.env_size)
+        nS = env._nS
+        nA = 1
+        mdp_solver = ChainSolver(env, nS, nA, FLAGS.discount)
+        env._true_v = mdp_solver.get_optimal_v()
+    elif FLAGS.mdp == "shortcut":
+        env = Shortcut(rng=nrng, nS=FLAGS.env_size, obs_type=FLAGS.obs_type)
+        nS = env._nS
+        nA = 2
+        mdp_solver = ChainSolver(env, nS, nA, FLAGS.discount)
+        env._true_v = mdp_solver.get_optimal_v()
+    elif FLAGS.mdp == "serial":
+        env = Serial(rng=nrng, nS=FLAGS.env_size, obs_type=FLAGS.obs_type)
+        nS = env._nS
+        nA = 1
+        mdp_solver = ChainSolver(env, nS, nA, FLAGS.discount)
+        env._true_v = mdp_solver.get_optimal_v()
     else:
         envs = {"discrete": {"class": "MicroWorld"},
                 "continuous": {"class": "ContinuousWorld"}
@@ -161,19 +257,23 @@ def get_env(nrng, logs):
     nA = env.action_spec().num_values
     input_dim = env.observation_spec().shape
 
-    if FLAGS.mdp == "random_chain" or FLAGS.mdp == "boyan_chain":
-        policy = np.full((nS, nA), 1 / nA)
+    if FLAGS.mdp in NON_GRIDWORLD_MDPS:
+        policy = lambda x: nrng.choice(range(env._nA), p=env._nA * [1/env._nA])
         mdp_solver = None
     else:
         plot_grid(env, logs, env_type=FLAGS.env_type)
         mdp_solver = MdpSolver(env, nS, nA, FLAGS.discount)
-        policy = mdp_solver.get_optimal_policy()
+        if FLAGS.optimal_policy:
+            pi = mdp_solver.get_optimal_policy()
+            policy = lambda x: np.argmax(pi[x])
+        else:
+            policy = lambda x: nrng.choice(range(env._nA), p=env._nA * [1 / env._nA])
         v = mdp_solver.get_optimal_v()
-        v = env.reshape_v(v)
-        plot_v(env, v, logs, env_type=FLAGS.env_type)
-        plot_policy(env, env.reshape_pi(policy), logs, env_type=FLAGS.env_type)
-        eta_pi = mdp_solver.get_eta_pi(policy)
-        plot_eta_pi(env, env.reshape_v(eta_pi), logs, env_type=FLAGS.env_type)
+        # v = env.reshape_v(v)
+        # plot_v(env, v, logs, env_type=FLAGS.env_type)
+        # plot_policy(env, env.reshape_pi(policy), logs, env_type=FLAGS.env_type)
+        # eta_pi = mdp_solver.get_eta_pi(policy)
+        # plot_eta_pi(env, env.reshape_v(eta_pi), logs, env_type=FLAGS.env_type)
 
     return env, nS, nA, input_dim, policy, mdp_solver
 
@@ -252,17 +352,8 @@ def main(argv):
     if not os.path.exists(logs):
         os.makedirs(logs)
 
-    if FLAGS.mdp == "random_chain" or FLAGS.mdp == "boyan_chain":
-        # checkpoint = os.path.join(logs,
-        #                           "total_rmsve_{}_{}_{}_{}.npy".format(FLAGS.mdp,
-        #                                                                FLAGS.obs_type,
-        #                                                                FLAGS.run_mode,
-        #                                                                FLAGS.planning_depth))
-        # if os.path.exists(checkpoint):
-        #     total_rmsve = np.load(checkpoint)
-        # else:
+    if FLAGS.mdp in NON_GRIDWORLD_MDPS:
         for seed in tqdm(range(0, FLAGS.num_runs)):
-            # rmsve = np.zeros((FLAGS.num_episodes // FLAGS.log_period))
             env, agent, _ = run_experiment(seed, logs)
 
             prediction_experiment.run_chain(
@@ -270,10 +361,8 @@ def main(argv):
                 mdp=FLAGS.mdp,
                 model_class=FLAGS.model_class,
                 seed=seed,
-                # num_runs=FLAGS.num_runs,
                 environment=env,
                 num_episodes=FLAGS.num_episodes,
-                # total_rmsve=total_rmsve,
                 log_period=FLAGS.log_period,
             )
     else:

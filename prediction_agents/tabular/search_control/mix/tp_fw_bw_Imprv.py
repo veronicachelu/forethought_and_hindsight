@@ -8,22 +8,25 @@ import tensorflow as tf
 from dm_env import specs
 from jax import numpy as jnp
 
-from prediction_agents.tabular.vanilla_tabular_prediction import VanillaTabularPrediction
+from prediction_agents.tabular.tp_vanilla import TpVanilla
 from utils.replay import Replay
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class nStepTpJumpyFwBwGen(VanillaTabularPrediction):
+class TpFwBwImprv(TpVanilla):
     def __init__(
             self,
             **kwargs
     ):
 
-        super(nStepTpJumpyFwBwGen, self).__init__(**kwargs)
+        super(TpFwBwImprv, self).__init__(**kwargs)
         self._sequence = []
         self._should_reset_sequence = False
+        self._replay._alpha = 1.0
+        self._replay._initial_beta = 1.0
+        self._replay._beta = self._replay._initial_beta
 
         def model_loss(bw_o_params, fw_o_params, r_params, transitions):
             o_tmn_target = transitions[0][0]
@@ -59,73 +62,33 @@ class nStepTpJumpyFwBwGen(VanillaTabularPrediction):
         self._model_opt_update = lambda gradients, params:\
             [param + self._lr_model * grad for grad, param in zip(gradients, params)]
 
-        def v_planning_loss(v_params, bw_o_params, fw_o_params, r_params, o):
-            o_tmn = bw_o_params[o]
-            td_errors = []
-            losses = []
+        def v_planning_loss(v_params, fw_o_params, r_params, o_tmn):
+            o_tmn = o_tmn[0]
+            o_t = fw_o_params[o_tmn]
+            r_tmn = r_params[o_tmn]
+            v_tmn = v_params[o_tmn]
 
-            divisior = np.sum(o_tmn, axis=-1, keepdims=True)
-            o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0))
-            sampled_o_tmn = np.array([self._nrng.choice(range(np.prod(self._input_dim)),
-                                                        size=min(self._planning_iter, np.count_nonzero(p_o_tmn)),
-                                                        p=p_o_tmn,
-                                                        replace=False)
-                                                          for d, p_o_tmn in zip(divisior, o_tmn)
-                                                          if d != 0])
-            if len(sampled_o_tmn) > 0:
-                sampled_o_tmn = np.reshape(sampled_o_tmn, (-1))
-                v_tmn = v_params[sampled_o_tmn]
-                o_t = fw_o_params[sampled_o_tmn]
-                r_tmn = r_params[sampled_o_tmn]
+            if self._double_input_reward_model:
+                target = 0
+            else:
+                target = r_tmn
 
+            divisior = np.sum(o_t, axis=-1, keepdims=True)
+            o_t = np.divide(o_t, divisior, out=np.zeros_like(o_t), where=np.all(divisior != 0))
+            for next_o_t in range(np.prod(self._input_dim)):
                 if self._double_input_reward_model:
-                    target = 0
+                    target_per_next_o = o_t[next_o_t] * \
+                    (r_tmn[next_o_t] + (self._discount ** self._n) *\
+                          v_params[next_o_t])
                 else:
-                    target = r_tmn
+                    target_per_next_o = o_t[next_o_t] * \
+                          (self._discount ** self._n) *\
+                          v_params[next_o_t]
+                target += target_per_next_o
+            td_error = (target - v_tmn)
+            loss = td_error ** 2
 
-                # for next_o_t in range(np.prod(self._input_dim)):
-                #     if self._double_input_reward_model:
-                #         target_per_next_o = o_t[:, next_o_t] * \
-                #         (r_tmn[:, next_o_t] + (self._discount ** self._n) *\
-                #               v_params[next_o_t])
-                #     else:
-                #         target_per_next_o = o_t[:, next_o_t] * \
-                #               (self._discount ** self._n) *\
-                #               v_params[next_o_t]
-                #     target += target_per_next_o
-                if self._double_input_reward_model:
-                    target += o_t[:, o[0]] * \
-                                        (r_tmn[:, o[0]] + (self._discount ** self._n) * \
-                                         v_params[o[0]])
-                else:
-                    target += o_t[:, o[0]] * \
-                                        (self._discount ** self._n) * \
-                                        v_params[o[0]]
-                td_error = target - v_tmn
-                td_errors.append((sampled_o_tmn, td_error))
-                loss = td_error ** 2
-                losses.append(loss)
-            # o_tmnm1 = self._o_network[o_tm1]
-            # divisior = np.sum(o_tmnm1, axis=-1, keepdims=True)
-            # o_tmnm1 = np.divide(o_tmnm1, divisior, out=np.zeros_like(o_tmnm1), where=np.all(divisior != 0))
-            # prev_o_tmn = np.array([self._nrng.choice(range(np.prod(self._input_dim)), p=p_o_tmn1)
-            #                        for d, p_o_tmn1 in zip(divisior, o_tmnm1)
-            #                        if d != 0])
-            # if len(prev_o_tmn) > 0:
-            #     self._v_network[prev_o_tmn] = self._v_planning_opt_update(np.array(gradients)[prev_o_tmn],
-            #                                                               self._v_network[prev_o_tmn])
-
-            # for prev_o_tmn in range(np.prod(self._input_dim)):
-            #     v_tmn = v_params[prev_o_tmn]
-            #     r_tmn = r_params[prev_o_tmn]
-            #     d_tmn = self._discount ** self._n
-            #     td_error = (r_tmn + d_tmn * v_params[o] - v_tmn)
-            #
-            #     td_errors.append(td_error)
-            #     loss = td_error ** 2
-            #     losses.append(loss)
-
-            return losses, td_errors
+            return loss, td_error
 
         self._v_planning_loss_grad = v_planning_loss
 
@@ -178,21 +141,100 @@ class nStepTpJumpyFwBwGen(VanillaTabularPrediction):
 
     def planning_update(
             self,
-            timestep: dm_env.TimeStep
+            timestep: dm_env.TimeStep,
+            prev_timestep=None
+    ):
+        if self._replay.size < self._min_replay_size:
+            return
+        if self.total_steps % self._planning_period == 0:
+            for k in range(self._planning_iter):
+                weights, priority_transitions = self._replay.sample_priority(1)
+                priority = priority_transitions[0][0]
+                o_tm1 = priority_transitions[1][0]
+
+                loss, gradient = self._v_planning_loss_grad(self._v_network,
+                                                            self._fw_o_network,
+                                                            self._r_network,
+                                                            o_tm1)
+                self._v_network[o_tm1] = self._v_planning_opt_update(gradient,
+                                                                 self._v_network[o_tm1])
+
+
+                losses_and_grads = {"losses": {"loss_q_planning": np.array(loss)},
+                                    }
+                self._log_summaries(losses_and_grads, "value_planning")
+                self._add_predecessor_to_replay(o_tm1)
+
+    def value_update(
+            self,
+            timestep: dm_env.TimeStep,
+            action: int,
+            new_timestep: dm_env.TimeStep,
     ):
         o_tm1 = np.array([timestep.observation])
-        losses, gradients = self._v_planning_loss_grad(self._v_network,
-                                                    self._o_network,
-                                                    self._fw_o_network,
-                                                    self._r_network,
-                                                    o_tm1)
-        for sampled_o_tmn, grad in gradients:
-            self._v_network[sampled_o_tmn] = self._v_planning_opt_update(
-                grad, self._v_network[sampled_o_tmn])
+        a_tm1 = np.array([action])
+        r_t = np.array([new_timestep.reward])
+        d_t = np.array([new_timestep.discount])
+        o_t = np.array([new_timestep.observation])
+        transitions = [o_tm1, a_tm1, r_t, d_t, o_t]
 
-        losses_and_grads = {"losses": {"loss_q_planning": np.array(np.mean(losses))},
+        loss, gradient = self._v_loss_grad(self._v_network, transitions)
+        self._v_network[o_tm1] = self._v_opt_update(gradient, self._v_network[o_tm1])
+
+        losses_and_grads = {"losses": {"loss_v": np.array(loss)},
                             }
-        self._log_summaries(losses_and_grads, "value_planning")
+        self._log_summaries(losses_and_grads, "value")
+
+        self._add_predecessor_to_replay(o_tm1)
+
+
+    def _add_predecessor_to_replay(self, o_tm1):
+        o_tmnm1 = self._o_network[o_tm1]
+        divisior = np.sum(o_tmnm1, axis=-1, keepdims=True)
+        o_tmnm1 = np.divide(o_tmnm1, divisior, out=np.zeros_like(o_tmnm1), where=np.all(divisior != 0))
+
+        for prev_o_tmnm1 in range(np.prod(self._input_dim)):
+            v_tmn = self._v_network[prev_o_tmnm1]
+            model_o_tm1 = self._fw_o_network[prev_o_tmnm1]
+            r_tmn = self._r_network[prev_o_tmnm1]
+            if self._double_input_reward_model:
+                target = 0
+            else:
+                target = r_tmn
+
+            divisior = np.sum(model_o_tm1, axis=-1, keepdims=True)
+            model_o_tm1 = np.divide(model_o_tm1, divisior, out=np.zeros_like(model_o_tm1), where=np.all(divisior != 0))
+            for next_o_t in range(np.prod(self._input_dim)):
+                if self._double_input_reward_model:
+                    target_per_next_o = model_o_tm1[next_o_t] * \
+                                        (r_tmn[next_o_t] + (self._discount ** self._n) * \
+                                         self._v_network[next_o_t])
+                else:
+                    target_per_next_o = model_o_tm1[next_o_t] * \
+                                        (self._discount ** self._n) * \
+                                        self._v_network[next_o_t]
+                target += target_per_next_o
+            td_error = (target - v_tmn)
+            # if self._double_input_reward_model:
+            #     target += model_o_tm1[o_tm1] * \
+            #                         (r_tmn[o_tm1] + (self._discount ** self._n) * \
+            #                          self._v_network[o_tm1])
+            # else:
+            #     target += model_o_tm1[o_tm1] * \
+            #                         (self._discount ** self._n) * \
+            #                         self._v_network[o_tm1]
+            # td_error = (target - v_tmn)
+
+            if o_tmnm1[:, prev_o_tmnm1] == 0:
+                continue
+
+            self._replay.add([
+                np.array([
+                    np.abs(td_error/v_tmn) if v_tmn != 0 else 0]),
+                np.array([prev_o_tmnm1])
+            ])
+
+
 
     def model_based_train(self):
         return True
@@ -224,7 +266,7 @@ class nStepTpJumpyFwBwGen(VanillaTabularPrediction):
         }
         np.save(checkpoint, to_save)
         print("Saved checkpoint for episode {}, total_steps {}: {}".format(self.episode,
-                                                                           self.total_steps,
+                                                                         self.total_steps,
                                                                            checkpoint))
 
     def save_transition(
@@ -238,6 +280,7 @@ class nStepTpJumpyFwBwGen(VanillaTabularPrediction):
                                new_timestep.reward,
                                new_timestep.discount,
                                new_timestep.observation])
+
         if new_timestep.discount == 0:
             self._should_reset_sequence = True
 
@@ -253,6 +296,15 @@ class nStepTpJumpyFwBwGen(VanillaTabularPrediction):
                 tf.summary.scalar("train/losses/{}/{}".format(summary_name, k), losses[k], step=self.total_steps)
             self.writer.flush()
 
-    def update_hyper_params(self, step, total_steps):
-        pass
+    def update_hyper_params(self, episode, total_episodes):
+        warmup_episodes = 0
+        flat_period = 0
+        decay_period = total_episodes - warmup_episodes - flat_period
+        if episode > warmup_episodes:
+            steps_left = total_episodes - episode - flat_period
+            if steps_left <= 0:
+                return
+
+            self._lr_planning = self._initial_lr_planning * (steps_left / decay_period)
+
 

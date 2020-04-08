@@ -35,7 +35,7 @@ class MicroWorld(dm_env.Environment):
         self._parse_string()
         self._stochastic = stochastic
         self._random_restarts = random_restarts
-        self._slip_prob = 0.2
+        self._slip_prob = 0.5
         self._cX = self._sX
         self._cY = self._sY
         self._nS = self._height * self._width

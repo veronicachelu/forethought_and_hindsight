@@ -1,8 +1,9 @@
 import dm_env
-from dm_env import specs
 import numpy as np
-import scipy
-from utils.solve_mdp import MdpSolver
+from dm_env import specs
+
+from utils.mdp_solvers.solve_mdp import MdpSolver
+
 
 class BoyanChain(dm_env.Environment):
     """

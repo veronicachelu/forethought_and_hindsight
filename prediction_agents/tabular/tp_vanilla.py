@@ -8,18 +8,18 @@ import tensorflow as tf
 from dm_env import specs
 from jax import numpy as jnp
 
-from prediction_agents.tabular.tabular_prediction import TabularPrediction
+from prediction_agents.tabular.tp import TabularPrediction
 from utils.replay import Replay
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class VanillaTabularPrediction(TabularPrediction):
+class TpVanilla(TabularPrediction):
     def __init__(
             self,
             run_mode: str,
-            policy: specs.DiscreteArray,
+            policy,
             action_spec: specs.DiscreteArray,
             v_network: Network,
             model_network: Network,
@@ -118,7 +118,8 @@ class VanillaTabularPrediction(TabularPrediction):
                timestep: dm_env.TimeStep,
                eval: bool = False
                ) -> int:
-        return np.argmax(self._pi[timestep.observation])
+        # return np.argmax(self._pi[timestep.observation])
+        return self._pi(timestep.observation)
 
     def value_update(
             self,
@@ -172,6 +173,7 @@ class VanillaTabularPrediction(TabularPrediction):
     def planning_update(
             self,
             timestep: dm_env.TimeStep,
+            prev_timestep=None
     ) -> None:
         pass
 

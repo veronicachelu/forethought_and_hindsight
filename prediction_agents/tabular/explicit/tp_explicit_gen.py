@@ -8,20 +8,20 @@ import tensorflow as tf
 from dm_env import specs
 from jax import numpy as jnp
 
-from prediction_agents.tabular.vanilla_tabular_prediction import VanillaTabularPrediction
+from prediction_agents.tabular.tp_vanilla import TpVanilla
 from utils.replay import Replay
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class nStepTpJumpyGen(VanillaTabularPrediction):
+class TpExplicitGen(TpVanilla):
     def __init__(
             self,
             **kwargs
     ):
 
-        super(nStepTpJumpyGen, self).__init__(**kwargs)
+        super(TpExplicitGen, self).__init__(**kwargs)
         self._sequence = []
         self._should_reset_sequence = False
 
@@ -52,27 +52,18 @@ class nStepTpJumpyGen(VanillaTabularPrediction):
         self._model_opt_update = lambda gradients, params:\
             [param + self._lr_model * grad for grad, param in zip(gradients, params)]
 
-        def v_planning_loss(v_params, o_params, r_params, o):
-            o_tmn = o_params[o]
-            td_errors = []
-            losses = []
+        def v_planning_loss(v_params, r_params, o, prev_o_tmn):
+            v_tmn = v_params[prev_o_tmn]
+            if self._double_input_reward_model:
+                r_tmn = r_params[prev_o_tmn, o]
+            else:
+                r_tmn = r_params[prev_o_tmn]
+            td_error = (r_tmn + (self._discount ** self._n) *
+                        v_params[o] - v_tmn)
 
-            divisior = np.sum(o_tmn, axis=-1, keepdims=True)
-            o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0))
-            for prev_o_tmn in range(np.prod(self._input_dim)):
-                v_tmn = v_params[prev_o_tmn]
-                if self._double_input_reward_model:
-                    r_tmn = r_params[prev_o_tmn][o]
-                else:
-                    r_tmn = r_params[prev_o_tmn]
-                td_error = (r_tmn + (self._discount ** self._n) *
-                            v_params[o] - v_tmn)
+            loss = td_error ** 2
 
-                td_errors.append(td_error)
-                loss = td_error ** 2
-                losses.append(o_tmn[:, prev_o_tmn] * loss)
-
-            return losses, td_errors
+            return loss, td_error
 
         self._v_planning_loss_grad = v_planning_loss
 
@@ -116,30 +107,33 @@ class nStepTpJumpyGen(VanillaTabularPrediction):
 
     def planning_update(
             self,
-            timestep: dm_env.TimeStep
+            timestep: dm_env.TimeStep,
+            prev_timestep=None
     ):
         o_tm1 = np.array([timestep.observation])
-        losses, gradients = self._v_planning_loss_grad(self._v_network,
-                                                    self._o_network,
-                                                    self._r_network,
-                                                    o_tm1)
+
         o_tmnm1 = self._o_network[o_tm1]
         divisior = np.sum(o_tmnm1, axis=-1, keepdims=True)
         o_tmnm1 = np.divide(o_tmnm1, divisior, out=np.zeros_like(o_tmnm1), where=np.all(divisior != 0))
         prev_o_tmn = np.array([self._nrng.choice(a=range(np.prod(self._input_dim)),
-                                                 size=self._planning_iter,
-                                                 p=p_o_tmn1)
+                                                 size=np.minimum(self._planning_iter,
+                                                             np.count_nonzero(p_o_tmn1, axis=-1)),
+                                                 p=p_o_tmn1,
+                                                 replace=False)
                       for d, p_o_tmn1 in zip(divisior, o_tmnm1)
                       if d != 0])
+
         if len(prev_o_tmn) > 0:
             prev_o_tmn = np.reshape(prev_o_tmn, (-1))
-            grads = np.reshape(np.array(gradients)[prev_o_tmn], (-1))
-            self._v_network[prev_o_tmn] = self._v_planning_opt_update(grads,
+            losses, gradients = self._v_planning_loss_grad(self._v_network,
+                                                           self._r_network,
+                                                           o_tm1, prev_o_tmn)
+            self._v_network[prev_o_tmn] = self._v_planning_opt_update(gradients,
                                                              self._v_network[prev_o_tmn])
 
-        losses_and_grads = {"losses": {"loss_q_planning": np.array(np.mean(losses))},
-                            }
-        self._log_summaries(losses_and_grads, "value_planning")
+        # losses_and_grads = {"losses": {"loss_q_planning": np.array(np.mean(losses))},
+        #                     }
+        # self._log_summaries(losses_and_grads, "value_planning")
 
     def model_based_train(self):
         return True
@@ -201,26 +195,13 @@ class nStepTpJumpyGen(VanillaTabularPrediction):
             self.writer.flush()
 
     def update_hyper_params(self, episode, total_episodes):
-        # pass
-        # self._lr_model = self._initial_lr_model / (1 + episode /
-        #                                            total_episodes * 0.96)
-        # decay_rate = 0.1
-        # self._lr_planning = self._initial_l_lr_planning / (1 + episode /
-        #                                            total_episodes * decay_rate)
-        # self._lr_planning = self._initial_lr_planning * \
-        #                      (decay_rate ** (episode / total_episodes))
-        warmup_episodes = total_episodes//3
-        flat_period = total_episodes//3
+        warmup_episodes = 0
+        flat_period = 0
         decay_period = total_episodes - warmup_episodes - flat_period
         if episode > warmup_episodes:
             steps_left = total_episodes - episode - flat_period
             if steps_left <= 0:
                 return
-
-        # step_decay =
-        # step_decay = np.clip(step_decay, 0.,  self._lr_planning)
             self._lr_planning = self._initial_lr_planning * (steps_left / decay_period)
-            # self._lr_model = self._initial_lr_model * (steps_left / decay_period)
-        # bonus = np.clip(bonus, 0., 1. - epsilon)
-        # return epsilon + bonus
+            self._lr_model = self._initial_lr_model * (steps_left / decay_period)
 

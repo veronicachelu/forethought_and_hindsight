@@ -8,20 +8,20 @@ import tensorflow as tf
 from dm_env import specs
 from jax import numpy as jnp
 
-from prediction_agents.tabular.vanilla_tabular_prediction import VanillaTabularPrediction
+from prediction_agents.tabular.tp_vanilla import TpVanilla
 from utils.replay import Replay
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class nStepTpJumpyDistrib(VanillaTabularPrediction):
+class TpExplicitDistrib(TpVanilla):
     def __init__(
             self,
             **kwargs
     ):
 
-        super(nStepTpJumpyDistrib, self).__init__(**kwargs)
+        super(TpExplicitDistrib, self).__init__(**kwargs)
         self._sequence = []
         self._should_reset_sequence = False
 
@@ -35,7 +35,7 @@ class nStepTpJumpyDistrib(VanillaTabularPrediction):
             o_loss = np.mean(o_error ** 2)
 
             if self._double_input_reward_model:
-                r_tmn = r_params[o_tmn_target][o_t]
+                r_tmn = r_params[o_tmn_target, o_t]
             else:
                 r_tmn = r_params[o_tmn_target]
             r_tmn_target = 0
@@ -58,17 +58,17 @@ class nStepTpJumpyDistrib(VanillaTabularPrediction):
             losses = []
 
             divisior = np.sum(o_tmn, axis=-1, keepdims=True)
-            o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0))
+            o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0, axis=-1))
             for prev_o_tmn in range(np.prod(self._input_dim)):
                 v_tmn = v_params[prev_o_tmn]
                 if self._double_input_reward_model:
-                    r_tmn = r_params[prev_o_tmn][o]
+                    r_tmn = r_params[prev_o_tmn, o]
                 else:
                     r_tmn = r_params[prev_o_tmn]
                 td_error = (r_tmn + (self._discount ** self._n) *
                             v_params[o] - v_tmn)
 
-                td_errors.append(td_error)
+                td_errors.append(o_tmn[:, prev_o_tmn] * td_error)
                 loss = td_error ** 2
                 losses.append(o_tmn[:, prev_o_tmn] * loss)
 
@@ -89,9 +89,9 @@ class nStepTpJumpyDistrib(VanillaTabularPrediction):
             o_t = self._sequence[-1][-1]
             losses, gradients = self._model_loss_grad(self._o_network, self._r_network, self._sequence)
             if self._double_input_reward_model:
-                self._o_network[o_t], self._r_network[o_tmn][o_t] = \
+                self._o_network[o_t], self._r_network[o_tmn, o_t] = \
                     self._model_opt_update(gradients, [self._o_network[o_t],
-                                                   self._r_network[o_tmn][o_t]])
+                                                   self._r_network[o_tmn, o_t]])
             else:
                 self._o_network[o_t], self._r_network[o_tmn] = \
                     self._model_opt_update(gradients, [self._o_network[o_t],
@@ -116,19 +116,19 @@ class nStepTpJumpyDistrib(VanillaTabularPrediction):
 
     def planning_update(
             self,
-            timestep: dm_env.TimeStep
+            timestep: dm_env.TimeStep,
+            prev_timestep=None
     ):
         o_tm1 = np.array([timestep.observation])
         losses, gradients = self._v_planning_loss_grad(self._v_network,
                                                     self._o_network,
                                                     self._r_network,
                                                     o_tm1)
-        o_tmnm1 = self._o_network[o_tm1]
-        divisior = np.sum(o_tmnm1, axis=-1, keepdims=True)
-        o_tmnm1 = np.divide(o_tmnm1, divisior, out=np.zeros_like(o_tmnm1), where=np.all(divisior != 0))
+        # o_tmnm1 = self._o_network[o_tm1]
+        # divisior = np.sum(o_tmnm1, axis=-1, keepdims=True)
+        # o_tmnm1 = np.divide(o_tmnm1, divisior, out=np.zeros_like(o_tmnm1), where=np.all(divisior != 0))
         for prev_o_tmn in range(np.prod(self._input_dim)):
-            self._v_network[prev_o_tmn] = self._v_planning_opt_update(gradients[prev_o_tmn] *
-                                                             o_tmnm1[:, prev_o_tmn],
+            self._v_network[prev_o_tmn] = self._v_planning_opt_update(gradients[prev_o_tmn],
                                                              self._v_network[prev_o_tmn])
 
         losses_and_grads = {"losses": {"loss_q_planning": np.array(np.sum(losses))},
@@ -195,26 +195,12 @@ class nStepTpJumpyDistrib(VanillaTabularPrediction):
             self.writer.flush()
 
     def update_hyper_params(self, episode, total_episodes):
-        # pass
-        # self._lr_model = self._initial_lr_model / (1 + episode /
-        #                                            total_episodes * 0.96)
-        # decay_rate = 0.1
-        # self._lr_planning = self._initial_l_lr_planning / (1 + episode /
-        #                                            total_episodes * decay_rate)
-        # self._lr_planning = self._initial_lr_planning * \
-        #                      (decay_rate ** (episode / total_episodes))
-        warmup_episodes = total_episodes//3
-        flat_period = total_episodes//3
+        warmup_episodes = 0
+        flat_period = 0
         decay_period = total_episodes - warmup_episodes - flat_period
         if episode > warmup_episodes:
             steps_left = total_episodes - episode - flat_period
             if steps_left <= 0:
                 return
-
-        # step_decay =
-        # step_decay = np.clip(step_decay, 0.,  self._lr_planning)
             self._lr_planning = self._initial_lr_planning * (steps_left / decay_period)
-            # self._lr_model = self._initial_lr_model * (steps_left / decay_period)
-        # bonus = np.clip(bonus, 0., 1. - epsilon)
-        # return epsilon + bonus
 
