@@ -1,2 +1,0 @@
-from prediction_agents.tabular.implicit.tp_implicit_distrib import TpImplicitDistrib
-from prediction_agents.tabular.implicit.tp_implicit_gen import TpImplicitGen
