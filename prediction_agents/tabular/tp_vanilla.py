@@ -8,14 +8,14 @@ import tensorflow as tf
 from dm_env import specs
 from jax import numpy as jnp
 
-from prediction_agents.tabular.tp import TabularPrediction
+from prediction_agents.agent import Agent
 from utils.replay import Replay
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class TpVanilla(TabularPrediction):
+class TpVanilla(Agent):
     def __init__(
             self,
             run_mode: str,

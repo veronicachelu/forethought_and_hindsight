@@ -12,14 +12,14 @@ from jax import random
 from jax.experimental import optimizers
 from jax.experimental import stax
 import numpy as np
-from prediction_agents.linear.lp import LinearPrediction
+from prediction_agents.agent import Agent
 import tensorflow as tf
 import rlax
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class LpVanilla(LinearPrediction):
+class LpVanilla(Agent):
     def __init__(
             self,
             run_mode: str,

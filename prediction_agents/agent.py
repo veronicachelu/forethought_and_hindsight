@@ -1,7 +1,7 @@
 import abc
 import dm_env
 
-class TabularPrediction(abc.ABC):
+class Agent(abc.ABC):
     """An agent consists of a policy and an update rule."""
     def __init__(self):
         self.episode = 1

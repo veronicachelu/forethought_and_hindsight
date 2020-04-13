@@ -1,7 +1,6 @@
 import dm_env
 import tensorflow as tf
-
-from agents import Agent
+from prediction_agents import Agent
 from utils.visualizer import *
 
 def run_episodic(agent: Agent,

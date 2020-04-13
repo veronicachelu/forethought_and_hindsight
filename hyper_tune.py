@@ -10,7 +10,6 @@ import utils
 from utils import *
 import csv
 import copy
-from hyperopt import fmin, tpe, Trials
 import configs
 
 flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
@@ -171,7 +170,8 @@ def main(argv):
 
         for seed in tqdm(range(0, env_config["num_runs"])):
             seed_config["seed"] = seed
-            if not configuration_exists(interm_fieldnames, seed_config, attributes):
+            if not configuration_exists(interm_hyperparam_file,
+                                        seed_config, attributes):
                 space = {
                     "env_config": env_config,
                     "agent_config": persistent_agent_config,
@@ -179,16 +179,17 @@ def main(argv):
 
                 total_rmsve, avg_steps = run_objective(space)
 
-                with open(interm_fieldnames, 'a+', newline='') as f:
+                with open(interm_hyperparam_file, 'a+', newline='') as f:
                     writer = csv.DictWriter(f, fieldnames=interm_fieldnames)
-                    seed_config["total_rmsve"] = total_rmsve
-                    seed_config["avg_steps"] = avg_steps
+                    seed_config["rmsve_seed"] = total_rmsve
+                    seed_config["avg_steps_seed"] = avg_steps
                     writer.writerow(seed_config)
 
         if not configuration_exists(final_fieldnames, final_config, final_attributes):
-            rmsve_avg, steps_avg = get_avg_over_seeds(interm_fieldnames, final_config, final_attributes)
-            with open(final_fieldnames, 'a+', newline='') as f:
-                writer = csv.DictWriter(f, fieldnames=interm_fieldnames)
+            rmsve_avg, steps_avg = get_avg_over_seeds(interm_hyperparam_file,
+                                                      final_config, final_attributes)
+            with open(final_hyperparam_file, 'a+', newline='') as f:
+                writer = csv.DictWriter(f, fieldnames=final_fieldnames)
                 final_config["rmsve_avg"] = rmsve_avg
                 final_config["steps_avg"] = steps_avg
                 writer.writerow(final_config)
