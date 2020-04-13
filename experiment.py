@@ -126,6 +126,7 @@ def run_chain(agent: Agent,
               environment: dm_env.Environment,
               num_episodes: int,
               model_class,
+              mdp_solver,
               log_period=1,
               plot_values=False,
               plot_curves=False,
@@ -137,6 +138,7 @@ def run_chain(agent: Agent,
                                       environment=environment,
                                       num_episodes =num_episodes,
                                       model_class=model_class,
+                                      mdp_solver=mdp_solver,
                                       log_period=log_period,
                                       plot_values=plot_values,
                                       plot_curves=plot_curves,
@@ -146,6 +148,7 @@ def run_chain(agent: Agent,
                                       environment=environment,
                                       num_episodes =num_episodes,
                                       model_class=model_class,
+                                      mdp_solver=mdp_solver,
                                       log_period=log_period,
                                       plot_values=plot_values,
                                       plot_curves=plot_curves,
@@ -155,6 +158,7 @@ def run_chain_forall_episodes(agent: Agent,
         environment: dm_env.Environment,
         num_episodes: int,
         model_class,
+        mdp_solver,
         log_period=1,
         plot_values=False,
         plot_curves=False,
@@ -194,6 +198,7 @@ def run_chain_forall_episodes(agent: Agent,
 
         hat_v = agent._v_network if model_class == "tabular" \
             else agent.get_values_for_all_states(environment.get_all_states())
+        hat_error = np.abs(mdp_solver.get_optimal_v() - hat_v)
         rmsve = np.sqrt(np.sum(np.power(hat_v - environment._true_v, 2)) / environment._nS)
         total_rmsve += rmsve
 
@@ -207,4 +212,4 @@ def run_chain_forall_episodes(agent: Agent,
         agent.episode += 1
         avg_steps.append(timesteps)
 
-    return round(total_rmsve, 2), np.mean(avg_steps, dtype=int)
+    return round(total_rmsve, 2), np.mean(avg_steps, dtype=int), hat_v, hat_error

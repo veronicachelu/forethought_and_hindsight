@@ -184,10 +184,11 @@ def run_objective(space):
 
     seed = space["crt_config"]["seed"]
     if space["env_config"]["non_gridworld"]:
-        env, agent, _ = run_experiment(seed, space, aux_agent_configs)
+        env, agent, mdp_solver = run_experiment(seed, space, aux_agent_configs)
         total_rmsve, avg_steps, values, errors = experiment.run_chain(
             agent=agent,
             model_class=space["env_config"]["model_class"],
+            mdp_solver=mdp_solver,
             environment=env,
             num_episodes=space["env_config"]["num_episodes"],
             plot_curves=space["plot_curves"],
