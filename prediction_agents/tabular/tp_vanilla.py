@@ -21,10 +21,7 @@ class TpVanilla(TabularPrediction):
             run_mode: str,
             policy,
             action_spec: specs.DiscreteArray,
-            v_network: Network,
-            model_network: Network,
-            v_parameters: NetworkParameters,
-            model_parameters: NetworkParameters,
+            network,
             batch_size: int,
             discount: float,
             replay_capacity: int,
@@ -37,7 +34,6 @@ class TpVanilla(TabularPrediction):
             max_len: int,
             lr_model: float,
             lr_planning: float,
-            epsilon: float,
             log_period: int,
             rng: Tuple,
             nrng,
@@ -62,11 +58,11 @@ class TpVanilla(TabularPrediction):
         if self._n != 0:
             self._run_mode = "{}_n{}".format(self._run_mode, self._n)
 
-        self._epsilon = epsilon
         self._exploration_decay_period = exploration_decay_period
         self._nrng = nrng
         self._replay = Replay(capacity=replay_capacity, nrng=self._nrng)
         self._min_replay_size = min_replay_size
+        self._initial_lr = lr
         self._lr = lr
         self._lr_model = lr_model
         self._initial_lr_model = lr_model
@@ -78,34 +74,38 @@ class TpVanilla(TabularPrediction):
         self._max_len = max_len
         self._input_dim = input_dim
         self._log_period = log_period
-        self._checkpoint_dir = os.path.join(self._logs,
-                                        '{}/checkpoints/seed_{}'.format(self._run_mode, self._seed))
-        if not os.path.exists(self._checkpoint_dir):
-            os.makedirs(self._checkpoint_dir)
 
-        self._checkpoint_filename = "checkpoint.npy"
+        if self._logs is not None:
+            self._checkpoint_dir = os.path.join(self._logs,
+                                            '{}/checkpoints/seed_{}'.format(self._run_mode, self._seed))
+            if not os.path.exists(self._checkpoint_dir):
+                os.makedirs(self._checkpoint_dir)
 
-        self._rng = rng
-        self._nrng = nrng
+            self._checkpoint_filename = "checkpoint.npy"
 
-        self.writer = tf.summary.create_file_writer(
-            os.path.join(self._logs, '{}/summaries/seed_{}'.format(self._run_mode, seed)))
+            self._rng = rng
+            self._nrng = nrng
 
-        self._images_dir = os.path.join(self._logs, '{}/images/seed_{}'.format(self._run_mode, seed))
-        if not os.path.exists(self._images_dir):
-            os.makedirs(self._images_dir)
+            self.writer = tf.summary.create_file_writer(
+                os.path.join(self._logs, '{}/summaries/seed_{}'.format(self._run_mode, seed)))
 
-        self._v_network = v_network
+            self._images_dir = os.path.join(self._logs, '{}/images/seed_{}'.format(self._run_mode, seed))
+            if not os.path.exists(self._images_dir):
+                os.makedirs(self._images_dir)
 
-        self._o_network = model_network[0]
-        self._fw_o_network = model_network[1]
-        self._r_network = model_network[2]
-        self._d_network = model_network[3]
+        # Internalize the networks.
+        self._v_network = network["value"]["net"]
+        self._v_parameters = network["value"]["params"]
+
+        self._o_network = network["model"]["net"][0]
+        self._fw_o_network = network["model"]["net"][1]
+        self._r_network = network["model"]["net"][2]
+        self._d_network = network["model"]["net"][3]
 
         def v_loss(v_params, transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
             v_tm1 = v_params[o_tm1]
-            v_t = v_network[o_t]
+            v_t = v_params[o_t]
             v_target = r_t + d_t * discount * v_t
             td_error = (v_target - v_tm1)
             return np.mean(td_error ** 2), td_error
@@ -118,7 +118,6 @@ class TpVanilla(TabularPrediction):
                timestep: dm_env.TimeStep,
                eval: bool = False
                ) -> int:
-        # return np.argmax(self._pi[timestep.observation])
         return self._pi(timestep.observation)
 
     def value_update(
@@ -141,7 +140,6 @@ class TpVanilla(TabularPrediction):
                             }
         self._log_summaries(losses_and_grads, "value")
 
-
     def model_based_train(self):
         return False
 
@@ -149,27 +147,30 @@ class TpVanilla(TabularPrediction):
         return True
 
     def load_model(self):
-        checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
-        if os.path.exists(checkpoint):
-            to_load = np.load(checkpoint, allow_pickle=True)[()]
-            self.episode = to_load["episode"]
-            self.total_steps = to_load["total_steps"]
-            self._v_network = to_load["v_parameters"]
-            print("Restored from {}".format(checkpoint))
-        else:
-            print("Initializing from scratch.")
+        if self._logs is not None:
+            checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
+            if os.path.exists(checkpoint):
+                to_load = np.load(checkpoint, allow_pickle=True)[()]
+                self.episode = to_load["episode"]
+                self.total_steps = to_load["total_steps"]
+                self._v_network = to_load["v_parameters"]
+                print("Restored from {}".format(checkpoint))
+            else:
+                print("Initializing from scratch.")
 
     def save_model(self):
-        checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
-        to_save = {
-            "episode": self.episode,
-            "total_steps": self.total_steps,
-            "v_parameters": self._v_network,
-        }
-        np.save(checkpoint, to_save)
-        print("Saved checkpoint for episode {}, total_steps {}: {}".format(self.episode,
-                                                                           self.total_steps,
-                                                                           checkpoint))
+        if self._logs is not None:
+            checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
+            to_save = {
+                "episode": self.episode,
+                "total_steps": self.total_steps,
+                "v_parameters": self._v_network,
+            }
+            np.save(checkpoint, to_save)
+            print("Saved checkpoint for episode {}, total_steps {}: {}".format(self.episode,
+                                                                               self.total_steps,
+                                                                               checkpoint))
+
     def planning_update(
             self,
             timestep: dm_env.TimeStep,
@@ -194,18 +195,26 @@ class TpVanilla(TabularPrediction):
         pass
 
     def _log_summaries(self, losses_and_grads, summary_name):
-        losses = losses_and_grads["losses"]
+        if self._logs is not None:
+            losses = losses_and_grads["losses"]
 
-        if self._max_len == -1:
-            ep = self.total_steps
-        else:
-            ep = self.episode
-        if ep % self._log_period == 0:
-            for k, v in losses.items():
-                tf.summary.scalar("train/losses/{}/{}".format(summary_name, k), losses[k],
-                                  step=ep)
-            self.writer.flush()
+            if self._max_len == -1:
+                ep = self.total_steps
+            else:
+                ep = self.episode
+            if ep % self._log_period == 0:
+                for k, v in losses.items():
+                    tf.summary.scalar("train/losses/{}/{}".format(summary_name, k), losses[k],
+                                      step=ep)
+                self.writer.flush()
 
-    def update_hyper_params(self, step, total_steps):
-        pass
+    def update_hyper_params(self, episode, total_episodes):
+        warmup_episodes = 0
+        flat_period = 0
+        decay_period = total_episodes - warmup_episodes - flat_period
+        if episode > warmup_episodes:
+            steps_left = total_episodes - episode - flat_period
+            if steps_left <= 0:
+                return
+            self._lr = self._initial_lr * (steps_left / decay_period)
 

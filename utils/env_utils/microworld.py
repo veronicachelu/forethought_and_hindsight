@@ -16,7 +16,7 @@ class Actions():
 
 class MicroWorld(dm_env.Environment):
     def __init__(self, path=None, stochastic=False, random_restarts=False,
-                 seed=0, rng=None, obs_type="tabular", env_size=1, max_reward=1):
+                 rng=None, obs_type="tabular", env_size=1, max_reward=1.0):
         self._str_MDP = ''
         self._height = -1
         self._width = -1
@@ -87,14 +87,14 @@ class MicroWorld(dm_env.Environment):
         if (nX, nY) in self._g:
             return self._max_reward
         else:
-            return 0
+            return 0.0
 
     def _is_terminal(self):
         return (self._cX, self._cY) in self._g
 
     def get_next_state_and_reward(self, s, action):
         if s == self._nS:
-            return s, 0
+            return s, 0.0
 
         s = self._get_crt_state()
         tempX = self._cX
@@ -103,14 +103,14 @@ class MicroWorld(dm_env.Environment):
 
         if self._is_terminal():
             next_s = self._nS
-            reward = 0
+            reward = 0.0
         else:
             nX, nY = self._get_next_state(action)
             if nX != -1 and nY != -1:  # If it is not the absorbing state:
                 reward = self._get_next_reward(nX, nY)
                 next_s = self._get_state_index(nX, nY)
             else:
-                reward = 0
+                reward = 0.0
                 next_s = self._nS
 
         self._cX = tempX
@@ -183,6 +183,7 @@ class MicroWorld(dm_env.Environment):
 
         if self._is_terminal():
             self._reset_next_step = True
+            self._cX, self._cY = self._sX, self._sY
             return dm_env.termination(reward=reward, observation=self._observation())
         return dm_env.transition(reward=reward, observation=self._observation())
 

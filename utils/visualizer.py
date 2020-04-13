@@ -66,6 +66,28 @@ def plot_v(env, values, logs=None, colormap='pink',
     if logs is not None:
         plt.savefig(os.path.join(logs, filename))
 
+def plot_error(env, values, logs=None, colormap='gray',
+           filename="error.png",
+           eta_pi=None,
+           env_type="discrete"):
+    plot_grid(env, env_type=env_type)
+
+    # if true_v is not None:
+    #     vmin = np.min(true_v)
+    #     vmax = np.max(true_v)
+    # else:
+    # vmin = np.min(values)
+    # vmax = np.max(values)
+    # values *= eta_pi
+    plt.imshow(values, interpolation="nearest",
+               cmap=colormap)
+    # plt.yticks([])
+    # plt.xticks([])
+    # plt.colorbar(ticks=[vmin, vmax])
+    if logs is not None:
+        plt.savefig(os.path.join(logs, filename))
+
+
 def plot_eta_pi(env, values, logs=None, colormap='pink',
            filename="eta_pi.png",
            true_v=None,

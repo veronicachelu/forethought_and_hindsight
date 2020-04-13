@@ -18,28 +18,29 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_string('plot_filename', "tp_bw_vs_iterat", 'where to save results')
+flags.DEFINE_string('plot_filename', "lp_explicit_exp", 'where to save results')
 # flags.DEFINE_string('comarison_scheme', "fw_bw_gen", 'fw_bw or bw')
 flags.DEFINE_string('comarison_scheme', "final", 'fw_bw or bw')
 # flags.DEFINE_bool('nstep', True, 'n-step plot or comparison plt')
-flags.DEFINE_bool('nstep', False, 'sn-step plot or comparison plt')
+flags.DEFINE_bool('nstep', False, 'n-step plot or comparison plt')
 flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 # flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
 # flags.DEFINE_bool('all', True, 'n-step plot or comparison plt')
 flags.DEFINE_bool('all', False, 'n-step plot or comparison plt')
-flags.DEFINE_integer('num_runs', 20, '')
+flags.DEFINE_integer('num_runs', 10, '')
 # flags.DEFINE_integer('num_runs', 1, '')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
-# flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
-flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
+flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
+# flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
 flags.DEFINE_string('mdp_type', 'episodic', 'episodic or absorbing')
 flags.DEFINE_string('env_type', 'discrete', 'discrete or continuous')
 # flags.DEFINE_string('env_type', 'continuous', 'discrete or continuous')
-flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
-# flags.DEFINE_string('obs_type', 'onehot', 'onehot, tabular, tile for continuous')
+# flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
+flags.DEFINE_string('obs_type', 'onehot', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'tile', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze.mdp',
+flags.DEFINE_string('mdp', './mdps/maze_48.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_486.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_864.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_80.mdp',
@@ -49,11 +50,11 @@ flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous
 # flags.DEFINE_string('mdp', 'tree',
 # flags.DEFINE_string('mdp', 'shortcut',
 # flags.DEFINE_string('mdp', 'random_chain',
-flags.DEFINE_string('mdp', 'po',
+# flags.DEFINE_string('mdp', 'po',
 # flags.DEFINE_string('mdp', 'bandit',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
-# flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
-flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
+flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
+# flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
 FLAGS = flags.FLAGS
 FONTSIZE = 25
 LINEWIDTH = 4
@@ -111,10 +112,19 @@ naming_convention = {"bw":
                            "fw_bw_Imprv": 'distribution/fw_bw_buff_Imprv',
                            },
                       "linear":
-                          {"jumpy_exp": 'expectation/backward',
-                           "jumpy_gen": 'generative/backward',
-                           "fw_exp": 'expectation/forward',
-                           "fw_gen": 'generative/forward'},
+                          {"explicit_exp": 'expectation/bw',
+                           "explicit_gen": 'generative/bw',
+                           "explicit_true": 'true_sample/bw',
+                           "explicit_iterat": 'iterate_generative/bw',
+                           "fw": 'distribution/fw_online',
+                           "fw_rnd": 'expectation/fw_random_buff',
+                           "fw_pri": 'expectation/fw_prioritized_buff',
+                           "bw_fw_exp": 'expectation/bw_fw',
+                           "bw_fw_gen": 'generative/bw_fw',
+                           "fw_bw_PWMA": 'expectation/fw_bw_buff_PWMA',
+                           "fw_bw_MG": 'expectation/fw_bw_buff_MG',
+                           "fw_bw_Imprv": 'expectation/fw_bw_buff_Imprv',
+                           },
                       }
                         }
 

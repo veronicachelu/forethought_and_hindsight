@@ -9,16 +9,21 @@ import prediction_network
 import utils
 from utils import *
 
-flags.DEFINE_string('run_mode', 'fw_bw_PWMA', 'what agent to run')
+# flags.DEFINE_string('run_mode', 'vanilla', 'what agent to run')
+flags.DEFINE_string('run_mode', 'explicit_v', 'what agent to run')
 flags.DEFINE_boolean('optimal_policy', True, 'optimal_policy')
+# flags.DEFINE_boolean('no_latent', False, 'no_latent')
+flags.DEFINE_boolean('no_latent', True, 'no_latent')
 flags.DEFINE_string('policy', 'optimal', 'optimal or random')
-# flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
-flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
+flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
+flags.DEFINE_string('model_family', 'intrinsic', 'tabular or linear')
+# flags.DEFINE_string('model_family', 'extrinsic', 'tabular or linear')
+# flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
 # flags.DEFINE_string('env_type', 'continuous', 'discrete or continuous')
 flags.DEFINE_string('env_type', 'discrete', 'discrete or continuous')
-# flags.DEFINE_string('obs_type', 'onehot', 'onehot, tabular, tile for continuous')
+flags.DEFINE_string('obs_type', 'onehot', 'onehot, tabular, tile for continuous')
 # flags.DEFINE_string('obs_type', 'tile', 'onehot, tabular, tile for continuous')
-flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
+# flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
 flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
 # flags.DEFINE_string('mdp', './mdps/simple.mdp',
@@ -32,10 +37,10 @@ flags.DEFINE_integer('max_reward', 1, 'max reward')
 # flags.DEFINE_string('mdp', 'serial'   ,
 # flags.DEFINE_string('mdp', 'bandit',
 # flags.DEFINE_string('mdp', './mdps/maze.mdp',
-# flags.DEFINE_string('mdp', './mdps/maze_48.mdp',
+flags.DEFINE_string('mdp', './mdps/maze_48.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_80.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_221.mdp',
-flags.DEFINE_string('mdp', './mdps/maze_486.mdp',
+# flags.DEFINE_string('mdp', './mdps/maze_486.mdp',
 # flags.DEFINE_string('mdp', './mdps/maze_864.mdp',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
 flags.DEFINE_integer('env_size', 1, 'Discreate - Env size: 1x, 2x, 4x, 10x, but without the x.'
@@ -49,7 +54,7 @@ flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 # flags.DEFINE_integer('num_episodes', 100, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_episodes', 70, 'Number of episodes to run for.')
 flags.DEFINE_integer('num_episodes', 100, 'Number of episodes to run for.')
-flags.DEFINE_integer('num_runs', 20, 'Number of episodes to run for.')
+flags.DEFINE_integer('num_runs', 10, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_runs', 0, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_steps', 2000, 'Number of episodes to run for.')
 # flags.DEFINE_integer('num_steps', 1000, 'Number of episodes to run for.')
@@ -59,7 +64,7 @@ flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', 100, 'Maximum number of time steps an episode may last (default: 100).')
 # flags.DEFINE_integer('max_len', 100, 'Maximum number of time steps an episode may last (default: 100).')
 flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
-flags.DEFINE_integer('num_units', 0, 'number of units per hidden layer')
+flags.DEFINE_integer('num_units', 8, 'number of units per hidden layer')
 flags.DEFINE_integer('planning_iter', 1, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
 flags.DEFINE_integer('planning_depth', 1, 'Planning depth for MCTS')
@@ -70,18 +75,18 @@ flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
 flags.DEFINE_float('discount', .95, 'discounting on the agent side')
 flags.DEFINE_integer('replay_capacity', 50, 'size of the replay buffer')
 flags.DEFINE_integer('min_replay_size', 1, 'min replay size before training.')
-flags.DEFINE_float('lr', 5e-1, 'learning rate for q optimizer')
+flags.DEFINE_float('lr', 1e-2, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 5e-3, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 1, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 0.2, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 0.2, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_planning', 5e-1, 'learning rate for q optimizer')
+flags.DEFINE_float('lr_planning', 1e-2, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 1e-3, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr_model', 1e-2, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 0.01, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 1e-3, 'learning rate for model optimizer')
-# flags.DEFINE_float('lr_model', 1e-3, 'learning rate for model optimizer')
-flags.DEFINE_float('lr_model',  5e-1, 'learning rate for model optimizer')
+flags.DEFINE_float('lr_model', 5e-3, 'learning rate for model optimizer')
+# flags.DEFINE_float('lr_model',  5e-4, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 0.1, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 5e-4, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_model', 1e-3, 'learning rate for model optimizer')
@@ -89,8 +94,8 @@ flags.DEFINE_float('epsilon', 0.1, 'fraction of exploratory random actions at th
 # flags.DEFINE_float('epsilon', 0.05, 'fraction of exploratory random actions at the end of the decay')
 flags.DEFINE_integer('seed', 42, 'seed for random number generation')
 flags.DEFINE_boolean('verbose', True, 'whether to log to std output')
-# flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
-flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
+flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
+# flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
 flags.DEFINE_boolean('random_restarts', False, 'random_restarts or not.')
 flags.DEFINE_boolean('double_input_reward_model', True, 'double_input_reward_model or not.')
 
@@ -100,6 +105,10 @@ NON_GRIDWORLD_MDPS = ["random_chain", "boyan_chain", "bandit", "shortcut",
                       "po"]
 
 run_mode_to_agent_prop = {
+        "vanilla_intrinsic": {"linear":
+                        {"class": "LpIntrinsicVanilla"},},
+        "explicit_v": {"linear":
+                        {"class": "LpExplicitValueBased"},},
         "vanilla": {"linear":
                         {"class": "LpVanilla"},
                     "tabular":
@@ -265,36 +274,30 @@ def get_env(nrng, logs):
         mdp_solver = MdpSolver(env, nS, nA, FLAGS.discount)
         if FLAGS.optimal_policy:
             pi = mdp_solver.get_optimal_policy()
-            policy = lambda x: np.argmax(pi[x])
+            policy = lambda x: np.argmax(pi[np.argmax(x)])
         else:
             policy = lambda x: nrng.choice(range(env._nA), p=env._nA * [1 / env._nA])
         v = mdp_solver.get_optimal_v()
         # v = env.reshape_v(v)
         # plot_v(env, v, logs, env_type=FLAGS.env_type)
-        # plot_policy(env, env.reshape_pi(policy), logs, env_type=FLAGS.env_type)
-        # eta_pi = mdp_solver.get_eta_pi(policy)
+        # plot_policy(env, env.reshape_pi(mdp_solver._pi), logs, env_type=FLAGS.env_type)
+        # eta_pi = mdp_solver.get_eta_pi(mdp_solver._pi)
         # plot_eta_pi(env, env.reshape_v(eta_pi), logs, env_type=FLAGS.env_type)
 
     return env, nS, nA, input_dim, policy, mdp_solver
 
 def get_agent(env, seed, nrng, nA, input_dim, policy, logs):
     rng = jrandom.PRNGKey(seed=seed)
-    rng_q, rng_model, rng_agent = jrandom.split(rng, 3)
-    v_network, v_network_params = prediction_network.get_prediction_v_network(num_hidden_layers=FLAGS.num_hidden_layers,
-                                                                              num_units=FLAGS.num_units,
-                                                                              nA=nA,
-                                                                              input_dim=input_dim,
-                                                                              rng=rng_q,
-                                                                              model_class=FLAGS.model_class)
-    model_network, model_network_params = prediction_network.get_prediction_model_network(
-        num_hidden_layers=FLAGS.num_hidden_layers,
-        num_units=FLAGS.num_units,
-        nA=nA,
-        input_dim=input_dim,
-        rng=rng_model,
-        model_class=FLAGS.model_class,
-        double_input_reward_model=FLAGS.double_input_reward_model)
-
+    # rng_q, rng_model, rng_agent = jrandom.split(rng, 3)
+    network = prediction_network.get_network(num_hidden_layers=FLAGS.num_hidden_layers,
+                                              num_units=FLAGS.num_units,
+                                              nA=nA,
+                                              input_dim=input_dim,
+                                              rng=rng,
+                                              model_family=FLAGS.model_family,
+                                              model_class=FLAGS.model_class,
+                                              double_input_reward_model=True,
+                                             )
     agent_prop = run_mode_to_agent_prop[FLAGS.run_mode]
     run_mode = FLAGS.run_mode
     agent_class = getattr(prediction_agents, agent_prop[FLAGS.model_class]["class"])
@@ -303,10 +306,11 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, logs):
         run_mode=run_mode,
         policy=policy,
         action_spec=env.action_spec(),
-        v_network=v_network,
-        v_parameters=v_network_params,
-        model_network=model_network,
-        model_parameters=model_network_params,
+        # v_network=v_network,
+        # v_parameters=v_network_params,
+        # model_network=model_network,
+        # model_parameters=model_network_params,
+        network=network,
         batch_size=FLAGS.batch_size,
         discount=FLAGS.discount,
         replay_capacity=FLAGS.replay_capacity,
@@ -321,9 +325,9 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, logs):
         epsilon=FLAGS.epsilon,
         exploration_decay_period=FLAGS.num_episodes,
         seed=seed,
-        rng=rng_agent,
         nrng=nrng,
         logs=logs,
+        no_latent=FLAGS.no_latent,
         max_len=FLAGS.max_len,
         log_period=FLAGS.log_period,
         input_dim=input_dim,

@@ -15,34 +15,33 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class TpExplicitDistrib(TpVanilla):
+class TpExplicitLambda(TpVanilla):
     def __init__(
             self,
             **kwargs
     ):
 
-        super(TpExplicitDistrib, self).__init__(**kwargs)
+        super(TpExplicitLambda, self).__init__(**kwargs)
         self._sequence = []
         self._should_reset_sequence = False
+        self._lambda = self._n
 
         def model_loss(o_params, r_params, transitions):
-            o_tmn_target = transitions[0][0]
-            o_t = transitions[-1][-1]
+            o_tm1, a_tm1, r_t, d_t, o_t = transitions
 
-            o_tmn = o_params[o_t]
-            o_target = np.eye(np.prod(self._input_dim))[o_tmn_target] - o_tmn
-            o_error = o_target - o_tmn
+            model_o_s_t = o_params[o_t]
+            model_o_s_tm1 = o_params[o_tm1]
+            o_target = (1 - self._lambda) * np.eye(np.prod(self._input_dim))[o_tm1] +\
+                       self._lambda * model_o_s_tm1
+            o_error = o_target - model_o_s_t
             o_loss = np.mean(o_error ** 2)
 
-            if self._double_input_reward_model:
-                r_tmn = r_params[o_tmn_target, o_t]
-            else:
-                r_tmn = r_params[o_tmn_target]
-            r_tmn_target = 0
-            for i, t in enumerate(transitions):
-                r_tmn_target += (self._discount ** i) * t[2]
+            model_r_s_t = r_params[o_t]
+            model_r_s_tm1 = r_params[o_tm1]
+            r_target = (1 - self._lambda) * r_t + \
+                       self._lambda * self._discount * model_r_s_tm1
 
-            r_error = r_tmn_target - r_tmn
+            r_error = r_target - model_r_s_t
             r_loss = np.mean(r_error ** 2)
 
             total_error = o_loss + r_loss
@@ -82,37 +81,33 @@ class TpExplicitDistrib(TpVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        if self._n == 0:
+        if self._lambda == 0:
             return
-        if len(self._sequence) >= self._n:
-            o_tmn = self._sequence[0][0]
-            o_t = self._sequence[-1][-1]
-            losses, gradients = self._model_loss_grad(self._o_network, self._r_network, self._sequence)
-            if self._double_input_reward_model:
-                self._o_network[o_t], self._r_network[o_tmn, o_t] = \
-                    self._model_opt_update(gradients, [self._o_network[o_t],
-                                                   self._r_network[o_tmn, o_t]])
-            else:
-                self._o_network[o_t], self._r_network[o_tmn] = \
-                    self._model_opt_update(gradients, [self._o_network[o_t],
-                                                   self._r_network[o_tmn]])
-            total_loss, o_loss, r_loss = losses
-            o_grad, r_grad = gradients
-            o_grad = np.linalg.norm(np.asarray(o_grad), ord=2)
-            losses_and_grads = {"losses": {
-                "loss": total_loss,
-                "o_loss": o_loss,
-                "r_loss": r_loss,
-                "o_grad": o_grad,
-                "r_grad": r_grad,
-            },
-            }
-            self._log_summaries(losses_and_grads, "model")
-            self._sequence = self._sequence[1:]
 
-        if self._should_reset_sequence:
-            self._sequence = []
-            self._should_reset_sequence = False
+        o_tm1 = np.array([timestep.observation])
+        a_tm1 = np.array([action])
+        r_t = np.array([new_timestep.reward])
+        d_t = np.array([new_timestep.discount])
+        o_t = np.array([new_timestep.observation])
+        transitions = [o_tm1, a_tm1, r_t, d_t, o_t]
+
+        losses, gradients = self._model_loss_grad(self._o_network, self._r_network, transitions)
+        self._o_network[o_t], self._r_network[o_t] = \
+            self._model_opt_update(gradients, [self._o_network[o_t],
+                                           self._r_network[o_t]])
+        total_loss, o_loss, r_loss = losses
+        o_grad, r_grad = gradients
+        o_grad = np.linalg.norm(np.asarray(o_grad), ord=2)
+        losses_and_grads = {"losses": {
+            "loss": total_loss,
+            "o_loss": o_loss,
+            "r_loss": r_loss,
+            "o_grad": o_grad,
+            "r_grad": r_grad,
+        },
+        }
+        self._log_summaries(losses_and_grads, "model")
+        self._sequence = self._sequence[1:]
 
     def planning_update(
             self,
@@ -131,7 +126,7 @@ class TpExplicitDistrib(TpVanilla):
             self._v_network[prev_o_tmn] = self._v_planning_opt_update(gradients[prev_o_tmn],
                                                              self._v_network[prev_o_tmn])
 
-        losses_and_grads = {"losses": {"loss_v_planning": np.array(np.sum(losses))},
+        losses_and_grads = {"losses": {"loss_q_planning": np.array(np.sum(losses))},
                             }
         self._log_summaries(losses_and_grads, "value_planning")
 
@@ -174,13 +169,14 @@ class TpExplicitDistrib(TpVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        self._sequence.append([timestep.observation,
-                               action,
-                               new_timestep.reward,
-                               new_timestep.discount,
-                               new_timestep.observation])
-        if new_timestep.discount == 0:
-            self._should_reset_sequence = True
+        pass
+        # self._sequence.append([timestep.observation,
+        #                        action,
+        #                        new_timestep.reward,
+        #                        new_timestep.discount,
+        #                        new_timestep.observation])
+        # if new_timestep.discount == 0:
+        #     self._should_reset_sequence = True
 
     def _log_summaries(self, losses_and_grads, summary_name):
         losses = losses_and_grads["losses"]
