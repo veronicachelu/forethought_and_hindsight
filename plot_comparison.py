@@ -19,7 +19,7 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_string('agent', "vanilla", 'where to save results')
+flags.DEFINE_string('comparison_config', "non_parametric_fw", 'where to save results')
 flags.DEFINE_string('env', "repeat", 'where to save results')
 # flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
@@ -29,26 +29,88 @@ FLAGS = flags.FLAGS
 FONTSIZE = 25
 LINEWIDTH = 4
 
-def print_name(run_mode):
-    if run_mode == "vanilla":
-        return run_mode
-    prefix_suffix = run_mode.split("_")
-    suffix = prefix_suffix[-1]
-    prefix = "_".join(prefix_suffix[:-1])
-    return "{}_{}".format(naming_convention[FLAGS.comarison_scheme][FLAGS.model_class][prefix], suffix)
-
 def main(argv):
     del argv  # Unused.
     best_hyperparam_folder = os.path.join(FLAGS.logs, "best")
     logs = os.path.join(best_hyperparam_folder, FLAGS.env)
     plots = os.path.join(FLAGS.logs, FLAGS.env)
-    plots = os.path.join(plots, FLAGS.agent)
 
     if not os.path.exists(plots):
         os.makedirs(plots)
 
-    persistent_agent_config = configs.agent_config.config[FLAGS.agent]
     env_config, volatile_agent_config = load_env_and_volatile_configs(FLAGS.env)
+
+    agents = configs.comparison_configs[FLAGS.comparison_config]
+    for agent in agents:
+        persistent_agent_config = configs.agent_config.config[FLAGS.agent]
+        plot_for_agent(agent, env_config, persistent_agent_config,
+                       volatile_agent_config, logs)
+
+    persistent_agent_config = configs.agent_config.config["vanilla"]
+    plot_for_agent("vanilla", env_config, persistent_agent_config,
+                   volatile_agent_config, logs)
+
+    plt.xlabel("Episode count", fontsize=FONTSIZE)
+
+    if env_config["non_gridworld"]:
+        if FLAGS.cumulative_rmsve:
+            yaxis = 'Cumulative RMSVE'
+        else:
+            yaxis = 'RMSVE'
+    else:
+        yaxis = 'MSVE'
+
+    plt.ylabel(yaxis, fontsize=FONTSIZE)
+    plt.legend(loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
+               frameon=True,
+               prop={'size': FONTSIZE})
+    if not os.path.exists(plots):
+        os.makedirs(plots)
+
+    plt.savefig(os.path.join(plots,
+                             "{}_{}.png".format(FLAGS.comparison_config,
+                                                "CumRMSVE" if
+                                                FLAGS.cumulative_rmsve else
+                                                "RMSVE")))
+
+def plot_for_agent(agent, env_config, persistent_agent_config,
+                   volatile_agent_config, logs):
+    planning_depth, replay_capacity = get_best_hyperparqms(FLAGS.agent,
+                                                                volatile_agent_config)
+    log_folder_agent = os.path.join(logs, "{}_{}_{}".format(agent, planning_depth, replay_capacity))
+    volatile_config = {"agent": agent,
+                       "planning_depth": planning_depth,
+                       "replay_capacity": replay_capacity,
+                       "logs": log_folder_agent}
+    volatile_config = {"planning_depth": planning_depth,
+                       "replay_capacity": replay_capacity}
+    volatile_configs.append(volatile_config)
+
+    def compare(a, b):
+        if a["planning_depth"] < b["planning_depth"]:
+            return a
+        elif a["planning_depth"] == b["planning_depth"]:
+            return a if a["replay_capacity"] < b["replay_capacity"] else b
+        else:
+            return b
+
+    volatile_configs = sorted(volatile_configs, key=cmp_to_key(compare))
+
+    if agent != "vanilla":
+        color = plt.cm.Blues(np.linspace(0.5, 1.0, n)[::-1])
+        hexcolor = map(lambda rgb: '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
+                       tuple(color[:, 0:-1]))
+        color = hexcolor  # plt.cm.viridis(np.linspace(0, 1, n))
+        mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
+
+    for volatile_config in volatile_configs:
+        space = {
+            "env_config": env_config,
+            "agent_config": persistent_agent_config,
+            "crt_config": volatile_config}
+        plot_tensorflow_log(space)
+
+        #####
 
     limited_volatile_to_run, volatile_to_run = build_hyper_list(FLAGS.agent,
                                                                 volatile_agent_config)
