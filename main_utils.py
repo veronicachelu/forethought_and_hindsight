@@ -77,7 +77,7 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, space, aux_agent_configs):
         max_len=aux_agent_configs["max_len"],
         log_period=space["log_period"],
         input_dim=input_dim,
-        double_input_reward_model=True
+        # double_input_reward_model=True
     )
     return agent
 

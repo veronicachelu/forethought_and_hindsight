@@ -60,10 +60,10 @@ class TpExplicitLambda(TpVanilla):
             o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0, axis=-1))
             for prev_o_tmn in range(np.prod(self._input_dim)):
                 v_tmn = v_params[prev_o_tmn]
-                if self._double_input_reward_model:
-                    r_tmn = r_params[prev_o_tmn, o]
-                else:
-                    r_tmn = r_params[prev_o_tmn]
+                # if self._double_input_reward_model:
+                r_tmn = r_params[prev_o_tmn, o]
+                # else:
+                #     r_tmn = r_params[prev_o_tmn]
                 td_error = (r_tmn + (self._discount ** self._n) *
                             v_params[o] - v_tmn)
 

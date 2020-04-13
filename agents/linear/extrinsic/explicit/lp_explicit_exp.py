@@ -36,10 +36,10 @@ class LpExplicitExp(LpVanilla):
 
             o_loss = 20 * jnp.mean(jax.vmap(rlax.l2_loss)(model_o_tmn, o_tmn_target))
 
-            if self._double_input_reward_model:
-                r_input = jnp.concatenate([model_o_tmn, o_t], axis=-1)
-            else:
-                r_input = model_o_tmn
+            # if self._double_input_reward_model:
+            r_input = jnp.concatenate([model_o_tmn, o_t], axis=-1)
+            # else:
+            #     r_input = model_o_tmn
 
             model_r_tmn = self._r_network(r_online_params, lax.stop_gradient(r_input))
             r_t_target = 0
@@ -56,10 +56,10 @@ class LpExplicitExp(LpVanilla):
         def v_planning_loss(v_params, o_params, r_params, o_t):
             o_tmn = self._o_forward(o_params, o_t)
             v_tmn = self._v_network(v_params, lax.stop_gradient(o_tmn))
-            if self._double_input_reward_model:
-                r_input = jnp.concatenate([o_tmn, o_t], axis=-1)
-            else:
-                r_input = o_tmn
+            # if self._double_input_reward_model:
+            r_input = jnp.concatenate([o_tmn, o_t], axis=-1)
+            # else:
+            #     r_input = o_tmn
             r_tmn = self._r_forward(r_params, r_input)
             v_t_target = self._v_network(v_params, o_t)
             td_error = jax.vmap(rlax.td_learning)(v_tmn, r_tmn,

@@ -17,18 +17,19 @@ def get_network(num_hidden_layers: int,
                   input_dim: Tuple,
                   model_class="tabular",
                   model_family="extrinsic",
-                  double_input_reward_model=False):
+                  # double_input_reward_model=False
+                ):
 
     if model_class == "tabular":
         return get_tabular_network(num_hidden_layers, num_units, nA,
-                            rng, input_dim, double_input_reward_model)
+                            rng, input_dim)
     else:
         if model_family == "extrinsic":
             return get_extrinsic_network(num_hidden_layers, num_units, nA,
-                            rng, input_dim, double_input_reward_model)
+                            rng, input_dim)
         else:
             return get_intrinsic_network(num_hidden_layers, num_units, nA,
-                                  rng, input_dim, double_input_reward_model)
+                                  rng, input_dim)
 
 
 
@@ -37,28 +38,30 @@ def get_tabular_network(num_hidden_layers: int,
                   nA: int,
                   rng: List,
                   input_dim: Tuple,
-                  double_input_reward_model=False):
+                  # double_input_reward_model=False
+                        ):
+
     network = {}
     network["value"] = {"net": np.zeros(shape=input_dim),
                         "params": None
                         }
-    if double_input_reward_model:
+    # if double_input_reward_model:
         # transitions # fw transitions # rewards # discounts
-        network["model"] = {"net": [np.zeros(shape=input_dim + (np.prod(input_dim),)),
-                                    np.zeros(shape=input_dim + (np.prod(input_dim),)),
-                                    np.zeros(shape=input_dim + (np.prod(input_dim),)), \
-                                    # np.zeros(shape=input_dim + (2,))],\
-                                    np.zeros(shape=input_dim)], \
-                            "params": None
-                            }
-    else:
-        network["model"] = {"net": [np.zeros(shape=input_dim + (np.prod(input_dim),)),
-                                    np.zeros(shape=input_dim + (np.prod(input_dim),)),
-                                    np.zeros(shape=input_dim), \
-                                    # np.zeros(shape=input_dim + (2,))],\
-                                    np.zeros(shape=input_dim)], \
-                            "params": None
-                            }
+    network["model"] = {"net": [np.zeros(shape=input_dim + (np.prod(input_dim),)),
+                                np.zeros(shape=input_dim + (np.prod(input_dim),)),
+                                np.zeros(shape=input_dim + (np.prod(input_dim),)), \
+                                # np.zeros(shape=input_dim + (2,))],\
+                                np.zeros(shape=input_dim)], \
+                        "params": None
+                        }
+    # else:
+    #     network["model"] = {"net": [np.zeros(shape=input_dim + (np.prod(input_dim),)),
+    #                                 np.zeros(shape=input_dim + (np.prod(input_dim),)),
+    #                                 np.zeros(shape=input_dim), \
+    #                                 # np.zeros(shape=input_dim + (2,))],\
+    #                                 np.zeros(shape=input_dim)], \
+    #                         "params": None
+    #                         }
 
     return network
 
@@ -67,7 +70,9 @@ def get_extrinsic_network(num_hidden_layers: int,
                   nA: int,
                   rng: List,
                   input_dim: Tuple,
-                  double_input_reward_model=False):
+                  # double_input_reward_model=False
+                          ):
+
     input_size = np.prod(input_dim)
     network = {}
     rng_v, rng_h, rng_o, rng_fw_o, rng_r, rng_d = jrandom.split(rng, 6)
@@ -116,10 +121,10 @@ def get_extrinsic_network(num_hidden_layers: int,
     layers.append(Reshape((-1)))
 
     r_network_init, r_network = stax.serial(*layers)
-    if double_input_reward_model:
-        _, r_network_params = r_network_init(rng_r, (-1, 2 * input_size))
-    else:
-        _, r_network_params = r_network_init(rng_r, (-1, input_size))
+    # if double_input_reward_model:
+    _, r_network_params = r_network_init(rng_r, (-1, 2 * input_size))
+    # else:
+    #     _, r_network_params = r_network_init(rng_r, (-1, input_size))
 
     # gamma/discount/done
     layers = []
@@ -144,7 +149,9 @@ def get_intrinsic_network(num_hidden_layers: int,
                   nA: int,
                   rng: List,
                   input_dim: Tuple,
-                  double_input_reward_model=False):
+                  # double_input_reward_model=False
+                          ):
+
     intput_size = np.prod(input_dim)
     num_units = intput_size
     network = {}
@@ -175,10 +182,10 @@ def get_intrinsic_network(num_hidden_layers: int,
     layers.append(Reshape((-1)))
 
     r_network_init, r_network = stax.serial(*layers)
-    if double_input_reward_model:
-        _, r_network_params = r_network_init(rng_r, (-1, 2 * num_units))
-    else:
-        _, r_network_params = r_network_init(rng_r, (-1, num_units))
+    # if double_input_reward_model:
+    _, r_network_params = r_network_init(rng_r, (-1, 2 * num_units))
+    # else:
+    #     _, r_network_params = r_network_init(rng_r, (-1, num_units))
 
     layers = []
     layers.append(stax.Dense(2))

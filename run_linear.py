@@ -97,7 +97,7 @@ flags.DEFINE_boolean('verbose', True, 'whether to log to std output')
 flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
 # flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
 flags.DEFINE_boolean('random_restarts', False, 'random_restarts or not.')
-flags.DEFINE_boolean('double_input_reward_model', True, 'double_input_reward_model or not.')
+# flags.DEFINE_boolean('double_input_reward_model', True, 'double_input_reward_model or not.')
 
 FLAGS = flags.FLAGS
 NON_GRIDWORLD_MDPS = ["random_chain", "boyan_chain", "bandit", "shortcut",
@@ -296,7 +296,7 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, logs):
                                               rng=rng,
                                               model_family=FLAGS.model_family,
                                               model_class=FLAGS.model_class,
-                                              double_input_reward_model=True,
+                                              # double_input_reward_model=True,
                                              )
     agent_prop = run_mode_to_agent_prop[FLAGS.run_mode]
     run_mode = FLAGS.run_mode
@@ -331,7 +331,7 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, logs):
         max_len=FLAGS.max_len,
         log_period=FLAGS.log_period,
         input_dim=input_dim,
-        double_input_reward_model=FLAGS.double_input_reward_model
+        # double_input_reward_model=FLAGS.double_input_reward_model
     )
     return agent
 

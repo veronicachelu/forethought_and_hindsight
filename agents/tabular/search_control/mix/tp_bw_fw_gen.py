@@ -41,10 +41,10 @@ class TpBwFwGen(TpVanilla):
             fw_o_error = fw_o_target - model_o_t
             fw_o_loss = np.mean(fw_o_error ** 2)
 
-            if self._double_input_reward_model:
-                r_tmn = r_params[o_tmn_target][o_t]
-            else:
-                r_tmn = r_params[o_tmn_target]
+            # if self._double_input_reward_model:
+            r_tmn = r_params[o_tmn_target][o_t]
+            # else:
+            #     r_tmn = r_params[o_tmn_target]
             r_tmn_target = 0
             for i, t in enumerate(transitions):
                 r_tmn_target += (self._discount ** i) * t[2]
@@ -78,10 +78,10 @@ class TpBwFwGen(TpVanilla):
                 o_t = fw_o_params[sampled_o_tmn]
                 r_tmn = r_params[sampled_o_tmn]
 
-                if self._double_input_reward_model:
-                    target = 0
-                else:
-                    target = r_tmn
+                # if self._double_input_reward_model:
+                target = 0
+                # else:
+                #     target = r_tmn
 
                 # for next_o_t in range(np.prod(self._input_dim)):
                 #     if self._double_input_reward_model:
@@ -95,14 +95,14 @@ class TpBwFwGen(TpVanilla):
                 #     target += target_per_next_o
                 divisior = np.sum(o_t, axis=-1, keepdims=True)
                 o_t = np.divide(o_t, divisior, out=np.zeros_like(o_t), where=np.all(divisior != 0))
-                if self._double_input_reward_model:
-                    target += o_t[:, o[0]] * \
-                                        (r_tmn[:, o[0]] + (self._discount ** self._n) * \
-                                         v_params[o[0]])
-                else:
-                    target += o_t[:, o[0]] * \
-                                        (self._discount ** self._n) * \
-                                        v_params[o[0]]
+                # if self._double_input_reward_model:
+                target += o_t[:, o[0]] * \
+                                    (r_tmn[:, o[0]] + (self._discount ** self._n) * \
+                                     v_params[o[0]])
+                # else:
+                #     target += o_t[:, o[0]] * \
+                #                         (self._discount ** self._n) * \
+                #                         v_params[o[0]]
                 td_error = target - v_tmn
                 td_errors.append((sampled_o_tmn, td_error))
                 loss = td_error ** 2
@@ -143,20 +143,20 @@ class TpBwFwGen(TpVanilla):
             o_tmn = self._sequence[0][0]
             o_t = self._sequence[-1][-1]
             losses, gradients = self._model_loss_grad(self._o_network, self._fw_o_network, self._r_network, self._sequence)
-            if self._double_input_reward_model:
-                self._o_network[o_t], \
-                self._fw_o_network[o_tmn], \
-                self._r_network[o_tmn][o_t] = \
-                    self._model_opt_update(gradients, [self._o_network[o_t],
-                                                       self._fw_o_network[o_tmn],
-                                                       self._r_network[o_tmn][o_t]])
-            else:
-                self._o_network[o_t], \
-                self._fw_o_network[o_tmn], \
-                self._r_network[o_tmn] = \
-                    self._model_opt_update(gradients, [self._o_network[o_t],
-                                                       self._fw_o_network[o_tmn],
-                                                       self._r_network[o_tmn]])
+            # if self._double_input_reward_model:
+            self._o_network[o_t], \
+            self._fw_o_network[o_tmn], \
+            self._r_network[o_tmn][o_t] = \
+                self._model_opt_update(gradients, [self._o_network[o_t],
+                                                   self._fw_o_network[o_tmn],
+                                                   self._r_network[o_tmn][o_t]])
+            # else:
+            #     self._o_network[o_t], \
+            #     self._fw_o_network[o_tmn], \
+            #     self._r_network[o_tmn] = \
+            #         self._model_opt_update(gradients, [self._o_network[o_t],
+            #                                            self._fw_o_network[o_tmn],
+            #                                            self._r_network[o_tmn]])
             total_loss, bw_o_loss, fw_o_loss, r_loss = losses
             bw_o_grad, fw_o_grad, r_grad = gradients
             bw_o_grad = np.linalg.norm(np.asarray(bw_o_grad), ord=2)

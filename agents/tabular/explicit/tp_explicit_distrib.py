@@ -34,10 +34,8 @@ class TpExplicitDistrib(TpVanilla):
             o_error = o_target - o_tmn
             o_loss = np.mean(o_error ** 2)
 
-            if self._double_input_reward_model:
-                r_tmn = r_params[o_tmn_target, o_t]
-            else:
-                r_tmn = r_params[o_tmn_target]
+            r_tmn = r_params[o_tmn_target, o_t]
+
             r_tmn_target = 0
             for i, t in enumerate(transitions):
                 r_tmn_target += (self._discount ** i) * t[2]
@@ -61,10 +59,7 @@ class TpExplicitDistrib(TpVanilla):
             o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0, axis=-1))
             for prev_o_tmn in range(np.prod(self._input_dim)):
                 v_tmn = v_params[prev_o_tmn]
-                if self._double_input_reward_model:
-                    r_tmn = r_params[prev_o_tmn, o]
-                else:
-                    r_tmn = r_params[prev_o_tmn]
+                r_tmn = r_params[prev_o_tmn, o]
                 td_error = (r_tmn + (self._discount ** self._n) *
                             v_params[o] - v_tmn)
 
@@ -88,14 +83,9 @@ class TpExplicitDistrib(TpVanilla):
             o_tmn = self._sequence[0][0]
             o_t = self._sequence[-1][-1]
             losses, gradients = self._model_loss_grad(self._o_network, self._r_network, self._sequence)
-            if self._double_input_reward_model:
-                self._o_network[o_t], self._r_network[o_tmn, o_t] = \
-                    self._model_opt_update(gradients, [self._o_network[o_t],
-                                                   self._r_network[o_tmn, o_t]])
-            else:
-                self._o_network[o_t], self._r_network[o_tmn] = \
-                    self._model_opt_update(gradients, [self._o_network[o_t],
-                                                   self._r_network[o_tmn]])
+            self._o_network[o_t], self._r_network[o_tmn, o_t] = \
+                self._model_opt_update(gradients, [self._o_network[o_t],
+                                               self._r_network[o_tmn, o_t]])
             total_loss, o_loss, r_loss = losses
             o_grad, r_grad = gradients
             o_grad = np.linalg.norm(np.asarray(o_grad), ord=2)
@@ -142,31 +132,33 @@ class TpExplicitDistrib(TpVanilla):
         return True
 
     def load_model(self):
-        checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
-        if os.path.exists(checkpoint):
-            to_load = np.load(checkpoint, allow_pickle=True)[()]
-            self.episode = to_load["episode"]
-            self.total_steps = to_load["total_steps"]
-            self._v_network = to_load["v_parameters"]
-            self._o_network = to_load["o_parameters"]
-            self._r_network = to_load["r_parameters"]
-            print("Restored from {}".format(checkpoint))
-        else:
-            print("Initializing from scratch.")
+        if self._logs is not None:
+            checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
+            if os.path.exists(checkpoint):
+                to_load = np.load(checkpoint, allow_pickle=True)[()]
+                self.episode = to_load["episode"]
+                self.total_steps = to_load["total_steps"]
+                self._v_network = to_load["v_parameters"]
+                self._o_network = to_load["o_parameters"]
+                self._r_network = to_load["r_parameters"]
+                print("Restored from {}".format(checkpoint))
+            else:
+                print("Initializing from scratch.")
 
     def save_model(self):
-        checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
-        to_save = {
-            "episode": self.episode,
-            "total_steps": self.total_steps,
-            "v_parameters": self._v_network,
-            "o_parameters": self._o_network,
-            "r_parameters": self._r_network,
-        }
-        np.save(checkpoint, to_save)
-        print("Saved checkpoint for episode {}, total_steps {}: {}".format(self.episode,
-                                                                           self.total_steps,
-                                                                           checkpoint))
+        if self._logs is not None:
+            checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
+            to_save = {
+                "episode": self.episode,
+                "total_steps": self.total_steps,
+                "v_parameters": self._v_network,
+                "o_parameters": self._o_network,
+                "r_parameters": self._r_network,
+            }
+            np.save(checkpoint, to_save)
+            print("Saved checkpoint for episode {}, total_steps {}: {}".format(self.episode,
+                                                                               self.total_steps,
+                                                                               checkpoint))
 
     def save_transition(
             self,
@@ -183,16 +175,17 @@ class TpExplicitDistrib(TpVanilla):
             self._should_reset_sequence = True
 
     def _log_summaries(self, losses_and_grads, summary_name):
-        losses = losses_and_grads["losses"]
+        if self._logs is not None:
+            losses = losses_and_grads["losses"]
 
-        if self._max_len == -1:
-            ep = self.total_steps
-        else:
-            ep = self.episode
-        if ep % self._log_period == 0:
-            for k, v in losses.items():
-                tf.summary.scalar("train/losses/{}/{}".format(summary_name, k), losses[k], step=self.total_steps)
-            self.writer.flush()
+            if self._max_len == -1:
+                ep = self.total_steps
+            else:
+                ep = self.episode
+            if ep % self._log_period == 0:
+                for k, v in losses.items():
+                    tf.summary.scalar("train/losses/{}/{}".format(summary_name, k), losses[k], step=self.total_steps)
+                self.writer.flush()
 
     def update_hyper_params(self, episode, total_episodes):
         warmup_episodes = 0

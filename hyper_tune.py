@@ -13,7 +13,7 @@ import copy
 import configs
 from main_utils import *
 
-flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
+flags.DEFINE_string('agent', 'bw', 'what agent to run')
 flags.DEFINE_string('env', 'repeat',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')

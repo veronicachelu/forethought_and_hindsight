@@ -68,10 +68,10 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
 
             model_tmn = self._o_network(o_params, h_t)
             model_v_tmn, model_vjp_fun = jax.vjp(self._v_network, v_params, model_tmn)
-            if self._double_input_reward_model:
-                model_r_input = jnp.concatenate([model_tmn, h_t], axis=-1)
-            else:
-                model_r_input = model_tmn
+            # if self._double_input_reward_model:
+            model_r_input = jnp.concatenate([model_tmn, h_t], axis=-1)
+            # else:
+            #     model_r_input = model_tmn
             model_r_tmn_2_t = self._r_network(r_params, model_r_input)
 
             model_td_error = jax.vmap(td_learning)(model_v_tmn, model_r_tmn_2_t,
@@ -96,10 +96,10 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
             model_tmn = self._o_network(o_params, h_t)
 
             v_tmn = self._v_network(v_params, model_tmn)
-            if self._double_input_reward_model:
-                r_input = jnp.concatenate([model_tmn, h_t], axis=-1)
-            else:
-                r_input = model_tmn
+            # if self._double_input_reward_model:
+            r_input = jnp.concatenate([model_tmn, h_t], axis=-1)
+            # else:
+            #     r_input = model_tmn
             r_tmn = self._r_forward(r_params, r_input)
 
             v_t_target = self._v_network(v_params, h_t)

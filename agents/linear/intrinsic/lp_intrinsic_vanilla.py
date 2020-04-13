@@ -51,7 +51,7 @@ class LpIntrinsicVanilla(Agent):
             no_latent=False,
             seed: int = None,
             logs: str = "logs",
-            double_input_reward_model=False
+            # double_input_reward_model=False
     ):
         super().__init__()
 
@@ -65,7 +65,7 @@ class LpIntrinsicVanilla(Agent):
         self._planning_period = planning_period
         self._n = planning_depth
         self._no_latent = no_latent
-        self._double_input_reward_model = double_input_reward_model
+        # self._double_input_reward_model = double_input_reward_model
         if self._n != 0:
             self._run_mode = "{}_n{}".format(self._run_mode, self._n)
 
