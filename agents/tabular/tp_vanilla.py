@@ -54,12 +54,13 @@ class TpVanilla(Agent):
         self._planning_iter = planning_iter
         self._planning_period = planning_period
         self._n = planning_depth
+        self._replay_capacity = replay_capacity
         # self._double_input_reward_model = double_input_reward_model
-        if self._n != 0:
-            self._run_mode = "{}_n{}".format(self._run_mode, self._n)
+        self._run_mode = "{}_{}_{}".format(self._run_mode, self._n, self._replay_capacity)
 
         self._exploration_decay_period = exploration_decay_period
         self._nrng = nrng
+
         self._replay = Replay(capacity=replay_capacity, nrng=self._nrng)
         self._min_replay_size = min_replay_size
         self._initial_lr = lr

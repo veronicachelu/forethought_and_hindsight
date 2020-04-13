@@ -84,22 +84,23 @@ def run_mdp_forall_episodes(
 
         hat_v = agent._v_network if model_class == "tabular" \
             else agent.get_values_for_all_states(environment.get_all_states())
+        hat_error = np.abs(mdp_solver.get_optimal_v() - hat_v)
 
         rmsve = get_rmsve(mdp_solver, hat_v)
         total_rmsve += rmsve
 
-        if plot_errors and agent.episode % log_period == 0:
-            plot_error(env=environment,
-                       values=(environment.reshape_v(mdp_solver.get_optimal_v()) - environment.reshape_v(hat_v)) ** 2,
-                       logs=agent._images_dir,
-                       eta_pi=environment.reshape_v(mdp_solver.get_eta_pi(mdp_solver._pi)),
-                       filename="error_{}.png".format(agent.episode))
-        if plot_values and agent.episode % log_period == 0:
-            plot_v(env=environment,
-                   values=environment.reshape_v(hat_v),
-                   logs=agent._images_dir,
-                   true_v=environment.reshape_v(mdp_solver.get_optimal_v()),
-                   filename="v_{}.png".format(agent.episode))
+        # if plot_errors and agent.episode % log_period == 0:
+        #     plot_error(env=environment,
+        #                values=(environment.reshape_v(mdp_solver.get_optimal_v()) - environment.reshape_v(hat_v)) ** 2,
+        #                logs=agent._images_dir,
+        #                eta_pi=environment.reshape_v(mdp_solver.get_eta_pi(mdp_solver._pi)),
+        #                filename="error_{}.png".format(agent.episode))
+        # if plot_values and agent.episode % log_period == 0:
+        #     plot_v(env=environment,
+        #            values=environment.reshape_v(hat_v),
+        #            logs=agent._images_dir,
+        #            true_v=environment.reshape_v(mdp_solver.get_optimal_v()),
+        #            filename="v_{}.png".format(agent.episode))
 
         if plot_curves and agent.episode % log_period == 0:
             # agent.save_model()
@@ -113,7 +114,7 @@ def run_mdp_forall_episodes(
         agent.episode += 1
         avg_steps.append(t)
 
-    return round(total_rmsve, 2), np.mean(avg_steps, dtype=int)
+    return round(total_rmsve, 2), np.mean(avg_steps, dtype=int), hat_v, hat_error
 
 def get_rmsve(mdp_solver, hat_v):
     eta_pi = mdp_solver.get_eta_pi(mdp_solver._pi)

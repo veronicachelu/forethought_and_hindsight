@@ -9,6 +9,7 @@ from absl import app
 from absl import flags
 import matplotlib.style as style
 import cycler
+from main_utils import *
 import glob
 style.available
 style.use('seaborn-poster') #sets the size of the charts
@@ -18,106 +19,15 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_string('plot_filename', "tp_bw_vs_iterat", 'where to save results')
-# flags.DEFINE_string('comarison_scheme', "fw_bw_gen", 'fw_bw or bw')
-flags.DEFINE_string('comarison_scheme', "final", 'fw_bw or bw')
-# flags.DEFINE_bool('nstep', True, 'n-step plot or comparison plt')
-flags.DEFINE_bool('nstep', False, 'sn-step plot or comparison plt')
-flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
-# flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
-# flags.DEFINE_bool('all', True, 'n-step plot or comparison plt')
-flags.DEFINE_bool('all', False, 'n-step plot or comparison plt')
-flags.DEFINE_integer('num_runs', 20, '')
-# flags.DEFINE_integer('num_runs', 1, '')
+flags.DEFINE_string('agent', "vanilla", 'where to save results')
+flags.DEFINE_string('env', "repeat", 'where to save results')
+# flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
+flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
+# flags.DEFINE_integer('num_runs', 100, '')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
-# flags.DEFINE_string('model_class', 'linear', 'tabular or linear')
-flags.DEFINE_string('model_class', 'tabular', 'tabular or linear')
-flags.DEFINE_string('mdp_type', 'episodic', 'episodic or absorbing')
-flags.DEFINE_string('env_type', 'discrete', 'discrete or continuous')
-# flags.DEFINE_string('env_type', 'continuous', 'discrete or continuous')
-flags.DEFINE_string('obs_type', 'tabular', 'onehot, tabular, tile for continuous')
-# flags.DEFINE_string('obs_type', 'onehot', 'onehot, tabular, tile for continuous')
-# flags.DEFINE_string('obs_type', 'tile', 'onehot, tabular, tile for continuous')
-# flags.DEFINE_string('mdp', './continuous_mdps/obstacle.mdp',
-# flags.DEFINE_string('mdp', './mdps/maze.mdp',
-# flags.DEFINE_string('mdp', './mdps/maze_486.mdp',
-# flags.DEFINE_string('mdp', './mdps/maze_864.mdp',
-# flags.DEFINE_string('mdp', './mdps/maze_80.mdp',
-# flags.DEFINE_string('mdp', 'repeat',
-# flags.DEFINE_string('mdp', 'loop',
-# flags.DEFINE_string('mdp', 'loopy_chain',
-# flags.DEFINE_string('mdp', 'tree',
-# flags.DEFINE_string('mdp', 'shortcut',
-# flags.DEFINE_string('mdp', 'random_chain',
-flags.DEFINE_string('mdp', 'po',
-# flags.DEFINE_string('mdp', 'bandit',
-                    'File containing the MDP definition (default: mdps/toy.mdp).')
-# flags.DEFINE_boolean('stochastic', False, 'stochastic transition dynamics or not.')
-flags.DEFINE_boolean('stochastic', True, 'stochastic transition dynamics or not.')
 FLAGS = flags.FLAGS
 FONTSIZE = 25
 LINEWIDTH = 4
-NON_GRIDWORLD_MDPS = ["random_chain", "boyan_chain", "bandit", "shortcut",
-                      "loop", "tree", "repeat", "serial",
-                      "po"]
-
-naming_convention = {"bw":
-                    {"tabular":
-                        {"pred_exp":  'distribution/implicit',
-                         "pred_gen":  'generative/implicit',
-                         "jumpy_exp":  'distribution/explicit',
-                         "jumpy_gen":  'generative/explicit',
-                         "jumpy_fw_bw_gen":  'generative/search control',
-                         "vanilla": "vanilla"},
-                       "linear":
-                        {"pred_exp":  'expectation/implici',
-                         "jumpy_exp":  'expectation/explicit',
-                         "vanilla": 'vanilla'
-                       }
-                      },
-                    "fw_bw":
-                            {"tabular":
-                                {"explicit_exp":  'distribution/bw',
-                                 "explicit_gen":  'generative/bw',
-                                 "explicit_true":  'true_sample/bw',
-                                 "explicit_iterat":  'iterate_generative/bw',
-                                 "fw":  'distribution/fw_online',
-                                 "fw_rnd":  'distribution/fw_random_buff',
-                                 "fw_pri":  'distribution/fw_prioritized_buff',
-                                 "bw_fw_exp":  'distribution/bw_fw',
-                                 "bw_fw_gen":  'generative/bw_fw',
-                                 "fw_bw_PWMA":  'distribution/fw_bw_buff_PWMA',
-                                 "fw_bw_MG":  'distribution/fw_bw_buff_MG',
-                                 "fw_bw_Imprv":  'distribution/fw_bw_buff_Imprv',
-                                 },
-                               "linear":
-                                   {"jumpy_exp": 'expectation/backward',
-                                    "jumpy_gen": 'generative/backward',
-                                    "fw_exp": 'expectation/forward',
-                                    "fw_gen": 'generative/forward'},
-                              },
-                     "final": {"tabular":
-                          {"explicit_exp": 'distribution/bw',
-                           "explicit_gen": 'generative/bw',
-                           "explicit_true": 'true_sample/bw',
-                           "explicit_iterat": 'iterate_generative/bw',
-                           "fw": 'distribution/fw_online',
-                           "fw_rnd": 'distribution/fw_random_buff',
-                           "fw_pri": 'distribution/fw_prioritized_buff',
-                           "bw_fw_exp": 'distribution/bw_fw',
-                           "bw_fw_gen": 'generative/bw_fw',
-                           "fw_bw_PWMA": 'distribution/fw_bw_buff_PWMA',
-                           "fw_bw_MG": 'distribution/fw_bw_buff_MG',
-                           "fw_bw_Imprv": 'distribution/fw_bw_buff_Imprv',
-                           },
-                      "linear":
-                          {"jumpy_exp": 'expectation/backward',
-                           "jumpy_gen": 'generative/backward',
-                           "fw_exp": 'expectation/forward',
-                           "fw_gen": 'generative/forward'},
-                      }
-                        }
-
 
 def print_name(run_mode):
     if run_mode == "vanilla":
@@ -129,15 +39,25 @@ def print_name(run_mode):
 
 def main(argv):
     del argv  # Unused.
-    mdp_filename = os.path.splitext(os.path.basename(FLAGS.mdp))[0]
-    logs = os.path.join(FLAGS.logs, FLAGS.model_class)
-    plots = os.path.join(FLAGS.plots, FLAGS.model_class)
-    logs = os.path.join(logs, mdp_filename)
-    plots = os.path.join(plots, mdp_filename)
-    logs = os.path.join(logs, FLAGS.mdp_type)
-    plots = os.path.join(plots, FLAGS.mdp_type)
-    logs = os.path.join(logs, "stochastic" if FLAGS.stochastic else "deterministic")
-    plots = os.path.join(plots, "stochastic" if FLAGS.stochastic else "deterministic")
+    best_hyperparam_folder = os.path.join(FLAGS.logs, "best")
+    logs = os.path.join(best_hyperparam_folder, FLAGS.env)
+    plots = os.path.join(FLAGS.logs, FLAGS.env)
+    plots = os.path.join(plots, FLAGS.agent)
+
+    if not os.path.exists(plots):
+        os.makedirs(plots)
+
+    persistent_agent_config = configs.agent_config.config[FLAGS.agent]
+    env_config, volatile_agent_config = load_env_and_volatile_configs(FLAGS.env)
+
+    limited_volatile_to_run, volatile_to_run = build_hyper_list(FLAGS.agent,
+                                                                volatile_agent_config)
+
+    for planning_depth, replay_capacity in limited_volatile_to_run:
+        best_config = {"agent": FLAGS.agent,
+                       "planning_depth": planning_depth,
+                       "replay_capacity": replay_capacity}
+
 
     folders = [[int(run_mode_folder.split("_")[-1][1:]), run_mode_folder, os.path.join(logs, run_mode_folder), "-"]
                 for run_mode_folder in os.listdir(logs)
@@ -171,7 +91,7 @@ def main(argv):
                            "pred_gen":  'deepskyblue',
                            "jumpy_exp":  'lightseagreen',
                            "jumpy_gen":  'turquoise'},
-                       "fw_bw":
+                         "fw_bw":
                            {
                                # "fw":  'midnightblue',
                             # "fw_gen": 'deepskyblue',

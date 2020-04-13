@@ -9,7 +9,7 @@ import network
 import utils
 from utils import *
 
-flags.DEFINE_string('agent', 'fw_rnd', 'what agent to run')
+flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
 flags.DEFINE_string('env', 'repeat',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
@@ -49,19 +49,36 @@ def main(argv):
                    "lr": FLAGS.lr,
                    "lr_m": FLAGS.lr_m}
 
-    for seed in tqdm(range(0, env_config["num_runs"])):
+    seed_values = []
+    seed_errors = []
+    for seed in tqdm(range(0, 10)):
         seed_config["seed"] = seed
         space = {
             "logs": logs,
             "plot_errors": True,
             "plot_values": True,
-            "plot_curves": True,
+            "plot_curves": False,
             "log_period": FLAGS.log_period,
             "env_config": env_config,
             "agent_config": persistent_agent_config,
             "crt_config": seed_config}
 
-        run_objective(space)
+        _, _, values, errors, env, agent, mdp_solver = run_objective(space)
+        seed_values.append(values)
+        seed_errors.append(errors)
+
+    avg_error = np.mean(errors, axis=0)
+    avg_v = np.mean(values, axis=0)
+    plot_error(env=env,
+               values=env.reshape_v(avg_error),
+               logs=agent._images_dir,
+               eta_pi=env.reshape_v(mdp_solver.get_eta_pi(mdp_solver._pi)),
+               filename="error_{}.png".format(agent.episode))
+    plot_v(env=env,
+               values=env.reshape_v(avg_v),
+               logs=agent._images_dir,
+               true_v=env.reshape_v(mdp_solver.get_optimal_v()),
+               filename="v_{}.png".format(agent.episode))
 
 def run_objective(space):
     aux_agent_configs = {"num_hidden_layers": FLAGS.num_hidden_layers,
@@ -74,10 +91,10 @@ def run_objective(space):
                          "max_len": FLAGS.max_len,
                          "log_period": FLAGS.log_period}
     seed = space["crt_config"]["seed"]
-    env, agent, mdp_solver, env, agent, mdp_solver = run_experiment(seed, space, aux_agent_configs)
+    env, agent, mdp_solver = run_experiment(seed, space, aux_agent_configs)
 
     if space["env_config"]["non_gridworld"]:
-        experiment.run_chain(
+        total_rmsve, avg_steps, values, errors = experiment.run_chain(
             agent=agent,
             environment=env,
             model_class=space["env_config"]["model_class"],
@@ -88,7 +105,7 @@ def run_objective(space):
             log_period=space["log_period"],
         )
     else:
-        experiment.run_episodic(
+        total_rmsve, avg_steps, values, errors = experiment.run_episodic(
             agent=agent,
             environment=env,
             mdp_solver=mdp_solver,
@@ -100,7 +117,7 @@ def run_objective(space):
             plot_curves=space["plot_curves"],
             log_period=space["log_period"],
         )
-
+    return total_rmsve, avg_steps, values, errors, env, agent, mdp_solver
 
 if __name__ == '__main__':
     app.run(main)

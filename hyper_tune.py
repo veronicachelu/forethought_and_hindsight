@@ -13,7 +13,7 @@ import copy
 import configs
 from main_utils import *
 
-flags.DEFINE_string('agent', 'bw', 'what agent to run')
+flags.DEFINE_string('agent', 'fw_rnd', 'what agent to run')
 flags.DEFINE_string('env', 'repeat',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
@@ -67,7 +67,8 @@ def main(argv):
             writer = csv.DictWriter(f, fieldnames=best_fieldnames)
             writer.writeheader()
 
-    limited_volatile_to_run, volatile_to_run = build_hyper_list(volatile_agent_config)
+    limited_volatile_to_run, volatile_to_run = build_hyper_list(FLAGS.agent,
+                                                                volatile_agent_config)
 
     for planning_depth, replay_capacity, lr, lr_m in volatile_to_run:
         seed_config = {"planning_depth": planning_depth,
@@ -125,18 +126,6 @@ def main(argv):
                 for key, value in the_best_hyperparms.items():
                     best_config[key] = value
                 writer.writerow(best_config)
-
-def build_hyper_list(volatile_agent_config):
-    volatile_to_run = []
-    limited_volatile_to_run = []
-    for planning_depth in volatile_agent_config[FLAGS.agent]["planning_depth"]:
-        for replay_capacity in volatile_agent_config[FLAGS.agent]["replay_capacity"]:
-            limited_volatile_to_run.append([planning_depth, replay_capacity])
-            for lr in volatile_agent_config[FLAGS.agent]["lr"]:
-                for lr_m in volatile_agent_config[FLAGS.agent]["lr_m"]:
-                    volatile_to_run.append([planning_depth, replay_capacity,
-                                            round(lr, 2), round(lr_m, 2)])
-    return limited_volatile_to_run, volatile_to_run
 
 def get_avg_over_seeds(interm_hyperparam_file, final_config, final_attributes):
     rmsve_avg = []
@@ -196,7 +185,7 @@ def run_objective(space):
     seed = space["crt_config"]["seed"]
     if space["env_config"]["non_gridworld"]:
         env, agent, _ = run_experiment(seed, space, aux_agent_configs)
-        total_rmsve, avg_steps = experiment.run_chain(
+        total_rmsve, avg_steps, values, errors = experiment.run_chain(
             agent=agent,
             model_class=space["env_config"]["model_class"],
             environment=env,
@@ -206,10 +195,9 @@ def run_objective(space):
             plot_values=space["plot_values"],
             log_period=space["log_period"],
         )
-        return total_rmsve, avg_steps
     else:
         env, agent, mdp_solver = run_experiment(seed, space, aux_agent_configs)
-        total_rmsve, avg_steps = experiment.run_episodic(
+        total_rmsve, avg_steps, values, errors = experiment.run_episodic(
             agent=agent,
             environment=env,
             mdp_solver=mdp_solver,
@@ -221,7 +209,7 @@ def run_objective(space):
             plot_values=space["plot_values"],
             log_period=space["log_period"],
         )
-        return total_rmsve, avg_steps
+    return total_rmsve, avg_steps
 
 if __name__ == '__main__':
     app.run(main)
