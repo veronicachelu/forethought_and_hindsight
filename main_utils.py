@@ -116,7 +116,7 @@ def build_hyper_list(agent, volatile_agent_config):
         for replay_capacity in volatile_agent_config[agent]["replay_capacity"]:
             limited_volatile_to_run.append([planning_depth, replay_capacity])
             for lr in volatile_agent_config[agent]["lr"]:
-                for lr_m in volatile_agent_config[FLAGS.agent]["lr_m"]:
+                for lr_m in volatile_agent_config[agent]["lr_m"]:
                     volatile_to_run.append([planning_depth, replay_capacity,
                                             round(lr, 2), round(lr_m, 2)])
     return limited_volatile_to_run, volatile_to_run
