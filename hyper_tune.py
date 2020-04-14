@@ -13,7 +13,7 @@ import copy
 import configs
 from main_utils import *
 
-flags.DEFINE_string('agent', 'fw_rnd', 'what agent to run')
+flags.DEFINE_string('agent', 'bw', 'what agent to run')
 flags.DEFINE_string('env', 'repeat',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
@@ -165,7 +165,7 @@ def configuration_exists(hyperparam_file, crt_config, attributes):
         for row in reader:
             ok = True
             for key in attributes:
-                if key != crt_config[key] and float(row[key]) != float(crt_config[key]):
+                if str(row[key]) != str(crt_config[key]):
                     ok = False
                     break
             if ok == True:

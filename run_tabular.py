@@ -9,7 +9,7 @@ import network
 import utils
 from utils import *
 
-flags.DEFINE_string('agent', 'fw_rnd', 'what agent to run')
+flags.DEFINE_string('agent', 'bw', 'what agent to run')
 flags.DEFINE_string('env', 'repeat',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
@@ -74,12 +74,13 @@ def run_objective(space):
                          "max_len": FLAGS.max_len,
                          "log_period": FLAGS.log_period}
     seed = space["crt_config"]["seed"]
-    env, agent, mdp_solver, env, agent, mdp_solver = run_experiment(seed, space, aux_agent_configs)
+    env, agent, mdp_solver = run_experiment(seed, space, aux_agent_configs)
 
     if space["env_config"]["non_gridworld"]:
         experiment.run_chain(
             agent=agent,
             environment=env,
+            mdp_solver=mdp_solver,
             model_class=space["env_config"]["model_class"],
             num_episodes=space["env_config"]["num_episodes"],
             plot_curves=space["plot_curves"],

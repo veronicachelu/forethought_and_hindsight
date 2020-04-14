@@ -14,6 +14,7 @@ flags.DEFINE_string('env', 'repeat',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
+flags.DEFINE_integer('num_runs', 1, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', 100000, 'Maximum number of time steps an episode may last (default: 100).')
 flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('num_units', 0, 'number of units per hidden layer')
@@ -48,37 +49,75 @@ def main(argv):
                    "replay_capacity": FLAGS.replay_capacity,
                    "lr": FLAGS.lr,
                    "lr_m": FLAGS.lr_m}
+    agent_internal_log = "{}_{}_{}".format(FLAGS.agent,
+                                   FLAGS.planning_depth,
+                                   FLAGS.replay_capacity)
+    image_data_path = os.path.join(logs, '{}/image_data'.format(agent_internal_log))
+    if not os.path.exists(image_data_path):
+        os.makedirs(image_data_path)
 
-    seed_values = []
-    seed_errors = []
-    for seed in tqdm(range(0, 10)):
-        seed_config["seed"] = seed
-        space = {
-            "logs": logs,
-            "plot_errors": True,
-            "plot_values": True,
-            "plot_curves": False,
-            "log_period": FLAGS.log_period,
-            "env_config": env_config,
-            "agent_config": persistent_agent_config,
-            "crt_config": seed_config}
+    avg_error_filepath = os.path.join(image_data_path, "avg_error.npy")
+    avg_v_filepath = os.path.join(image_data_path, "avg_v.npy")
 
-        _, _, values, errors, env, agent, mdp_solver = run_objective(space)
-        seed_values.append(values)
-        seed_errors.append(errors)
+    if os.path.exists(avg_error_filepath) and os.path.exists(avg_v_filepath):
+        avg_error = np.load(avg_error_filepath)
+        avg_v = np.load(avg_v_filepath)
+    else:
+        seed_values = []
+        seed_errors = []
+        for seed in tqdm(range(0, FLAGS.num_runs)):
+            seed_config["seed"] = seed
+            space = {
+                "logs": logs,
+                "plot_errors": True,
+                "plot_values": True,
+                "plot_curves": False,
+                "log_period": FLAGS.log_period,
+                "env_config": env_config,
+                "agent_config": persistent_agent_config,
+                "crt_config": seed_config}
 
-    avg_error = np.mean(errors, axis=0)
-    avg_v = np.mean(values, axis=0)
-    plot_error(env=env,
-               values=env.reshape_v(avg_error),
-               logs=agent._images_dir,
-               eta_pi=env.reshape_v(mdp_solver.get_eta_pi(mdp_solver._pi)),
-               filename="error_{}.png".format(agent.episode))
+            _, _, values, errors, env, agent, mdp_solver = run_objective(space)
+            seed_values.append(values)
+            seed_errors.append(errors)
+
+        avg_error = np.mean(seed_errors, axis=0)
+        avg_v = np.mean(seed_values, axis=0)
+        np.save(avg_error_filepath, avg_error)
+        np.save(avg_v_filepath, avg_v)
+
+    seed_config["seed"] = 0
+    space = {
+        "logs": logs,
+        "plot_errors": True,
+        "plot_values": True,
+        "plot_curves": False,
+        "log_period": FLAGS.log_period,
+        "env_config": env_config,
+        "agent_config": persistent_agent_config,
+        "crt_config": seed_config}
+
+    _, _, values, errors, env, agent, mdp_solver = run_objective(space)
+    env_type = "chain" if env_config["non_gridworld"] else env_config["env_type"]
+    # plot_grid(env, env_type=env_type, logs=image_data_path)
+
+    policy = mdp_solver.get_optimal_policy()
+    eta_pi = mdp_solver.get_eta_pi(policy)
+    plot_eta_pi(env, env.reshape_v(eta_pi), logs=image_data_path,
+                env_type=env_type, policy=env.reshape_pi(policy))
     plot_v(env=env,
                values=env.reshape_v(avg_v),
-               logs=agent._images_dir,
+               logs=image_data_path,
                true_v=env.reshape_v(mdp_solver.get_optimal_v()),
-               filename="v_{}.png".format(agent.episode))
+               filename="avg_v.png",
+               env_type=env_type, policy=env.reshape_pi(policy))
+    plot_error(env=env,
+               values=env.reshape_v(avg_error),
+               logs=image_data_path,
+               eta_pi=env.reshape_v(mdp_solver.get_eta_pi(mdp_solver._pi)),
+               filename="avg_error.png",
+               env_type=env_type, policy=env.reshape_pi(policy))
+
 
 def run_objective(space):
     aux_agent_configs = {"num_hidden_layers": FLAGS.num_hidden_layers,
@@ -97,6 +136,7 @@ def run_objective(space):
         total_rmsve, avg_steps, values, errors = experiment.run_chain(
             agent=agent,
             environment=env,
+            mdp_solver=mdp_solver,
             model_class=space["env_config"]["model_class"],
             num_episodes=space["env_config"]["num_episodes"],
             plot_curves=space["plot_curves"],
