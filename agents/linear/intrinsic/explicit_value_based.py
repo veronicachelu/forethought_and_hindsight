@@ -46,8 +46,8 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
             o_tmn_target = transitions[0][0]
             o_t = transitions[-1][-1]
 
-            h_tmn = o_tmn_target if self._no_latent else self._h_network(h_params, o_tmn_target)
-            h_t = o_t if self._no_latent else self._h_network(h_params, o_t)
+            h_tmn = self._h_network(h_params, o_tmn_target) if self._latent else o_tmn_target
+            h_t = self._h_network(h_params, o_t) if self._latent else o_t
 
             real_v_tmn, vjp_fun = jax.vjp(self._v_network, v_params, h_tmn)
             real_r_tmn_2_t = 0
@@ -92,7 +92,7 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
                                 "r_loss": r_loss}
 
         def v_planning_loss(v_params, h_params, o_params, r_params, d_params, o_t, d_t):
-            h_t = o_t if self._no_latent else lax.stop_gradient(self._h_network(h_params, o_t))
+            h_t = lax.stop_gradient(self._h_network(h_params, o_t)) if self._latent else o_t
             model_tmn = self._o_network(o_params, h_t)
 
             v_tmn = self._v_network(v_params, model_tmn)

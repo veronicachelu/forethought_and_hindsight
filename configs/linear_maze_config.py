@@ -10,7 +10,7 @@ env_config = {
     "mdp_filename": "./mdps/maze_80.mdp",
     "env_size": 80,
     "num_episodes": 100,
-    "num_runs": 100,
+    "num_runs": 20,
     "stochastic": False,
     "nA": 4
 }
