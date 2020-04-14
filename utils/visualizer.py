@@ -91,8 +91,8 @@ def plot_v(env, values, logs=None, colormap='Blues',
     #     vmin = np.min(true_v)
     #     vmax = np.max(true_v)
     # else:
-
-    plt.imshow(values[None, ...], interpolation="nearest",
+    values = values[None, ...] if len(values.shape) == 1 else values
+    plt.imshow(values, interpolation="nearest",
                cmap=colormap, vmin=vmin, vmax=vmax)
     plt.yticks([])
     plt.xticks([])

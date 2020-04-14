@@ -35,11 +35,11 @@ class TpVanilla(Agent):
             lr_model: float,
             lr_planning: float,
             log_period: int,
-            rng: Tuple,
             nrng,
             input_dim: int,
             exploration_decay_period: int,
             seed: int = None,
+            latent=False,
             logs: str = "logs",
             # double_input_reward_model=False
     ):
@@ -84,7 +84,6 @@ class TpVanilla(Agent):
 
             self._checkpoint_filename = "checkpoint.npy"
 
-            self._rng = rng
             self._nrng = nrng
 
             self.writer = tf.summary.create_file_writer(
@@ -210,12 +209,13 @@ class TpVanilla(Agent):
                 self.writer.flush()
 
     def update_hyper_params(self, episode, total_episodes):
-        warmup_episodes = 0
-        flat_period = 0
-        decay_period = total_episodes - warmup_episodes - flat_period
-        if episode > warmup_episodes:
-            steps_left = total_episodes - episode - flat_period
-            if steps_left <= 0:
-                return
-            self._lr = self._initial_lr * (steps_left / decay_period)
+        pass
+        # warmup_episodes = 0
+        # flat_period = 0
+        # decay_period = total_episodes - warmup_episodes - flat_period
+        # if episode > warmup_episodes:
+        #     steps_left = total_episodes - episode - flat_period
+        #     if steps_left <= 0:
+        #         return
+        #     self._lr = self._initial_lr * (steps_left / decay_period)
 

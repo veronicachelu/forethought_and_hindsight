@@ -10,11 +10,11 @@ import utils
 from utils import *
 
 flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
-flags.DEFINE_string('env', 'repeat',
+flags.DEFINE_string('env', 'maze',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
-flags.DEFINE_integer('num_runs', 1, 'Log summaries every .... episodes.')
+flags.DEFINE_integer('num_runs', 20, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', 100000, 'Maximum number of time steps an episode may last (default: 100).')
 flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('num_units', 0, 'number of units per hidden layer')
@@ -27,7 +27,7 @@ flags.DEFINE_integer('model_learning_period', 1,
 flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
 flags.DEFINE_float('discount', .95, 'discounting on the agent side')
 flags.DEFINE_integer('min_replay_size', 1, 'min replay size before training.')
-flags.DEFINE_float('lr', 2e-1, 'learning rate for q optimizer')
+flags.DEFINE_float('lr', 1.0, 'learning rate for q optimizer')
 flags.DEFINE_float('lr_p', 2e-1, 'learning rate for q optimizer')
 flags.DEFINE_float('lr_m',  2e-1, 'learning rate for model optimizer')
 
@@ -48,7 +48,8 @@ def main(argv):
     seed_config = {"planning_depth": FLAGS.planning_depth,
                    "replay_capacity": FLAGS.replay_capacity,
                    "lr": FLAGS.lr,
-                   "lr_m": FLAGS.lr_m}
+                   "lr_m": FLAGS.lr_m,
+                   "lr_p": FLAGS.lr_p}
     agent_internal_log = "{}_{}_{}".format(FLAGS.agent,
                                    FLAGS.planning_depth,
                                    FLAGS.replay_capacity)
@@ -77,7 +78,7 @@ def main(argv):
                 "agent_config": persistent_agent_config,
                 "crt_config": seed_config}
 
-            _, _, values, errors, env, agent, mdp_solver = run_objective(space)
+            _, _, _, _, values, errors, env, agent, mdp_solver = run_objective(space)
             seed_values.append(values)
             seed_errors.append(errors)
 
@@ -97,7 +98,7 @@ def main(argv):
         "agent_config": persistent_agent_config,
         "crt_config": seed_config}
 
-    _, _, values, errors, env, agent, mdp_solver = run_objective(space)
+    _, _, _, _, values, errors, env, agent, mdp_solver = run_objective(space)
     env_type = "chain" if env_config["non_gridworld"] else env_config["env_type"]
     # plot_grid(env, env_type=env_type, logs=image_data_path)
 
@@ -133,7 +134,7 @@ def run_objective(space):
     env, agent, mdp_solver = run_experiment(seed, space, aux_agent_configs)
 
     if space["env_config"]["non_gridworld"]:
-        total_rmsve, avg_steps, values, errors = experiment.run_chain(
+        total_rmsve, avg_steps, final_rmsve, start_rmsve, values, errors = experiment.run_chain(
             agent=agent,
             environment=env,
             mdp_solver=mdp_solver,
@@ -145,7 +146,7 @@ def run_objective(space):
             log_period=space["log_period"],
         )
     else:
-        total_rmsve, avg_steps, values, errors = experiment.run_episodic(
+        total_rmsve, avg_steps, final_rmsve, start_rmsve, values, errors = experiment.run_episodic(
             agent=agent,
             environment=env,
             mdp_solver=mdp_solver,
@@ -157,7 +158,7 @@ def run_objective(space):
             plot_curves=space["plot_curves"],
             log_period=space["log_period"],
         )
-    return total_rmsve, avg_steps, values, errors, env, agent, mdp_solver
+    return total_rmsve, avg_steps, final_rmsve, start_rmsve, values, errors, env, agent, mdp_solver
 
 if __name__ == '__main__':
     app.run(main)

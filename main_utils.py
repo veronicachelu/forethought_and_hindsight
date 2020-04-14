@@ -56,6 +56,7 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, space, aux_agent_configs):
         nA=nA,
         input_dim=input_dim,
         rng=rng_model,
+        model_family=space["env_config"]["model_family"],
         model_class=space["env_config"]["model_class"])
 
     agent_class = getattr(agents,
@@ -79,12 +80,12 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, space, aux_agent_configs):
         lr_planning=space["crt_config"]["lr_p"],
         exploration_decay_period=space["env_config"]["num_episodes"],
         seed=seed,
-        rng=rng_agent,
         nrng=nrng,
         logs=space["logs"],
         max_len=aux_agent_configs["max_len"],
         log_period=space["log_period"],
         input_dim=input_dim,
+        latent=space["agent_config"]["latent"],
         # double_input_reward_model=True
     )
     return agent
@@ -111,6 +112,9 @@ def load_env_and_volatile_configs(env):
     elif env == "maze":
         env_config = configs.maze_config.env_config
         volatile_agent_config = configs.maze_config.volatile_agent_config
+    elif env == "linear_maze":
+        env_config = configs.linear_maze_config.env_config
+        volatile_agent_config = configs.linear_maze_config.volatile_agent_config
     elif env == "random_maze":
         env_config = configs.random_maze_config.env_config
         volatile_agent_config = configs.random_maze_config.volatile_agent_config

@@ -42,9 +42,9 @@ class LpVanilla(Agent):
             log_period: int,
             nrng,
             input_dim: int,
-            no_latent: True,
             exploration_decay_period: int,
             seed: int = None,
+            latent=False,
             logs: str = "logs",
             # double_input_reward_model=False
     ):
@@ -59,7 +59,7 @@ class LpVanilla(Agent):
         self._planning_iter = planning_iter
         self._planning_period = planning_period
         self._n = planning_depth
-        self._no_latent = True
+        self._latent = latent
         # self._double_input_reward_model = double_input_reward_model
         if self._n != 0:
             self._run_mode = "{}_n{}".format(self._run_mode, self._n)

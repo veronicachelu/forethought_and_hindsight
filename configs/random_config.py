@@ -3,6 +3,7 @@ env_config = {
     "class": "RandomChain",
     "non_gridworld": True,
     "model_class": "tabular",
+    "model_family": "extrinsic",
     "env_type": "discreate",
     "obs_type": "tabular",
     "mdp_filename": None,

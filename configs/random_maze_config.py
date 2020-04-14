@@ -3,6 +3,7 @@ env_config = {
     "class": "MicroWorld",
     "non_gridworld": False,
     "model_class": "tabular",
+    "model_family": "extrinsic",
     "env_type": "discreate",
     "policy_type": "epsilon_greedy",
     "epsilon": 0.2,
