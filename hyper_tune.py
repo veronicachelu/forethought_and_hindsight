@@ -14,7 +14,7 @@ import configs
 from main_utils import *
 
 flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
-flags.DEFINE_string('env', 'random_medium_maze',
+flags.DEFINE_string('env', 'maze',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
@@ -70,11 +70,12 @@ def main(argv):
     limited_volatile_to_run, volatile_to_run = build_hyper_list(FLAGS.agent,
                                                                 volatile_agent_config)
 
-    for planning_depth, replay_capacity, lr, lr_m in volatile_to_run:
+    for planning_depth, replay_capacity, lr, lr_m, lr_p in volatile_to_run:
         seed_config = {"planning_depth": planning_depth,
                       "replay_capacity": replay_capacity,
                       "lr": lr,
-                      "lr_m": lr_m}
+                      "lr_m": lr_m,
+                      "lr_p": lr_p}
         final_config = copy.deepcopy(seed_config)
         attributes = list(seed_config.keys())
         attributes.append("seed")

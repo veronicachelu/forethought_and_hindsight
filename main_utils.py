@@ -76,7 +76,7 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, space, aux_agent_configs):
         planning_depth=space["crt_config"]["planning_depth"],
         lr=space["crt_config"]["lr"],
         lr_model=space["crt_config"]["lr_m"],
-        lr_planning=space["crt_config"]["lr"],
+        lr_planning=space["crt_config"]["lr_p"],
         exploration_decay_period=space["env_config"]["num_episodes"],
         seed=seed,
         rng=rng_agent,
@@ -130,7 +130,8 @@ def build_hyper_list(agent, volatile_agent_config):
         for replay_capacity in volatile_agent_config[agent]["replay_capacity"]:
             limited_volatile_to_run.append([planning_depth, replay_capacity])
             for lr in volatile_agent_config[agent]["lr"]:
-                for lr_m in volatile_agent_config[agent]["lr_m"]:
-                    volatile_to_run.append([planning_depth, replay_capacity,
-                                            round(lr, 2), round(lr_m, 2)])
+                for lr_p in volatile_agent_config[agent]["lr_p"]:
+                    for lr_m in volatile_agent_config[agent]["lr_m"]:
+                        volatile_to_run.append([planning_depth, replay_capacity,
+                                                round(lr, 2), round(lr_p, 2), round(lr_m, 2)])
     return limited_volatile_to_run, volatile_to_run
