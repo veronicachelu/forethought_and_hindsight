@@ -15,6 +15,7 @@ import numpy as np
 from agents.agent import Agent
 import tensorflow as tf
 import rlax
+
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
@@ -38,7 +39,6 @@ class LpVanilla(Agent):
             max_len: int,
             lr_model: float,
             lr_planning: float,
-            epsilon: float,
             log_period: int,
             nrng,
             input_dim: int,
@@ -59,16 +59,17 @@ class LpVanilla(Agent):
         self._planning_iter = planning_iter
         self._planning_period = planning_period
         self._n = planning_depth
+        self._replay_capacity = replay_capacity
         self._latent = latent
         # self._double_input_reward_model = double_input_reward_model
-        if self._n != 0:
-            self._run_mode = "{}_n{}".format(self._run_mode, self._n)
+        self._run_mode = "{}_{}_{}".format(self._run_mode, self._n, self._replay_capacity)
 
-        self._epsilon = epsilon
         self._exploration_decay_period = exploration_decay_period
         self._nrng = nrng
+
         self._replay = Replay(capacity=replay_capacity, nrng=self._nrng)
         self._min_replay_size = min_replay_size
+        self._initial_lr = lr
         self._lr = lr
         self._lr_model = lr_model
         self._initial_lr_model = lr_model
@@ -80,21 +81,23 @@ class LpVanilla(Agent):
         self._max_len = max_len
         self._input_dim = input_dim
         self._log_period = log_period
-        self._checkpoint_dir = os.path.join(self._logs,
-                                        '{}/checkpoints/seed_{}'.format(self._run_mode, self._seed))
-        if not os.path.exists(self._checkpoint_dir):
-            os.makedirs(self._checkpoint_dir)
 
-        self._checkpoint_filename = "checkpoint.npy"
+        if self._logs is not None:
+            self._checkpoint_dir = os.path.join(self._logs,
+                                            '{}/checkpoints/seed_{}'.format(self._run_mode, self._seed))
+            if not os.path.exists(self._checkpoint_dir):
+                os.makedirs(self._checkpoint_dir)
 
-        self._nrng = nrng
+            self._checkpoint_filename = "checkpoint.npy"
 
-        self.writer = tf.summary.create_file_writer(
-            os.path.join(self._logs, '{}/summaries/seed_{}'.format(self._run_mode, seed)))
+            self._nrng = nrng
 
-        self._images_dir = os.path.join(self._logs, '{}/images/seed_{}'.format(self._run_mode, seed))
-        if not os.path.exists(self._images_dir):
-            os.makedirs(self._images_dir)
+            self.writer = tf.summary.create_file_writer(
+                os.path.join(self._logs, '{}/summaries/seed_{}'.format(self._run_mode, seed)))
+
+            self._images_dir = os.path.join(self._logs, '{}/images/seed_{}'.format(self._run_mode, seed))
+            if not os.path.exists(self._images_dir):
+                os.makedirs(self._images_dir)
 
         def v_loss(v_params, transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
@@ -133,8 +136,7 @@ class LpVanilla(Agent):
                timestep: dm_env.TimeStep,
                eval: bool = False
                ) -> int:
-        # return np.argmax(self._pi[np.argmax(timestep.observation)])
-        return self._pi(timestep.observation)
+        return self._pi(np.argmax(timestep.observation), self._nrng)
 
     def value_update(
             self,
@@ -148,9 +150,10 @@ class LpVanilla(Agent):
                        np.array([new_timestep.discount]),
                        np.array([new_timestep.observation])]
 
-        loss, gradient = self._v_loss_grad(self._v_parameters,
-                                transitions)
-        self._v_opt_state = self._v_opt_update(0, gradient,
+        loss, gradients = self._v_loss_grad(self._v_parameters,
+                                           self._h_parameters,
+                                            transitions)
+        self._v_opt_state = self._v_opt_update(0, gradients,
                                                self._v_opt_state)
         self._v_parameters = self._v_get_params(self._v_opt_state)
 
@@ -167,28 +170,30 @@ class LpVanilla(Agent):
         return True
 
     def load_model(self):
-        checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
-        if os.path.exists(checkpoint):
-            to_load = np.load(checkpoint, allow_pickle=True)[()]
-            self.episode = to_load["episode"]
-            self.total_steps = to_load["total_steps"]
-            self._v_parameters = to_load["v_parameters"]
-            print("Restored from {}".format(checkpoint))
-        else:
-            print("Initializing from scratch.")
+        if self._logs is not None:
+            checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
+            if os.path.exists(checkpoint):
+                to_load = np.load(checkpoint, allow_pickle=True)[()]
+                self.episode = to_load["episode"]
+                self.total_steps = to_load["total_steps"]
+                self._v_parameters = to_load["v_parameters"]
+                print("Restored from {}".format(checkpoint))
+            else:
+                print("Initializing from scratch.")
 
     def save_model(self):
-        return
-        checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
-        to_save = {
-            "episode": self.episode,
-            "total_steps": self.total_steps,
-            "v_parameters": self._v_parameters,
-        }
-        np.save(checkpoint, to_save)
-        print("Saved checkpoint for episode {}, total_steps {}: {}".format(self.episode,
-                                                                           self.total_steps,
-                                                                           checkpoint))
+        if self._logs is not None:
+            return
+            checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
+            to_save = {
+                "episode": self.episode,
+                "total_steps": self.total_steps,
+                "v_parameters": self._v_parameters,
+            }
+            np.save(checkpoint, to_save)
+            print("Saved checkpoint for episode {}, total_steps {}: {}".format(self.episode,
+                                                                               self.total_steps,
+                                                                                 checkpoint))
     def planning_update(
             self,
             timestep: dm_env.TimeStep,
@@ -214,6 +219,7 @@ class LpVanilla(Agent):
 
     def _log_summaries(self, losses_and_grads, summary_name):
         return
+        # if self._logs is not None:
         # losses = losses_and_grads["losses"]
         # gradients = losses_and_grads["gradients"]
         # if self._max_len == -1:

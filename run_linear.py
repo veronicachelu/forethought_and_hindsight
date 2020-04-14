@@ -9,7 +9,7 @@ import network
 import utils
 from utils import *
 
-flags.DEFINE_string('agent', 'vanilla_intr', 'what agent to run')
+flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
 flags.DEFINE_boolean('latent', False, 'latent')
 flags.DEFINE_string('env', 'linear_maze', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')

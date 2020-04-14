@@ -141,7 +141,7 @@ class LpIntrinsicVanilla(Agent):
                timestep: dm_env.TimeStep,
                eval: bool = False
                ) -> int:
-        return self._pi(timestep.observation, self._nrng)
+        return self._pi(np.argmax(timestep.observation), self._nrng)
 
     def value_update(
             self,
