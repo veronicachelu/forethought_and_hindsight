@@ -27,8 +27,8 @@ volatile_agent_config = {
     "bw": {
         "planning_depth": [1, 2, 3, 4],
         "replay_capacity": [0],
-        "lr": [1.0],
-        "lr_p": np.linspace(0.1, 1.0, 10),
+        "lr": [0.7],
+        "lr_p": [0.7],
         "lr_m": np.linspace(0.1, 1.0, 10),
     },
     "bw_fw": {
