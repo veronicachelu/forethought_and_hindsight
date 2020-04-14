@@ -114,7 +114,7 @@ def run_mdp_forall_episodes(
         agent.episode += 1
         avg_steps.append(t)
 
-    return round(total_rmsve, 2), np.mean(avg_steps, dtype=int), hat_v, hat_error
+    return round(total_rmsve, 2), round(rmsve, 2), np.mean(avg_steps, dtype=int), hat_v, hat_error
 
 def get_rmsve(mdp_solver, hat_v):
     eta_pi = mdp_solver.get_eta_pi(mdp_solver._pi)
@@ -212,4 +212,4 @@ def run_chain_forall_episodes(agent: Agent,
         agent.episode += 1
         avg_steps.append(timesteps)
 
-    return round(total_rmsve, 2), np.mean(avg_steps, dtype=int), hat_v, hat_error
+    return round(total_rmsve, 2), round(rmsve, 2), np.mean(avg_steps, dtype=int), hat_v, hat_error

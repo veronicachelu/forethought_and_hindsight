@@ -8,7 +8,7 @@ env_config = {
     "mdp_filename": None,
     "env_size": 6,
     "num_episodes": 100,
-    "num_runs": 100,
+    "num_runs": 10,
     "stochastic": False,
     "nA": 1
 }
