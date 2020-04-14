@@ -1,13 +1,15 @@
 import numpy as np
+
 env_config = {
     "class": "MicroWorld",
     "non_gridworld": False,
     "model_class": "tabular",
     "env_type": "discreate",
     "obs_type": "tabular",
-    "policy_type": "greedy",
-    "mdp_filename": "./mdps/maze_80.mdp",
-    "env_size": 80,
+    "policy_type": "epsilon_greedy",
+    "epsilon": 0.2,
+    "mdp_filename": "./mdps/maze_486.mdp",
+    "env_size": 486,
     "num_episodes": 100,
     "num_runs": 1,
     "stochastic": True,

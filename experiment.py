@@ -84,9 +84,9 @@ def run_mdp_forall_episodes(
 
         hat_v = agent._v_network if model_class == "tabular" \
             else agent.get_values_for_all_states(environment.get_all_states())
-        hat_error = np.abs(mdp_solver.get_optimal_v() - hat_v)
-
-        rmsve = get_rmsve(mdp_solver, hat_v)
+        # hat_error = np.abs(mdp_solver.get_optimal_v() - hat_v)
+        hat_error = np.abs(environment._true_v - hat_v)
+        rmsve = get_rmsve(environment, mdp_solver, hat_v, environment._true_v, weighted=True)
         total_rmsve += rmsve
 
         # if plot_errors and agent.episode % log_period == 0:
@@ -114,13 +114,19 @@ def run_mdp_forall_episodes(
         agent.episode += 1
         avg_steps.append(t)
 
-    return round(total_rmsve, 2), round(rmsve, 2), np.mean(avg_steps, dtype=int), hat_v, hat_error
+        rmsve_start = np.power(environment._true_v - hat_v, 2)[environment._get_state_index(environment._sX, environment._sY)]
+    return round(total_rmsve, 2), round(rmsve, 2), round(rmsve_start, 2), \
+           np.mean(avg_steps, dtype=int), hat_v, hat_error
 
-def get_rmsve(mdp_solver, hat_v):
-    eta_pi = mdp_solver.get_eta_pi(mdp_solver._pi)
-    v = mdp_solver.get_optimal_v()
-    rmsve = np.sqrt(np.sum(eta_pi * (v - hat_v) ** 2))
+
+def get_rmsve(env, mdp_solver, hat_v, v, weighted=False):
+    if weighted:
+        eta_pi = mdp_solver.get_eta_pi(mdp_solver._pi)
+        rmsve = np.sqrt(np.sum(eta_pi * (v - hat_v) ** 2))
+    else:
+        rmsve = np.sqrt(np.sum(np.power(v - hat_v, 2)) / env._nS)
     return rmsve
+
 
 def run_chain(agent: Agent,
               environment: dm_env.Environment,
@@ -198,8 +204,9 @@ def run_chain_forall_episodes(agent: Agent,
 
         hat_v = agent._v_network if model_class == "tabular" \
             else agent.get_values_for_all_states(environment.get_all_states())
-        hat_error = np.abs(mdp_solver.get_optimal_v() - hat_v)
-        rmsve = np.sqrt(np.sum(np.power(hat_v - environment._true_v, 2)) / environment._nS)
+        hat_error = np.abs(environment._true_v - hat_v)
+        rmsve = get_rmsve(environment, mdp_solver, hat_v, environment._true_v, weighted=False)
+
         total_rmsve += rmsve
 
         if plot_errors and agent.episode % log_period == 0:
@@ -212,4 +219,5 @@ def run_chain_forall_episodes(agent: Agent,
         agent.episode += 1
         avg_steps.append(timesteps)
 
-    return round(total_rmsve, 2), round(rmsve, 2), np.mean(avg_steps, dtype=int), hat_v, hat_error
+    rmsve_start = np.power(environment._true_v - hat_v, 2)[environment._start_state]
+    return round(total_rmsve, 2), round(rmsve, 2), round(rmsve_start, 2), np.mean(avg_steps, dtype=int), hat_v, hat_error

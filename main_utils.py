@@ -20,7 +20,7 @@ def get_env(nrng, space, aux_agent_configs):
                                  space["env_config"]["nA"], aux_agent_configs["discount"])
         env._true_v = mdp_solver.get_optimal_v()
         nS = env._nS
-        policy = lambda x: nrng.choice(range(env._nA), p=env._nA * [1 / env._nA])
+        policy = lambda x, nrng: nrng.choice(range(env._nA), p=env._nA * [1 / env._nA])
     else:
         env_class = getattr(env_utils, space["env_config"]["class"])
         env = env_class(path=space["env_config"]["mdp_filename"],
@@ -30,8 +30,16 @@ def get_env(nrng, space, aux_agent_configs):
                         env_size=space["env_config"]["env_size"],)
         nS = env._nS
         mdp_solver = MdpSolver(env, nS, space["env_config"]["nA"], aux_agent_configs["discount"])
-        pi = mdp_solver.get_optimal_policy()
-        policy = lambda x: np.argmax(pi[x])
+        if space["env_config"]["policy_type"] == "greedy":
+            pi = mdp_solver.get_optimal_policy()
+            policy = lambda x, nrng: np.argmax(pi[x])
+        else:
+            pi = mdp_solver.get_optimal_policy()
+            max_indices = np.argmax(pi, -1)
+            pi[np.arange(env._nS), :] = space["env_config"]["epsilon"] / space["env_config"]["nA"]
+            pi[np.arange(env._nS), max_indices] += 1 - space["env_config"]["epsilon"]
+            mdp_solver._pi = pi
+            policy = lambda x, nrng: nrng.choice(range(env._nA), p=pi[x])
         env._true_v = mdp_solver.get_optimal_v()
 
     nA = env.action_spec().num_values
@@ -103,9 +111,15 @@ def load_env_and_volatile_configs(env):
     elif env == "maze":
         env_config = configs.maze_config.env_config
         volatile_agent_config = configs.maze_config.volatile_agent_config
+    elif env == "random_maze":
+        env_config = configs.random_maze_config.env_config
+        volatile_agent_config = configs.random_maze_config.volatile_agent_config
     elif env == "medium_maze":
         env_config = configs.medium_maze_config.env_config
         volatile_agent_config = configs.medium_maze_config.volatile_agent_config
+    elif env == "random_medium_maze":
+        env_config = configs.random_medium_maze_config.env_config
+        volatile_agent_config = configs.random_medium_maze_config.volatile_agent_config
 
     return env_config, volatile_agent_config
 

@@ -13,12 +13,12 @@ import copy
 import configs
 from main_utils import *
 
-flags.DEFINE_string('agent', 'bw', 'what agent to run')
-flags.DEFINE_string('env', 'maze',
+flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
+flags.DEFINE_string('env', 'random_medium_maze',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
-flags.DEFINE_integer('max_len', 100000, 'Maximum number of time steps an episode may last (default: 100).')
+flags.DEFINE_integer('max_len', 100, 'Maximum number of time steps an episode may last (default: 100).')
 flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('num_units', 0, 'number of units per hidden layer')
 flags.DEFINE_integer('planning_iter', 1, 'Number of minibatches of model-based backups to run for planning')
@@ -41,44 +41,31 @@ def main(argv):
     final_hyperparam_file = os.path.join(agent_env_hyperparam_folder, "final_hyperparams.csv")
     best_aoc_hyperparam_file = os.path.join(env_hyperparam_folder, "{}_best_aoc_hyperparams.csv".format(FLAGS.env))
     best_min_hyperparam_file = os.path.join(env_hyperparam_folder, "{}_best_min_hyperparams.csv".format(FLAGS.env))
+    best_start_hyperparam_file = os.path.join(env_hyperparam_folder, "{}_best_start_hyperparams.csv".format(FLAGS.env))
 
     persistent_agent_config = configs.agent_config.config[FLAGS.agent]
     env_config, volatile_agent_config = load_env_and_volatile_configs(FLAGS.env)
 
     interm_fieldnames = list(volatile_agent_config[FLAGS.agent].keys())
-    interm_fieldnames.extend(["seed", "steps", 'rmsve_aoc', 'rmsve_min'])
+    interm_fieldnames.extend(["seed", "steps", 'rmsve_aoc', 'rmsve_min', 'rmsve_start'])
 
     final_fieldnames = list(volatile_agent_config[FLAGS.agent].keys())
-    final_fieldnames.extend(["steps", 'rmsve_aoc', 'rmsve_min'])
+    final_fieldnames.extend(["steps", 'rmsve_aoc', 'rmsve_min', 'rmsve_start'])
 
     best_fieldnames = ["agent"]
     best_fieldnames.extend(list(volatile_agent_config[FLAGS.agent].keys()))
-    best_fieldnames.extend(["steps", 'rmsve_aoc', 'rmsve_min'])
+    best_fieldnames.extend(["steps", 'rmsve_aoc', 'rmsve_min', 'rmsve_start'])
 
-    # best_aoc_fieldnames = ["agent"]
-    # best_aoc_fieldnames.extend(list(volatile_agent_config[FLAGS.agent].keys()))
-    # best_aoc_fieldnames.extend(["steps", 'rmsve_aoc'])
-    #
-    # best_min_fieldnames = ["agent"]
-    # best_min_fieldnames.extend(list(volatile_agent_config[FLAGS.agent].keys()))
-    # best_min_fieldnames.extend(["steps", 'rmsve_min'])
-
-    if not os.path.exists(interm_hyperparam_file):
-        with open(interm_hyperparam_file, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=interm_fieldnames)
-            writer.writeheader()
-    if not os.path.exists(final_hyperparam_file):
-        with open(final_hyperparam_file, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=final_fieldnames)
-            writer.writeheader()
-    if not os.path.exists(best_aoc_hyperparam_file):
-        with open(best_aoc_hyperparam_file, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=best_fieldnames)
-            writer.writeheader()
-    if not os.path.exists(best_min_hyperparam_file):
-        with open(best_min_hyperparam_file, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=best_fieldnames)
-            writer.writeheader()
+    files = [interm_hyperparam_file, final_hyperparam_file,
+                 best_aoc_hyperparam_file, best_min_hyperparam_file,
+                 best_start_hyperparam_file]
+    fieldnames = [interm_fieldnames, final_fieldnames, best_fieldnames,
+                  best_fieldnames, best_fieldnames]
+    for file, fieldname in zip(files, fieldnames):
+        if not os.path.exists(file):
+            with open(file, 'w', newline='') as f:
+                writer = csv.DictWriter(f, fieldnames=fieldname)
+                writer.writeheader()
 
     limited_volatile_to_run, volatile_to_run = build_hyper_list(FLAGS.agent,
                                                                 volatile_agent_config)
@@ -108,22 +95,24 @@ def main(argv):
                     "agent_config": persistent_agent_config,
                     "crt_config": seed_config}
 
-                total_rmsve, final_rmsve, avg_steps = run_objective(space)
+                total_rmsve, final_rmsve, start_rmsve, avg_steps = run_objective(space)
 
                 with open(interm_hyperparam_file, 'a+', newline='') as f:
                     writer = csv.DictWriter(f, fieldnames=interm_fieldnames)
                     seed_config["rmsve_aoc"] = round(total_rmsve, 2)
                     seed_config["rmsve_min"] = round(final_rmsve, 2)
+                    seed_config["rmsve_start"] = round(start_rmsve, 2)
                     seed_config["steps"] = avg_steps
                     writer.writerow(seed_config)
 
         if not configuration_exists(final_hyperparam_file, final_config, final_attributes):
-            rmsve_aoc_avg, rmsve_min_avg, steps_avg = get_avg_over_seeds(interm_hyperparam_file,
-                                                      final_config, final_attributes)
+            rmsve_aoc_avg, rmsve_min_avg, rmsve_start_avg, steps_avg = \
+                get_avg_over_seeds(interm_hyperparam_file, final_config, final_attributes)
             with open(final_hyperparam_file, 'a+', newline='') as f:
                 writer = csv.DictWriter(f, fieldnames=final_fieldnames)
                 final_config["rmsve_aoc"] = round(rmsve_aoc_avg, 2)
                 final_config["rmsve_min"] = round(rmsve_min_avg, 2)
+                final_config["rmsve_start"] = round(rmsve_start_avg, 2)
                 final_config["steps"] = steps_avg
                 writer.writerow(final_config)
 
@@ -133,26 +122,24 @@ def main(argv):
                        "replay_capacity": replay_capacity, }
         best_attributes = list(best_config.keys())
 
-        if not configuration_exists(best_aoc_hyperparam_file, best_config, best_attributes):
-            the_best_hyperparms = get_best_over_final(final_hyperparam_file,
-                                                      best_config, best_attributes[1:], "aoc")
-            with open(best_aoc_hyperparam_file, 'a+', newline='') as f:
-                writer = csv.DictWriter(f, fieldnames=best_fieldnames)
-                for key, value in the_best_hyperparms.items():
-                    best_config[key] = value
-                writer.writerow(best_config)
-        if not configuration_exists(best_min_hyperparam_file, best_config, best_attributes):
-            the_best_hyperparms = get_best_over_final(final_hyperparam_file,
-                                                      best_config, best_attributes[1:], "min")
-            with open(best_min_hyperparam_file, 'a+', newline='') as f:
-                writer = csv.DictWriter(f, fieldnames=best_fieldnames)
-                for key, value in the_best_hyperparms.items():
-                    best_config[key] = value
-                writer.writerow(best_config)
+        files = [best_aoc_hyperparam_file, best_min_hyperparam_file,
+                 best_start_hyperparam_file]
+        objectives = ["aoc", "min", "start"]
+        for file, obj in zip(files, objectives):
+            if not configuration_exists(file, best_config, best_attributes):
+                the_best_hyperparms = get_best_over_final(final_hyperparam_file,
+                                                          best_config, best_attributes[1:],
+                                                          obj)
+                with open(file, 'a+', newline='') as f:
+                    writer = csv.DictWriter(f, fieldnames=best_fieldnames)
+                    for key, value in the_best_hyperparms.items():
+                        best_config[key] = value
+                    writer.writerow(best_config)
 
 def get_avg_over_seeds(interm_hyperparam_file, final_config, final_attributes):
     rmsve_aoc_avg = []
     rmsve_min_avg = []
+    rmsve_start_avg = []
     steps_avg = []
     with open(interm_hyperparam_file, 'r', newline='') as f:
         reader = csv.DictReader(f)
@@ -165,11 +152,14 @@ def get_avg_over_seeds(interm_hyperparam_file, final_config, final_attributes):
             if ok == True:
                 rmsve_aoc_avg.append(float(row['rmsve_aoc']))
                 rmsve_min_avg.append(float(row['rmsve_min']))
+                rmsve_start_avg.append(float(row['rmsve_start']))
                 steps_avg.append(float(row['steps']))
-        return np.mean(rmsve_aoc_avg), np.mean(rmsve_min_avg), np.mean(steps_avg, dtype=int)
+        return np.mean(rmsve_aoc_avg), np.mean(rmsve_min_avg), np.mean(rmsve_start_avg),\
+               np.mean(steps_avg, dtype=int)
 
 def get_best_over_final(final_hyperparam_file, best_config, best_attributes, objective):
     rmsve = np.infty
+    objective2key = {"aoc": 'rmsve_aoc', "min": 'rmsve_min', "start": 'rmsve_start'}
     with open(final_hyperparam_file, 'r', newline='') as f:
         reader = csv.DictReader(f)
         for row in reader:
@@ -179,14 +169,9 @@ def get_best_over_final(final_hyperparam_file, best_config, best_attributes, obj
                     ok = False
                     break
             if ok == True:
-                if objective == "aoc":
-                    if float(row['rmsve_aoc']) < rmsve:
-                        best_config = row
-                        rmsve = float(row['rmsve_aoc'])
-                else:
-                    if float(row['rmsve_min']) < rmsve:
-                        best_config = row
-                        rmsve = float(row['rmsve_min'])
+                if float(row[objective2key[objective]]) < rmsve:
+                    best_config = row
+                    rmsve = float(row[objective2key[objective]])
         return best_config
 
 def configuration_exists(hyperparam_file, crt_config, attributes):
@@ -215,7 +200,7 @@ def run_objective(space):
     seed = space["crt_config"]["seed"]
     if space["env_config"]["non_gridworld"]:
         env, agent, mdp_solver = run_experiment(seed, space, aux_agent_configs)
-        total_rmsve, final_rmsve, avg_steps, values, errors = experiment.run_chain(
+        total_rmsve, final_rmsve, start_rmsve, avg_steps, values, errors = experiment.run_chain(
             agent=agent,
             model_class=space["env_config"]["model_class"],
             mdp_solver=mdp_solver,
@@ -228,7 +213,7 @@ def run_objective(space):
         )
     else:
         env, agent, mdp_solver = run_experiment(seed, space, aux_agent_configs)
-        total_rmsve, final_rmsve, avg_steps, values, errors = experiment.run_episodic(
+        total_rmsve, final_rmsve, start_rmsve, avg_steps, values, errors = experiment.run_episodic(
             agent=agent,
             environment=env,
             mdp_solver=mdp_solver,
@@ -240,7 +225,7 @@ def run_objective(space):
             plot_values=space["plot_values"],
             log_period=space["log_period"],
         )
-    return total_rmsve, final_rmsve, avg_steps
+    return total_rmsve, final_rmsve, start_rmsve, avg_steps
 
 if __name__ == '__main__':
     app.run(main)

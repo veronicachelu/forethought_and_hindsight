@@ -119,7 +119,7 @@ class TpVanilla(Agent):
                timestep: dm_env.TimeStep,
                eval: bool = False
                ) -> int:
-        return self._pi(timestep.observation)
+        return self._pi(timestep.observation, self._nrng)
 
     def value_update(
             self,
