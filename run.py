@@ -10,13 +10,15 @@ import utils
 from utils import *
 
 flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
-flags.DEFINE_boolean('latent', False, 'latent')
-flags.DEFINE_string('env', 'linear_maze', 'env')
+# flags.DEFINE_string('agent', 'latent_vanilla_intr', 'what agent to run')
+flags.DEFINE_string('env', 'maze', 'env')
+# flags.DEFINE_string('env', 'linear_maze', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', 100000, 'Maximum number of time steps an episode may last (default: 100).')
 flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
-flags.DEFINE_integer('num_units', 8, 'number of units per hidden layer')
+flags.DEFINE_integer('num_units', 0, 'number of units per hidden layer')
+# flags.DEFINE_integer('num_units', 8, 'number of units per hidden layer')
 flags.DEFINE_integer('planning_iter', 1, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
 flags.DEFINE_integer('planning_depth', 0, 'Planning depth for MCTS')
@@ -26,7 +28,8 @@ flags.DEFINE_integer('model_learning_period', 1,
 flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
 flags.DEFINE_float('discount', .95, 'discounting on the agent side')
 flags.DEFINE_integer('min_replay_size', 1, 'min replay size before training.')
-flags.DEFINE_float('lr', 1e-2, 'learning rate for q optimizer')
+flags.DEFINE_float('lr', 1.0, 'learning rate for q optimizer')
+# flags.DEFINE_float('lr', 1e-2, 'learning rate for q optimizer')
 flags.DEFINE_float('lr_p', 2e-1, 'learning rate for q optimizer')
 flags.DEFINE_float('lr_m',  2e-1, 'learning rate for model optimizer')
 

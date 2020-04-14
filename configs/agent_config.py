@@ -7,7 +7,7 @@ config = {
         "class": {"linear": "LpIntrinsicVanilla"}
     },
     "latent_vanilla_intr": {
-        "run_mode": "vanilla_intr",
+        "run_mode": "latent_vanilla_intr",
         "planning_depth": 0,
         "planning_iter": 1,
         "latent": True,
@@ -22,7 +22,7 @@ config = {
                  "tabular": "TpVanilla"}
         },
     "latent_bw_intr": {
-        "run_mode": "explicit_v",
+        "run_mode": "latent_bw_intr",
         "planning_iter": 1,
         "latent": True,
         "class": {"linear": "LpExplicitValueBased"},

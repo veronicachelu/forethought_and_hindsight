@@ -151,7 +151,6 @@ class LpVanilla(Agent):
                        np.array([new_timestep.observation])]
 
         loss, gradients = self._v_loss_grad(self._v_parameters,
-                                           self._h_parameters,
                                             transitions)
         self._v_opt_state = self._v_opt_update(0, gradients,
                                                self._v_opt_state)
@@ -160,7 +159,7 @@ class LpVanilla(Agent):
         losses_and_grads = {"losses": {"loss_v": np.array(loss)},
                             "gradients": {"grad_norm_v":
                                               np.sum(np.sum([np.linalg.norm(np.asarray(g), ord=2)
-                                                             for g in gradient]))}}
+                                                             for g in gradients]))}}
         self._log_summaries(losses_and_grads, "value")
 
     def model_based_train(self):

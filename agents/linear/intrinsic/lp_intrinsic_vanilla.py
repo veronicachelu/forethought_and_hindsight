@@ -101,8 +101,8 @@ class LpIntrinsicVanilla(Agent):
 
         def v_loss(v_params, h_params, transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
-            h_t = o_t if self._no_latent else lax.stop_gradient(self._h_network(h_params, o_t))
-            h_tm1 = o_tm1 if self._no_latent else lax.stop_gradient(self._h_network(h_params, o_tm1))
+            h_t = lax.stop_gradient(self._h_network(h_params, o_t)) if self._latent else o_t
+            h_tm1 = lax.stop_gradient(self._h_network(h_params, o_tm1)) if self._latent else o_tm1
             v_tm1 = self._v_network(v_params, h_tm1)
             v_t = self._v_network(v_params, h_t)
             v_t_target = r_t + d_t * discount * v_t
@@ -240,7 +240,7 @@ class LpIntrinsicVanilla(Agent):
         #     self.writer.flush()
 
     def get_values_for_all_states(self, all_states):
-        latents = all_states if self._no_latent else self._h_forward(self._h_parameters, np.array(all_states))
+        latents = self._h_forward(self._h_parameters, np.array(all_states)) if self._latent else all_states
         return np.array(self._v_forward(self._v_parameters, np.asarray(latents, np.float)), np.float)
 
     def update_hyper_params(self, step, total_steps):
