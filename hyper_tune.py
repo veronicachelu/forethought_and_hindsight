@@ -13,17 +13,14 @@ import copy
 import configs
 from main_utils import *
 
-flags.DEFINE_string('agent', 'bw', 'what agent to run')
+flags.DEFINE_string('agent', 'latent_vanilla_intr', 'what agent to run')
 flags.DEFINE_string('env', 'linear_maze',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', 100, 'Maximum number of time steps an episode may last (default: 100).')
-flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
-flags.DEFINE_integer('num_units', 0, 'number of units per hidden layer')
 flags.DEFINE_integer('planning_iter', 1, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
-flags.DEFINE_integer('planning_depth', 1, 'Planning depth for MCTS')
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')
 flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
@@ -189,8 +186,7 @@ def configuration_exists(hyperparam_file, crt_config, attributes):
         return False
 
 def run_objective(space):
-    aux_agent_configs = {"num_hidden_layers": FLAGS.num_hidden_layers,
-                         "num_units": FLAGS.num_units,
+    aux_agent_configs = {
                          "batch_size": FLAGS.batch_size,
                          "discount": FLAGS.discount,
                          "min_replay_size": FLAGS.min_replay_size,

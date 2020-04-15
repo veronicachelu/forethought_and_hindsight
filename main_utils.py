@@ -51,8 +51,8 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, space, aux_agent_configs):
     rng = jrandom.PRNGKey(seed=seed)
     rng_q, rng_model, rng_agent = jrandom.split(rng, 3)
     network = get_network(
-        num_hidden_layers=aux_agent_configs["num_hidden_layers"],
-        num_units=aux_agent_configs["num_units"],
+        num_hidden_layers=space["agent_config"]["num_hidden_layers"],
+        num_units=space["agent_config"]["num_units"],
         nA=nA,
         input_dim=input_dim,
         rng=rng_model,
