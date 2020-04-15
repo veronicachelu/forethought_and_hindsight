@@ -30,8 +30,10 @@ def get_hyperparams():
     hyperparam_folder = os.path.join(FLAGS.logs, "hyper")
     hyperparam_folder = os.path.join(hyperparam_folder, FLAGS.env)
 
-    maze_best_aoc_hyperparams = os.path.join(hyperparam_folder, "maze_best_aoc_hyperparams.csv")
-    maze_best_min_hyperparams = os.path.join(hyperparam_folder, "maze_best_min_hyperparams.csv")
+    maze_best_aoc_hyperparams = os.path.join(hyperparam_folder,
+                                             "{}_best_aoc_hyperparams.csv".format(FLAGS.env))
+    maze_best_min_hyperparams = os.path.join(hyperparam_folder,
+                                             "{}_best_min_hyperparams.csv".format(FLAGS.env))
 
     agents = []
     with open(maze_best_aoc_hyperparams, 'r', newline='') as f:
