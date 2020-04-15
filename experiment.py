@@ -131,12 +131,12 @@ def run_mdp_forall_episodes(
             timestep = new_timestep
             agent.total_steps += 1
 
-        # hat_v = agent._v_network if model_class == "tabular" \
-        #     else agent.get_values_for_all_states(environment.get_all_states())
-        # # hat_error = np.abs(mdp_solver.get_optimal_v() - hat_v)
-        # hat_error = np.abs(environment._true_v - hat_v)
-        # rmsve = get_rmsve(environment, mdp_solver, hat_v, environment._true_v, weighted=True)
-        # total_rmsve += rmsve
+        hat_v = agent._v_network if model_class == "tabular" \
+            else agent.get_values_for_all_states(environment.get_all_states())
+        # hat_error = np.abs(mdp_solver.get_optimal_v() - hat_v)
+        hat_error = np.abs(environment._true_v - hat_v)
+        rmsve = get_rmsve(environment, mdp_solver, hat_v, environment._true_v, weighted=True)
+        total_rmsve += rmsve
         #
         # plot_error(env=environment,
         #            values=environment.reshape_v(hat_error),
