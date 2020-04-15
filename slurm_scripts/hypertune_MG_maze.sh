@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=hypertune__MG__maze
-#SBATCH --output=./outputs/hypertune__MG__maze_output.txt
-#SBATCH --error=./errors/hypertune__MG__maze_error.txt
+#SBATCH --output=./outputs/hypertune__MG__maze__output.txt
+#SBATCH --error=./errors/hypertune__MG__maze__error.txt
 #SBATCH --ntasks=1
 #SBATCH --time=10000
 #SBATCH --mem=100Gb
