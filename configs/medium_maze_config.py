@@ -25,7 +25,7 @@ volatile_agent_config = {
         "lr_m": [0]
     },
     "bw": {
-        "planning_depth": [1, 2, 3, 4],
+        "planning_depth": [1, 4, 8],
         "replay_capacity": [0],
         "lr": [0.9],
         "lr_p": [0.9],
