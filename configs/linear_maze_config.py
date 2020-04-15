@@ -39,9 +39,9 @@ volatile_agent_config = {
     "bw_intr": {
         "planning_depth": [1, 2, 3, 4],
         "replay_capacity": [0],
-        "lr": [0.03],
-        "lr_p": [0.03],
-        "lr_m": np.linspace(0.1, 1.0, 10),
+        "lr": [0.08],
+        "lr_p": [0.08],
+        "lr_m": np.linspace(0.001, 0.08, 10),
     },
     "latent_bw_intr": {
         "planning_depth": [1, 2, 3, 4],
