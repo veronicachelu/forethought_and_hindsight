@@ -46,6 +46,7 @@ class LpIntrinsicVanilla(Agent):
             seed: int = None,
             latent=False,
             logs: str = "logs",
+            target_networks=False,
             # double_input_reward_model=False
     ):
         super().__init__()
@@ -81,6 +82,7 @@ class LpIntrinsicVanilla(Agent):
         self._max_len = max_len
         self._input_dim = input_dim
         self._log_period = log_period
+        self._target_networks = target_networks
 
         if self._logs is not None:
             self._checkpoint_dir = os.path.join(self._logs,
@@ -124,6 +126,22 @@ class LpIntrinsicVanilla(Agent):
         self._fw_o_parameters = network["model"]["params"][2]
         self._r_parameters = network["model"]["params"][3]
         self._d_parameters = network["model"]["params"][4]
+
+        if self._target_networks:
+            self._target_v_network = network["target_value"]["net"]
+            self._target_parameters = network["target_value"]["params"]
+
+            self._target_h_network = network["target_model"]["net"][0]
+            self._target_o_network = network["target_model"]["net"][1]
+            self._target_fw_o_network = network["target_model"]["net"][2]
+            self._target_r_network = network["target_model"]["net"][3]
+            self._target_d_network = network["target_model"]["net"][4]
+
+            self._target_h_parameters = network["target_model"]["params"][0]
+            self._target_o_parameters = network["target_model"]["params"][1]
+            self._target_fw_o_parameters = network["target_model"]["params"][2]
+            self._target_r_parameters = network["target_model"]["params"][3]
+            self._target_d_parameters = network["target_model"]["params"][4]
 
         # This function computes dL/dTheta
         self._v_loss_grad = jax.jit(jax.value_and_grad(v_loss, 0))

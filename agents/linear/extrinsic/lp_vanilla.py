@@ -45,6 +45,7 @@ class LpVanilla(Agent):
             exploration_decay_period: int,
             seed: int = None,
             latent=False,
+            target_networks=False,
             logs: str = "logs",
             # double_input_reward_model=False
     ):

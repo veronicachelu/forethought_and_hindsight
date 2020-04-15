@@ -57,7 +57,8 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, space, aux_agent_configs):
         input_dim=input_dim,
         rng=rng_model,
         model_family=space["env_config"]["model_family"],
-        model_class=space["env_config"]["model_class"])
+        model_class=space["env_config"]["model_class"],
+        target_networks=space["agent_config"]["target_networks"])
 
     agent_class = getattr(agents,
                           space["agent_config"]["class"][space["env_config"]["model_class"]])
@@ -86,6 +87,7 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, space, aux_agent_configs):
         log_period=space["log_period"],
         input_dim=input_dim,
         latent=space["agent_config"]["latent"],
+        target_networks=space["agent_config"]["target_networks"]
         # double_input_reward_model=True
     )
     return agent

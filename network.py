@@ -17,6 +17,7 @@ def get_network(num_hidden_layers: int,
                   input_dim: Tuple,
                   model_class="tabular",
                   model_family="extrinsic",
+                  target_networks=False,
                   # double_input_reward_model=False
                 ):
 
@@ -29,7 +30,7 @@ def get_network(num_hidden_layers: int,
                             rng, input_dim)
         else:
             return get_intrinsic_network(num_hidden_layers, num_units, nA,
-                                  rng, input_dim)
+                                  rng, input_dim, target_networks)
 
 
 
@@ -149,34 +150,72 @@ def get_intrinsic_network(num_hidden_layers: int,
                   nA: int,
                   rng: List,
                   input_dim: Tuple,
-                  # double_input_reward_model=False
+                  target_networks=False,
+                  # double_input_reward_model=False,
                           ):
 
-    intput_size = np.prod(input_dim)
-    num_units = intput_size
+    input_size = np.prod(input_dim)
+    num_units = input_size
     network = {}
     rng_v, rng_h, rng_o, rng_fw_o, rng_r, rng_d = jrandom.split(rng, 6)
 
-    h_network_init, h_network = stax.Dense(num_units)
-    _, h_network_params = h_network_init(rng_h, (-1, intput_size))
+    if target_networks:
+        rng_v, rng_target_v, rng_h, rng_target_h, rng_o, rng_target_o,\
+            rng_fw_o, rng_target_fw_o, rng_r, rng_target_r, rng_d, rng_target_d = jrandom.split(rng, 12)
 
-    layers = []
-    layers.append(stax.Dense(1))
-    layers.append(Reshape((-1)))
+    h_network, h_network_params = get_h_net(rng_h, num_units, input_size)
+    v_network, v_network_params = get_value_net(rng_v, num_units)
+    o_network, o_network_params = get_o_net(rng_o, num_units)
+    fw_o_network, fw_o_network_params = get_o_net(rng_o, num_units)
+    r_network, r_network_params = get_r_net(rng_r, num_units)
+    d_network, d_network_params = get_d_net(rng_d, num_units)
 
-    v_network_init, v_network = stax.serial(*layers)
-
-    _, v_network_params = v_network_init(rng_v, (-1, num_units))
+    if target_networks:
+        target_h_network, target_h_network_params = get_h_net(rng_target_h, num_units, input_size)
+        target_v_network, target_v_network_params = get_value_net(rng_target_v, num_units)
+        target_o_network, target_o_network_params = get_o_net(rng_target_o, num_units)
+        target_fw_o_network, target_fw_o_network_params = get_o_net(rng_target_fw_o, num_units)
+        target_r_network, target_r_network_params = get_r_net(rng_target_r, num_units)
+        target_d_network, target_d_network_params = get_d_net(rng_target_d, num_units)
+        network["target_model"] = {"net": [target_h_network, target_o_network, target_fw_o_network,
+                                           target_r_network, target_d_network],
+                            "params": [target_h_network_params, target_o_network_params,
+                                       target_fw_o_network_params, target_r_network_params,
+                                       target_d_network_params]
+                            }
+        network["value"] = {"net": target_v_network,
+                            "params": target_v_network_params}
 
     network["value"] = {"net": v_network,
                         "params": v_network_params}
+    network["model"] = {"net": [h_network, o_network, fw_o_network, r_network, d_network],
+                        "params": [h_network_params, o_network_params,
+                                   fw_o_network_params, r_network_params, d_network_params]
+                        }
 
+    return network
+
+def get_h_net(rng_h, num_units, input_size):
+    h_network_init, h_network = stax.Dense(num_units)
+    _, h_network_params = h_network_init(rng_h, (-1, input_size))
+    return h_network, h_network_params
+
+def get_value_net(rng_v, num_units):
+    layers = []
+    layers.append(stax.Dense(1))
+    layers.append(Reshape((-1)))
+    v_network_init, v_network = stax.serial(*layers)
+    _, v_network_params = v_network_init(rng_v, (-1, num_units))
+
+    return v_network, v_network_params
+
+def get_o_net(rng_o, num_units):
     o_network_init, o_network = stax.Dense(num_units)
     _, o_network_params = o_network_init(rng_o, (-1, num_units))
 
-    fw_o_network_init, fw_o_network = stax.Dense(num_units)
-    _, fw_o_network_params = fw_o_network_init(rng_fw_o, (-1, num_units))
+    return o_network, o_network_params
 
+def get_r_net(rng_r, num_units):
     layers = []
     layers.append(stax.Dense(1))
     layers.append(Reshape((-1)))
@@ -187,6 +226,9 @@ def get_intrinsic_network(num_hidden_layers: int,
     # else:
     #     _, r_network_params = r_network_init(rng_r, (-1, num_units))
 
+    return r_network, r_network_params
+
+def get_d_net(rng_d, num_units):
     layers = []
     layers.append(stax.Dense(2))
     layers.append(Reshape((-1)))
@@ -194,9 +236,4 @@ def get_intrinsic_network(num_hidden_layers: int,
     d_network_init, d_network = stax.serial(*layers)
     _, d_network_params = d_network_init(rng_d, (-1, 2 * num_units))
 
-    network["model"] = {"net": [h_network, o_network, fw_o_network, r_network, d_network],
-                        "params": [h_network_params, o_network_params,
-                                   fw_o_network_params, r_network_params, d_network_params]
-                        }
-
-    return network
+    return d_network, d_network_params
