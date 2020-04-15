@@ -74,10 +74,10 @@ class LpExplicitExp(LpVanilla):
         self._v_step_schedule = optimizers.polynomial_decay(self._lr_planning, self._exploration_decay_period, 0, 2)
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, 0))
 
-        v_opt_init, v_opt_update, v_get_params = optimizers.adam(step_size=self._v_step_schedule)
-        self._v_opt_update = jax.jit(v_opt_update)
-        self._v_opt_state = v_opt_init(self._v_parameters)
-        self._v_get_params = v_get_params
+        # v_opt_init, v_opt_update, v_get_params = optimizers.adam(step_size=self._v_step_schedule)
+        # self._v_opt_update = jax.jit(v_opt_update)
+        # self._v_opt_state = v_opt_init(self._v_parameters)
+        # self._v_get_params = v_get_params
 
         # This function computes dL/dTheta
         self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [0, 1], has_aux=True))

@@ -153,7 +153,7 @@ class LpVanilla(Agent):
 
         loss, gradients = self._v_loss_grad(self._v_parameters,
                                             transitions)
-        self._v_opt_state = self._v_opt_update(0, gradients,
+        self._v_opt_state = self._v_opt_update(agent.episode, gradients,
                                                self._v_opt_state)
         self._v_parameters = self._v_get_params(self._v_opt_state)
 
