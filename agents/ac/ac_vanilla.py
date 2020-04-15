@@ -102,26 +102,24 @@ class ACVanilla(Agent):
             if not os.path.exists(self._images_dir):
                 os.makedirs(self._images_dir)
 
-        def ac_loss(v_params, pi_params, transitions):
+        def ac_loss(v_params, pi_params, h_params, transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
-            v_tm1 = self._v_network(v_params, o_tm1)
-            v_t = self._v_network(v_params, o_t)
+            h_t = lax.stop_gradient(self._h_network(h_params, o_t)) if self._latent else o_t
+            h_tm1 = lax.stop_gradient(self._h_network(h_params, o_tm1)) if self._latent else o_tm1
+            v_tm1 = self._v_network(v_params, h_tm1)
+            v_t = self._v_network(v_params, h_t)
             v_t_target = r_t + d_t * discount * v_t
             td_error = jax.vmap(rlax.td_learning)(v_tm1, r_t, d_t * discount, v_t_target)
             critic_loss = jnp.mean(td_error ** 2)
 
-            pi_tm1 = self._pi_network(pi_params, o_tm1)
-            actor_loss = jax.vmap(rlax.policy_gradient_loss)(
-                logits_t=pi_tm1,
-                a_t=a_tm1,
-                adv_t=td_error,
-                w_t=jnp.ones_like(td_error))
-            actor_loss = jnp.mean(actor_loss)
+            pi_tm1 = self._pi_network(pi_params, h_tm1)
+            actor_loss = rlax.policy_gradient_loss(pi_tm1, a_tm1, td_error,
+                                                             jnp.ones_like(td_error))
 
             total_loss = actor_loss + critic_loss
             return total_loss,\
-                   {"critic_loss": critic_loss,
-                    "actor_loss": actor_loss}
+                   {"critic": critic_loss,
+                    "actor": actor_loss}
 
         # Internalize the networks.
         self._v_network = network["value"]["net"]
@@ -130,25 +128,29 @@ class ACVanilla(Agent):
         self._pi_network = network["pi"]["net"]
         self._pi_parameters = network["pi"]["params"]
 
-        self._o_network = network["model"]["net"][0]
-        self._fw_o_network = network["model"]["net"][1]
-        self._r_network = network["model"]["net"][2]
-        self._d_network = network["model"]["net"][3]
+        self._h_network = network["model"]["net"][0]
+        self._o_network = network["model"]["net"][1]
+        self._fw_o_network = network["model"]["net"][2]
+        self._r_network = network["model"]["net"][3]
+        self._d_network = network["model"]["net"][4]
 
-        self._o_parameters = network["model"]["params"][0]
-        self._fw_o_parameters = network["model"]["params"][1]
-        self._r_parameters = network["model"]["params"][2]
-        self._d_parameters = network["model"]["params"][3]
+        self._h_parameters = network["model"]["params"][0]
+        self._o_parameters = network["model"]["params"][1]
+        self._fw_o_parameters = network["model"]["params"][2]
+        self._r_parameters = network["model"]["params"][3]
+        self._d_parameters = network["model"]["params"][4]
 
         # This function computes dL/dTheta
-        self._ac_loss_grad = jax.jit(jax.value_and_grad(ac_loss, has_aux=True))
+        self._ac_loss_grad = jax.jit(jax.value_and_grad(ac_loss, [0, 1, 2], has_aux=True))
         self._v_forward = jax.jit(self._v_network)
         self._pi_forward = jax.jit(self._pi_network)
 
         # Make an Adam optimizer.
         ac_opt_init, ac_opt_update, ac_get_params = optimizers.adam(step_size=self._lr)
         self._ac_opt_update = jax.jit(ac_opt_update)
-        self._ac_opt_state = ac_opt_init([self._v_parameters, self._pi_parameters])
+        self._ac_opt_state = ac_opt_init([self._v_parameters,
+                                          self._pi_parameters,
+                                          self._h_parameters])
         self._ac_get_params = ac_get_params
 
 
@@ -158,7 +160,8 @@ class ACVanilla(Agent):
                ) -> int:
         key = next(self._rng)
         observation = timestep.observation[None, ...]
-        pi_logits = self._pi_forward(self._pi_parameters, observation)
+        latent_state = self._pi_forward(self._pi_parameters, observation) if self._latent else observation
+        pi_logits = self._pi_forward(self._pi_parameters, latent_state)
         action = jax.random.categorical(key, pi_logits).squeeze()
         return int(action)
 
@@ -176,11 +179,12 @@ class ACVanilla(Agent):
 
         (total_loss, losses), gradients = self._ac_loss_grad(self._v_parameters,
                                              self._pi_parameters,
+                                             self._h_parameters,
                                             transitions)
-        self._ac_opt_state = self._ac_opt_update(self.episode, gradients,
+        self._ac_opt_state = self._ac_opt_update(self.total_steps, list(gradients),
                                                self._ac_opt_state)
         ac_parameters = self._ac_get_params(self._ac_opt_state)
-        self._v_parameters, self._pi_parameters = ac_parameters
+        self._v_parameters, self._pi_parameters, self._h_parameters = ac_parameters
 
         losses_and_grads = {"losses": {
                                     "total_loss": np.array(total_loss),
@@ -249,25 +253,29 @@ class ACVanilla(Agent):
         pass
 
     def _log_summaries(self, losses_and_grads, summary_name):
-        return
-        # if self._logs is not None:
-        # losses = losses_and_grads["losses"]
-        # gradients = losses_and_grads["gradients"]
-        # if self._max_len == -1:
-        #     ep = self.total_steps
-        # else:
-        #     ep = self.episode
-        # if ep % self._log_period == 0:
-        #     for k, v in losses.items():
-        #         tf.summary.scalar("train/losses/{}/{}".format(summary_name, k),
-        #                           losses[k], step=ep)
-        #     for k, v in gradients.items():
-        #         tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
-        #                           gradients[k], step=ep)
-        #     self.writer.flush()
+        if self._logs is not None:
+            losses = losses_and_grads["losses"]
+            gradients = losses_and_grads["gradients"]
+            # if self._max_len == -1:
+            ep = self.total_steps
+            # else:
+            #     ep = self.episode
+            if ep % self._log_period == 0:
+                for k, v in losses.items():
+                    tf.summary.scalar("train/losses/{}/{}".format(summary_name, k),
+                                      losses[k], step=ep)
+                for k, v in gradients.items():
+                    tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
+                                      gradients[k], step=ep)
+                self.writer.flush()
 
     def get_values_for_all_states(self, all_states):
-        return np.array(self._v_forward(self._v_parameters, np.array(all_states)), np.float)
+        latents = self._h_forward(self._h_parameters, np.array(all_states)) if self._latent else all_states
+        return np.array(self._v_forward(self._v_parameters, np.asarray(latents, np.float)), np.float)
+
+    def get_policy(self, all_states):
+        latents = self._h_forward(self._h_parameters, np.array(all_states)) if self._latent else all_states
+        return np.eye(self._nA)[np.argmax(np.array(self._pi_forward(self._pi_parameters, np.asarray(latents, np.float)), np.float), -1)]
 
     def update_hyper_params(self, step, total_steps):
         pass

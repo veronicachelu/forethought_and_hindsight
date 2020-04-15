@@ -7,7 +7,7 @@ config = {
         "model_family": "extrinsic",
         "latent": False,
         "num_hidden_layers": 0,
-        "num_units": 8,
+        "num_units": 80,
         "target_networks": False,
         "class": {"linear": "ACVanilla"}
     },
@@ -30,7 +30,7 @@ config = {
         "planning_iter": 1,
         "latent": True,
         "num_hidden_layers": 0,
-        "num_units": 8,
+        "num_units": 80,
         "model_family": "intrinsic",
         "target_networks": False,
         "class": {"linear": "LpIntrinsicVanilla"}
@@ -54,7 +54,7 @@ config = {
         "planning_iter": 1,
         "latent": True,
         "num_hidden_layers": 0,
-        "num_units": 8,
+        "num_units": 80,
         "model_family": "intrinsic",
         "target_networks": True,
         "class": {"linear": "LpExplicitValueBased"},

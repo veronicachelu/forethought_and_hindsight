@@ -8,6 +8,7 @@ import experiment
 import utils
 from utils import *
 from network import *
+import haiku as hk
 
 def get_env(nrng, space, aux_agent_configs):
     if space["env_config"]["non_gridworld"]:
@@ -50,6 +51,7 @@ def get_env(nrng, space, aux_agent_configs):
 def get_agent(env, seed, nrng, nA, input_dim, policy, space, aux_agent_configs):
     rng = jrandom.PRNGKey(seed=seed)
     rng_q, rng_model, rng_agent = jrandom.split(rng, 3)
+    rng_sequence = hk.PRNGSequence(rng_agent)
     network = get_network(
         pg=space["agent_config"]["pg"],
         num_hidden_layers=space["agent_config"]["num_hidden_layers"],
@@ -57,6 +59,7 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, space, aux_agent_configs):
         nA=nA,
         input_dim=input_dim,
         rng=rng_model,
+        latent=space["agent_config"]["latent"],
         model_family=space["agent_config"]["model_family"],
         model_class=space["env_config"]["model_class"],
         target_networks=space["agent_config"]["target_networks"])
@@ -83,7 +86,7 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, space, aux_agent_configs):
         exploration_decay_period=space["env_config"]["num_episodes"],
         seed=seed,
         nrng=nrng,
-        rng=rng_agent,
+        rng=rng_sequence,
         logs=space["logs"],
         max_len=aux_agent_configs["max_len"],
         log_period=space["log_period"],
@@ -119,6 +122,9 @@ def load_env_and_volatile_configs(env):
     elif env == "linear_maze":
         env_config = configs.linear_maze_config.env_config
         volatile_agent_config = configs.linear_maze_config.volatile_agent_config
+    elif env == "linear_tiny_maze":
+        env_config = configs.linear_tiny_maze_config.env_config
+        volatile_agent_config = configs.linear_tiny_maze_config.volatile_agent_config
     elif env == "random_maze":
         env_config = configs.random_maze_config.env_config
         volatile_agent_config = configs.random_maze_config.volatile_agent_config

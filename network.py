@@ -19,11 +19,12 @@ def get_network(num_hidden_layers: int,
                   model_family="extrinsic",
                   target_networks=False,
                   pg=False,
+                  latent=False,
                   # double_input_reward_model=False
                 ):
     if pg:
         return get_pg_network(num_hidden_layers, num_units, nA,
-                            rng, input_dim)
+                            rng, input_dim, latent)
     if model_class == "tabular":
         return get_tabular_network(num_hidden_layers, num_units, nA,
                             rng, input_dim)
@@ -31,7 +32,7 @@ def get_network(num_hidden_layers: int,
         return get_extrinsic_network(num_hidden_layers, num_units, nA,
                         rng, input_dim)
     return get_intrinsic_network(num_hidden_layers, num_units, nA,
-                rng, input_dim, target_networks)
+                rng, input_dim, target_networks, latent)
 
 
 
@@ -152,11 +153,11 @@ def get_intrinsic_network(num_hidden_layers: int,
                   rng: List,
                   input_dim: Tuple,
                   target_networks=False,
-                  # double_input_reward_model=False,
+                  latent=False,
                           ):
 
     input_size = np.prod(input_dim)
-    num_units = input_size
+    num_units = num_units if latent else input_size
     network = {}
     rng_v, rng_h, rng_o, rng_fw_o, rng_r, rng_d = jrandom.split(rng, 6)
 
@@ -202,15 +203,15 @@ def get_pg_network(num_hidden_layers: int,
                   rng: List,
                   input_dim: Tuple,
                   target_networks=False,
-                  # double_input_reward_model=False,
+                  latent=False,
                           ):
     input_size = np.prod(input_dim)
-    num_units = input_size
+    num_units = num_units if latent else input_size
     network = {}
     rng_pi, rng_v, rng_h, rng_o, rng_fw_o, rng_r, rng_d = jrandom.split(rng, 7)
 
     h_network, h_network_params = get_h_net(rng_h, num_units, input_size)
-    pi_network, pi_network_params = get_pi_net(rng_pi, num_units)
+    pi_network, pi_network_params = get_pi_net(rng_pi, num_units, nA)
     v_network, v_network_params = get_value_net(rng_v, num_units)
     o_network, o_network_params = get_o_net(rng_o, num_units)
     fw_o_network, fw_o_network_params = get_o_net(rng_o, num_units)
@@ -233,9 +234,9 @@ def get_h_net(rng_h, num_units, input_size):
     _, h_network_params = h_network_init(rng_h, (-1, input_size))
     return h_network, h_network_params
 
-def get_pi_net(rng_pi, nA):
+def get_pi_net(rng_pi, num_units, nA):
     pi_network_init, pi_network = stax.Dense(nA)
-    _, pi_network_params = pi_network_init(rng_pi, (-1, nA))
+    _, pi_network_params = pi_network_init(rng_pi, (-1, num_units))
 
     return pi_network, pi_network_params
 
