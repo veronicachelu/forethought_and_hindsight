@@ -18,14 +18,14 @@ from agents.linear.intrinsic.lp_intrinsic_vanilla import LpIntrinsicVanilla
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
-def td_learning(
-    v_tm1,
-    r_t,
-    discount_t,
-    v_t,
-    ):
-    target_tm1 = r_t + discount_t * v_t
-    return jax.lax.stop_gradient(target_tm1) - v_tm1
+# def td_learning(
+#     v_tm1,
+#     r_t,
+#     discount_t,
+#     v_t,
+#     ):
+#     target_tm1 = r_t + discount_t * v_t
+#     return jax.lax.stop_gradient(target_tm1) - v_tm1
 
 class LpExplicitValueBased(LpIntrinsicVanilla):
     def __init__(
@@ -36,16 +36,12 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
 
         self._sequence = []
         self._should_reset_sequence = False
-        self._target_update_period = 4
+        # self._target_update_period = 4
 
         def model_loss(v_params,
-                       # target_v_params,
                        h_params,
-                       # target_t_params,
                        o_params,
-                       # target_o_params,
                        r_params,
-                       # target_r_params,
                        d_params,
                        transitions):
             o_tmn_target = transitions[0][0]
@@ -85,10 +81,7 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
 
             model_tmn = self._o_network(o_params, h_t)
             model_v_tmn, model_vjp_fun = jax.vjp(self._v_network, v_params, model_tmn)
-            # if self._double_input_reward_model:
             model_r_input = jnp.concatenate([model_tmn, h_t], axis=-1)
-            # else:
-            #     model_r_input = model_tmn
             model_r_tmn_2_t = self._r_network(r_params, model_r_input)
 
             model_td_error = jax.vmap(rlax.td_learning)(model_v_tmn, model_r_tmn_2_t,
@@ -103,7 +96,6 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
                                                                  lax.stop_gradient(param_grad_real)))
 
             r_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_r_tmn_2_t, real_r_tmn_2_t))
-
             total_loss = corr_loss + r_loss#+ d_loss #
 
 
@@ -145,15 +137,14 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, 0))
         # self._v_planning_loss_grad = jax.value_and_grad(v_planning_loss, 0)
 
-        self._v_step_schedule = self._lr_planning
+        # self._v_step_schedule = self._lr_planning
         self._model_step_schedule = self._lr_model
 
-        v_opt_init, v_opt_update, v_get_params = optimizers.adam(step_size=self._v_step_schedule)
-        self._v_opt_update = jax.jit(v_opt_update)
-        self._v_opt_state = v_opt_init(self._v_parameters)
-        self._v_get_params = v_get_params
+        # v_opt_init, v_opt_update, v_get_params = optimizers.adam(step_size=self._v_step_schedule)
+        # self._v_opt_update = jax.jit(v_opt_update)
+        # self._v_opt_state = v_opt_init(self._v_parameters)
+        # self._v_get_params = v_get_params
 
-        # This function computes dL/dTheta
         self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [1, 2, 3, 4], has_aux=True))
         # self._model_loss_grad = jax.value_and_grad(model_loss, [1, 2, 3, 4], has_aux=True)
         self._h_forward = jax.jit(self._h_network)
@@ -176,7 +167,9 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
         if self._n == 0:
             return
         if len(self._sequence) >= self._n:
-            (total_loss, losses), gradients = self._model_loss_grad(self._target_v_parameters,
+            (total_loss, losses), gradients = self._model_loss_grad(
+                                                   # self._target_v_parameters,
+                                                   self._v_parameters,
                                                    self._h_parameters,
                                                    self._o_parameters,
                                                    self._r_parameters,
@@ -201,13 +194,14 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
             self._sequence = []
             self._should_reset_sequence = False
 
-        self._update_model_targets()
+        # self._update_model_targets()
 
     def planning_update(
             self,
             timestep: dm_env.TimeStep,
             prev_timestep=None
     ):
+        # return
         if self._n == 0:
             return
         if timestep.discount is None:
@@ -217,10 +211,14 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
         # plan on batch of transitions
 
         loss, gradients = self._v_planning_loss_grad(self._v_parameters,
-                                                    self._target_h_parameters,
-                                                    self._target_o_parameters,
-                                                    self._target_r_parameters,
-                                                    self._target_d_parameters,
+                                                    self._h_parameters,
+                                                    # self._target_h_parameters,
+                                                    self._o_parameters,
+                                                    # self._target_o_parameters,
+                                                    self._r_parameters,
+                                                    # self._target_r_parameters,
+                                                    self._d_parameters,
+                                                    # self._target_d_parameters,
                                                     o_t, d_t)
         self._v_opt_state = self._v_opt_update(self.episode, gradients,
                                                self._v_opt_state)
@@ -232,7 +230,7 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
                             #     np.sum([np.linalg.norm(np.asarray(g), ord=2) for g in gradient]))}}
         self._log_summaries(losses_and_grads, "value_planning")
 
-        self._update_v_targets()
+        # self._update_v_targets()
 
     def _update_model_targets(self):
         # Periodically update the target network parameters.
@@ -259,7 +257,6 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
 
     def model_free_train(self):
         return True
-        # return False
 
     def load_model(self):
         return

@@ -145,6 +145,7 @@ class LpIntrinsicVanilla(Agent):
 
         # This function computes dL/dTheta
         self._v_loss_grad = jax.jit(jax.value_and_grad(v_loss, 0))
+        # self._v_loss_grad = jax.value_and_grad(v_loss, 0)
         self._v_forward = jax.jit(self._v_network)
         self._h_forward = jax.jit(self._h_network)
 
@@ -176,7 +177,7 @@ class LpIntrinsicVanilla(Agent):
         loss, gradients = self._v_loss_grad(self._v_parameters,
                                            self._h_parameters,
                                             transitions)
-        self._v_opt_state = self._v_opt_update(0, gradients,
+        self._v_opt_state = self._v_opt_update(self.episode, gradients,
                                                self._v_opt_state)
         self._v_parameters = self._v_get_params(self._v_opt_state)
         losses_and_grads = {"losses": {"loss_v": np.array(loss)},}
@@ -243,7 +244,7 @@ class LpIntrinsicVanilla(Agent):
         # return
         if self._logs is not None:
             losses = losses_and_grads["losses"]
-            gradients = losses_and_grads["gradients"]
+            # gradients = losses_and_grads["gradients"]
             if self._max_len == -1:
                 ep = self.total_steps
             else:
@@ -252,9 +253,9 @@ class LpIntrinsicVanilla(Agent):
                 for k, v in losses.items():
                     tf.summary.scalar("train/losses/{}/{}".format(summary_name, k),
                                       losses[k], step=ep)
-                for k, v in gradients.items():
-                    tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
-                                      gradients[k], step=ep)
+                # for k, v in gradients.items():
+                #     tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
+                #                       gradients[k], step=ep)
                 self.writer.flush()
 
     def get_values_for_all_states(self, all_states):

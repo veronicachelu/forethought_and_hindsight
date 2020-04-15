@@ -40,7 +40,8 @@ config = {
         "planning_iter": 1,
         "latent": False,
         "model_family": "intrinsic",
-        "target_networks": True,
+        # "target_networks": True,
+        "target_networks": False,
         "class": {"linear": "LpExplicitValueBased"},
     },
     "bw": {
