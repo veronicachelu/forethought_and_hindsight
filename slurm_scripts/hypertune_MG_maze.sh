@@ -3,7 +3,7 @@
 #SBATCH --output=./outputs/hypertune__MG__maze_output.txt
 #SBATCH --error=./errors/hypertune__MG__maze_error.txt
 #SBATCH --ntasks=1
-#SBATCH --time=10:00
+#SBATCH --time=10000
 #SBATCH --mem=100Gb
 
 source ~/.bashrc
