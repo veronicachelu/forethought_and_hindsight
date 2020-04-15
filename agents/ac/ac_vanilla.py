@@ -20,7 +20,7 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class LpVanilla(Agent):
+class ACVanilla(Agent):
     def __init__(
             self,
             run_mode: str,
@@ -40,8 +40,8 @@ class LpVanilla(Agent):
             lr_model: float,
             lr_planning: float,
             log_period: int,
-            nrng,
             rng,
+            nrng,
             input_dim: int,
             exploration_decay_period: int,
             seed: int = None,
@@ -67,6 +67,7 @@ class LpVanilla(Agent):
         self._run_mode = "{}_{}_{}".format(self._run_mode, self._n, self._replay_capacity)
 
         self._exploration_decay_period = exploration_decay_period
+        self._rng = rng
         self._nrng = nrng
 
         self._replay = Replay(capacity=replay_capacity, nrng=self._nrng)
@@ -101,17 +102,33 @@ class LpVanilla(Agent):
             if not os.path.exists(self._images_dir):
                 os.makedirs(self._images_dir)
 
-        def v_loss(v_params, transitions):
+        def ac_loss(v_params, pi_params, transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
             v_tm1 = self._v_network(v_params, o_tm1)
             v_t = self._v_network(v_params, o_t)
             v_t_target = r_t + d_t * discount * v_t
             td_error = jax.vmap(rlax.td_learning)(v_tm1, r_t, d_t * discount, v_t_target)
-            return jnp.mean(td_error ** 2)
+            critic_loss = jnp.mean(td_error ** 2)
+
+            pi_tm1 = self._pi_network(pi_params, o_tm1)
+            actor_loss = jax.vmap(rlax.policy_gradient_loss)(
+                logits_t=pi_tm1,
+                a_t=a_tm1,
+                adv_t=td_error,
+                w_t=jnp.ones_like(td_error))
+            actor_loss = jnp.mean(actor_loss)
+
+            total_loss = actor_loss + critic_loss
+            return total_loss,\
+                   {"critic_loss": critic_loss,
+                    "actor_loss": actor_loss}
 
         # Internalize the networks.
         self._v_network = network["value"]["net"]
         self._v_parameters = network["value"]["params"]
+
+        self._pi_network = network["pi"]["net"]
+        self._pi_parameters = network["pi"]["params"]
 
         self._o_network = network["model"]["net"][0]
         self._fw_o_network = network["model"]["net"][1]
@@ -124,21 +141,26 @@ class LpVanilla(Agent):
         self._d_parameters = network["model"]["params"][3]
 
         # This function computes dL/dTheta
-        self._v_loss_grad = jax.jit(jax.value_and_grad(v_loss))
+        self._ac_loss_grad = jax.jit(jax.value_and_grad(ac_loss, has_aux=True))
         self._v_forward = jax.jit(self._v_network)
+        self._pi_forward = jax.jit(self._pi_network)
 
         # Make an Adam optimizer.
-        v_opt_init, v_opt_update, v_get_params = optimizers.adam(step_size=self._lr)
-        self._v_opt_update = jax.jit(v_opt_update)
-        self._v_opt_state = v_opt_init(self._v_parameters)
-        self._v_get_params = v_get_params
+        ac_opt_init, ac_opt_update, ac_get_params = optimizers.adam(step_size=self._lr)
+        self._ac_opt_update = jax.jit(ac_opt_update)
+        self._ac_opt_state = ac_opt_init([self._v_parameters, self._pi_parameters])
+        self._ac_get_params = ac_get_params
 
 
     def policy(self,
                timestep: dm_env.TimeStep,
                eval: bool = False
                ) -> int:
-        return self._pi(np.argmax(timestep.observation), self._nrng)
+        key = next(self._rng)
+        observation = timestep.observation[None, ...]
+        pi_logits = self._pi_forward(self._pi_parameters, observation)
+        action = jax.random.categorical(key, pi_logits).squeeze()
+        return int(action)
 
     def value_update(
             self,
@@ -152,16 +174,24 @@ class LpVanilla(Agent):
                        np.array([new_timestep.discount]),
                        np.array([new_timestep.observation])]
 
-        loss, gradients = self._v_loss_grad(self._v_parameters,
+        (total_loss, losses), gradients = self._ac_loss_grad(self._v_parameters,
+                                             self._pi_parameters,
                                             transitions)
-        self._v_opt_state = self._v_opt_update(self.episode, gradients,
-                                               self._v_opt_state)
-        self._v_parameters = self._v_get_params(self._v_opt_state)
+        self._ac_opt_state = self._ac_opt_update(self.episode, gradients,
+                                               self._ac_opt_state)
+        ac_parameters = self._ac_get_params(self._ac_opt_state)
+        self._v_parameters, self._pi_parameters = ac_parameters
 
-        losses_and_grads = {"losses": {"loss_v": np.array(loss)},
-                            "gradients": {"grad_norm_v":
-                                              np.sum(np.sum([np.linalg.norm(np.asarray(g), ord=2)
-                                                             for g in gradients]))}}
+        losses_and_grads = {"losses": {
+                                    "total_loss": np.array(total_loss),
+                                    "critic_loss": np.array(losses["critic"]),
+                                    "actor_loss": np.array(losses["actor"])
+                            },
+                            "gradients": {
+                                # "grad_norm_v":
+                                #               np.sum(np.sum([np.linalg.norm(np.asarray(g), ord=2)
+                                #                              for g in gradients]))}
+                                }}
         self._log_summaries(losses_and_grads, "value")
 
     def model_based_train(self):

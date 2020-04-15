@@ -36,6 +36,7 @@ class TpVanilla(Agent):
             lr_planning: float,
             log_period: int,
             nrng,
+            rng,
             input_dim: int,
             exploration_decay_period: int,
             seed: int = None,

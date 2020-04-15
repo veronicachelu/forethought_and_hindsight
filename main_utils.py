@@ -51,6 +51,7 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, space, aux_agent_configs):
     rng = jrandom.PRNGKey(seed=seed)
     rng_q, rng_model, rng_agent = jrandom.split(rng, 3)
     network = get_network(
+        pg=space["agent_config"]["pg"],
         num_hidden_layers=space["agent_config"]["num_hidden_layers"],
         num_units=space["agent_config"]["num_units"],
         nA=nA,
@@ -82,6 +83,7 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, space, aux_agent_configs):
         exploration_decay_period=space["env_config"]["num_episodes"],
         seed=seed,
         nrng=nrng,
+        rng=rng_agent,
         logs=space["logs"],
         max_len=aux_agent_configs["max_len"],
         log_period=space["log_period"],
@@ -139,5 +141,5 @@ def build_hyper_list(agent, volatile_agent_config):
                 for lr_p in volatile_agent_config[agent]["lr_p"]:
                     for lr_m in volatile_agent_config[agent]["lr_m"]:
                         volatile_to_run.append([planning_depth, replay_capacity,
-                                                round(lr, 2), round(lr_p, 2), round(lr_m, 2)])
+                                                round(lr, 3), round(lr_p, 3), round(lr_m, 3)])
     return limited_volatile_to_run, volatile_to_run

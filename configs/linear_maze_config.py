@@ -15,6 +15,13 @@ env_config = {
 }
 
 volatile_agent_config = {
+    "ac_vanilla": {
+        "planning_depth": [0],
+        "replay_capacity": [0],
+        "lr": np.linspace(0.01, 0.1, 10),
+        "lr_p": [0],
+        "lr_m": [0]
+    },
     "vanilla_intr": {
         "planning_depth": [0],
         "replay_capacity": [0],
@@ -53,9 +60,9 @@ volatile_agent_config = {
     "bw": {
         "planning_depth": [1, 4, 8],
         "replay_capacity": [0],
-        "lr": [0.1],
-        "lr_p": [0.1],
-        "lr_m": np.linspace(0.01, 0.1, 10),
+        "lr": [0.07],
+        "lr_p": [0.07],
+        "lr_m": np.linspace(0.001, 0.07, 10),
     },
     "bw_fw": {
         "planning_depth": [1],
