@@ -5,6 +5,7 @@
 #SBATCH --ntasks=1
 #SBATCH --time=10:00
 #SBATCH --mem=100Gb
+#SBATCH --gres=gpu:1
 
 source ~/.bashrc
 cd ~/jax_models
