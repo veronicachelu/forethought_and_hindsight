@@ -38,9 +38,15 @@ class Replay(object):
     priority_probs = np.divide(priorities, np.sum(priorities),
               out=np.zeros_like(priorities),
               where=np.sum(priorities) != 0)
-    w = np.power(self.size * priority_probs, -self._beta)
-    w /= np.max(w)
-    sampled = self._nrng.multinomial(n=n, pvals=priority_probs)
+    w = np.where(self.size * priority_probs == 0, np.zeros_like(self.size * priority_probs),
+                 np.power(self.size * priority_probs, -self._beta))
+    w = np.divide(w, np.max(w),
+              out=np.zeros_like(w),
+              where=np.max(w) != 0)
+    try:
+      sampled = self._nrng.multinomial(n=n, pvals=priority_probs)
+    except:
+      print("dad")
     sampled_indices = np.where(sampled > 0)[0]
     more_indices = []
     multiple_sampled_indices = np.where(sampled > 1)[0]

@@ -195,11 +195,13 @@ class TpFwBwPWMA(TpVanilla):
         for prev_o_tmnm1 in range(np.prod(self._input_dim)):
             if o_tmnm1[:, prev_o_tmnm1] == 0:
                 continue
-
-            self._replay.add([
-                np.abs(o_tmnm1[:, prev_o_tmnm1] * td_error),
-                prev_o_tmnm1,
-            ])
+            priority = np.abs(o_tmnm1[:, prev_o_tmnm1] * td_error)
+            if not np.isnan(priority) and \
+                not np.isinf(priority):
+                self._replay.add([
+                    priority,
+                    prev_o_tmnm1,
+                ])
 
 
     # def _add_predecessor_to_replay(self, o_tm1):

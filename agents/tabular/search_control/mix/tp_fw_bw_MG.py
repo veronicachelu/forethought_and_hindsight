@@ -172,10 +172,11 @@ class TpFwBwMG(TpVanilla):
                                         }
                     self._log_summaries(losses_and_grads, "value_planning")
 
-                    self._replay.add([
-                        np.abs(gradient),
-                        np.array(from_o),
-                    ])
+                    if not np.isnan(gradient) and not np.isinf(gradient):
+                        self._replay.add([
+                            np.abs(gradient),
+                            np.array(from_o),
+                        ])
 
     def value_update(
             self,
@@ -197,10 +198,11 @@ class TpFwBwMG(TpVanilla):
                             }
         self._log_summaries(losses_and_grads, "value")
 
-        self._replay.add([
-            np.abs(gradient),
-            o_tm1,
-        ])
+        if not np.isnan(gradient) and not np.isinf(gradient):
+            self._replay.add([
+                np.abs(gradient),
+                o_tm1,
+            ])
 
 
     def model_based_train(self):
