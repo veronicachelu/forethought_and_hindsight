@@ -3,7 +3,6 @@ env_config = {
     "class": "MicroWorld",
     "non_gridworld": False,
     "model_class": "tabular",
-    "model_family": "extrinsic",
     "env_type": "discreate",
     "obs_type": "tabular",
     "policy_type": "greedy",
@@ -24,7 +23,7 @@ volatile_agent_config = {
         "lr_m": [0]
     },
     "bw": {
-        "planning_depth": [1, 2, 3, 4],
+        "planning_depth": [1, 2, 3, 4, 8, 16],
         "replay_capacity": [0],
         "lr": [0.5],
         "lr_p": [0.5],

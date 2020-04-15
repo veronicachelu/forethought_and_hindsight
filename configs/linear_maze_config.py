@@ -3,7 +3,6 @@ env_config = {
     "class": "MicroWorld",
     "non_gridworld": False,
     "model_class": "linear",
-    "model_family": "extrinsic",
     "env_type": "discreate",
     "obs_type": "onehot",
     "policy_type": "greedy",

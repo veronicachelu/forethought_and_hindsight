@@ -36,7 +36,7 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
 
         self._sequence = []
         self._should_reset_sequence = False
-        self._target_update_period = 10
+        self._target_update_period = 4
 
         def model_loss(v_params,
                        # target_v_params,
@@ -117,7 +117,7 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
             #                                        # real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
             #                                        #      v_t_target)
             # total_loss = l_m + r_loss
-            return total_loss, {"corr_loss": total_loss,
+            return total_loss, {"corr_loss": corr_loss,
                                 "d_loss": total_loss,
                                 "r_loss": r_loss}
 

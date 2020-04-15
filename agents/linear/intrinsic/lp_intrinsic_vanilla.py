@@ -129,7 +129,7 @@ class LpIntrinsicVanilla(Agent):
 
         if self._target_networks:
             self._target_v_network = network["target_value"]["net"]
-            self._target_parameters = network["target_value"]["params"]
+            self._target_v_parameters = network["target_value"]["params"]
 
             self._target_h_network = network["target_model"]["net"][0]
             self._target_o_network = network["target_model"]["net"][1]

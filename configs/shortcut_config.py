@@ -4,7 +4,6 @@ env_config = {
     "class": "Shortcut",
     "non_gridworld": True,
     "model_class": "tabular",
-    "model_family": "extrinsic",
     "env_type": "discreate",
     "obs_type": "tabular",
     "mdp_filename": None,

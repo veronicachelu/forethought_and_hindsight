@@ -183,7 +183,7 @@ def get_intrinsic_network(num_hidden_layers: int,
                                        target_fw_o_network_params, target_r_network_params,
                                        target_d_network_params]
                             }
-        network["value"] = {"net": target_v_network,
+        network["target_value"] = {"net": target_v_network,
                             "params": target_v_network_params}
 
     network["value"] = {"net": v_network,

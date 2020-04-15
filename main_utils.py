@@ -56,7 +56,7 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, space, aux_agent_configs):
         nA=nA,
         input_dim=input_dim,
         rng=rng_model,
-        model_family=space["env_config"]["model_family"],
+        model_family=space["agent_config"]["model_family"],
         model_class=space["env_config"]["model_class"],
         target_networks=space["agent_config"]["target_networks"])
 
