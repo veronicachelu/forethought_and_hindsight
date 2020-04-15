@@ -196,6 +196,7 @@ class LpExplicitExp(LpVanilla):
             self._should_reset_sequence = True
 
     def _log_summaries(self, losses_and_grads, summary_name):
+        return
         losses = losses_and_grads["losses"]
         if "gradients" in losses_and_grads.keys():
             gradients = losses_and_grads["gradients"]
