@@ -49,6 +49,7 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
             h_tmn = self._h_network(h_params, o_tmn_target) if self._latent else o_tmn_target
             h_t = self._h_network(h_params, o_t) if self._latent else o_t
 
+            #compute fwd + bwd pass
             real_v_tmn, vjp_fun = jax.vjp(self._v_network, v_params, h_tmn)
             real_r_tmn_2_t = 0
             for i, t in enumerate(transitions):
@@ -63,7 +64,18 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
                                                        real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
                                                         v_t_target)
             real_update = vjp_fun(2 * real_td_error)[0]
-
+            # When the
+            #  Delta_m (v) = (T_m v - v) dv
+            # is minimized, then
+            #  v* = T_m_fw v*  with v* the fixed point
+            #  (this is done by the model free process - fw looking)
+            # v* is the optimal value function wrt to the real model m
+            #  Let be a credit discriminator between the optimal model and the estim model
+            # L = |Delta_hatm(v) - Delta_m (v)|^2_2
+            # dL/dtheta =  (Delta_hatm (v) - Delta_m (v)) (dDelta_hatm (v))/dtheta
+            # If v = v*
+            # dL/dtheta =  (T_hatm v* - v*) dv* (- dT_hatm/dtheta)
+            #
             ###########################################
 
             model_tmn = self._o_network(o_params, h_t)
@@ -72,9 +84,9 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
             model_r_input = jnp.concatenate([model_tmn, h_t], axis=-1)
             # else:
             #     model_r_input = model_tmn
-            model_r_tmn_2_t = self._r_network(r_params, model_r_input)
+            model_r_tmn_2_t = self._r_network(r_params, lax.stop_gradient(model_r_input))
 
-            model_td_error = jax.vmap(td_learning)(model_v_tmn, model_r_tmn_2_t,
+            model_td_error = jax.vmap(rlax.td_learning)(model_v_tmn, model_r_tmn_2_t,
                                                    real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
                                                         v_t_target)
             model_update = model_vjp_fun(2 * model_td_error)[0]
@@ -82,14 +94,27 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
             corr_loss = 0
             for i, (layer_model, layer_real) in enumerate(zip(model_update, real_update)):
                 for j, (param_grad_model, param_grad_real) in enumerate(zip(layer_model, layer_real)):
-                    corr_loss += jnp.mean(jax.vmap(rlax.l2_loss)(param_grad_model, lax.stop_gradient(param_grad_real)))
+                    corr_loss += jnp.mean(jax.vmap(rlax.l2_loss)(param_grad_model,
+                                                                 lax.stop_gradient(param_grad_real)))
 
             r_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_r_tmn_2_t, real_r_tmn_2_t))
 
             total_loss = corr_loss + r_loss#+ d_loss #
-            return total_loss, {"corr_loss": corr_loss,
-                                "d_loss": corr_loss,
-                                "r_loss": r_loss}
+
+
+            ###### Alternative
+            model_tmn = self._o_network(o_params, h_t)
+            model_v_tmn = self._v_network(v_params, model_tmn)
+            real_v_tmn = self._v_network(v_params, h_tmn)
+
+            l_m = jnp.mean(jax.vmap(rlax.l2_loss)(model_v_tmn, lax.stop_gradient(real_v_tmn)))
+            #model_r_tmn_2_t,
+                                                   # real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
+                                                   #      v_t_target)
+            total_loss = l_m + r_loss
+            return total_loss, {"corr_loss": total_loss,
+                                "d_loss": l_m,
+                                "r_loss": corr_loss}
 
         def v_planning_loss(v_params, h_params, o_params, r_params, d_params, o_t, d_t):
             h_t = lax.stop_gradient(self._h_network(h_params, o_t)) if self._latent else o_t
@@ -104,7 +129,9 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
 
             v_t_target = self._v_network(v_params, h_t)
             # to the encoded current state and the value from the predecessor latent state
-            td_error = jax.vmap(rlax.td_learning)(v_tmn, r_tmn, d_t * jnp.array([self._discount ** self._n]), v_t_target)
+            td_error = jax.vmap(rlax.td_learning)(v_tmn, r_tmn,
+                                                  d_t * jnp.array([self._discount ** self._n]),
+                                                  v_t_target)
             return jnp.mean(td_error ** 2)
 
         # self._v_step_schedule = optimizers.polynomial_decay(self._lr_planning, self._exploration_decay_period, 0, 2)
@@ -176,6 +203,8 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
     ):
         if self._n == 0:
             return
+        if timestep.discount is None:
+            return
         o_t = np.array([timestep.observation])
         d_t = np.array([timestep.discount])
         # plan on batch of transitions
@@ -200,8 +229,8 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
         return True
 
     def model_free_train(self):
-        # return True
-        return False
+        return True
+        # return False
 
     def load_model(self):
         return
@@ -247,20 +276,21 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
             self._should_reset_sequence = True
 
     def _log_summaries(self, losses_and_grads, summary_name):
-        losses = losses_and_grads["losses"]
-        if "gradients" in losses_and_grads.keys():
-            gradients = losses_and_grads["gradients"]
-        if self._max_len == -1:
-            ep = self.total_steps
-        else:
-            ep = self.episode
-        if ep % self._log_period == 0:
-            for k, v in losses.items():
-                tf.summary.scalar("train/losses/{}/{}".format(summary_name, k),
-                                  np.array(v), step=ep)
+        if self._logs is not None:
+            losses = losses_and_grads["losses"]
             if "gradients" in losses_and_grads.keys():
-                for k, v in gradients.items():
-                    tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
-                                      gradients[k], step=ep)
-            self.writer.flush()
+                gradients = losses_and_grads["gradients"]
+            if self._max_len == -1:
+                ep = self.total_steps
+            else:
+                ep = self.episode
+            if ep % self._log_period == 0:
+                for k, v in losses.items():
+                    tf.summary.scalar("train/losses/{}/{}".format(summary_name, k),
+                                      np.array(v), step=ep)
+                if "gradients" in losses_and_grads.keys():
+                    for k, v in gradients.items():
+                        tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
+                                          gradients[k], step=ep)
+                self.writer.flush()
 

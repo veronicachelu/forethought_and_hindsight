@@ -28,20 +28,20 @@ config = {
         "class": {"linear": "LpExplicitValueBased"},
     },
     "bw_intr": {
-        "run_mode": "explicit_v",
+        "run_mode": "bw_intr",
         "planning_iter": 1,
         "latent": False,
         "class": {"linear": "LpExplicitValueBased"},
     },
     "bw": {
-        "run_mode": "explicit_exp",
+        "run_mode": "bw_extr",
         "planning_iter": 1,
         "latent": False,
         "class": {"linear": "LpExplicitExp",
                   "tabular": "TpExplicitDistrib"},
     },
     "bw_fw": {
-        "run_mode": "fw_bw_exp",
+        "run_mode": "fw_bw",
         "planning_iter": 1,
         "latent": False,
         "class": {"linear": "LpBwFwExp",

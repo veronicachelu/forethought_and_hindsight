@@ -75,6 +75,7 @@ def run_mdp_forall_episodes(
 
             if agent.model_based_train():
                 agent.planning_update(timestep)
+                # agent.planning_update(new_timestep)
 
             if new_timestep.last():
                 break

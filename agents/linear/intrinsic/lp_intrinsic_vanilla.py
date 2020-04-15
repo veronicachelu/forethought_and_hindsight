@@ -222,22 +222,22 @@ class LpIntrinsicVanilla(Agent):
         pass
 
     def _log_summaries(self, losses_and_grads, summary_name):
-        return
-        # if self._logs is not None:
-        # losses = losses_and_grads["losses"]
-        # gradients = losses_and_grads["gradients"]
-        # if self._max_len == -1:
-        #     ep = self.total_steps
-        # else:
-        #     ep = self.episode
-        # if ep % self._log_period == 0:
-        #     for k, v in losses.items():
-        #         tf.summary.scalar("train/losses/{}/{}".format(summary_name, k),
-        #                           losses[k], step=ep)
-        #     for k, v in gradients.items():
-        #         tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
-        #                           gradients[k], step=ep)
-        #     self.writer.flush()
+        # return
+        if self._logs is not None:
+            losses = losses_and_grads["losses"]
+            gradients = losses_and_grads["gradients"]
+            if self._max_len == -1:
+                ep = self.total_steps
+            else:
+                ep = self.episode
+            if ep % self._log_period == 0:
+                for k, v in losses.items():
+                    tf.summary.scalar("train/losses/{}/{}".format(summary_name, k),
+                                      losses[k], step=ep)
+                for k, v in gradients.items():
+                    tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
+                                      gradients[k], step=ep)
+                self.writer.flush()
 
     def get_values_for_all_states(self, all_states):
         latents = self._h_forward(self._h_parameters, np.array(all_states)) if self._latent else all_states
