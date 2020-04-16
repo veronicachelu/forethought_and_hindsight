@@ -105,7 +105,7 @@ class LpIntrinsicVanilla(Agent):
         def v_loss(v_params, h_params, transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
             h_t = lax.stop_gradient(self._h_network(h_params, o_t)) if self._latent else o_t
-            h_tm1 = lax.stop_gradient(self._h_network(h_params, o_tm1)) if self._latent else o_tm1
+            h_tm1 = self._h_network(h_params, o_tm1) if self._latent else o_tm1
             v_tm1 = self._v_network(v_params, h_tm1)
             v_t = self._v_network(v_params, h_t)
             v_t_target = r_t + d_t * discount * v_t
@@ -145,7 +145,8 @@ class LpIntrinsicVanilla(Agent):
             self._target_d_parameters = network["target_model"]["params"][4]
 
         # This function computes dL/dTheta
-        self._v_loss_grad = jax.jit(jax.value_and_grad(v_loss, 0))
+        dwrt = [0, 1] if self._latent else 0
+        self._v_loss_grad = jax.jit(jax.value_and_grad(v_loss, dwrt))
         # self._v_loss_grad = jax.value_and_grad(v_loss, 0)
         self._v_forward = jax.jit(self._v_network)
         self._h_forward = jax.jit(self._h_network)
@@ -153,7 +154,8 @@ class LpIntrinsicVanilla(Agent):
         # Make an Adam optimizer.
         v_opt_init, v_opt_update, v_get_params = optimizers.adam(step_size=self._lr)
         self._v_opt_update = jax.jit(v_opt_update)
-        self._v_opt_state = v_opt_init(self._v_parameters)
+        value_params = [self._v_parameters, self._h_parameters] if self._latent else self._v_parameters
+        self._v_opt_state = v_opt_init(value_params)
         self._v_get_params = v_get_params
 
 
@@ -180,7 +182,11 @@ class LpIntrinsicVanilla(Agent):
                                             transitions)
         self._v_opt_state = self._v_opt_update(self.episode, gradients,
                                                self._v_opt_state)
-        self._v_parameters = self._v_get_params(self._v_opt_state)
+        value_params = self._v_get_params(self._v_opt_state)
+        if self._latent:
+            self._v_parameters, self._h_parameters = value_params
+        else:
+            self._v_parameters = value_params
         losses_and_grads = {"losses": {"loss_v": np.array(loss)},}
                             # "gradients": {"grad_norm_v":
                             #                   np.sum(np.sum([np.linalg.norm(np.asarray(g), ord=2)
