@@ -136,7 +136,6 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
         dwrt = [0, 1] if self._latent else 0
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, dwrt))
         # self._v_planning_loss_grad = jax.value_and_grad(v_planning_loss, 0)
-
         # self._v_step_schedule = self._lr_planning
         self._model_step_schedule = self._lr_model
 
@@ -212,20 +211,16 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
 
         loss, gradients = self._v_planning_loss_grad(self._v_parameters,
                                                     self._h_parameters,
-                                                    # self._target_h_parameters,
                                                     self._o_parameters,
-                                                    # self._target_o_parameters,
                                                     self._r_parameters,
-                                                    # self._target_r_parameters,
                                                     self._d_parameters,
-                                                    # self._target_d_parameters,
                                                     o_t, d_t)
         if self._latent:
             gradients = list(gradients)
         self._v_opt_state = self._v_opt_update(self.episode, gradients,
                                                self._v_opt_state)
         value_params = self._v_get_params(self._v_opt_state)
-        self._v_parameters = value_params
+        self._v_parameters = value_params[0]
 
         losses_and_grads = {"losses": {"loss_v_planning": np.array(loss),
                                        },}
