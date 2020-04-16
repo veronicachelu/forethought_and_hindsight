@@ -111,10 +111,10 @@ def plot_tensorflow_log(space):
                                         "seed_{}".format(seed))
         list_of_files = glob.glob(os.path.join(logs, '*'))  # * means all if need specific format then *.csv
         if len(list_of_files) == 0:
-            print("no files")
+            print("no files in folder {}".format(logs))
             return
         if len(list_of_files) > 1:
-            print("ERROR, there should be only one file")
+            print("ERROR, there should be only one file in folder {}".format(logs))
         filename = list_of_files[0]
         filepath = os.path.join(logs, filename)
         event_acc = EventAccumulator(filepath, tf_size_guidance)
