@@ -180,6 +180,8 @@ class LpIntrinsicVanilla(Agent):
         loss, gradients = self._v_loss_grad(self._v_parameters,
                                            self._h_parameters,
                                             transitions)
+        if self._latent:
+            gradients = list(gradients)
         self._v_opt_state = self._v_opt_update(self.episode, gradients,
                                                self._v_opt_state)
         value_params = self._v_get_params(self._v_opt_state)
