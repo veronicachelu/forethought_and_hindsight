@@ -14,14 +14,14 @@ configs={
 
         "parametric": {
             "agents": ["bw", "bw_fw", "fw"],
-            "planning_depths": [1, 1],
-            "replay_capacities": [0, 0],
+            "planning_depths": [1, 1, 1],
+            "replay_capacities": [0, 0, 0],
         },
 
         "final": {
             "agents": ["bw", "fw", "fw_rnd", "bw_fw_PWMA"],
-            "planning_depths": [1, 1, 1],
-            "replay_capacities": [0, 50, 50]
+            "planning_depths": [1, 1, 1, 1],
+            "replay_capacities": [0, 0, 50, 50]
         }
     },
     "linear_maze": {
@@ -34,8 +34,8 @@ configs={
     "medium_maze": {
         "final": {
             "agents": ["bw", "fw", "fw_rnd", "bw_fw_PWMA"],
-            "planning_depths": [1, 1, 1],
-            "replay_capacities": [0, 50, 50]
+            "planning_depths": [1, 1, 1, 1],
+            "replay_capacities": [0, 0, 50, 50]
         }
     },
     "random": {
@@ -53,14 +53,14 @@ configs={
 
         "parametric": {
             "agents": ["bw", "bw_fw", "fw"],
-            "planning_depths": [1, 1],
-            "replay_capacities": [0, 0],
+            "planning_depths": [1, 1, 1],
+            "replay_capacities": [0, 0, 0],
         },
 
         "final": {
             "agents": ["bw", "fw", "fw_rnd", "bw_fw_PWMA"],
-            "planning_depths": [1, 1, 1],
-            "replay_capacities": [0, 50, 50]
+            "planning_depths": [1, 1, 1, 1],
+            "replay_capacities": [0, 0, 50, 50]
         }
         },
     "loop": {
@@ -78,14 +78,14 @@ configs={
 
         "parametric": {
             "agents": ["bw", "bw_fw", "fw"],
-            "planning_depths": [1, 1],
-            "replay_capacities": [0, 0],
+            "planning_depths": [1, 1, 1],
+            "replay_capacities": [0, 0, 0],
         },
 
         "final": {
             "agents": ["bw", "fw", "fw_rnd", "bw_fw_PWMA"],
-            "planning_depths": [1, 1, 1],
-            "replay_capacities": [0, 50, 50]
+            "planning_depths": [1, 1, 1, 1],
+            "replay_capacities": [0, 0, 50, 50]
         }
         },
     "repeat": {
@@ -103,14 +103,14 @@ configs={
 
         "parametric": {
             "agents": ["bw", "bw_fw", "fw"],
-            "planning_depths": [1, 1],
-            "replay_capacities": [0, 0],
+            "planning_depths": [1, 1, 1],
+            "replay_capacities": [0, 0, 0],
         },
 
         "final": {
             "agents": ["bw", "fw", "fw_rnd", "bw_fw_PWMA"],
-            "planning_depths": [1, 1, 1],
-            "replay_capacities": [0, 50, 50]
+            "planning_depths": [1, 1, 1, 1],
+            "replay_capacities": [0, 0, 50, 50]
         }
         },
     "shortcut": {
@@ -128,14 +128,14 @@ configs={
 
         "parametric": {
             "agents": ["bw", "bw_fw", "fw"],
-            "planning_depths": [1, 1],
-            "replay_capacities": [0, 0],
+            "planning_depths": [1, 1, 1],
+            "replay_capacities": [0, 0, 0],
         },
 
         "final": {
             "agents": ["bw", "fw", "fw_rnd", "bw_fw_PWMA"],
-            "planning_depths": [1, 1, 1],
-            "replay_capacities": [0, 50, 50]
+            "planning_depths": [1, 1, 1, 1],
+            "replay_capacities": [0, 0, 50, 50]
         }
         },
 }
