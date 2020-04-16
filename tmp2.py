@@ -1,129 +1,176 @@
-import dm_env
+"""Puddle world domain (navigation task)."""
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+
+from builtins import super
+from future import standard_library
+standard_library.install_aliases()
+from past.utils import old_div
+from .Domain import Domain
 import numpy as np
-from dm_env import specs
+import matplotlib.pyplot as plt
 
-from utils.mdp_solvers.solve_mdp import MdpSolver
+__copyright__ = "Copyright 2013, RLPy http://acl.mit.edu/RLPy"
+__credits__ = ["Alborz Geramifard", "Robert H. Klein", "Christoph Dann",
+               "William Dabney", "Jonathan P. How"]
+__license__ = "BSD 3-Clause"
+__author__ = "Christoph Dann"
 
 
-class BoyanChain(dm_env.Environment):
+class PuddleWorld(Domain):
+
     """
-    Boyan Chain example. All states form a chain with ongoing arcs and a
-    single terminal state. From a state one transition with equal probability
-    to either the direct or the second successor state. All transitions have
-    a reward of -3 except going from second to last to last state (-2)
+    Implementation of the puddle world benchmark as described in references
+    below.
+
+
+
+    **STATE:** 2-dimensional vector, *s*, each dimension is continuous in [0,1]\n
+    **ACTIONS:** [right, up, left, down] - NOTE it is not possible to loiter.\n
+    **REWARD:** 0 for goal state, -1 for each step, and an additional penalty
+        for passing near puddles.
+
+    **REFERENCE:**
+
+    .. seealso::
+        Jong, N. & Stone, P.: Kernel-based models for reinforcement learning, ICML (2006)
+
+    .. seealso::
+        Sutton, R. S.: Generalization in Reinforcement Learning:
+        Successful Examples Using Sparse Coarse Coding, NIPS(1996)
+
     """
 
-    def __init__(self, rng=None, obs_type="tabular", nS = 14, nF=4):
-        self._nS = nS
-        self._nF = nF
-        self._rng = rng
-        self._obs_type = obs_type
-        self._states = np.arange(nS)
-        self._nA = 1
-        self._actions = np.arange(1)
-        self._d0 = np.zeros(nS)
-        self._d0[0] = 1
-        self._r = np.ones((nS, 1, nS)) * (-3)
-        self._r[nS - 2, :, nS - 1] = -2
-        self._r[nS - 1:, :, :] = 0
-        self._P = np.zeros((nS, 1, nS))
-        self._P[-1, :, -1] = 1
-        self._P[nS - 2, :, nS - 1] = 1
-        for s in np.arange(nS - 2):
-            self._P[s, :, s + 1] = 0.5
-            self._P[s, :, s + 2] = 0.5
+    discount_factor = 1.  # discout factor
+    domain_fig = None
+    valfun_fig = None
+    polfun_fig = None
 
-        self._terminal_trans = nS
-        self.Phi = {}
-        self._start_state = 0
+    episodeCap = 1000
+    puddles = np.array([[[0.1, .75], [.45, .75]], [[.45, .4], [.45, .8]]])
+    continuous_dims = np.arange(2)
+    statespace_limits = np.array([[0., 1.]] * 2)
 
-        # start distribution testing
-        self._d0 = np.asanyarray(self._d0)
-        self._P = np.asanyarray(self._P)
+    actions = 0.05 * \
+        np.array([[1, 0], [0, 1], [-1, 0], [0, -1]], dtype="float")
+    actions_num = 4
 
-        # extract valid actions and terminal state information
-        sums_s = np.sum(self._P, axis=2)
-        self._valid_actions = np.abs(sums_s - 1) < 0.0001
-        self._s_terminal = np.asarray([np.all(self._P[s, :, s] == 1)
-                                      for s in self._states])
-        mdp_solver = MdpSolver(self, nS, self._nA, 0.99)
-        # policy = mdp_solver.get_optimal_policy()
-        ppi = np.squeeze(self._P, axis=1)
-        rpi = np.squeeze(self._r, axis=1)
-        rppi = np.einsum('ij, ij ->i', rpi, ppi)
-        self._true_v = np.linalg.solve(np.eye(nS) - 0.99 * ppi, rppi)
+    def __init__(self, noise_level=.01, discount_factor=1.):
+        self.noise_level = noise_level
+        self.discount_factor = discount_factor
+        super(PuddleWorld, self).__init__()
+        self.reward_map = np.zeros((100, 100))
+        self.val_map = np.zeros((100, 100))
+        self.pi_map = np.zeros((100, 100))
+        a = np.zeros((2))
+        for i, x in enumerate(np.linspace(0, 1, 100)):
+            for j, y in enumerate(np.linspace(0, 1, 100)):
+                a[0] = x
+                a[1] = y
+                self.reward_map[j, i] = self._reward(a)
 
-    def reset(self):
-        """Returns the first `TimeStep` of a new episode."""
-        self._reset_next_step = False
-        self._state = self._start_state
-        return dm_env.restart(self._observation())
+    def s0(self):
+        self.state = self.random_state.rand(2)
+        while self.isTerminal():
+            self.state = self.random_state.rand(2)
+        return self.state.copy(), False, self.possibleActions()
 
-    def _get_next_state(self, action):
-        next_state = self._rng.choice(np.arange(self._nS), p=self._P[self._state, action])
-        return next_state
+    def isTerminal(self, s=None):
+        if s is None:
+            s = self.state
+        return s.sum() > 0.95 * 2
 
-    def _get_next_reward(self, a, next_state):
-        reward = self._r[self._state, a, next_state]
+    def possibleActions(self, s=0):
+        return np.arange(self.actions_num)
+
+    def step(self, a):
+        a = self.actions[a]
+        ns = self.state + a + self.random_state.randn() * self.noise_level
+        # make sure we stay inside the [0,1]^2 region
+        ns = np.minimum(ns, 1.)
+        ns = np.maximum(ns, 0.)
+        self.state = ns.copy()
+        return self._reward(ns), ns, self.isTerminal(), self.possibleActions()
+
+    def _reward(self, s):
+        if self.isTerminal(s):
+            return 0  # goal state reached
+        reward = -1
+        # compute puddle influence
+        d = self.puddles[:, 1, :] - self.puddles[:, 0, :]
+        denom = (d ** 2).sum(axis=1)
+        g = old_div(((s - self.puddles[:, 0, :]) * d).sum(axis=1), denom)
+        g = np.minimum(g, 1)
+        g = np.maximum(g, 0)
+        dists = np.sqrt(((self.puddles[:, 0, :] + g * d - s) ** 2).sum(axis=1))
+        dists = dists[dists < 0.1]
+        if len(dists):
+            reward -= 400 * (0.1 - dists[dists < 0.1]).max()
         return reward
 
-    def _is_terminal(self):
-        if self._state == self._nS - 1:
-            return True
-        return False
+    def showDomain(self, a=None):
+        s = self.state
+        # Draw the environment
+        if self.domain_fig is None:
+            self.domain_fig = plt.figure("Domain")
+            self.reward_im = plt.imshow(self.reward_map, extent=(0, 1, 0, 1),
+                                        origin="lower")
+            self.state_mark = plt.plot(s[0], s[1], 'kd', markersize=20)
+            plt.figure("Domain").canvas.draw()
+            plt.figure("Domain").canvas.flush_events()
+        else:
+            self.domain_fig = plt.figure("Domain")
+            self.state_mark[0].set_data([s[0]], [s[1]])
+            plt.figure("Domain").canvas.draw()
+            plt.figure("Domain").canvas.flush_events()
 
-    def step(self, action):
-        """Updates the environment according to the action."""
-        if self._reset_next_step:
-            return self.reset()
+    def showLearning(self, representation):
+        a = np.zeros((2))
+        for i, x in enumerate(np.linspace(0, 1, 100)):
+            for j, y in enumerate(np.linspace(0, 1, 100)):
+                a[0] = x
+                a[1] = y
+                self.val_map[j,
+                             i] = representation.V(
+                    a,
+                    self.isTerminal(a),
+                    self.possibleActions())
+                self.pi_map[j,
+                            i] = representation.bestAction(
+                    a,
+                    self.isTerminal(a),
+                    self.possibleActions())
 
-        next_state = self._get_next_state(action)
-        reward = self._get_next_reward(action, next_state)
-        self._state = next_state
+        if self.valfun_fig is None:
+            self.valfun_fig = plt.figure("Value Function")
+            plt.clf()
+            self.val_im = plt.imshow(self.val_map, extent=(0, 1, 0, 1),
+                                     origin="lower")
+            plt.colorbar()
+        else:
+            self.valfun_fig = plt.figure("Value Function")
+            self.val_im.set_data(self.val_map)
+            self.val_im.autoscale()
+        plt.draw()
 
-        if self._is_terminal():
-            self._reset_next_step = True
-            return dm_env.termination(reward=reward, observation=self._observation())
-        return dm_env.transition(reward=reward, observation=self._observation())
+        if self.polfun_fig is None:
+            self.polfun_fig = plt.figure("Policy")
+            plt.clf()
+            self.pol_im = plt.imshow(self.pi_map, extent=(0, 1, 0, 1),
+                                     origin="lower", cmap="4Actions")
+        else:
+            self.polfun_fig = plt.figure("Policy")
+            self.pol_im.set_data(self.pi_map)
+            self.pol_im.autoscale()
+        plt.draw()
 
-    def observation_spec(self):
-        if self._obs_type == "tabular":
-            return specs.BoundedArray(shape=(self._nS,), dtype=np.int32,
-                                      name="state", minimum=0, maximum=self._nS)
-        elif self._obs_type == "onehot":
-            return specs.BoundedArray(shape=(self._nS,), dtype=np.int32,
-                                      name="state", minimum=0, maximum=1)
-        elif self._obs_type == "spikes":
-            return specs.BoundedArray(shape=(self._nF,), dtype=np.int32,
-                                      name="state", minimum=0, maximum=1)
 
-    def action_spec(self):
-        return specs.DiscreteArray(
-            dtype=int, num_values=self._nA, name="action")
+class PuddleGapWorld(PuddleWorld):
 
-    def _observation(self):
-        if self._obs_type == "tabular":
-            return self._state
-        elif self._obs_type == "onehot":
-            return np.eye(self._nS)[self._state]
-        elif self._obs_type == "spikes":
-            a = (self._nS - 1.) / (self._nF - 1)
-            r = 1 - abs((self._state + 1 - np.linspace(1, self._nS, self._nF)) / a)
-            r[r < 0] = 0
-            return r
-
-    def _get_dynamics(self):
-        return self._P, self._P, self._r
-
-    def reshape_v(self, v):
-        return np.reshape(v, (self._nS))
-
-    def reshape_pi(self, pi):
-        return np.reshape(pi, (self._nS, self._nA))
-
-    def get_all_states(self):
-        states = []
-        for s in np.arange(0, self._nS):
-            self._state = s
-            states.append(self._observation())
-        return states
+    def _reward(self, s):
+        r = super(PuddleGapWorld, self)._reward(s)
+        if s[1] < .67 and s[1] >= .6:
+            r = -1
+        return r
