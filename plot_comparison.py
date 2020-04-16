@@ -26,8 +26,8 @@ flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
 # flags.DEFINE_integer('num_runs', 100, '')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
-FONTSIZE = 25
-LINEWIDTH = 4
+FONTSIZE = 30
+LINEWIDTH = 5
 
 def main(argv):
     del argv  # Unused.
@@ -60,14 +60,17 @@ def main(argv):
     plot_for_agent("vanilla", env_config, persistent_agent_config,
                    volatile_agent_config, 0, 0, logs)
 
-    plt.xlabel("Episode count", fontsize=FONTSIZE)
+
 
     if FLAGS.cumulative_rmsve:
         yaxis = 'Cumulative RMSVE'
+        xaxis = "Timesteps"
     else:
         yaxis = 'RMSVE'
+        xaxis = "Episodes"
 
     plt.ylabel(yaxis, fontsize=FONTSIZE)
+    plt.xlabel(xaxis, fontsize=FONTSIZE)
     plt.legend(loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
                frameon=True,
                prop={'size': FONTSIZE})
