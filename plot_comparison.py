@@ -107,6 +107,7 @@ def plot_tensorflow_log(space):
     all_y_over_seeds = []
     num_runs = space["env_config"]["num_runs"]
     for seed in range(num_runs):
+        print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))
         logs = os.path.join(os.path.join(space["crt_config"]["logs"],
                                          "summaries"),
                                         "seed_{}".format(seed))
