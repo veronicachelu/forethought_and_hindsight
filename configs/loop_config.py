@@ -57,14 +57,14 @@ volatile_agent_config = {
         "lr_m": np.linspace(0.1, 1.0, 10),
     },
     "fw_rnd": {
-        "planning_depth": [0],
+        "planning_depth": [1],
         "replay_capacity": [50],
         "lr": [0.3],
         "lr_p": [0.3],
         "lr_m": np.linspace(0.1, 1.0, 10),
     },
     "fw_pri": {
-        "planning_depth": [0],
+        "planning_depth": [1],
         "replay_capacity": [50],
         "lr": [0.3],
         "lr_p": [0.3],
