@@ -84,6 +84,7 @@ def main(argv):
 
 def plot_for_agent(agent, env_config, persistent_agent_config,
                    volatile_agent_config, planning_depth, replay_capacity, logs):
+    print(agent)
     log_folder_agent = os.path.join(logs, "{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth, replay_capacity))
     volatile_config = {"agent": agent,
                        "planning_depth": planning_depth,
