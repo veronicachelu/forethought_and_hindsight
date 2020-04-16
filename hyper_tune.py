@@ -165,7 +165,7 @@ def get_avg_over_seeds(interm_hyperparam_file, final_config, final_attributes):
                np.mean(steps_avg, dtype=int)
 
 def get_best_over_final(final_hyperparam_file, best_config, best_attributes, objective):
-    rmsve_over_std = -np.infty
+    rmsve_over_std = np.infty
     objective2key = {"aoc": 'rmsve_aoc',
                      "min": 'rmsve_min',
                      "start": 'rmsve_start'}
@@ -178,10 +178,10 @@ def get_best_over_final(final_hyperparam_file, best_config, best_attributes, obj
                     ok = False
                     break
             if ok == True:
-                if (-float(row[objective2key[objective]])) / \
-                    float(row[objective2key[objective] + "_std"]) > rmsve_over_std:
+                if float(row[objective2key[objective]]) * \
+                    float(row[objective2key[objective] + "_std"]) < rmsve_over_std:
                     best_config = row
-                    rmsve_over_std = (-float(row[objective2key[objective]])) / \
+                    rmsve_over_std = float(row[objective2key[objective]]) * \
                                      float(row[objective2key[objective] + "_std"])
         return best_config
 
