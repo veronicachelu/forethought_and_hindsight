@@ -30,5 +30,12 @@ configs={
             "planning_depths": [1, 0, 0],
             "replay_capacities": [0, 0, 0]
         }
-    }
+    },
+    "medium_maze": {
+        "final": {
+            "agents": ["bw", "fw_rnd", "bw_fw_PWMA"],
+            "planning_depths": [1, 1, 1],
+            "replay_capacities": [0, 50, 50]
+        }
+    },
 }
