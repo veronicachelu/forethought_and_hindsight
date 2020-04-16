@@ -47,11 +47,15 @@ def main(argv):
     interm_fieldnames.extend(["seed", "steps", 'rmsve_aoc', 'rmsve_min', 'rmsve_start'])
 
     final_fieldnames = list(volatile_agent_config[FLAGS.agent].keys())
-    final_fieldnames.extend(["steps", 'rmsve_aoc', 'rmsve_min', 'rmsve_start'])
+    final_fieldnames.extend(["steps", 'rmsve_aoc', 'rmsve_aoc_std',
+                             'rmsve_min', 'rmsve_min_std',
+                             'rmsve_start', 'rmsve_start_std'])
 
     best_fieldnames = ["agent"]
     best_fieldnames.extend(list(volatile_agent_config[FLAGS.agent].keys()))
-    best_fieldnames.extend(["steps", 'rmsve_aoc', 'rmsve_min', 'rmsve_start'])
+    best_fieldnames.extend(["steps", 'rmsve_aoc', 'rmsve_aoc_std',
+                            'rmsve_min', 'rmsve_min_std',
+                            'rmsve_start', 'rmsve_start_std'])
 
     files = [interm_hyperparam_file, final_hyperparam_file,
                  best_aoc_hyperparam_file, best_min_hyperparam_file,
