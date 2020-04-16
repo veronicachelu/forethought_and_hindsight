@@ -53,8 +53,8 @@ volatile_agent_config = {
     "latent_bw_intr": {
         "planning_depth": [1, 4, 8],
         "replay_capacity": [0],
-        "lr": [0.03],
-        "lr_p": [0.03],
+        "lr": [0.01],
+        "lr_p": [0.01],
         "lr_m": np.linspace(0.001, 0.03, 10),
     },
     "bw": {
@@ -63,40 +63,5 @@ volatile_agent_config = {
         "lr": [0.07],
         "lr_p": [0.07],
         "lr_m": np.linspace(0.001, 0.07, 10),
-    },
-    "bw_fw": {
-        "planning_depth": [1],
-        "replay_capacity": [0],
-        "lr": [0.1],
-        "lr_p": [0.1],
-        "lr_m": np.linspace(0.1, 1.0, 10),
-    },
-    "bw_fw_PWMA": {
-        "planning_depth": [1],
-        "replay_capacity": [50],
-        "lr": [0.1],
-        "lr_p": [0.1],
-        "lr_m": np.linspace(0.1, 1.0, 10),
-    },
-    "bw_fw_MG": {
-        "planning_depth": [1],
-        "replay_capacity": [50],
-        "lr": [0.1],
-        "lr_p": [0.1],
-        "lr_m": np.linspace(0.1, 1.0, 10),
-    },
-    "fw_rnd": {
-        "planning_depth": [1],
-        "replay_capacity": [50],
-        "lr": [0.1],
-        "lr_p": [0.1],
-        "lr_m": np.linspace(0.1, 1.0, 10),
-    },
-    "fw_pri": {
-        "planning_depth": [1],
-        "replay_capacity": [50],
-        "lr": [0.1],
-        "lr_p": [0.1],
-        "lr_m": np.linspace(0.1, 1.0, 10),
     },
 }
