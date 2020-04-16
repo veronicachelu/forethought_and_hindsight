@@ -64,3 +64,4 @@ volatile_agent_config = {
         "lr_p": [0.5],
         "lr_m": np.linspace(0.1, 1.0, 10),
     },
+}
