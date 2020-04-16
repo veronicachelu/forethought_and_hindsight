@@ -83,6 +83,18 @@ config = {
         "class": {"linear": "LpExplicitExp",
                   "tabular": "TpExplicitDistrib"},
     },
+    "fw": {
+        "pg": False,
+        "run_mode": "fw",
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "extrinsic",
+        "target_networks": False,
+        "class": {"linear": "LpFw",
+                  "tabular": "TpFw"},
+    },
     "bw_fw": {
         "pg": False,
         "run_mode": "fw_bw",

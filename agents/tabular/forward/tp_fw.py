@@ -43,7 +43,7 @@ class TpFw(TpVanilla):
             for i, t in enumerate(transitions):
                 r_tmn_target += (self._discount ** i) * t[2]
 
-            r_error = r_tmn_target - r_tmn
+            r_error = (r_tmn_target - r_tmn)
             r_loss = np.mean(r_error ** 2)
 
             total_error = fw_o_loss + r_loss
@@ -145,31 +145,33 @@ class TpFw(TpVanilla):
         return True
 
     def load_model(self):
-        checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
-        if os.path.exists(checkpoint):
-            to_load = np.load(checkpoint, allow_pickle=True)[()]
-            self.episode = to_load["episode"]
-            self.total_steps = to_load["total_steps"]
-            self._v_network = to_load["v_parameters"]
-            self._o_network = to_load["o_parameters"]
-            self._r_network = to_load["r_parameters"]
-            print("Restored from {}".format(checkpoint))
-        else:
-            print("Initializing from scratch.")
+        if self._logs is not None:
+            checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
+            if os.path.exists(checkpoint):
+                to_load = np.load(checkpoint, allow_pickle=True)[()]
+                self.episode = to_load["episode"]
+                self.total_steps = to_load["total_steps"]
+                self._v_network = to_load["v_parameters"]
+                self._o_network = to_load["o_parameters"]
+                self._r_network = to_load["r_parameters"]
+                print("Restored from {}".format(checkpoint))
+            else:
+                print("Initializing from scratch.")
 
     def save_model(self):
-        checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
-        to_save = {
-            "episode": self.episode,
-            "total_steps": self.total_steps,
-            "v_parameters": self._v_network,
-            "o_parameters": self._o_network,
-            "r_parameters": self._r_network,
-        }
-        np.save(checkpoint, to_save)
-        print("Saved checkpoint for episode {}, total_steps {}: {}".format(self.episode,
-                                                                         self.total_steps,
-                                                                           checkpoint))
+        if self._logs is not None:
+            checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
+            to_save = {
+                "episode": self.episode,
+                "total_steps": self.total_steps,
+                "v_parameters": self._v_network,
+                "o_parameters": self._o_network,
+                "r_parameters": self._r_network,
+            }
+            np.save(checkpoint, to_save)
+            print("Saved checkpoint for episode {}, total_steps {}: {}".format(self.episode,
+                                                                             self.total_steps,
+                                                                               checkpoint))
 
     def save_transition(
             self,
@@ -186,16 +188,17 @@ class TpFw(TpVanilla):
             self._should_reset_sequence = True
 
     def _log_summaries(self, losses_and_grads, summary_name):
-        losses = losses_and_grads["losses"]
+        if self._logs is not None:
+            losses = losses_and_grads["losses"]
 
-        if self._max_len == -1:
-            ep = self.total_steps
-        else:
-            ep = self.episode
-        if ep % self._log_period == 0:
-            for k, v in losses.items():
-                tf.summary.scalar("train/losses/{}/{}".format(summary_name, k), losses[k], step=self.total_steps)
-            self.writer.flush()
+            if self._max_len == -1:
+                ep = self.total_steps
+            else:
+                ep = self.episode
+            if ep % self._log_period == 0:
+                for k, v in losses.items():
+                    tf.summary.scalar("train/losses/{}/{}".format(summary_name, k), losses[k], step=self.total_steps)
+                self.writer.flush()
 
     def update_hyper_params(self, episode, total_episodes):
         warmup_episodes = 0
@@ -207,4 +210,5 @@ class TpFw(TpVanilla):
                 return
 
             self._lr_planning = self._initial_lr_planning * (steps_left / decay_period)
+
 
