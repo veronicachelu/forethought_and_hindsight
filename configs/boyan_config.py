@@ -6,10 +6,10 @@ env_config = {
     "env_type": "discrete",
     "obs_type": "spikes",
     "policy_type": "greedy",
-    "env_size": 14,
-    "obs_size": 4,
+    "env_size": 98,
+    "obs_size": 25,
     "num_episodes": 100,
-    "num_runs": 100,
+    "num_runs": 1,
     "stochastic": False,
     "nA": 1
 }
@@ -18,7 +18,7 @@ volatile_agent_config = {
     "vanilla": {
         "planning_depth": [0],
         "replay_capacity": [0],
-        "lr": np.linspace(0.1, 1.0, 10),
+        "lr": np.linspace(0.01, 1.0, 10),
         "lr_p": [0],
         "lr_m": [0]
     },
