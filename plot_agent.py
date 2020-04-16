@@ -51,12 +51,12 @@ def main(argv):
         plot_for_agent("vanilla", env_config, vanilla_persistent_agent_config,
                     volatile_agent_config, logs)
 
-    plt.xlabel("Episode count", fontsize=FONTSIZE)
-
     if FLAGS.cumulative_rmsve:
         yaxis = 'Cumulative RMSVE'
+        xaxis = "Timesteps"
     else:
         yaxis = 'RMSVE'
+        xaxis = "Episodes"
 
     plt.ylabel(yaxis, fontsize=FONTSIZE)
     plt.legend(loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
