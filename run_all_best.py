@@ -60,8 +60,6 @@ def run_agent(agent, logs):
     persistent_agent_config = configs.agent_config.config[agent["agent"]]
     agent_run_mode = "{}_{}_{}".format(persistent_agent_config["run_mode"], agent["planning_depth"], agent["replay_capacity"])
     agent_logs = os.path.join(logs, '{}/summaries/'.format(agent_run_mode))
-    if os.path.exists(agent_logs):
-        return
 
     env_config, _ = load_env_and_volatile_configs(FLAGS.env)
 
@@ -83,6 +81,9 @@ def run_agent(agent, logs):
             "agent_config": persistent_agent_config,
             "crt_config": seed_config}
 
+        agent_logs_seed = os.path.join(agent_logs, 'seed_{}'.format(seed))
+        if os.path.exists(agent_logs_seed):
+            continue
         run_objective(space)
 
 
