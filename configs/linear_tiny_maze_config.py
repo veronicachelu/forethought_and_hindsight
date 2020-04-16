@@ -3,7 +3,7 @@ env_config = {
     "class": "MicroWorld",
     "non_gridworld": False,
     "model_class": "linear",
-    "env_type": "discreate",
+    "env_type": "discrete",
     "obs_type": "onehot",
     "policy_type": "greedy",
     "mdp_filename": "./mdps/maze_48.mdp",

@@ -4,7 +4,7 @@ env_config = {
     "class": "Shortcut",
     "non_gridworld": True,
     "model_class": "tabular",
-    "env_type": "discreate",
+    "env_type": "discrete",
     "obs_type": "tabular",
     "mdp_filename": None,
     "policy_type": "greedy",

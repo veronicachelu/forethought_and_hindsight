@@ -12,16 +12,29 @@ import haiku as hk
 
 def get_env(nrng, space, aux_agent_configs):
     if space["env_config"]["non_gridworld"]:
-        env_class = getattr(env_utils, space["env_config"]["class"])
-        env = env_class(rng=nrng,
-                      nS=space["env_config"]["env_size"],
-                      obs_type=space["env_config"]["obs_type"]
-                      )
-        mdp_solver = ChainSolver(env, space["env_config"]["env_size"],
-                                 space["env_config"]["nA"], aux_agent_configs["discount"])
-        env._true_v = mdp_solver.get_optimal_v()
-        nS = env._nS
-        policy = lambda x, nrng: nrng.choice(range(env._nA), p=env._nA * [1 / env._nA])
+        if space["env_config"]["model_class"] == "tabular":
+            env_class = getattr(env_utils, space["env_config"]["class"])
+            env = env_class(rng=nrng,
+                          nS=space["env_config"]["env_size"],
+                          obs_type=space["env_config"]["obs_type"]
+                          )
+            mdp_solver = ChainSolver(env, space["env_config"]["env_size"],
+                                     space["env_config"]["nA"], aux_agent_configs["discount"])
+            env._true_v = mdp_solver.get_optimal_v()
+            nS = env._nS
+            policy = lambda x, nrng: nrng.choice(range(env._nA), p=env._nA * [1 / env._nA])
+        else:
+            env_class = getattr(env_utils, space["env_config"]["class"])
+            env = env_class(rng=nrng,
+                            nS=space["env_config"]["env_size"],
+                            nF=space["env_config"]["obs_size"],
+                            obs_type=space["env_config"]["obs_type"]
+                            )
+            mdp_solver = ChainSolver(env, space["env_config"]["env_size"],
+                                     space["env_config"]["nA"], aux_agent_configs["discount"])
+            env._true_v = mdp_solver.get_optimal_v()
+            nS = env._nS
+            policy = lambda x, nrng: nrng.choice(range(env._nA), p=env._nA * [1 / env._nA])
     else:
         env_class = getattr(env_utils, space["env_config"]["class"])
         env = env_class(path=space["env_config"]["mdp_filename"],
@@ -134,6 +147,9 @@ def load_env_and_volatile_configs(env):
     elif env == "random_medium_maze":
         env_config = configs.random_medium_maze_config.env_config
         volatile_agent_config = configs.random_medium_maze_config.volatile_agent_config
+    elif env == "boyan":
+        env_config = configs.boyan_config.env_config
+        volatile_agent_config = configs.boyan_config.volatile_agent_config
 
     return env_config, volatile_agent_config
 

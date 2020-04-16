@@ -1,41 +1,20 @@
 import numpy as np
 env_config = {
-    "class": "MicroWorld",
-    "non_gridworld": False,
+    "class": "Boyan",
+    "non_gridworld": True,
     "model_class": "linear",
     "env_type": "discrete",
-    "obs_type": "onehot",
+    "obs_type": "spikes",
     "policy_type": "greedy",
-    "mdp_filename": "./mdps/maze_80.mdp",
-    "env_size": 80,
+    "env_size": 14,
+    "obs_size": 4,
     "num_episodes": 100,
-    "num_runs": 100,
+    "num_runs": 5,
     "stochastic": False,
-    "nA": 4
+    "nA": 1
 }
 
 volatile_agent_config = {
-    "ac_vanilla": {
-        "planning_depth": [0],
-        "replay_capacity": [0],
-        "lr": np.linspace(0.01, 0.1, 10),
-        "lr_p": [0],
-        "lr_m": [0]
-    },
-    "vanilla_intr": {
-        "planning_depth": [0],
-        "replay_capacity": [0],
-        "lr": np.linspace(0.01, 0.1, 10),
-        "lr_p": [0],
-        "lr_m": [0]
-    },
-    "latent_vanilla_intr": {
-        "planning_depth": [0],
-        "replay_capacity": [0],
-        "lr": np.linspace(0.01, 0.1, 10),
-        "lr_p": [0],
-        "lr_m": [0]
-    },
     "vanilla": {
         "planning_depth": [0],
         "replay_capacity": [0],

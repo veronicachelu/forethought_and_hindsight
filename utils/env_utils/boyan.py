@@ -5,40 +5,24 @@ from dm_env import specs
 from utils.mdp_solvers.solve_chain import ChainSolver
 
 
-class RandomChain(dm_env.Environment):
-    def __init__(self, rng=None, obs_type="tabular", nS = 5,
-                 left_reward=-1, right_reward=1):
+class Boyan(dm_env.Environment):
+    def __init__(self, rng=None, obs_type="tabular", nS = 14, nF=4):
         self._P = None
         self._R = None
         self._stochastic = False
         self._nS = nS
-        self._start_state = nS // 2
-        self._end_states = [0, self._nS - 1]
+        self._start_state = 0
+        self._end_state = self._nS - 1
+        self._last_state = self._nS - 2
+        self._second_to_last = self._nS - 3
+        self._nF = nF
         self._rng = rng
-        self._nA = 2
-        self._left_reward = left_reward
-        self._right_reward = right_reward
-        self._slip_prob = 0
+        self._nA = 1
         self._obs_type = obs_type
-        self._pi = np.full((self._nS, self._nA), 1 / 2)
+        self._pi = np.full((self._nS, self._nA), 1 / self._nA)
 
         self._reset_next_step = True
-        # self._true_v = np.linspace(left_reward * nS, right_reward * nS, nS) / nS
-        # self._dependent_features = [[1, 0, 0],
-        #                   [1/np.sqrt(2), 1/np.sqrt(2), 0],
-        #                   [1/np.sqrt(3), 1/np.sqrt(3), 1/np.sqrt(3)],
-        #                   [0, 1/np.sqrt(2), 1/np.sqrt(2)],
-        #                   [0, 0, 1]]
-        # self._nF = 3
-        # self._inverted_features = [[0, 1/2, 1/2, 1/2, 1/2],
-        #                           [1/2, 0, 1/2, 1/2, 1/2],
-        #                           [1/2, 1/2, 0, 1/2, 1/2],
-        #                           [1/2, 1/2, 1/2, 0, 1/2],
-        #                           [1/2, 1/2, 1/2, 1/2, 0]]
-        # # np.arange(left_reward * nS,
-        #                          right_reward * (nS+1),
-        #                          2) / nS
-        # self._true_v[0] = self._true_v[-1] = 0
+
 
     def reset(self):
         """Returns the first `TimeStep` of a new episode."""
@@ -46,26 +30,28 @@ class RandomChain(dm_env.Environment):
         self._state = self._start_state
         return dm_env.restart(self._observation())
 
-    def _get_next_state(self, action):
-        if action == 1:
-            next_state = self._state + 1
+    def _get_next_state(self, state, action):
+        if state == self._nS - 3 or state == self._nS - 2:
+            next_state = state + 1
         else:
-            next_state = self._state - 1
+            state_mask = self._rng.choice(range(2),
+                                          p=[0.5, 0.5])
+            next_state = state + state_mask + 1
 
         return next_state
 
-    def _get_next_reward(self, next_state):
-        if next_state == 0:
-            reward = self._left_reward
-        elif next_state == self._nS - 1:
-            reward = self._right_reward
+    def _get_next_reward(self, state, action, next_state):
+        if state == self._second_to_last:
+            reward = -2.0
+        elif state == self._last_state or state == self._end_state:
+            reward = 0.0
         else:
-            reward = 0
+            reward = -3.0
 
         return reward
 
     def _is_terminal(self):
-        if self._state in self._end_states:
+        if self._state == self._end_state:
             return True
         return False
 
@@ -74,8 +60,8 @@ class RandomChain(dm_env.Environment):
         if self._reset_next_step:
             return self.reset()
 
-        next_state = self._get_next_state(action)
-        reward = self._get_next_reward(next_state)
+        next_state = self._get_next_state(self._state, action)
+        reward = self._get_next_reward(self._state, action, next_state)
         self._state = next_state
 
         if self._is_terminal():
@@ -87,14 +73,11 @@ class RandomChain(dm_env.Environment):
     def observation_spec(self):
         if self._obs_type == "tabular":
             return specs.BoundedArray(shape=(self._nS,), dtype=np.int32,
-                                  name="state", minimum=0, maximum=self._nS)
+                                      name="state", minimum=0, maximum=self._nS)
         elif self._obs_type == "onehot":
             return specs.BoundedArray(shape=(self._nS,), dtype=np.int32,
-                                  name="state", minimum=0, maximum=1)
-        elif self._obs_type == "inverted_features":
-            return specs.BoundedArray(shape=(self._nS,), dtype=np.int32,
                                       name="state", minimum=0, maximum=1)
-        elif self._obs_type == "dependent_features":
+        elif self._obs_type == "spikes":
             return specs.BoundedArray(shape=(self._nF,), dtype=np.int32,
                                       name="state", minimum=0, maximum=1)
 
@@ -107,41 +90,39 @@ class RandomChain(dm_env.Environment):
             return self._state
         elif self._obs_type == "onehot":
             return np.eye(self._nS)[self._state]
-        elif self._obs_type == "dependent_features":
-            return self._dependent_features[self._state]
-        elif self._obs_type == "inverted_features":
-            return self._inverted_features[self._state]
+        elif self._obs_type == "spikes":
+            a = (self._nS - 1.) / (self._nF - 1)
+            r = 1 - abs((self._state + 1 - np.linspace(1, self._nS, self._nF)) / a)
+            r[r < 0] = 0
+            return r
+
 
     def _fill_P_R(self):
         self._P = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
         self._P_absorbing = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
         self._R = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
 
-        DIR_TO_VEC = [
-            # left
-            -1,
-            # right
-            +1
-        ]
         for s in range(self._nS):
             for k in range(self._nA):
-                fwd_s = s + DIR_TO_VEC[k]
-                fwd_s = np.clip(a=fwd_s, a_min=0, a_max= self._nS - 1)
-                if not (s in self._end_states):
-                    if self._stochastic:
-                        slip_prob = [self._slip_prob, 1 - self._slip_prob]
-                    else:
-                        slip_prob = [0, 1]
-                    self._P[k][s][fwd_s] = slip_prob[1]
-                    self._P_absorbing[k][s][fwd_s] = slip_prob[1]
-                    self._R[k][s][fwd_s] = self._get_next_reward(fwd_s)
-                    self._P[k][s][s] = slip_prob[0]
-                    self._P_absorbing[k][s][s] = slip_prob[0]
-                    self._R[k][s][s] = self._get_next_reward(s)
-                else:
+                if s == self._second_to_last:
+                    self._P[k][s][self._last_state] = 1
+                    self._P_absorbing[k][s][self._last_state] = 1
+                    self._R[k][s][self._last_state] = -2
+                elif s == self._last_state:
+                    self._P[k][s][self._end_state] = 1
+                    self._P_absorbing[k][s][self._end_state] = 1
+                    self._R[k][s][self._end_state] = 0
+                elif s == self._end_state:
                     self._P[k][s][self._start_state] = 1
                     self._P_absorbing[k][s][s] = 1
                     self._R[k][s][s] = 0
+                else:
+                    self._P[k][s][s + 1] = 0.5
+                    self._P[k][s][s + 2] = 0.5
+                    self._P_absorbing[k][s][s + 1] = 0.5
+                    self._P_absorbing[k][s][s + 2] = 0.5
+                    self._R[k][s][s + 1] = -3
+                    self._R[k][s][s + 2] = -3
 
     def _get_dynamics(self):
         if self._P == None or self._R == None or self._P_absrobing == None:
@@ -164,10 +145,12 @@ class RandomChain(dm_env.Environment):
 
 if __name__ == "__main__":
     nrng = np.random.RandomState(0)
-    nS = 5
-    nA = 2
-    discount = 0.9
-    env = RandomChain(rng=nrng, obs_type="tabular", nS=nS, left_reward=-1, right_reward=1)
+    nS = 14
+    nF = 4
+    nA = 1
+    discount = 0.95
+    env = Boyan(rng=nrng, obs_type="spikes",
+               nS=nS, nF= nF)
     mdp_solver = ChainSolver(env, nS, nA, discount)
     # policy = mdp_solver.get_optimal_policy()
     v = mdp_solver.get_optimal_v()

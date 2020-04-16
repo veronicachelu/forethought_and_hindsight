@@ -3,7 +3,7 @@ env_config = {
     "class": "Loop",
     "non_gridworld": True,
     "model_class": "tabular",
-    "env_type": "discreate",
+    "env_type": "discrete",
     "obs_type": "tabular",
     "mdp_filename": None,
     "policy_type": "greedy",
@@ -29,7 +29,7 @@ volatile_agent_config = {
         "lr_m": np.linspace(0.1, 1.0, 10),
     },
     "bw_fw": {
-        "planning_depth": [1, 2, 3, 4, 8, 16],
+        "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [0.3],
         "lr_p": [0.3],

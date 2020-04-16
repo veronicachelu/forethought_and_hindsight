@@ -61,7 +61,6 @@ def main(argv):
                    volatile_agent_config, 0, 0, logs)
 
 
-
     if FLAGS.cumulative_rmsve:
         yaxis = 'Cumulative RMSVE'
         xaxis = "Timesteps"

@@ -1,9 +1,9 @@
 import numpy as np
 env_config = {
-    "class": "RandomChain",
+    "class": "Random",
     "non_gridworld": True,
     "model_class": "tabular",
-    "env_type": "discreate",
+    "env_type": "discrete",
     "policy_type": "greedy",
     "obs_type": "tabular",
     "mdp_filename": None,

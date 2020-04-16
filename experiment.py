@@ -143,7 +143,7 @@ def run_mdp_forall_episodes(
         #            logs=agent._images_dir,
         #            eta_pi=environment.reshape_v(mdp_solver.get_eta_pi(mdp_solver._pi)),
         #            filename="avg_error_{}.png".format(agent.episode),
-        #            env_type="discreate",
+        #            env_type="discrete",
         #            policy=environment.reshape_pi(agent.get_policy(environment.get_all_states())))
 
         # if plot_errors and agent.episode % log_period == 0:

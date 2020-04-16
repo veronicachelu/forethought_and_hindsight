@@ -13,8 +13,8 @@ import copy
 import configs
 from main_utils import *
 
-flags.DEFINE_string('agent', 'fw', 'what agent to run')
-flags.DEFINE_string('env', 'maze',
+flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
+flags.DEFINE_string('env', 'boyan',
                     'File containing the MDP definition (default: mdps/toy.mdp).')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
