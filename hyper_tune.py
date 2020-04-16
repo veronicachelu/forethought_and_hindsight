@@ -104,13 +104,17 @@ def main(argv):
                     writer.writerow(seed_config)
 
         if not configuration_exists(final_hyperparam_file, final_config, final_attributes):
-            rmsve_aoc_avg, rmsve_min_avg, rmsve_start_avg, steps_avg = \
+            (rmsve_aoc_avg, rmsve_aoc_std), (rmsve_min_avg, rmsve_min_std),\
+            (rmsve_start_avg, rmsve_start_std), steps_avg = \
                 get_avg_over_seeds(interm_hyperparam_file, final_config, final_attributes)
             with open(final_hyperparam_file, 'a+', newline='') as f:
                 writer = csv.DictWriter(f, fieldnames=final_fieldnames)
                 final_config["rmsve_aoc"] = round(rmsve_aoc_avg, 2)
+                final_config["rmsve_aoc_std"] = round(rmsve_aoc_std, 2)
                 final_config["rmsve_min"] = round(rmsve_min_avg, 2)
+                final_config["rmsve_min_std"] = round(rmsve_min_std, 2)
                 final_config["rmsve_start"] = round(rmsve_start_avg, 2)
+                final_config["rmsve_start_std"] = round(rmsve_start_std, 2)
                 final_config["steps"] = steps_avg
                 writer.writerow(final_config)
 
@@ -152,12 +156,15 @@ def get_avg_over_seeds(interm_hyperparam_file, final_config, final_attributes):
                 rmsve_min_avg.append(float(row['rmsve_min']))
                 rmsve_start_avg.append(float(row['rmsve_start']))
                 steps_avg.append(float(row['steps']))
-        return np.mean(rmsve_aoc_avg), np.mean(rmsve_min_avg), np.mean(rmsve_start_avg),\
+        return (np.mean(rmsve_aoc_avg), np.std(rmsve_aoc_avg)), (np.mean(rmsve_min_avg), np.std(rmsve_min_avg)),\
+               (np.mean(rmsve_start_avg), np.std(rmsve_start_avg)), \
                np.mean(steps_avg, dtype=int)
 
 def get_best_over_final(final_hyperparam_file, best_config, best_attributes, objective):
-    rmsve = np.infty
-    objective2key = {"aoc": 'rmsve_aoc', "min": 'rmsve_min', "start": 'rmsve_start'}
+    rmsve_over_std = np.infty
+    objective2key = {"aoc": 'rmsve_aoc',
+                     "min": 'rmsve_min',
+                     "start": 'rmsve_start'}
     with open(final_hyperparam_file, 'r', newline='') as f:
         reader = csv.DictReader(f)
         for row in reader:
@@ -167,9 +174,11 @@ def get_best_over_final(final_hyperparam_file, best_config, best_attributes, obj
                     ok = False
                     break
             if ok == True:
-                if float(row[objective2key[objective]]) < rmsve:
+                if float(row[objective2key[objective]]) / \
+                    float(row[objective2key[objective] + "_std"]) < rmsve_over_std:
                     best_config = row
-                    rmsve = float(row[objective2key[objective]])
+                    rmsve_over_std = float(row[objective2key[objective]]) / \
+                                     float(row[objective2key[objective] + "_std"])
         return best_config
 
 def configuration_exists(hyperparam_file, crt_config, attributes):
