@@ -20,7 +20,7 @@ plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_string('comparison_config', "non_parametric_fw", 'where to save results')
-flags.DEFINE_string('env', "repeat", 'where to save results')
+flags.DEFINE_string('env', "maze", 'where to save results')
 # flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
 # flags.DEFINE_integer('num_runs', 100, '')
@@ -33,7 +33,7 @@ def main(argv):
     del argv  # Unused.
     best_hyperparam_folder = os.path.join(FLAGS.logs, "best")
     logs = os.path.join(best_hyperparam_folder, FLAGS.env)
-    plots = os.path.join(FLAGS.logs, FLAGS.env)
+    plots = os.path.join(FLAGS.plots, FLAGS.env)
 
     if not os.path.exists(plots):
         os.makedirs(plots)
@@ -50,7 +50,7 @@ def main(argv):
     mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
 
     for i, agent in enumerate(comparison_configs["agents"]):
-        planning_depth = comparison_configs["planning_depth"][i]
+        planning_depth = comparison_configs["planning_depths"][i]
         replay_capacity = comparison_configs["replay_capacities"][i]
         persistent_agent_config = configs.agent_config.config[agent]
         plot_for_agent(agent, env_config, persistent_agent_config,
@@ -58,17 +58,14 @@ def main(argv):
 
     persistent_agent_config = configs.agent_config.config["vanilla"]
     plot_for_agent("vanilla", env_config, persistent_agent_config,
-                   volatile_agent_config, logs)
+                   volatile_agent_config, 0, 0, logs)
 
     plt.xlabel("Episode count", fontsize=FONTSIZE)
 
-    if env_config["non_gridworld"]:
-        if FLAGS.cumulative_rmsve:
-            yaxis = 'Cumulative RMSVE'
-        else:
-            yaxis = 'RMSVE'
+    if FLAGS.cumulative_rmsve:
+        yaxis = 'Cumulative RMSVE'
     else:
-        yaxis = 'MSVE'
+        yaxis = 'RMSVE'
 
     plt.ylabel(yaxis, fontsize=FONTSIZE)
     plt.legend(loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
@@ -85,7 +82,7 @@ def main(argv):
 
 def plot_for_agent(agent, env_config, persistent_agent_config,
                    volatile_agent_config, planning_depth, replay_capacity, logs):
-    log_folder_agent = os.path.join(logs, "{}_{}_{}".format(agent, planning_depth, replay_capacity))
+    log_folder_agent = os.path.join(logs, "{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth, replay_capacity))
     volatile_config = {"agent": agent,
                        "planning_depth": planning_depth,
                        "replay_capacity": replay_capacity,
@@ -123,11 +120,10 @@ def plot_tensorflow_log(space):
 
         # Show all tags in the log file
         # print(event_acc.Tags())
-        if space["env_config"]["non_gridworld"]:
-            if FLAGS.cumulative_rmsve:
-                tag = 'train/total_rmsve'
-            else:
-                tag = 'train/rmsve'
+        if FLAGS.cumulative_rmsve:
+            tag = 'train/total_rmsve'
+        else:
+            tag = 'train/rmsve'
         if not tag in event_acc.Tags()["tensors"]:
             return
 
@@ -144,9 +140,9 @@ def plot_tensorflow_log(space):
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
                          color="r", alpha=0.1)
     else:
-        plt.plot(x, mean_y_over_seeds, label=format_name(space["agent"],
-                                            space["planning_perf"],
-                                            space["replay_capacity"]),
+        plt.plot(x, mean_y_over_seeds, label=format_name(space["crt_config"]["agent"],
+                                            space["crt_config"]["planning_depth"],
+                                            space["crt_config"]["replay_capacity"]),
                  alpha=1, linewidth=LINEWIDTH,
                  linestyle="-")
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,

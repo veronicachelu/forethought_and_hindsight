@@ -1,5 +1,5 @@
 configs={
-    "repeat": {
+    "maze": {
         "non_parametric_fw": {
             "agents": ["fw_rnd", "fw_pri"],
             "planning_depths": [1, 1],
@@ -22,6 +22,13 @@ configs={
             "agents": ["bw", "fw_rnd", "bw_fw_PWMA"],
             "planning_depths": [1, 1, 1],
             "replay_capacities": [0, 50, 50]
+        }
+    },
+    "linear_maze": {
+        "all": {
+            "agents": ["latent_bw_intr", "latent_vanilla_intr", "vanilla_intr"],
+            "planning_depths": [1, 0, 0],
+            "replay_capacities": [0, 0, 0]
         }
     }
 }

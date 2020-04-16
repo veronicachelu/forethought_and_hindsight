@@ -72,6 +72,7 @@ config = {
         "class": {"linear": "LpExplicitValueBased"},
     },
     "bw": {
+        "pg": False,
         "run_mode": "bw_extr",
         "planning_iter": 1,
         "latent": False,

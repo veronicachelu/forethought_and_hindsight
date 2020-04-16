@@ -10,7 +10,7 @@ import utils
 from utils import *
 import csv
 
-flags.DEFINE_string('env', 'maze', 'env')
+flags.DEFINE_string('env', 'linermaze', 'env')
 # flags.DEFINE_string('env', 'linear_maze', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
