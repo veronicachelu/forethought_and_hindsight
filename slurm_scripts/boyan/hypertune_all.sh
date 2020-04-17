@@ -10,8 +10,4 @@ source ~/.bashrc
 cd ~/jax_models
 python hyper_tune.py --agent=bw --env=boyan
 python hyper_tune.py --agent=fw --env=boyan
-python hyper_tune.py --agent=bw_fw --env=boyan
 python hyper_tune.py --agent=fw_rnd --env=boyan
-python hyper_tune.py --agent=fw_pri --env=boyan
-python hyper_tune.py --agent=bw_fw_PWMA --env=boyan
-python hyper_tune.py --agent=bw_fw_MG --env=boyan
