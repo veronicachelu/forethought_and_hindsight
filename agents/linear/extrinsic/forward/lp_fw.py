@@ -17,59 +17,59 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class LpExplicitExp(LpVanilla):
+class LpFw(LpVanilla):
     def __init__(
             self,
             **kwargs
     ):
-        super(LpExplicitExp, self).__init__(**kwargs)
+        super(LpFw, self).__init__(**kwargs)
 
         self._sequence = []
         self._should_reset_sequence = False
 
-        def model_loss(o_online_params,
+        def model_loss(fw_o_online_params,
                        r_online_params,
                        transitions):
             o_tmn_target = transitions[0][0]
             o_t = transitions[-1][-1]
-            model_o_tmn = self._o_network(o_online_params, o_t)
+            model_o_t = self._fw_o_network(fw_o_online_params, o_tmn_target)
 
-            o_loss = 20 * jnp.mean(jax.vmap(rlax.l2_loss)(model_o_tmn, o_tmn_target))
+            fw_o_loss = 20 * jnp.mean(jax.vmap(rlax.l2_loss)(model_o_t, o_t))
 
-            r_input = jnp.concatenate([model_o_tmn, o_t], axis=-1)
+            r_input = jnp.concatenate([o_tmn_target, model_o_t], axis=-1)
             model_r_tmn = self._r_network(r_online_params, lax.stop_gradient(r_input))
             r_t_target = 0
             for i, t in enumerate(transitions):
                 r_t_target += (self._discount ** i) * t[2]
 
             r_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_r_tmn, r_t_target))
-            total_loss = o_loss + r_loss
+            total_loss = fw_o_loss + r_loss
 
-            return total_loss, {"o_loss": o_loss,
-                               "r_loss": r_loss
-                               }
+            return total_loss, {"fw_o_loss": fw_o_loss,
+                                "r_loss": r_loss
+                                }
 
-        def v_planning_loss(v_params, o_params, r_params, o_t):
-            o_tmn = self._o_forward(o_params, o_t)
-            v_tmn = self._v_network(v_params, lax.stop_gradient(o_tmn))
+        def v_planning_loss(v_params, fw_o_params, r_params, o_tmn):
+            o_t = self._fw_o_forward(fw_o_params, o_tmn)
+            v_tmn = self._v_network(v_params, o_tmn)
             r_input = jnp.concatenate([o_tmn, o_t], axis=-1)
 
             r_tmn = self._r_forward(r_params, r_input)
             v_t_target = self._v_network(v_params, o_t)
             td_error = jax.vmap(rlax.td_learning)(v_tmn, r_tmn,
-                                                 jnp.array([self._discount ** self._n]),
-                                                 v_t_target)
+                                                  jnp.array([self._discount ** self._n]),
+                                                  v_t_target)
             return jnp.mean(td_error ** 2)
 
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, 0))
 
         self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [0, 1], has_aux=True))
-        self._o_forward = jax.jit(self._o_network)
+        self._fw_o_forward = jax.jit(self._fw_o_network)
         self._r_forward = jax.jit(self._r_network)
 
         model_opt_init, model_opt_update, model_get_params = optimizers.adam(step_size=self._lr_model)
         self._model_opt_update = jax.jit(model_opt_update)
-        self._model_opt_state = model_opt_init([self._o_parameters, self._r_parameters])
+        self._model_opt_state = model_opt_init([self._fw_o_parameters, self._r_parameters])
         self._model_get_params = model_get_params
 
     def model_update(
@@ -81,17 +81,17 @@ class LpExplicitExp(LpVanilla):
         if self._n == 0:
             return
         if len(self._sequence) >= self._n:
-            (total_loss, losses), gradients = self._model_loss_grad(self._o_parameters,
-                                                   self._r_parameters,
-                                                  self._sequence)
+            (total_loss, losses), gradients = self._model_loss_grad(self._fw_o_parameters,
+                                                                    self._r_parameters,
+                                                                    self._sequence)
             self._model_opt_state = self._model_opt_update(self.episode, list(gradients),
                                                            self._model_opt_state)
             self._model_parameters = self._model_get_params(self._model_opt_state)
-            self._o_parameters, self._r_parameters = self._model_parameters
+            self._fw_o_parameters, self._r_parameters = self._model_parameters
 
             losses_and_grads = {"losses": {
                 "loss_total": total_loss,
-                "loss_o": losses["o_loss"],
+                "loss_fw_o": losses["fw_o_loss"],
                 "loss_r": losses["r_loss"],
             },
             }
@@ -109,13 +109,13 @@ class LpExplicitExp(LpVanilla):
     ):
         if self._n == 0:
             return
-        o_t = np.array([timestep.observation])
+        o_tm1 = np.array([timestep.observation])
 
         # plan on batch of transitions
         loss, gradient = self._v_planning_loss_grad(self._v_parameters,
-                                                    self._o_parameters,
+                                                    self._fw_o_parameters,
                                                     self._r_parameters,
-                                                    o_t)
+                                                    o_tm1)
         self._v_opt_state = self._v_opt_update(self.episode, gradient,
                                                self._v_opt_state)
         self._v_parameters = self._v_get_params(self._v_opt_state)
@@ -131,6 +131,7 @@ class LpExplicitExp(LpVanilla):
 
     def model_free_train(self):
         return True
+        # return False
 
     def load_model(self):
         return
@@ -140,7 +141,7 @@ class LpExplicitExp(LpVanilla):
             self.episode = to_load["episode"]
             self.total_steps = to_load["total_steps"]
             self._v_parameters = to_load["v_parameters"]
-            self._o_parameters = to_load["o_parameters"]
+            self._fw_o_parameters = to_load["o_parameters"]
             self._r_parameters = to_load["r_parameters"]
             print("Restored from {}".format(checkpoint))
         else:
@@ -153,7 +154,7 @@ class LpExplicitExp(LpVanilla):
             "episode": self.episode,
             "total_steps": self.total_steps,
             "v_parameters": self._v_parameters,
-            "o_parameters": self._o_parameters,
+            "o_parameters": self._fw_o_parameters,
             "r_parameters": self._r_parameters,
         }
         np.save(checkpoint, to_save)
@@ -193,3 +194,6 @@ class LpExplicitExp(LpVanilla):
                         tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
                                           gradients[k], step=ep)
                 self.writer.flush()
+
+    def get_values_for_all_states(self, all_states):
+        return np.array(self._v_forward(self._v_parameters, np.array(all_states)), np.float)

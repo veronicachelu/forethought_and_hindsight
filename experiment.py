@@ -3,42 +3,6 @@ import tensorflow as tf
 from agents import Agent
 from utils.visualizer import *
 
-# def run_no_episodes(agent: Agent,
-#                  environment: dm_env.Environment,
-#                  num_episodes: int,
-#                  max_len: int,
-#                  mdp_solver,
-#                  model_class,
-#                  log_period=1,
-#                  plot_values=False,
-#                  plot_curves=False,
-#                  plot_errors=False,):
-#
-#     if plot_errors:
-#         with agent.writer.as_default():
-#             return run_mdp_forall_steps(agent=agent,
-#                                       environment=environment,
-#                                       num_steps=num_episodes,
-#                                       max_len=max_len,
-#                                       model_class=model_class,
-#                                       log_period=log_period,
-#                                       mdp_solver=mdp_solver,
-#                                       plot_values=plot_values,
-#                                       plot_curves=plot_curves,
-#                                       plot_errors=plot_errors)
-#     else:
-#         return run_mdp_forall_steps(agent=agent,
-#                                       environment=environment,
-#                                       num_episodes =num_episodes,
-#                                       max_len=max_len,
-#                                       model_class=model_class,
-#                                       log_period=log_period,
-#                                       mdp_solver=mdp_solver,
-#                                       plot_values=plot_values,
-#                                       plot_curves=plot_curves,
-#                                       plot_errors=plot_errors)
-
-
 def run_episodic(agent: Agent,
                  environment: dm_env.Environment,
                  num_episodes: int,
@@ -99,9 +63,6 @@ def run_mdp_forall_episodes(
             action = agent.policy(timestep)
             new_timestep = environment.step(action)
 
-            # print("state {}, action {}, reward {}".format(np.unravel_index(np.argmax(timestep.observation), (6, 8)),
-            #                                               action, new_timestep.reward))
-
             if agent.model_based_train():
                 agent.save_transition(timestep, action, new_timestep)
                 agent.model_update(timestep, action, new_timestep)
@@ -146,18 +107,18 @@ def run_mdp_forall_episodes(
         #            env_type="discrete",
         #            policy=environment.reshape_pi(agent.get_policy(environment.get_all_states())))
 
-        # if plot_errors and agent.episode % log_period == 0:
-        #     plot_error(env=environment,
-        #                values=(environment.reshape_v(mdp_solver.get_optimal_v()) - environment.reshape_v(hat_v)) ** 2,
-        #                logs=agent._images_dir,
-        #                eta_pi=environment.reshape_v(mdp_solver.get_eta_pi(mdp_solver._pi)),
-        #                filename="error_{}.png".format(agent.episode))
-        # if plot_values and agent.episode % log_period == 0:
-        #     plot_v(env=environment,
-        #            values=environment.reshape_v(hat_v),
-        #            logs=agent._images_dir,
-        #            true_v=environment.reshape_v(mdp_solver.get_optimal_v()),
-        #            filename="v_{}.png".format(agent.episode))
+        if plot_errors and agent.episode % log_period == 0:
+            plot_error(env=environment,
+                       values=(environment.reshape_v(mdp_solver.get_optimal_v()) - environment.reshape_v(hat_v)) ** 2,
+                       logs=agent._images_dir,
+                       eta_pi=environment.reshape_v(mdp_solver.get_eta_pi(mdp_solver._pi)),
+                       filename="error_{}.png".format(agent.episode))
+        if plot_values and agent.episode % log_period == 0:
+            plot_v(env=environment,
+                   values=environment.reshape_v(hat_v),
+                   logs=agent._images_dir,
+                   true_v=environment.reshape_v(mdp_solver.get_optimal_v()),
+                   filename="v_{}.png".format(agent.episode))
 
         if plot_curves and agent.episode % log_period == 0:
             # agent.save_model()

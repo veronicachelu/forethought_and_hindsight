@@ -46,8 +46,8 @@ class LpIntrinsicVanilla(Agent):
             exploration_decay_period: int,
             seed: int = None,
             latent=False,
-            logs: str = "logs",
             target_networks=False,
+            logs: str = "logs",
             # double_input_reward_model=False
     ):
         super().__init__()
@@ -110,7 +110,7 @@ class LpIntrinsicVanilla(Agent):
             v_t = self._v_network(v_params, h_t)
             v_t_target = r_t + d_t * discount * v_t
             td_error = jax.vmap(rlax.td_learning)(v_tm1, r_t, d_t * discount, v_t_target)
-            return jnp.mean(td_error**2)
+            return jnp.mean(td_error ** 2)
 
         # Internalize the networks.
         self._v_network = network["value"]["net"]
