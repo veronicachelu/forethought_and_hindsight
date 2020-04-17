@@ -167,6 +167,9 @@ def run_for_agent(agent, lr_vanilla):
 
 def get_vanilla_lr(best_hyperparam_file):
     lr = None
+    if not os.path.exists(best_hyperparam_file):
+        return lr
+    
     with open(best_hyperparam_file, 'r', newline='') as f:
         reader = csv.DictReader(f)
         for row in reader:
