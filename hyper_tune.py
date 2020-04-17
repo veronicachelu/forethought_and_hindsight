@@ -45,7 +45,7 @@ def main(argv):
 
     run_for_agent(FLAGS.agent, lr_vanilla)
 
-def run_for_agent(agent, lr_vanilla):
+def run_for_agent(agent, lr_vanilla=None):
     all_hyperparam_folder = os.path.join(os.path.join(FLAGS.logs, "hyper"))
     env_hyperparam_folder = os.path.join(all_hyperparam_folder, FLAGS.env)
     agent_env_hyperparam_folder = os.path.join(env_hyperparam_folder, FLAGS.agent)
