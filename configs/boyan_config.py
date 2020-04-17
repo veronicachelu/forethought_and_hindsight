@@ -23,28 +23,28 @@ volatile_agent_config = {
         "lr_m": [0]
     },
     "bw_intr": {
-        "planning_depth": [1, 4, 8],
+        "planning_depth": [1, 2, 3, 4],
         "replay_capacity": [0],
         "lr": [1.0],
         "lr_p": [1.0],
         "lr_m": np.linspace(0.01, 1.0, 10),
     },
     "latent_bw_intr": {
-        "planning_depth": [1, 4, 8],
+        "planning_depth": [1, 2, 3, 4],
         "replay_capacity": [0],
         "lr": [1.0],
         "lr_p": [1.0],
         "lr_m": np.linspace(0.01, 1.0, 10),
     },
     "bw": {
-        "planning_depth": [1, 4, 8],
+        "planning_depth": [1, 2, 3, 4],
         "replay_capacity": [0],
         "lr": [1.0],
         "lr_p": [1.0],
         "lr_m": np.linspace(0.01, 1.0, 10),
     },
     "fw": {
-        "planning_depth": [1, 4, 8],
+        "planning_depth": [1, 2, 3, 4],
         "replay_capacity": [0],
         "lr": [1.0],
         "lr_p": [1.0],
