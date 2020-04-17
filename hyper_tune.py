@@ -34,25 +34,45 @@ def main(argv):
     agent_env_hyperparam_folder = os.path.join(env_hyperparam_folder, FLAGS.agent)
     if not os.path.exists(agent_env_hyperparam_folder):
         os.makedirs(agent_env_hyperparam_folder)
+
+    best_aoc_hyperparam_file = os.path.join(env_hyperparam_folder, "{}_best_aoc_hyperparams.csv".format(FLAGS.env))
+
+    if FLAGS.agent != "vanilla":
+        lr_vanilla = get_vanilla_lr(best_aoc_hyperparam_file)
+        if lr_vanilla == None:
+            run_for_agent("vanilla")
+            lr_vanilla = get_vanilla_lr(best_aoc_hyperparam_file)
+
+    run_for_agent(FLAGS.agent, lr_vanilla)
+
+def run_for_agent(agent, lr_vanilla):
+    all_hyperparam_folder = os.path.join(os.path.join(FLAGS.logs, "hyper"))
+    env_hyperparam_folder = os.path.join(all_hyperparam_folder, FLAGS.env)
+    agent_env_hyperparam_folder = os.path.join(env_hyperparam_folder, FLAGS.agent)
+    if not os.path.exists(agent_env_hyperparam_folder):
+        os.makedirs(agent_env_hyperparam_folder)
+
+    best_aoc_hyperparam_file = os.path.join(env_hyperparam_folder, "{}_best_aoc_hyperparams.csv".format(FLAGS.env))
+
     interm_hyperparam_file = os.path.join(agent_env_hyperparam_folder, "interm_hyperparams.csv")
     final_hyperparam_file = os.path.join(agent_env_hyperparam_folder, "final_hyperparams.csv")
-    best_aoc_hyperparam_file = os.path.join(env_hyperparam_folder, "{}_best_aoc_hyperparams.csv".format(FLAGS.env))
     best_min_hyperparam_file = os.path.join(env_hyperparam_folder, "{}_best_min_hyperparams.csv".format(FLAGS.env))
     best_start_hyperparam_file = os.path.join(env_hyperparam_folder, "{}_best_start_hyperparams.csv".format(FLAGS.env))
 
-    persistent_agent_config = configs.agent_config.config[FLAGS.agent]
+    persistent_agent_config = configs.agent_config.config[agent]
     env_config, volatile_agent_config = load_env_and_volatile_configs(FLAGS.env)
 
-    interm_fieldnames = list(volatile_agent_config[FLAGS.agent].keys())
+
+    interm_fieldnames = list(volatile_agent_config[agent].keys())
     interm_fieldnames.extend(["seed", "steps", 'rmsve_aoc', 'rmsve_min', 'rmsve_start'])
 
-    final_fieldnames = list(volatile_agent_config[FLAGS.agent].keys())
+    final_fieldnames = list(volatile_agent_config[agent].keys())
     final_fieldnames.extend(["steps", 'rmsve_aoc', 'rmsve_aoc_std',
                              'rmsve_min', 'rmsve_min_std',
                              'rmsve_start', 'rmsve_start_std'])
 
     best_fieldnames = ["agent"]
-    best_fieldnames.extend(list(volatile_agent_config[FLAGS.agent].keys()))
+    best_fieldnames.extend(list(volatile_agent_config[agent].keys()))
     best_fieldnames.extend(["steps", 'rmsve_aoc', 'rmsve_aoc_std',
                             'rmsve_min', 'rmsve_min_std',
                             'rmsve_start', 'rmsve_start_std'])
@@ -68,10 +88,13 @@ def main(argv):
                 writer = csv.DictWriter(f, fieldnames=fieldname)
                 writer.writeheader()
 
-    limited_volatile_to_run, volatile_to_run = build_hyper_list(FLAGS.agent,
+    limited_volatile_to_run, volatile_to_run = build_hyper_list(agent,
                                                                 volatile_agent_config)
 
+
     for planning_depth, replay_capacity, lr, lr_p, lr_m in volatile_to_run:
+        if agent != "vanilla":
+            lr = lr_vanilla
         seed_config = {"planning_depth": planning_depth,
                       "replay_capacity": replay_capacity,
                       "lr": lr,
@@ -123,7 +146,7 @@ def main(argv):
                 writer.writerow(final_config)
 
     for planning_depth, replay_capacity in limited_volatile_to_run:
-        best_config = {"agent": FLAGS.agent,
+        best_config = {"agent": agent,
                        "planning_depth": planning_depth,
                        "replay_capacity": replay_capacity, }
         best_attributes = list(best_config.keys())
@@ -141,6 +164,16 @@ def main(argv):
                     for key, value in the_best_hyperparms.items():
                         best_config[key] = value
                     writer.writerow(best_config)
+
+def get_vanilla_lr(best_hyperparam_file):
+    lr = None
+    with open(best_hyperparam_file, 'r', newline='') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if str(row["agent"]) == "vanilla":
+                lr = float(row["lr"])
+                break
+        return lr
 
 def get_avg_over_seeds(interm_hyperparam_file, final_config, final_attributes):
     rmsve_aoc_avg = []
