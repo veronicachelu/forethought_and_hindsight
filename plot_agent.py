@@ -45,7 +45,7 @@ def main(argv):
     env_config, volatile_agent_config = load_env_and_volatile_configs(FLAGS.env)
 
     plot_for_agent(FLAGS.agent, env_config, persistent_agent_config,
-                   volatile_agent_config, logs, up_to)
+                   volatile_agent_config, logs, up_to=FLAGS.up_to)
 
     if FLAGS.agent != "vanilla":
         vanilla_persistent_agent_config = configs.agent_config.config["vanilla"]
