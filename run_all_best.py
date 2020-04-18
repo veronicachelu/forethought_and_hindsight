@@ -11,7 +11,7 @@ from utils import *
 from run_utils import *
 import csv
 
-flags.DEFINE_string('env', 'cartpole', 'env')
+flags.DEFINE_string('env', 'linear_maze', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', 100000, 'Maximum number of time steps an episode may last (default: 100).')

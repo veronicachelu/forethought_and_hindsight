@@ -272,10 +272,12 @@ def load_env_and_volatile_configs(env):
 
     return env_config, volatile_agent_config
 
-def build_hyper_list(agent, volatile_agent_config):
+def build_hyper_list(agent, volatile_agent_config, up_to=None):
     volatile_to_run = []
     limited_volatile_to_run = []
     for planning_depth in volatile_agent_config[agent]["planning_depth"]:
+        if up_to is not None and planning_depth > up_to:
+            break
         for replay_capacity in volatile_agent_config[agent]["replay_capacity"]:
             limited_volatile_to_run.append([planning_depth, replay_capacity])
             for lr in volatile_agent_config[agent]["lr"]:

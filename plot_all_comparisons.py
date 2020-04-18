@@ -11,7 +11,6 @@ import matplotlib.style as style
 import cycler
 from main_utils import *
 import glob
-from functools import cmp_to_key
 style.available
 style.use('seaborn-poster') #sets the size of the charts
 style.use('ggplot')
@@ -20,96 +19,82 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_string('agent', "bw", 'where to save results')
-flags.DEFINE_string('env', "maze", 'where to save results')
-flags.DEFINE_integer('up_to', None, 'plot up to')
+flags.DEFINE_string('env', "linear_maze", 'where to save results')
+# flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
-# flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
 # flags.DEFINE_integer('num_runs', 100, '')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
-FONTSIZE = 25
-LINEWIDTH = 4
+FONTSIZE = 30
+LINEWIDTH = 5
 
 def main(argv):
     del argv  # Unused.
     best_hyperparam_folder = os.path.join(FLAGS.logs, "best")
     logs = os.path.join(best_hyperparam_folder, FLAGS.env)
     plots = os.path.join(FLAGS.plots, FLAGS.env)
-    plots = os.path.join(plots, FLAGS.agent)
 
     if not os.path.exists(plots):
         os.makedirs(plots)
 
-    persistent_agent_config = configs.agent_config.config[FLAGS.agent]
     env_config, volatile_agent_config = load_env_and_volatile_configs(FLAGS.env)
 
-    plot_for_agent(FLAGS.agent, env_config, persistent_agent_config,
-                   volatile_agent_config, logs, up_to)
+    comparison_configs = configs.comparison_configs.configs[FLAGS.env]
 
-    if FLAGS.agent != "vanilla":
-        vanilla_persistent_agent_config = configs.agent_config.config["vanilla"]
-        plot_for_agent("vanilla", env_config, vanilla_persistent_agent_config,
-                    volatile_agent_config, logs)
-
-    if FLAGS.cumulative_rmsve:
-        yaxis = 'Cumulative RMSVE'
-        xaxis = "Timesteps"
-    else:
-        yaxis = 'RMSVE'
-        xaxis = "Episodes"
-
-    plt.ylabel(yaxis, fontsize=FONTSIZE)
-    plt.legend(loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
-               frameon=True,
-               prop={'size': FONTSIZE})
-
-    plt.savefig(os.path.join(plots,
-                             "{}_{}.png".format(FLAGS.agent,
-                                                "CumRMSVE" if
-                                                FLAGS.cumulative_rmsve else
-                                                "RMSVE")))
-
-def plot_for_agent(agent, env_config, persistent_agent_config,
-                   volatile_agent_config, logs, up_to=None):
-    limited_volatile_to_run, volatile_to_run = build_hyper_list(agent,
-                                                                volatile_agent_config,
-                                                                up_to=up_to)
-    n = len(limited_volatile_to_run)
-
-    volatile_configs = []
-    for planning_depth, replay_capacity in limited_volatile_to_run:
-        log_folder_agent = os.path.join(logs, "{}_{}_{}".format(persistent_agent_config["run_mode"],
-                                                                planning_depth, replay_capacity))
-        volatile_config = {"agent": agent,
-                   "planning_depth": planning_depth,
-                   "replay_capacity": replay_capacity,
-                   "logs": log_folder_agent}
-        if os.path.exists(log_folder_agent):
-            volatile_configs.append(volatile_config)
-
-    def compare(a, b):
-        if a["planning_depth"] - b["planning_depth"] == 0:
-            return a["replay_capacity"] - b["replay_capacity"]
-        else:
-            return a["planning_depth"] - b["planning_depth"]
-
-    volatile_configs = sorted(volatile_configs, key=cmp_to_key(compare))
-
-    i
-    if agent != "vanilla":
-        color = plt.cm.Blues(np.linspace(0.5, 1.0, n)[::-1])
+    for comparison_config_key, comparison_config in comparison_configs.items():
+        n = len(comparison_config["agents"])
+        color = plt.cm.winter(np.linspace(0.0, 1.0, n)[::-1])
         hexcolor = map(lambda rgb: '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
-                           tuple(color[:, 0:-1]))
+                       tuple(color[:, 0:-1]))
         color = hexcolor  # plt.cm.viridis(np.linspace(0, 1, n))
         mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
 
-    for volatile_config in volatile_configs:
-        space = {
-            "env_config": env_config,
-            "agent_config": persistent_agent_config,
-            "crt_config": volatile_config}
-        plot_tensorflow_log(space)
+        for i, agent in enumerate(comparison_config["agents"]):
+            planning_depth = comparison_config["planning_depths"][i]
+            replay_capacity = comparison_config["replay_capacities"][i]
+            persistent_agent_config = configs.agent_config.config[agent]
+            plot_for_agent(agent, env_config, persistent_agent_config,
+                           volatile_agent_config, planning_depth, replay_capacity, logs)
+
+        persistent_agent_config = configs.agent_config.config["vanilla"]
+        plot_for_agent("vanilla", env_config, persistent_agent_config,
+                       volatile_agent_config, 0, 0, logs)
+
+
+        if FLAGS.cumulative_rmsve:
+            yaxis = 'Cumulative RMSVE'
+            xaxis = "Timesteps"
+        else:
+            yaxis = 'RMSVE'
+            xaxis = "Episodes"
+
+        plt.ylabel(yaxis, fontsize=FONTSIZE)
+        plt.xlabel(xaxis, fontsize=FONTSIZE)
+        plt.legend(loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
+                   frameon=True,
+                   prop={'size': FONTSIZE})
+        if not os.path.exists(plots):
+            os.makedirs(plots)
+
+        plt.savefig(os.path.join(plots,
+                                 "{}_{}.png".format(comparison_config_key,
+                                                    "CumRMSVE" if
+                                                    FLAGS.cumulative_rmsve else
+                                                    "RMSVE")))
+
+def plot_for_agent(agent, env_config, persistent_agent_config,
+                   volatile_agent_config, planning_depth, replay_capacity, logs):
+    print(agent)
+    log_folder_agent = os.path.join(logs, "{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth, replay_capacity))
+    volatile_config = {"agent": agent,
+                       "planning_depth": planning_depth,
+                       "replay_capacity": replay_capacity,
+                       "logs": log_folder_agent}
+    space = {
+    "env_config": env_config,
+    "agent_config": persistent_agent_config,
+    "crt_config": volatile_config}
+    plot_tensorflow_log(space)
 
 def plot_tensorflow_log(space):
     tf_size_guidance = {
@@ -122,15 +107,16 @@ def plot_tensorflow_log(space):
     all_y_over_seeds = []
     num_runs = space["env_config"]["num_runs"]
     for seed in range(num_runs):
+        print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))
         logs = os.path.join(os.path.join(space["crt_config"]["logs"],
                                          "summaries"),
                                         "seed_{}".format(seed))
         list_of_files = glob.glob(os.path.join(logs, '*'))  # * means all if need specific format then *.csv
         if len(list_of_files) == 0:
-            print("no files")
+            print("no files in folder {}".format(logs))
             return
         if len(list_of_files) > 1:
-            print("ERROR, there should be only one file")
+            print("ERROR, there should be only one file in folder {}".format(logs))
         filename = list_of_files[0]
         filepath = os.path.join(logs, filename)
         event_acc = EventAccumulator(filepath, tf_size_guidance)
