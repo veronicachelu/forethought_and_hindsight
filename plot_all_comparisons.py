@@ -60,7 +60,6 @@ def main(argv):
         plot_for_agent("vanilla", env_config, persistent_agent_config,
                        volatile_agent_config, 0, 0, logs)
 
-
         if FLAGS.cumulative_rmsve:
             yaxis = 'Cumulative RMSVE'
             xaxis = "Timesteps"
@@ -81,6 +80,7 @@ def main(argv):
                                                     "CumRMSVE" if
                                                     FLAGS.cumulative_rmsve else
                                                     "RMSVE")))
+        plt.clf()
 
 def plot_for_agent(agent, env_config, persistent_agent_config,
                    volatile_agent_config, planning_depth, replay_capacity, logs):
