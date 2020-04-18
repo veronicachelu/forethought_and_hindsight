@@ -12,7 +12,7 @@ env_config = {
     "mdp_filename": "CartPole-v0",
     "env_size": None,
     "num_episodes": 100,
-    "num_runs": 5,
+    "num_runs": 100,
     "stochastic": False,
     "nA": 2,
     "env_size": 4,
