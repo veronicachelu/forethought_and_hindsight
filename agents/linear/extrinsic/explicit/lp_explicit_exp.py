@@ -12,6 +12,7 @@ from jax.experimental import optimizers
 
 from agents.linear.extrinsic.lp_vanilla import LpVanilla
 import rlax
+from basis.feature_mapper import FeatureMapper
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]

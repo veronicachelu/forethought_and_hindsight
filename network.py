@@ -20,8 +20,11 @@ def get_network(num_hidden_layers: int,
                   target_networks=False,
                   pg=False,
                   latent=False,
+                  feature_coder=None,
                   # double_input_reward_model=False
                 ):
+    if feature_coder is not None:
+        input_dim = get_input_dim(input_dim, feature_coder)
     if pg:
         return get_pg_network(num_hidden_layers, num_units, nA,
                             rng, input_dim, latent)
@@ -31,10 +34,17 @@ def get_network(num_hidden_layers: int,
     if model_family == "extrinsic":
         return get_extrinsic_network(num_hidden_layers, num_units, nA,
                         rng, input_dim)
+    if model_family == "q":
+        return get_q_network(num_hidden_layers, num_units, nA,
+                        rng, input_dim)
     return get_intrinsic_network(num_hidden_layers, num_units, nA,
                 rng, input_dim, target_networks, latent)
 
-
+def get_input_dim(input_dim, feature_coder):
+    if feature_coder["type"] == "tile":
+        return np.prod(feature_coder["num_tiles"]) * feature_coder["num_tilings"]
+    else:
+        return input_dim
 
 def get_tabular_network(num_hidden_layers: int,
                   num_units: int,
@@ -89,7 +99,6 @@ def get_extrinsic_network(num_hidden_layers: int,
     layers.append(Reshape((-1)))
 
     v_network_init, v_network = stax.serial(*layers)
-
     _, v_network_params = v_network_init(rng_v, (-1, input_size))
 
     network["value"] = {"net": v_network,
@@ -144,6 +153,24 @@ def get_extrinsic_network(num_hidden_layers: int,
                         "params": [o_network_params, fw_o_network_params,
                                    r_network_params, None]
                         }
+
+    return network
+
+def get_q_network(num_hidden_layers: int,
+                  num_units: int,
+                  nA: int,
+                  rng: List,
+                  input_dim: Tuple,
+                  # double_input_reward_model=False
+                          ):
+
+    input_size = np.prod(input_dim)
+    network = {}
+
+    q_network_init, q_network = stax.Dense(nA)
+    _, q_network_params = q_network_init(rng, (-1, input_size))
+    network["qvalue"] = {"net": q_network,
+                        "params": q_network_params}  # layers = [stax.Flatten]
 
     return network
 

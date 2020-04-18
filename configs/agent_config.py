@@ -1,5 +1,17 @@
 config = {
-
+    "q": {
+        "pg": False,
+        "run_mode": "q",
+        "planning_depth": 0,
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "q",
+        "target_networks": False,
+        "class": {"linear": "VanillaQ",
+                  "tabular": ""}
+    },
     "vanilla": {
         "pg": False,
         "run_mode": "vanilla",

@@ -278,7 +278,7 @@ class MicroWorld(dm_env.Environment):
                             self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 0
 
 
-    def _get_dynamics(self):
+    def _get_dynamics(self, feature_coder=None):
         if self._P == None or self._R == None or self._P_absrobing == None:
             self._fill_P_R()
 

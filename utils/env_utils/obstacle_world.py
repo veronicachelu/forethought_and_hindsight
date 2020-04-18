@@ -5,7 +5,10 @@ from __future__ import print_function
 import dm_env
 from dm_env import specs
 import numpy as np
+import os
+from utils.mdp_solvers.solve_mdp import MdpSolver
 from basis.tile import *
+from utils.visualizer import *
 class Actions():
     up = 0
     right = 1
@@ -13,13 +16,14 @@ class Actions():
     left = 3
 
 
-class ContinuousWorld(dm_env.Environment):
+class ObstacleWorld(dm_env.Environment):
     def __init__(self, path=None, stochastic=False, random_restarts=False,
-                 seed=0, rng=None, obs_type="tile", env_size=16):
+                 rng=None, env_size=None, obs_type=None):
         self._str_MDP = ''
         self._height = -1
         self._width = -1
         self._path = path
+        self._nS = env_size
 
         self._cPos = np.zeros((2,))
         self._sPos = np.zeros((2,))
@@ -35,48 +39,22 @@ class ContinuousWorld(dm_env.Environment):
         self._nA = 4
         self._rng = rng
         self._reset_next_step = True
-        self._obs_type = obs_type
-        self._low = [0.0, 0.0]
-        self._high = [self._height, self._width]
-        self._bins = env_size ** 2
-        self._bins_dim = env_size
 
         self._P = None
         self._R = None
 
-        self._tilings = [create_tiling_grid(self._low, self._high,
-                                           bins=(self._bins_dim, self._bins_dim),
-                                           offsets=(0.0, 0.0))]
+        self._obs_type = obs_type
+
         self._h = int(self._height // self._step_size)
         self._w = int(self._width // self._step_size)
 
         self._mdp = np.zeros((self._h, self._w))
 
-        self._hh = self._bins_dim
-        self._ww = self._bins_dim
-        self._nS = self._hh * self._ww
-        self._mdp_tilings = np.zeros((self._hh, self._ww))
-
-        for obstacle in self._obstacles:
-            xsO, xfO, ysO, yfO = obstacle
-            for i in range(int(xsO//self._step_size),
-                           int(xfO // self._step_size)):
-                for j in range(int(ysO//self._step_size),
-                               int(yfO//self._step_size)):
-                    self._mdp[i][j] = -1
-                    encoded_obs = tile_encode((i * self._step_size, j * self._step_size), self._tilings)[0]
-                    self._mdp_tilings[encoded_obs[0]][encoded_obs[1]] = -1
-
-
         self._sX = int(self._sPos[0]//self._step_size)
         self._sY = int(self._sPos[1]//self._step_size)
-        self._sX_tilings, self._sY_tilings = tile_encode(self._sPos, self._tilings)[0]
-        self._sX_tilings = self._sX_tilings
         self._g = [(int(self._gPos[0]//self._step_size),
                     int(self._gPos[1]//self._step_size)
                     )]
-        self._g_tilings = [tile_encode(self._gPos, self._tilings)[0]]
-        self._g_tilings = [(self._g_tilings[0][0], self._g_tilings[0][1])]
 
     def _read_file(self, path):
         file = open(path, 'r')
@@ -174,11 +152,11 @@ class ContinuousWorld(dm_env.Environment):
     def _observation(self):
         if self._obs_type == "position":
             return self._cPos
-        elif self._obs_type == "tile":
-            encoded_obs = tile_encode(self._cPos, self._tilings)[0]
-            index = np.ravel_multi_index(encoded_obs, (self._bins_dim, self._bins_dim))
-            onehotstate = np.eye(self._bins)[index]
-            return onehotstate
+        # elif self._obs_type == "tile":
+        #     encoded_obs = tile_encode(self._cPos, self._tilings)[0]
+        #     index = np.ravel_multi_index(encoded_obs, (self._bins_dim, self._bins_dim))
+        #     onehotstate = np.eye(self._bins)[index]
+        #     return onehotstate
 
     def observation_spec(self):
         if self._obs_type == "position":
@@ -192,15 +170,41 @@ class ContinuousWorld(dm_env.Environment):
         return specs.DiscreteArray(
             dtype=int, num_values=self._nA, name="action")
 
-    def _fill_P_R(self):
+    def _fill_P_R(self, feature_coder):
+        if feature_coder:
+            self._nS = np.prod(feature_coder["num_tiles"]) * feature_coder["num_tilings"]
+            self._hh = feature_coder["num_tiles"][0]
+            self._ww = feature_coder["num_tiles"][1]
+            self._nS = self._hh * self._ww
+            self._mdp_tilings = np.zeros((self._hh, self._ww))
+
+            self._tilings = [create_tiling_grid(feature_coder["ranges"][0], feature_coder["ranges"][1],
+                                                bins=(feature_coder["num_tiles"][0], feature_coder["num_tiles"][0]),
+                                                offsets=(0.0, 0.0))]
+
+            for obstacle in self._obstacles:
+                xsO, xfO, ysO, yfO = obstacle
+                for i in range(int(xsO // self._step_size),
+                               int(xfO // self._step_size)):
+                    for j in range(int(ysO // self._step_size),
+                                   int(yfO // self._step_size)):
+                        self._mdp[i][j] = -1
+                        encoded_obs = tile_encode((i * self._step_size, j * self._step_size), self._tilings)[0]
+                        self._mdp_tilings[encoded_obs[0]][encoded_obs[1]] = -1
+
+            self._sX_tilings, self._sY_tilings = tile_encode(self._sPos, self._tilings)[0]
+            self._sX_tilings = self._sX_tilings
+            self._g_tilings = [tile_encode(self._gPos, self._tilings)[0]]
+            self._g_tilings = [(self._g_tilings[0][0], self._g_tilings[0][1])]
+
         self._P = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
         self._P_absorbing = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
         self._R = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
-        self._index_matrix = np.zeros((self._h, self._w), dtype=np.float)
+        self._index_matrix = np.zeros((self._h, self._w), dtype=np.int)
 
         for i in range(self._hh):
             for j in range(self._ww):
-                self._index_matrix[i][j] = np.ravel_multi_index((i, j), (self._hh, self._ww))
+                self._index_matrix[i][j] = int(np.ravel_multi_index((i, j), (self._hh, self._ww)))
 
         DIR_TO_VEC = [
             # up
@@ -209,7 +213,7 @@ class ContinuousWorld(dm_env.Environment):
             np.array((0, 1)),
             # down
             np.array((1, 0)),
-            #left
+            # left
             np.array((0, -1)),
         ]
         for i in range(self._hh):
@@ -219,8 +223,8 @@ class ContinuousWorld(dm_env.Environment):
                     fwd_i, fwd_j = fwd_pos
                     if self._mdp_tilings[i][j] != -1:
                         if not ((i, j) in self._g_tilings):
-                            if fwd_i >= 0 and fwd_i < self._h and\
-                                fwd_j >= 0 and fwd_j < self._w and self._mdp[fwd_i][fwd_j] != -1:
+                            if fwd_i >= 0 and fwd_i < self._h and \
+                                            fwd_j >= 0 and fwd_j < self._w and self._mdp[fwd_i][fwd_j] != -1:
                                 self._P[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = 1
                                 self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = 1
                                 self._R[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = \
@@ -235,15 +239,16 @@ class ContinuousWorld(dm_env.Environment):
                                 self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
                                     self._reward if (i, j) in self._g_tilings else 0
                         else:
-                            self._P[k][self._index_matrix[i][j]][self._index_matrix[self._sX_tilings][self._sY_tilings]] = 1
+                            self._P[k][self._index_matrix[i][j]][
+                                self._index_matrix[self._sX_tilings][self._sY_tilings]] = 1
                             self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
                             self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 0
                             # \
                             #     self._reward if (i, j) in self._g_tilings else 0
 
-    def _get_dynamics(self):
+    def _get_dynamics(self, feature_coder=None):
         if self._P == None or self._R == None or self._P_absorbing == None:
-            self._fill_P_R()
+            self._fill_P_R(feature_coder)
 
         return self._P, self._P_absorbing, self._R
 
@@ -253,11 +258,55 @@ class ContinuousWorld(dm_env.Environment):
     def reshape_pi(self, pi):
         return np.reshape(pi, (self._hh, self._ww, self._nA))
 
+    # def get_all_states(self):
+    #     states = []
+    #     for i in range(self._hh):
+    #         for j in range(self._ww):
+    #             states.append([i, j])
+    #     return states
+
     def get_all_states(self):
         states = []
-        for i in range(self._mdp_tilings.shape[0]):
-            for j in range(self._mdp_tilings.shape[1]):
-                index = np.ravel_multi_index((i, j), (self._bins_dim, self._bins_dim))
-                onehotstate = np.eye(self._bins)[index]
-                states.append(onehotstate)
+        indices = []
+        for i in range(self._h):
+            for j in range(self._w):
+                pos = (i * self._step_size, j * self._step_size)
+                encoded_obs = tile_encode(pos,
+                                          self._tilings)[0]
+                index = np.ravel_multi_index(encoded_obs, (self._hh, self._ww))
+                if not index in indices:
+                    states.append(pos)
+                    indices.append(index)
         return states
+
+if __name__ == "__main__":
+    nrng = np.random.RandomState(0)
+    nS = None
+    nA = 2
+    discount = 0.95
+    mdp_filename = "../../continuous_mdps/obstacle.mdp"
+    env = ObstacleWorld(path=mdp_filename, stochastic=False,
+                        random_restarts=False,
+                        rng=nrng, env_size=None)
+    nS = env._nS
+    nA = 4
+    feature_coder = {
+        "type": "tile",
+        "ranges": [[0.0, 0.0], [1.0, 1.0]],
+        "num_tiles": [5, 5],
+        "num_tilings": 1}
+    mdp_solver = MdpSolver(env, nS, nA, discount, feature_coder=feature_coder)
+    v = mdp_solver.get_optimal_v()
+    # v = env.reshape_v(v)
+    pi = mdp_solver.get_optimal_policy()
+    policy = lambda x, nrng: np.argmax(pi[x])
+
+    # mdp_solver = MdpSolver(env, nS, nA, discount)
+    # # policy = mdp_solver.get_optimal_policy()
+    # v = mdp_solver.get_optimal_v()
+    # v = env.reshape_v(v)
+    plot_v(env, v, str(os.environ['LOGS']), env_type="continuous")
+    plot_policy(env, env.reshape_pi(pi), str((os.environ['LOGS'])),
+                env_type="continuous")
+    # eta_pi = mdp_solver.get_eta_pi(policy)
+    # plot_eta_pi(env, env.reshape_v(eta_pi)

@@ -11,6 +11,7 @@ env_config = {
     "num_episodes": 1000,
     "num_runs": 1,
     "stochastic": False,
+    "feature_coder": None,
     "nA": 4
 }
 

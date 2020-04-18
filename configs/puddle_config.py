@@ -1,17 +1,21 @@
 import numpy as np
 env_config = {
-    "class": "MicroWorld",
-    "non_gridworld": False,
+    "class": "PuddleWorld",
+    "non_gridworld": True,
     "model_class": "linear",
-    "env_type": "discrete",
-    "obs_type": "onehot",
+    "feature_coder": {
+        "type": "tile",
+        "ranges": [[0, 1.0], [0, 1.0]],
+        "num_tiles": [5, 5],
+        "num_tilings": 1},
+    "env_type": "continuous",
+    "obs_type": "features",
     "policy_type": "greedy",
-    "mdp_filename": "./mdps/maze_80.mdp",
+    "mdp_filename": "./mdps/puddle.mdp",
     "env_size": 80,
     "num_episodes": 100,
-    "num_runs": 5,
+    "num_runs": 100,
     "stochastic": False,
-    "feature_coder": None,
     "nA": 4
 }
 

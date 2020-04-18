@@ -1,18 +1,22 @@
 import numpy as np
 env_config = {
-    "class": "MicroWorld",
-    "non_gridworld": False,
+    "class": "DMEnvFromGym",
+    "non_gridworld": True,
     "model_class": "linear",
-    "env_type": "discrete",
-    "obs_type": "onehot",
-    "policy_type": "greedy",
-    "mdp_filename": "./mdps/maze_80.mdp",
-    "env_size": 80,
+    "feature_coder": {
+        "type": "rbf"
+    },
+    "env_type": "continuous",
+    "obs_type": "position",
+    "policy_type": "estimated",
+    "mdp_filename": "CartPole-v0",
+    "env_size": None,
     "num_episodes": 100,
     "num_runs": 5,
     "stochastic": False,
-    "feature_coder": None,
-    "nA": 4
+    "nA": 2,
+    "env_size": 4,
+    "lr_q": 0.6
 }
 
 volatile_agent_config = {

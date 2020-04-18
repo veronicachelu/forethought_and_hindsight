@@ -43,6 +43,8 @@ class TpVanilla(Agent):
             latent=False,
             target_networks=False,
             logs: str = "logs",
+            policy_type=None,
+            feature_coder=None,
             # double_input_reward_model=False
     ):
         super().__init__()

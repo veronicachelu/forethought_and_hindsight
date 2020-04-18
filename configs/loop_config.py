@@ -11,6 +11,7 @@ env_config = {
     "num_episodes": 100,
     "num_runs": 100,
     "stochastic": False,
+    "feature_coder": None,
     "nA": 1
 }
 volatile_agent_config = {

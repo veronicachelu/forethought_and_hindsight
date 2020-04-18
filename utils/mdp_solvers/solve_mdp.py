@@ -3,9 +3,12 @@ import os
 
 class MdpSolver:
     def __init__(self, env,
-                 nS, nA, discount):
-        self._p, self._p_absorbing, self._r = env._get_dynamics()
-        self._nS = nS
+                 nS, nA, discount, feature_coder=None):
+        self._p, self._p_absorbing, self._r = env._get_dynamics(feature_coder)
+        if feature_coder is not None:
+            self._nS = np.prod(feature_coder["num_tiles"]) * feature_coder["num_tilings"]
+        else:
+            self._nS = nS
         self._nA = nA
         self._env = env
         self._v = None

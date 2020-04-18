@@ -14,11 +14,11 @@ import configs
 from main_utils import *
 
 flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
-flags.DEFINE_string('env', 'boyan',
-                    'File containing the MDP definition (default: mdps/toy.mdp).')
+flags.DEFINE_string('env', 'cartpole', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
-flags.DEFINE_integer('max_len', 100, 'Maximum number of time steps an episode may last (default: 100).')
+flags.DEFINE_integer('max_len', 100000, 'Maximum number of time steps an episode may last (default: 100).')
+flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('planning_iter', 1, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
 flags.DEFINE_integer('model_learning_period', 1,
@@ -37,18 +37,19 @@ def main(argv):
 
     best_aoc_hyperparam_file = os.path.join(env_hyperparam_folder, "{}_best_aoc_hyperparams.csv".format(FLAGS.env))
 
+    lr_vanilla = None
     if FLAGS.agent != "vanilla":
-        lr_vanilla = get_vanilla_lr(best_aoc_hyperparam_file)
+        lr_vanilla = get_lr(best_aoc_hyperparam_file, "vanilla")
         if lr_vanilla == None:
             run_for_agent("vanilla")
-            lr_vanilla = get_vanilla_lr(best_aoc_hyperparam_file)
+            lr_vanilla = get_lr(best_aoc_hyperparam_file, "vanilla")
 
     run_for_agent(FLAGS.agent, lr_vanilla)
 
 def run_for_agent(agent, lr_vanilla=None):
     all_hyperparam_folder = os.path.join(os.path.join(FLAGS.logs, "hyper"))
     env_hyperparam_folder = os.path.join(all_hyperparam_folder, FLAGS.env)
-    agent_env_hyperparam_folder = os.path.join(env_hyperparam_folder, FLAGS.agent)
+    agent_env_hyperparam_folder = os.path.join(env_hyperparam_folder, agent)
     if not os.path.exists(agent_env_hyperparam_folder):
         os.makedirs(agent_env_hyperparam_folder)
 
@@ -111,7 +112,7 @@ def run_for_agent(agent, lr_vanilla=None):
             if not configuration_exists(interm_hyperparam_file,
                                         seed_config, attributes):
                 space = {
-                    "logs": None,
+                    "logs": env_hyperparam_folder,
                     "plot_errors": False,
                     "plot_values": False,
                     "plot_curves": False,
@@ -165,7 +166,7 @@ def run_for_agent(agent, lr_vanilla=None):
                         best_config[key] = value
                     writer.writerow(best_config)
 
-def get_vanilla_lr(best_hyperparam_file):
+def get_lr(best_hyperparam_file, agent="vanilla"):
     lr = None
     if not os.path.exists(best_hyperparam_file):
         return lr
@@ -173,7 +174,7 @@ def get_vanilla_lr(best_hyperparam_file):
     with open(best_hyperparam_file, 'r', newline='') as f:
         reader = csv.DictReader(f)
         for row in reader:
-            if str(row["agent"]) == "vanilla":
+            if str(row["agent"]) == agent:
                 lr = float(row["lr"])
                 break
         return lr
@@ -235,42 +236,23 @@ def configuration_exists(hyperparam_file, crt_config, attributes):
         return False
 
 def run_objective(space):
-    aux_agent_configs = {
-                         "batch_size": FLAGS.batch_size,
+    aux_agent_configs = {"batch_size": FLAGS.batch_size,
                          "discount": FLAGS.discount,
                          "min_replay_size": FLAGS.min_replay_size,
                          "model_learning_period": FLAGS.model_learning_period,
                          "planning_period": FLAGS.planning_period,
-                         "max_len": FLAGS.max_len}
-
+                         "max_len": FLAGS.max_len,
+                         "log_period": FLAGS.log_period}
     seed = space["crt_config"]["seed"]
-    if space["env_config"]["non_gridworld"]:
-        env, agent, mdp_solver = run_experiment(seed, space, aux_agent_configs)
-        total_rmsve, final_rmsve, start_rmsve, avg_steps, values, errors = experiment.run_chain(
-            agent=agent,
-            model_class=space["env_config"]["model_class"],
-            mdp_solver=mdp_solver,
-            environment=env,
-            num_episodes=space["env_config"]["num_episodes"],
-            plot_curves=space["plot_curves"],
-            plot_errors=space["plot_errors"],
-            plot_values=space["plot_values"],
-            log_period=space["log_period"],
-        )
-    else:
-        env, agent, mdp_solver = run_experiment(seed, space, aux_agent_configs)
-        total_rmsve, final_rmsve, start_rmsve, avg_steps, values, errors = experiment.run_episodic(
-            agent=agent,
-            environment=env,
-            mdp_solver=mdp_solver,
-            model_class=space["env_config"]["model_class"],
-            num_episodes=space["env_config"]["num_episodes"],
-            max_len=FLAGS.max_len,
-            plot_curves=space["plot_curves"],
-            plot_errors=space["plot_errors"],
-            plot_values=space["plot_values"],
-            log_period=space["log_period"],
-        )
+    env, agent, mdp_solver = run_experiment(seed, space, aux_agent_configs)
+    total_rmsve, final_rmsve, start_rmsve, avg_steps, values, errors = experiment.run_episodic(
+        agent=agent,
+        space=space,
+        aux_agent_configs=aux_agent_configs,
+        mdp_solver=mdp_solver,
+        environment=env,
+    )
+
     return total_rmsve, final_rmsve, start_rmsve, avg_steps
 
 if __name__ == '__main__':

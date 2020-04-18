@@ -9,3 +9,6 @@ import configs.linear_tiny_maze_config as linear_tiny_maze_config
 import configs.medium_maze_config as medium_maze_config
 import configs.comparison_configs as comparison_configs
 import configs.boyan_config as boyan_config
+import configs.puddle_config as puddle_config
+import configs.obstacle_config as obstacle_config
+import configs.cartpole_config as cartpole_config

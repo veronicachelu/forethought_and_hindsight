@@ -48,6 +48,7 @@ class LpIntrinsicVanilla(Agent):
             latent=False,
             target_networks=False,
             logs: str = "logs",
+            feature_coder=None,
             # double_input_reward_model=False
     ):
         super().__init__()
@@ -171,6 +172,8 @@ class LpIntrinsicVanilla(Agent):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
+        if self.episode >= 100:
+            return
         transitions = [np.array([timestep.observation]),
                        np.array([action]),
                        np.array([new_timestep.reward]),

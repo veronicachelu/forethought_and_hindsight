@@ -2,139 +2,116 @@ import dm_env
 import tensorflow as tf
 from agents import Agent
 from utils.visualizer import *
+import contextlib
+
+@contextlib.contextmanager
+def dummy_context_mgr():
+    yield None
 
 def run_episodic(agent: Agent,
                  environment: dm_env.Environment,
-                 num_episodes: int,
-                 max_len: int,
                  mdp_solver,
-                 model_class,
-                 log_period=1,
-                 plot_values=False,
-                 plot_curves=False,
-                 plot_errors=False,):
+                 space,
+                 aux_agent_configs,
+               ):
 
-    if plot_errors:
-        with agent.writer.as_default():
-            return run_mdp_forall_episodes(agent=agent,
-                                      environment=environment,
-                                      num_episodes =num_episodes,
-                                      max_len=max_len,
-                                      model_class=model_class,
-                                      log_period=log_period,
-                                      mdp_solver=mdp_solver,
-                                      plot_values=plot_values,
-                                      plot_curves=plot_curves,
-                                      plot_errors=plot_errors)
-    else:
-        return run_mdp_forall_episodes(agent=agent,
-                                      environment=environment,
-                                      num_episodes =num_episodes,
-                                      max_len=max_len,
-                                      model_class=model_class,
-                                      log_period=log_period,
-                                      mdp_solver=mdp_solver,
-                                      plot_values=plot_values,
-                                      plot_curves=plot_curves,
-                                      plot_errors=plot_errors)
+    weighted = False if space["env_config"]["non_gridworld"] else True
+    with agent.writer.as_default() if space["plot_errors"] and agent._logs is not None else dummy_context_mgr():
+        # agent.load_model()
+        total_rmsve = 0
+        total_reward = 0
+        ep_rewards = []
+        ep_rmsves = []
+        ep_steps = []
+        for episode in np.arange(start=agent.episode, stop=space["env_config"]["num_episodes"]):
+            # Run an episode.
+            rewards = 0
+            ep_rmsve = 0
+            t = 0
+            timestep = environment.reset()
+            agent.update_hyper_params(episode, space["env_config"]["num_episodes"])
+            while True:
+                action = agent.policy(timestep)
+                new_timestep = environment.step(action)
 
-def run_mdp_forall_episodes(
-        agent: Agent,
-        environment: dm_env.Environment,
-        num_episodes: int,
-        max_len: int,
-        mdp_solver,
-        model_class,
-        log_period=1,
-        plot_values=False,
-        plot_curves=False,
-        plot_errors=False,):
+                if agent.model_based_train():
+                    agent.save_transition(timestep, action, new_timestep)
+                    agent.model_update(timestep, action, new_timestep)
 
-    # agent.load_model()
-    total_rmsve = 0
-    cumulative_rmsve = 0
-    avg_steps = []
-    for episode in np.arange(start=agent.episode, stop=num_episodes):
-        # Run an episode.
-        rewards = 0
-        timestep = environment.reset()
-        agent.update_hyper_params(episode, num_episodes)
-        for t in range(max_len):
-            action = agent.policy(timestep)
-            new_timestep = environment.step(action)
+                if agent.model_free_train():
+                    agent.value_update(timestep, action, new_timestep)
 
-            if agent.model_based_train():
-                agent.save_transition(timestep, action, new_timestep)
-                agent.model_update(timestep, action, new_timestep)
+                rewards += new_timestep.reward
 
-            if agent.model_free_train():
-                agent.value_update(timestep, action, new_timestep)
+                if agent.model_based_train():
+                    agent.planning_update(timestep)
+                    # agent.planning_update(new_timestep)
 
-            rewards += new_timestep.reward
+                agent.total_steps += 1
+                t += 1
 
-            if agent.model_based_train():
-                agent.planning_update(timestep)
-                # agent.planning_update(new_timestep)
+                if new_timestep.last() or (aux_agent_configs["max_len"] is not None and \
+                                                   t == aux_agent_configs["max_len"]):
+                    break
 
-            if new_timestep.last():
-                break
+                timestep = new_timestep
+            if space["env_config"]["env_type"] != "continuous":
+                hat_v = agent._v_network if space["env_config"]["model_class"] == "tabular" \
+                    else agent.get_values_for_all_states(environment.get_all_states())
+                hat_error = np.abs(environment._true_v - hat_v)
+                rmsve = get_rmsve(environment, mdp_solver, hat_v, environment._true_v, weighted=weighted)
+                ep_rmsve += rmsve
+            else:
+                hat_v = agent.get_value_for_state(timestep.observation)
+                v = mdp_solver.get_value_for_state(timestep.observation)
+                hat_error = np.abs(v - hat_v)
+                rmsve = np.power(v - hat_v, 2)
+                ep_rmsve += rmsve
 
-            # hat_v = agent._v_network if model_class == "tabular" \
-            #     else agent.get_values_for_all_states(environment.get_all_states())
-            # # hat_error = np.abs(mdp_solver.get_optimal_v() - hat_v)
-            # hat_error = np.abs(environment._true_v - hat_v)
-            # rmsve = get_rmsve(environment, mdp_solver, hat_v, environment._true_v, weighted=True)
-            # cumulative_rmsve += rmsve
-            # tf.summary.scalar("train/step_cum_rmsve", cumulative_rmsve, step=agent.total_steps)
-            # tf.summary.scalar("train/step_rmsve", rmsve, step=agent.total_steps)
-            # agent.writer.flush()
+            total_rmsve += rmsve
+            total_reward += rewards
+            ep_steps.append(t)
+            ep_rmsves.append(rmsve)
+            ep_rewards.append(rewards)
 
-            timestep = new_timestep
-            agent.total_steps += 1
-
-        hat_v = agent._v_network if model_class == "tabular" \
-            else agent.get_values_for_all_states(environment.get_all_states())
-        # hat_error = np.abs(mdp_solver.get_optimal_v() - hat_v)
-        hat_error = np.abs(environment._true_v - hat_v)
-        rmsve = get_rmsve(environment, mdp_solver, hat_v, environment._true_v, weighted=True)
-        total_rmsve += rmsve
-        #
-        # plot_error(env=environment,
-        #            values=environment.reshape_v(hat_error),
-        #            logs=agent._images_dir,
-        #            eta_pi=environment.reshape_v(mdp_solver.get_eta_pi(mdp_solver._pi)),
-        #            filename="avg_error_{}.png".format(agent.episode),
-        #            env_type="discrete",
-        #            policy=environment.reshape_pi(agent.get_policy(environment.get_all_states())))
-
-        if plot_errors and agent.episode % log_period == 0:
-            plot_error(env=environment,
-                       values=(environment.reshape_v(mdp_solver.get_optimal_v()) - environment.reshape_v(hat_v)) ** 2,
+            if space["plot_errors"] and agent.episode % space["log_period"] == 0 and\
+                    not space["env_config"]["non_gridworld"] and \
+                    space["env_config"]["env_type"] != "continuous":
+                plot_error(env=environment,
+                           values=(environment.reshape_v(mdp_solver.get_optimal_v()) - environment.reshape_v(
+                               hat_v)) ** 2,
+                           logs=agent._images_dir,
+                           eta_pi=environment.reshape_v(mdp_solver.get_eta_pi(mdp_solver._pi)),
+                           filename="error_{}.png".format(agent.episode))
+            if space["plot_values"] and agent.episode % space["log_period"] == 0 and\
+                    not space["env_config"]["non_gridworld"] and \
+                    space["env_config"]["env_type"] != "continuous":
+                plot_v(env=environment,
+                       values=environment.reshape_v(hat_v),
                        logs=agent._images_dir,
-                       eta_pi=environment.reshape_v(mdp_solver.get_eta_pi(mdp_solver._pi)),
-                       filename="error_{}.png".format(agent.episode))
-        if plot_values and agent.episode % log_period == 0:
-            plot_v(env=environment,
-                   values=environment.reshape_v(hat_v),
-                   logs=agent._images_dir,
-                   true_v=environment.reshape_v(mdp_solver.get_optimal_v()),
-                   filename="v_{}.png".format(agent.episode))
+                       true_v=environment.reshape_v(mdp_solver.get_optimal_v()),
+                       filename="v_{}.png".format(agent.episode))
 
-        if plot_curves and agent.episode % log_period == 0:
-            # agent.save_model()
-            tf.summary.scalar("train/rmsve", rmsve, step=agent.episode)
-            tf.summary.scalar("train/rewards", np.mean(rewards), step=agent.episode)
-            tf.summary.scalar("train/steps", np.mean(t), step=agent.episode)
-            tf.summary.scalar("train/total_rmsve", total_rmsve, step=agent.total_steps)
-            tf.summary.scalar("train/avg_steps", np.mean(avg_steps, dtype=int), step=agent.total_steps)
-            agent.writer.flush()
+            if space["plot_curves"] and agent.episode % space["log_period"] == 0:
+                # agent.save_model()
+                tf.summary.scalar("train/rmsve", rmsve, step=agent.episode)
+                tf.summary.scalar("train/rewards", rewards, step=agent.episode)
+                tf.summary.scalar("train/steps", t, step=agent.episode)
+                tf.summary.scalar("train/total_rmsve", total_rmsve, step=agent.total_steps)
+                tf.summary.scalar("train/total_reward", total_reward, step=agent.total_steps)
+                tf.summary.scalar("train/avg_rmsve", np.mean(ep_rmsves), step=agent.episode)
+                tf.summary.scalar("train/avg_reward", np.mean(ep_rewards), step=agent.episode)
+                tf.summary.scalar("train/avg_steps", np.mean(ep_steps, dtype=int), step=agent.episode)
+                agent.writer.flush()
 
-        agent.episode += 1
-        avg_steps.append(t)
+            agent.episode += 1
 
-        rmsve_start = np.power(environment._true_v - hat_v, 2)[environment._get_state_index(environment._sX, environment._sY)]
-    return round(total_rmsve, 2), round(rmsve, 2), round(rmsve_start, 2), \
-           np.mean(avg_steps, dtype=int), hat_v, hat_error
+
+        rmsve_start = 0
+        # rmsve_start = np.power(environment._true_v - hat_v, 2)[environment._get_state_index(environment._sX, environment._sY)]
+        return round(total_rmsve, 2), round(rmsve, 2), round(rmsve_start, 2), \
+               np.mean(ep_steps, dtype=int), hat_v, hat_error
+
 
 
 def get_rmsve(env, mdp_solver, hat_v, v, weighted=False):
@@ -145,97 +122,3 @@ def get_rmsve(env, mdp_solver, hat_v, v, weighted=False):
         rmsve = np.sqrt(np.sum(np.power(v - hat_v, 2)) / env._nS)
     return rmsve
 
-
-def run_chain(agent: Agent,
-              environment: dm_env.Environment,
-              num_episodes: int,
-              model_class,
-              mdp_solver,
-              log_period=1,
-              plot_values=False,
-              plot_curves=False,
-              plot_errors=False,):
-
-    if plot_errors:
-        with agent.writer.as_default():
-            return run_chain_forall_episodes(agent=agent,
-                                      environment=environment,
-                                      num_episodes =num_episodes,
-                                      model_class=model_class,
-                                      mdp_solver=mdp_solver,
-                                      log_period=log_period,
-                                      plot_values=plot_values,
-                                      plot_curves=plot_curves,
-                                      plot_errors=plot_errors)
-    else:
-        return run_chain_forall_episodes(agent=agent,
-                                      environment=environment,
-                                      num_episodes =num_episodes,
-                                      model_class=model_class,
-                                      mdp_solver=mdp_solver,
-                                      log_period=log_period,
-                                      plot_values=plot_values,
-                                      plot_curves=plot_curves,
-                                      plot_errors=plot_errors)
-
-def run_chain_forall_episodes(agent: Agent,
-        environment: dm_env.Environment,
-        num_episodes: int,
-        model_class,
-        mdp_solver,
-        log_period=1,
-        plot_values=False,
-        plot_curves=False,
-        plot_errors=False):
-
-    total_rmsve = 0
-    pred_timestep = None
-    avg_steps = []
-    for episode in np.arange(start=agent.episode, stop=num_episodes):
-        rewards = 0
-        timestep = environment.reset()
-        timesteps = 0
-        agent.update_hyper_params(episode, num_episodes)
-        while True:
-            action = agent.policy(timestep)
-            new_timestep = environment.step(action)
-
-            if agent.model_based_train():
-                agent.save_transition(timestep, action, new_timestep)
-                agent.model_update(timestep, action, new_timestep)
-
-            if agent.model_free_train():
-                agent.value_update(timestep, action, new_timestep)
-
-            rewards += new_timestep.reward
-
-            if agent.model_based_train():
-                agent.planning_update(timestep, pred_timestep)
-
-            if new_timestep.last():
-                break
-
-            pred_timestep = timestep
-            timestep = new_timestep
-            agent.total_steps += 1
-            timesteps += 1
-
-        hat_v = agent._v_network if model_class == "tabular" \
-            else agent.get_values_for_all_states(environment.get_all_states())
-        hat_error = np.abs(environment._true_v - hat_v)
-        rmsve = get_rmsve(environment, mdp_solver, hat_v, environment._true_v, weighted=False)
-
-        total_rmsve += rmsve
-
-        if plot_errors and agent.episode % log_period == 0:
-            tf.summary.scalar("train/rmsve", rmsve, step=agent.episode)
-            tf.summary.scalar("train/steps", timesteps, step=agent.episode)
-            tf.summary.scalar("train/total_rmsve", total_rmsve, step=agent.total_steps)
-            tf.summary.scalar("train/avg_steps", np.mean(avg_steps, dtype=int), step=agent.total_steps)
-            agent.writer.flush()
-
-        agent.episode += 1
-        avg_steps.append(timesteps)
-
-    rmsve_start = np.power(environment._true_v - hat_v, 2)[environment._start_state]
-    return round(total_rmsve, 2), round(rmsve, 2), round(rmsve_start, 2), np.mean(avg_steps, dtype=int), hat_v, hat_error
