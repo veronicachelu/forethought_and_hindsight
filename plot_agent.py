@@ -96,7 +96,7 @@ def plot_for_agent(agent, env_config, persistent_agent_config,
 
     volatile_configs = sorted(volatile_configs, key=cmp_to_key(compare))
 
-    i
+
     if agent != "vanilla":
         color = plt.cm.Blues(np.linspace(0.5, 1.0, n)[::-1])
         hexcolor = map(lambda rgb: '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
