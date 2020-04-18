@@ -28,8 +28,8 @@ def run_agent(env, agent, logs, aux_agent_configs, ignore_existent=True):
         seed_config["seed"] = seed
         space = {
             "logs": logs,
-            "plot_errors": True,
-            "plot_values": True,
+            "plot_errors": False,
+            "plot_values": False,
             "plot_curves": True,
             "log_period": aux_agent_configs["log_period"],
             "env_config": env_config,
