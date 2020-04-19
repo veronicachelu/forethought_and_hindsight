@@ -60,7 +60,7 @@ def main(argv):
             linestyle = "-"
         else:
             color = alg_to_color[dashed[agent]]
-            linestyle = "."
+            linestyle = ":"
         planning_depth = comparison_config["planning_depths"][i]
         replay_capacity = comparison_config["replay_capacities"][i]
         persistent_agent_config = configs.agent_config.config[agent]
@@ -69,7 +69,7 @@ def main(argv):
 
     persistent_agent_config = configs.agent_config.config["vanilla"]
     plot_for_agent("vanilla", env_config, persistent_agent_config,
-                   volatile_agent_config, 0, 0, logs, "r", ".")
+                   volatile_agent_config, 0, 0, logs, "r", ":")
 
 
     if FLAGS.cumulative_rmsve:
@@ -151,7 +151,7 @@ def plot_tensorflow_log(space, color, linestyle):
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
     if space["crt_config"]["agent"] == "vanilla":
-        plt.plot(x, mean_y_over_seeds, label="vanilla", c="r", alpha=1, linewidth=LINEWIDTH, linestyle=".")
+        plt.plot(x, mean_y_over_seeds, label="vanilla", c="r", alpha=1, linewidth=LINEWIDTH, linestyle=":")
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
                          color="r", alpha=0.2)
     else:
