@@ -22,6 +22,12 @@ configs={
             "agents": ["bw", "fw", "fw_rnd", "bw_fw_PWMA"],
             "planning_depths": [1, 1, 1, 1],
             "replay_capacities": [0, 0, 50, 50]
+        },
+        "all": {
+            "agents": ["bw", "bw_fw", "fw", "fw_rnd", "fw_pri",
+                       "bw_fw_MG", "bw_fw_PWMA"],
+            "planning_depths": [1, 1, 1, 1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 50, 50, 50, 50]
         }
     },
     "linear_maze": {
@@ -66,6 +72,12 @@ configs={
             "agents": ["bw", "fw", "fw_rnd", "bw_fw_PWMA"],
             "planning_depths": [1, 1, 1, 1],
             "replay_capacities": [0, 0, 50, 50]
+        },
+        "all": {
+            "agents": ["bw", "bw_fw", "fw", "fw_rnd", "fw_pri",
+                       "bw_fw_MG", "bw_fw_PWMA"],
+            "planning_depths": [1, 1, 1, 1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 50, 50, 50, 50]
         }
         },
     "loop": {
@@ -122,6 +134,12 @@ configs={
             "agents": ["bw", "fw", "fw_rnd", "bw_fw_PWMA"],
             "planning_depths": [1, 1, 1, 1],
             "replay_capacities": [0, 0, 50, 50]
+        },
+        "all": {
+            "agents": ["bw", "bw_fw", "fw", "fw_rnd", "fw_pri",
+                       "bw_fw_MG", "bw_fw_PWMA"],
+            "planning_depths": [1, 1, 1, 1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 50, 50, 50, 50]
         }
         },
     "shortcut": {
@@ -147,6 +165,12 @@ configs={
             "agents": ["bw", "fw", "fw_rnd", "bw_fw_PWMA"],
             "planning_depths": [1, 1, 1, 1],
             "replay_capacities": [0, 0, 50, 50]
+        },
+        "all": {
+            "agents": ["bw", "bw_fw", "fw", "fw_rnd", "fw_pri",
+                       "bw_fw_MG", "bw_fw_PWMA"],
+            "planning_depths": [1, 1, 1, 1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 50, 50, 50, 50]
         }
         },
 }
