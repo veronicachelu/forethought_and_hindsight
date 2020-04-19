@@ -46,7 +46,7 @@ def main(argv):
     unique_color_configs = [c for c in comparison_config["agents"] if c not in dashed.keys()]
     n = len(unique_color_configs)
 
-    cmap_color = plt.cm.hsv(np.linspace(0.0, 1.0, n)[::-1])
+    cmap_color = plt.cm.rainbow(np.linspace(0.0, 1.0, n)[::-1])
     # hexcolor = map(lambda rgb: '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
     #                tuple(color[:, 0:-1]))
     # color = hexcolor  # plt.cm.viridis(np.linspace(0, 1, n))
