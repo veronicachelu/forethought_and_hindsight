@@ -107,7 +107,7 @@ def plot_tensorflow_log(space):
     all_y_over_seeds = []
     num_runs = space["env_config"]["num_runs"]
     for seed in range(num_runs):
-        print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))
+        # print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))
         logs = os.path.join(os.path.join(space["crt_config"]["logs"],
                                          "summaries"),
                                         "seed_{}".format(seed))
@@ -135,9 +135,12 @@ def plot_tensorflow_log(space):
 
         x = [m[1] for m in msve]
         y = [tf.make_ndarray(m[2]) for m in msve]
-        print(len(y))
+        # print(len(y))
         all_y_over_seeds.append(np.array(y))
 
+    those_that_are_not_99 = [a for a in all_y_over_seeds if len(a) != 99]
+    print(those_that_are_not_99)
+    all_y_over_seeds = [a for a in all_y_over_seeds if len(a) == 99]
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
     if space["crt_config"]["agent"] == "vanilla":
