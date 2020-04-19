@@ -26,7 +26,7 @@ flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
 FONTSIZE = 30
-LINEWIDTH = 4
+LINEWIDTH = 3
 
 dashed = {"bw_fw": "bw", "fw_pri": "fw_rnd", "bw_fw_MG": "bw_fw_PWMA"}
 
@@ -60,7 +60,7 @@ def main(argv):
             linestyle = "-"
         else:
             color = alg_to_color[dashed[agent]]
-            linestyle = "-."
+            linestyle = "."
         planning_depth = comparison_config["planning_depths"][i]
         replay_capacity = comparison_config["replay_capacities"][i]
         persistent_agent_config = configs.agent_config.config[agent]
@@ -69,7 +69,7 @@ def main(argv):
 
     persistent_agent_config = configs.agent_config.config["vanilla"]
     plot_for_agent("vanilla", env_config, persistent_agent_config,
-                   volatile_agent_config, 0, 0, logs, "r", ":")
+                   volatile_agent_config, 0, 0, logs, "r", ".")
 
 
     if FLAGS.cumulative_rmsve:
