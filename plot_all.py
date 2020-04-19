@@ -46,7 +46,7 @@ def main(argv):
     unique_color_configs = [c for c in comparison_config["agents"] if c not in dashed.keys()]
     n = len(unique_color_configs)
 
-    cmap_color = plt.cm.winter(np.linspace(0.0, 1.0, n)[::-1])
+    cmap_color = plt.cm.jet(np.linspace(0.0, 1.0, n)[::-1])
     # hexcolor = map(lambda rgb: '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
     #                tuple(color[:, 0:-1]))
     # color = hexcolor  # plt.cm.viridis(np.linspace(0, 1, n))
@@ -69,7 +69,7 @@ def main(argv):
 
     persistent_agent_config = configs.agent_config.config["vanilla"]
     plot_for_agent("vanilla", env_config, persistent_agent_config,
-                   volatile_agent_config, 0, 0, logs, "r", ":")
+                   volatile_agent_config, 0, 0, logs, "k", ":")
 
 
     if FLAGS.cumulative_rmsve:
@@ -151,9 +151,9 @@ def plot_tensorflow_log(space, color, linestyle):
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
     if space["crt_config"]["agent"] == "vanilla":
-        plt.plot(x, mean_y_over_seeds, label="vanilla", c="r", alpha=1, linewidth=LINEWIDTH, linestyle=":")
+        plt.plot(x, mean_y_over_seeds, label="vanilla", c="r", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
-                         color="r", alpha=0.2)
+                         color="r", alpha=0.1)
     else:
         plt.plot(x, mean_y_over_seeds, label=format_name(space["crt_config"]["agent"],
                                             space["crt_config"]["planning_depth"],
@@ -161,7 +161,7 @@ def plot_tensorflow_log(space, color, linestyle):
                  alpha=1, linewidth=LINEWIDTH, color=color,
                  linestyle=linestyle)
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
-                         alpha=0.2, color=color,
+                         alpha=0.1, color=color,
                          linestyle=linestyle)
 
 def format_name(agent, planning_perf, replay_capacity):
