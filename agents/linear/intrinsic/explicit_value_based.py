@@ -27,7 +27,7 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
 
         self._sequence = []
         self._should_reset_sequence = False
-        self._target_update_period = 10
+        self._target_update_period = 50
 
         def model_loss(v_params,
                        h_params,
