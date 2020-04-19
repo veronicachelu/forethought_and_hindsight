@@ -46,7 +46,7 @@ def main(argv):
     unique_color_configs = [c for c in comparison_config["agents"] if c not in dashed.keys()]
     n = len(unique_color_configs)
 
-    cmap_color = plt.cm.jet(np.linspace(0.0, 1.0, n)[::-1])
+    cmap_color = plt.cm.hsv(np.linspace(0.0, 1.0, n)[::-1])
     # hexcolor = map(lambda rgb: '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
     #                tuple(color[:, 0:-1]))
     # color = hexcolor  # plt.cm.viridis(np.linspace(0, 1, n))
@@ -151,9 +151,9 @@ def plot_tensorflow_log(space, color, linestyle):
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
     if space["crt_config"]["agent"] == "vanilla":
-        plt.plot(x, mean_y_over_seeds, label="vanilla", c="r", alpha=1, linewidth=LINEWIDTH, linestyle="-")
+        plt.plot(x, mean_y_over_seeds, label="vanilla", c="k", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
-                         color="r", alpha=0.1)
+                         color="k", alpha=0.1)
     else:
         plt.plot(x, mean_y_over_seeds, label=format_name(space["crt_config"]["agent"],
                                             space["crt_config"]["planning_depth"],

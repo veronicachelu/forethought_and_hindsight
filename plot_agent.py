@@ -29,7 +29,7 @@ flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
 FONTSIZE = 30
-LINEWIDTH = 4
+LINEWIDTH = 3
 
 def main(argv):
     del argv  # Unused.
@@ -154,9 +154,9 @@ def plot_tensorflow_log(space):
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
     if space["crt_config"]["agent"] == "vanilla":
-        plt.plot(x, mean_y_over_seeds, label="vanilla", c="r", alpha=1, linewidth=LINEWIDTH, linestyle=":")
+        plt.plot(x, mean_y_over_seeds, label="vanilla", c="k", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
-                         color="r", alpha=0.2)
+                         color="k", alpha=0.1)
     else:
         plt.plot(x, mean_y_over_seeds, label=format_name(space["crt_config"]["agent"],
                                             space["crt_config"]["planning_depth"],
@@ -164,7 +164,7 @@ def plot_tensorflow_log(space):
                  alpha=1, linewidth=LINEWIDTH,
                  linestyle="-")
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
-                         alpha=0.2)
+                         alpha=0.1)
 
 def format_name(agent, planning_perf, replay_capacity):
     if not(planning_perf == 0):
