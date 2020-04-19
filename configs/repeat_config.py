@@ -9,7 +9,7 @@ env_config = {
     "policy_type": "greedy",
     "env_size": 6,
     "num_episodes": 100,
-    "num_runs": 100,
+    "num_runs": 5,
     "stochastic": False,
     "feature_coder": None,
     "nA": 1
@@ -19,7 +19,7 @@ volatile_agent_config = {
     "vanilla": {
         "planning_depth": [0],
         "replay_capacity": [0],
-        "lr": np.linspace(0.01, 0.1, 10),
+        "lr": np.linspace(0.1, 1.0, 10),
         "lr_m": [0],
         "lr_p": [0],
     },
