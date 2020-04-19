@@ -135,6 +135,7 @@ def plot_tensorflow_log(space):
 
         x = [m[1] for m in msve]
         y = [tf.make_ndarray(m[2]) for m in msve]
+        print(len(y))
         all_y_over_seeds.append(np.array(y))
 
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
