@@ -19,7 +19,6 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_string('comparison_config', "all", 'where to save results')
 flags.DEFINE_string('env', "linear_maze", 'where to save results')
 # flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
@@ -27,7 +26,7 @@ flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
 FONTSIZE = 30
-LINEWIDTH = 5
+LINEWIDTH = 4
 
 dashed = {"bw_fw": "bw", "fw_pri": "fw_rnd", "bw_fw_MG": "bw_fw_PWMA"}
 
@@ -42,9 +41,9 @@ def main(argv):
 
     env_config, volatile_agent_config = load_env_and_volatile_configs(FLAGS.env)
 
-    comparison_configs = configs.comparison_configs.configs[FLAGS.env][FLAGS.comparison_config]
+    comparison_config = configs.comparison_configs.configs[FLAGS.env]["all"]
 
-    unique_color_configs = [c for c in comparison_configs["agents"] if c not in dashed.keys()]
+    unique_color_configs = [c for c in comparison_config["agents"] if c not in dashed.keys()]
     n = len(unique_color_configs)
 
     cmap_color = plt.cm.winter(np.linspace(0.0, 1.0, n)[::-1])
@@ -55,15 +54,15 @@ def main(argv):
     colors = ['#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)) for rgb in
                    tuple(cmap_color[:, 0:-1])]
     alg_to_color = {alg: color for alg, color in zip(unique_color_configs, colors)}
-    for i, agent in enumerate(comparison_configs["agents"]):
+    for i, agent in enumerate(comparison_config["agents"]):
         if agent not in dashed:
             color = alg_to_color[agent]
             linestyle = "-"
         else:
             color = alg_to_color[dashed[agent]]
             linestyle = "-."
-        planning_depth = comparison_configs["planning_depths"][i]
-        replay_capacity = comparison_configs["replay_capacities"][i]
+        planning_depth = comparison_config["planning_depths"][i]
+        replay_capacity = comparison_config["replay_capacities"][i]
         persistent_agent_config = configs.agent_config.config[agent]
         plot_for_agent(agent, env_config, persistent_agent_config,
                        volatile_agent_config, planning_depth, replay_capacity, logs, color, linestyle)
@@ -89,7 +88,7 @@ def main(argv):
         os.makedirs(plots)
 
     plt.savefig(os.path.join(plots,
-                             "{}_{}.png".format(FLAGS.comparison_config,
+                             "{}_{}.png".format("all",
                                                 "CumRMSVE" if
                                                 FLAGS.cumulative_rmsve else
                                                 "RMSVE")))
@@ -119,7 +118,7 @@ def plot_tensorflow_log(space, color, linestyle):
     all_y_over_seeds = []
     num_runs = space["env_config"]["num_runs"]
     for seed in range(num_runs):
-        print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))
+        # print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))
         logs = os.path.join(os.path.join(space["crt_config"]["logs"],
                                          "summaries"),
                                         "seed_{}".format(seed))
@@ -154,7 +153,7 @@ def plot_tensorflow_log(space, color, linestyle):
     if space["crt_config"]["agent"] == "vanilla":
         plt.plot(x, mean_y_over_seeds, label="vanilla", c="r", alpha=1, linewidth=LINEWIDTH, linestyle=":")
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
-                         color="r", alpha=0.1)
+                         color="r", alpha=0.2)
     else:
         plt.plot(x, mean_y_over_seeds, label=format_name(space["crt_config"]["agent"],
                                             space["crt_config"]["planning_depth"],
@@ -162,7 +161,7 @@ def plot_tensorflow_log(space, color, linestyle):
                  alpha=1, linewidth=LINEWIDTH, color=color,
                  linestyle=linestyle)
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
-                         alpha=0.1)
+                         alpha=0.2)
 
 def format_name(agent, planning_perf, replay_capacity):
     if not(planning_perf == 0):
