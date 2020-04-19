@@ -42,6 +42,13 @@ configs={
             "replay_capacities": [0, 0, 50]
         }
     },
+    "boyan": {
+        "final": {
+            "agents": ["bw", "fw", "fw_rnd"],
+            "planning_depths": [1, 1, 1],
+            "replay_capacities": [0, 0, 50]
+        }
+    },
     "medium_maze": {
         "final": {
             "agents": ["bw", "fw", "fw_rnd", "bw_fw_PWMA"],
