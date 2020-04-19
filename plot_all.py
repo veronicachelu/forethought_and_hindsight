@@ -29,6 +29,8 @@ FLAGS = flags.FLAGS
 FONTSIZE = 30
 LINEWIDTH = 5
 
+dashed = {"bw_fw": "bw", "fw_pri": "fw_rnd", "bw_fw_MG": "bw_fw_PWMA"}
+
 def main(argv):
     del argv  # Unused.
     best_hyperparam_folder = os.path.join(FLAGS.logs, "best")
@@ -42,23 +44,33 @@ def main(argv):
 
     comparison_configs = configs.comparison_configs.configs[FLAGS.env][FLAGS.comparison_config]
 
-    n = len(comparison_configs["agents"])
-    color = plt.cm.winter(np.linspace(0.0, 1.0, n)[::-1])
-    hexcolor = map(lambda rgb: '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
-                   tuple(color[:, 0:-1]))
-    color = hexcolor  # plt.cm.viridis(np.linspace(0, 1, n))
-    mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
+    unique_color_configs = [c for c in comparison_configs["agents"] if c not in dashed.keys()]
+    n = len(unique_color_configs)
 
+    cmap_color = plt.cm.winter(np.linspace(0.0, 1.0, n)[::-1])
+    # hexcolor = map(lambda rgb: '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
+    #                tuple(color[:, 0:-1]))
+    # color = hexcolor  # plt.cm.viridis(np.linspace(0, 1, n))
+    # mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
+    colors = ['#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)) for rgb in
+                   tuple(cmap_color[:, 0:-1])]
+    alg_to_color = {alg: color for alg, color in zip(unique_color_configs, colors)}
     for i, agent in enumerate(comparison_configs["agents"]):
+        if agent not in dashed:
+            color = alg_to_color[agent]
+            linestyle = "-"
+        else:
+            color = alg_to_color[dashed[agent]]
+            linestyle = "-."
         planning_depth = comparison_configs["planning_depths"][i]
         replay_capacity = comparison_configs["replay_capacities"][i]
         persistent_agent_config = configs.agent_config.config[agent]
         plot_for_agent(agent, env_config, persistent_agent_config,
-                       volatile_agent_config, planning_depth, replay_capacity, logs)
+                       volatile_agent_config, planning_depth, replay_capacity, logs, color, linestyle)
 
     persistent_agent_config = configs.agent_config.config["vanilla"]
     plot_for_agent("vanilla", env_config, persistent_agent_config,
-                   volatile_agent_config, 0, 0, logs)
+                   volatile_agent_config, 0, 0, logs, "r", ":")
 
 
     if FLAGS.cumulative_rmsve:
@@ -83,7 +95,7 @@ def main(argv):
                                                 "RMSVE")))
 
 def plot_for_agent(agent, env_config, persistent_agent_config,
-                   volatile_agent_config, planning_depth, replay_capacity, logs):
+                   volatile_agent_config, planning_depth, replay_capacity, logs, color, linestyle):
     print(agent)
     log_folder_agent = os.path.join(logs, "{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth, replay_capacity))
     volatile_config = {"agent": agent,
@@ -94,9 +106,9 @@ def plot_for_agent(agent, env_config, persistent_agent_config,
     "env_config": env_config,
     "agent_config": persistent_agent_config,
     "crt_config": volatile_config}
-    plot_tensorflow_log(space)
+    plot_tensorflow_log(space, color, linestyle)
 
-def plot_tensorflow_log(space):
+def plot_tensorflow_log(space, color, linestyle):
     tf_size_guidance = {
         'compressedHistograms': 100000,
         'images': 0,
@@ -147,8 +159,8 @@ def plot_tensorflow_log(space):
         plt.plot(x, mean_y_over_seeds, label=format_name(space["crt_config"]["agent"],
                                             space["crt_config"]["planning_depth"],
                                             space["crt_config"]["replay_capacity"]),
-                 alpha=1, linewidth=LINEWIDTH,
-                 linestyle="-")
+                 alpha=1, linewidth=LINEWIDTH, color=color,
+                 linestyle=linestyle)
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
                          alpha=0.1)
 
