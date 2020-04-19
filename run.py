@@ -10,15 +10,15 @@ import utils
 from run_utils import *
 from utils import *
 
-flags.DEFINE_string('agent', 'bw', 'what agent to run')
-flags.DEFINE_string('env', 'cartpole', 'env')
+flags.DEFINE_string('agent', 'bw_intr', 'what agent to run')
+flags.DEFINE_string('env', 'linear_maze', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', 100000, 'Maximum number of time steps an episode may last (default: 100).')
 flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('planning_iter', 1, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
-flags.DEFINE_integer('planning_depth', 0, 'Planning depthS')
+flags.DEFINE_integer('planning_depth', 1, 'Planning depthS')
 flags.DEFINE_integer('replay_capacity', 0, 'Replay capacity')
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')
@@ -41,6 +41,7 @@ def main(argv):
         os.makedirs(logs)
 
     agent = {
+        "agent": FLAGS.agent,
         "planning_depth": FLAGS.planning_depth,
         "replay_capacity": FLAGS.replay_capacity,
         "lr": FLAGS.lr,

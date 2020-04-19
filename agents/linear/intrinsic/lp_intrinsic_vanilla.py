@@ -15,6 +15,7 @@ import numpy as np
 from agents.agent import Agent
 import tensorflow as tf
 import rlax
+from basis.feature_mapper import FeatureMapper
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
@@ -46,15 +47,17 @@ class LpIntrinsicVanilla(Agent):
             exploration_decay_period: int,
             seed: int = None,
             latent=False,
+            policy_type=None,
             target_networks=False,
-            logs: str = "logs",
             feature_coder=None,
+            logs: str = "logs",
             # double_input_reward_model=False
     ):
         super().__init__()
 
         self._run_mode = run_mode
         self._pi = policy
+        self._policy_type = policy_type
         self._nA = action_spec.num_values
         self._discount = discount
         self._batch_size = batch_size
@@ -86,6 +89,13 @@ class LpIntrinsicVanilla(Agent):
         self._log_period = log_period
         self._target_networks = target_networks
 
+        self._nrng = nrng
+
+        if feature_coder is not None:
+            self._feature_mapper = FeatureMapper(feature_coder)
+        else:
+            self._feature_mapper = None
+
         if self._logs is not None:
             self._checkpoint_dir = os.path.join(self._logs,
                                             '{}/checkpoints/seed_{}'.format(self._run_mode, self._seed))
@@ -93,8 +103,6 @@ class LpIntrinsicVanilla(Agent):
                 os.makedirs(self._checkpoint_dir)
 
             self._checkpoint_filename = "checkpoint.npy"
-
-            self._nrng = nrng
 
             self.writer = tf.summary.create_file_writer(
                 os.path.join(self._logs, '{}/summaries/seed_{}'.format(self._run_mode, seed)))
@@ -159,12 +167,21 @@ class LpIntrinsicVanilla(Agent):
         self._v_opt_state = v_opt_init(value_params)
         self._v_get_params = v_get_params
 
+    def _get_features(self, o):
+        if self._feature_mapper is not None:
+            return self._feature_mapper.get_features(o)
+        else:
+            return o
 
     def policy(self,
                timestep: dm_env.TimeStep,
                eval: bool = False
                ) -> int:
-        return self._pi(np.argmax(timestep.observation), self._nrng)
+        if self._policy_type == "estimated":
+            return self._pi(timestep, eval=True)
+        else:
+            features = self._get_features(timestep.observation[None, ...])
+            return self._pi(np.argmax(features[0]), self._nrng)
 
     def value_update(
             self,
@@ -172,13 +189,13 @@ class LpIntrinsicVanilla(Agent):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        if self.episode >= 100:
-            return
-        transitions = [np.array([timestep.observation]),
+        features = self._get_features([timestep.observation])
+        next_features = self._get_features([new_timestep.observation])
+        transitions = [np.array(features),
                        np.array([action]),
                        np.array([new_timestep.reward]),
                        np.array([new_timestep.discount]),
-                       np.array([new_timestep.observation])]
+                       np.array(next_features)]
 
         loss, gradients = self._v_loss_grad(self._v_parameters,
                                            self._h_parameters,
@@ -270,8 +287,13 @@ class LpIntrinsicVanilla(Agent):
                 #                       gradients[k], step=ep)
                 self.writer.flush()
 
+    def get_value_for_state(self, state):
+        features = self._get_features(state[None, ...]) if self._feature_mapper is not None else state[None, ...]
+        return self._v_forward(self._v_parameters, features)[0]
+
     def get_values_for_all_states(self, all_states):
-        latents = self._h_forward(self._h_parameters, np.array(all_states)) if self._latent else all_states
+        features = self._get_features(all_states) if self._feature_mapper is not None else all_states
+        latents = self._h_forward(self._h_parameters, np.array(features)) if self._latent else features
         return np.array(self._v_forward(self._v_parameters, np.asarray(latents, np.float)), np.float)
 
     def update_hyper_params(self, step, total_steps):

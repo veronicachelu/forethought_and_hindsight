@@ -186,6 +186,7 @@ if __name__ == "__main__":
         nA=action_spec.num_values,
         input_dim=input_dim,
         rng=rng_model,
+        rng_target=rng_q,
         latent=False,
         model_family="q",
         model_class=model_class,

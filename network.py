@@ -14,6 +14,7 @@ def get_network(num_hidden_layers: int,
                   num_units: int,
                   nA: int,
                   rng: List,
+                  rng_target: List,
                   input_dim: Tuple,
                   model_class="tabular",
                   model_family="extrinsic",
@@ -38,7 +39,7 @@ def get_network(num_hidden_layers: int,
         return get_q_network(num_hidden_layers, num_units, nA,
                         rng, input_dim)
     return get_intrinsic_network(num_hidden_layers, num_units, nA,
-                rng, input_dim, target_networks, latent)
+                rng, rng_target, input_dim, target_networks, latent)
 
 def get_input_dim(input_dim, feature_coder):
     if feature_coder["type"] == "tile":
@@ -178,6 +179,7 @@ def get_intrinsic_network(num_hidden_layers: int,
                   num_units: int,
                   nA: int,
                   rng: List,
+                  rng_target: List,
                   input_dim: Tuple,
                   target_networks=False,
                   latent=False,
@@ -189,8 +191,8 @@ def get_intrinsic_network(num_hidden_layers: int,
     rng_v, rng_h, rng_o, rng_fw_o, rng_r, rng_d = jrandom.split(rng, 6)
 
     if target_networks:
-        rng_v, rng_target_v, rng_h, rng_target_h, rng_o, rng_target_o,\
-            rng_fw_o, rng_target_fw_o, rng_r, rng_target_r, rng_d, rng_target_d = jrandom.split(rng, 12)
+        rng_target_v, rng_target_h, rng_target_o,\
+            rng_target_fw_o, rng_target_r, rng_target_d = jrandom.split(rng_target, 6)
 
     h_network, h_network_params = get_h_net(rng_h, num_units, input_size)
     v_network, v_network_params = get_value_net(rng_v, num_units)

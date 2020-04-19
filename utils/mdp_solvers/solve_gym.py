@@ -23,7 +23,8 @@ class GymSolver:
         self._space = space
         self._num_episodes_training = 100
         self._aux_agent_configs = aux_agent_configs
-        self._rng = jrandom.PRNGKey(seed=self._seed)
+        rng = jrandom.PRNGKey(seed=self._seed)
+        self._rng, self._rng_target = jrandom.split(rng, 2)
         self._agent = self.get_q_learning_agent()
         self._policy = None
         self._assigned_pi = False
@@ -37,6 +38,7 @@ class GymSolver:
             nA=self._nA,
             input_dim=self._input_dim,
             rng=self._rng,
+            rng_target=self._rng_target,
             feature_coder=self._space["env_config"]["feature_coder"],
             latent=self._space["agent_config"]["latent"],
             model_family="q",
