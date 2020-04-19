@@ -3,8 +3,7 @@
 #SBATCH --output=./outputs/hypertune__all__random__output.txt
 #SBATCH --error=./errors/hypertune__all__random__error.txt
 #SBATCH --ntasks=1
-#SBATCH --time=10000
-#SBATCH --mem=100Gb
+#SBATCH --time=12:00:00
 
 source ~/.bashrc
 cd ~/jax_models
