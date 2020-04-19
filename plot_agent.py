@@ -22,6 +22,8 @@ plt.rcParams.update({'axes.labelsize': 'large'})
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_string('agent', "bw", 'where to save results')
 flags.DEFINE_string('env', "maze", 'where to save results')
+flags.DEFINE_integer('ymin', None, 'plot up to')
+flags.DEFINE_integer('ymax', None, 'plot up to')
 flags.DEFINE_integer('up_to', None, 'plot up to')
 flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
 # flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
@@ -59,6 +61,9 @@ def main(argv):
         yaxis = 'RMSVE'
         xaxis = "Episodes"
 
+    # Set the y limits
+    if FLAGS.ymin is not None and FLAGS.ymax is not None:
+        plt.ylim(FLAGS.ymin, FLAGS.ymax)
     plt.ylabel(yaxis, fontsize=FONTSIZE)
     plt.legend(loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
                frameon=True,
