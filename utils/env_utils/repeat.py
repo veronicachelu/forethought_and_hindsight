@@ -7,7 +7,7 @@ from utils.mdp_solvers.solve_chain import ChainSolver
 
 class Repeat(dm_env.Environment):
     def __init__(self, rng=None, obs_type="tabular", nS = 5,
-                 loop_prob=0.99):
+                 loop_prob=0.9):
         self._P = None
         self._R = None
         self._stochastic = False
