@@ -3,7 +3,7 @@
 #SBATCH --output=./outputs/hypertune__bw_fw_PWMA__repeat__output.txt
 #SBATCH --error=./errors/hypertune__bw_fw_PWMA__repeat__error.txt
 #SBATCH --ntasks=1
-#SBATCH --time=3:00:00
+#SBATCH --time=12:00:00
 
 source ~/.bashrc
 cd ~/jax_models
