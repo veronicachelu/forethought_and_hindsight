@@ -9,7 +9,7 @@ env_config = {
     "policy_type": "greedy",
     "env_size": 6,
     "num_episodes": 100,
-    "num_runs": 5,
+    "num_runs": 100,
     "stochastic": False,
     "feature_coder": None,
     "nA": 1
