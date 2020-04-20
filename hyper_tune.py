@@ -96,6 +96,7 @@ def run_for_agent(agent, lr_vanilla=None):
     for planning_depth, replay_capacity, lr, lr_p, lr_m in volatile_to_run:
         if agent != "vanilla":
             lr = lr_vanilla
+            lr_p = lr_vanilla
         seed_config = {"planning_depth": planning_depth,
                       "replay_capacity": replay_capacity,
                       "lr": lr,
