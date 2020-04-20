@@ -180,4 +180,11 @@ configs={
             "replay_capacities": [0, 0, 0, 50, 50, 50, 50]
         }
         },
+    "cartpole": {
+        "all": {
+            "agents": ["bw", "fw", "fw_rnd"],
+            "planning_depths": [1, 1, 1],
+            "replay_capacities": [0, 0, 50]
+        }
+        },
 }
