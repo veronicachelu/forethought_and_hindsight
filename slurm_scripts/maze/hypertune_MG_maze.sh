@@ -3,8 +3,7 @@
 #SBATCH --output=./outputs/hypertune__MG__maze__output.txt
 #SBATCH --error=./errors/hypertune__MG__maze__error.txt
 #SBATCH --ntasks=1
-#SBATCH --time=10000
-#SBATCH --mem=100Gb
+#SBATCH --time=12:00:00
 
 source ~/.bashrc
 cd ~/jax_models

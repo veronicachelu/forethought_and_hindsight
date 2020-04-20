@@ -14,7 +14,7 @@ env_config = {
     "mdp_filename": "./continuous_mdps/obstacle.mdp",
     "env_size": None,
     "num_episodes": 100,
-    "num_runs": 5,
+    "num_runs": 100,
     "stochastic": False,
     "nA": 4
 }
