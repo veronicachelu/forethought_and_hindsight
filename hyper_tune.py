@@ -108,7 +108,8 @@ def run_for_agent(agent, lr_vanilla=None):
 
         final_attributes = list(final_config.keys())
 
-        for seed in tqdm(range(0, env_config["num_runs"])):
+        # for seed in tqdm(range(0, env_config["num_runs"])):
+        for seed in range(0, env_config["num_runs"]):
             seed_config["seed"] = seed
             if not configuration_exists(interm_hyperparam_file,
                                         seed_config, attributes):

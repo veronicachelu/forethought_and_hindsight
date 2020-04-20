@@ -24,7 +24,8 @@ def run_agent(env, agent, logs, aux_agent_configs, ignore_existent=True):
                    "lr_m": float(agent["lr_m"]),
                    "lr_p": float(agent["lr_m"])}
 
-    for seed in tqdm(range(0, env_config["num_runs"])):
+    # for seed in tqdm(range(0, env_config["num_runs"])):
+    for seed in range(0, env_config["num_runs"]):
         seed_config["seed"] = seed
         space = {
             "logs": logs,

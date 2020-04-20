@@ -49,7 +49,8 @@ def main(argv):
                    "lr_m": FLAGS.lr_m,
                    "lr_p": FLAGS.lr_m}
 
-    for seed in tqdm(range(0, env_config["num_runs"])):
+    for seed in range(0, env_config["num_runs"]):
+    # for seed in tqdm(range(0, env_config["num_runs"])):
         seed_config["seed"] = seed
         space = {
             "logs": logs,
