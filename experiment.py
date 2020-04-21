@@ -14,10 +14,18 @@ def run_episodic(agent: Agent,
                  space,
                  aux_agent_configs,
                ):
+    # ls = "learning"
+    # ls = "models"
+    ls = "planning"
 
     weighted = False if space["env_config"]["non_gridworld"] else True
     with agent.writer.as_default() if space["plot_curves"] and agent._logs is not None else dummy_context_mgr():
         # agent.load_model()
+        if ls == "models":
+            agent.load_v()
+        elif ls == "planning":
+            agent.load_m()
+
         total_rmsve = 0
         total_reward = 0
         ep_rewards = []
@@ -34,18 +42,21 @@ def run_episodic(agent: Agent,
                 action = agent.policy(timestep)
                 new_timestep = environment.step(action)
 
-                if agent.model_based_train():
-                    agent.save_transition(timestep, action, new_timestep)
-                    agent.model_update(timestep, action, new_timestep)
+                if ls == "models":
+                    if agent.model_based_train():
+                        agent.save_transition(timestep, action, new_timestep)
+                        agent.model_update(timestep, action, new_timestep)
 
-                if agent.model_free_train():
-                    agent.value_update(timestep, action, new_timestep)
+                if ls == "learning":
+                    if agent.model_free_train():
+                        agent.value_update(timestep, action, new_timestep)
 
                 rewards += new_timestep.reward
 
-                if agent.model_based_train():
-                    agent.planning_update(timestep)
-                    # agent.planning_update(new_timestep)
+                if ls == "planning":
+                    if agent.model_based_train():
+                        # agent.planning_update(timestep)
+                        agent.planning_update(new_timestep)
 
                 agent.total_steps += 1
                 t += 1
@@ -57,7 +68,7 @@ def run_episodic(agent: Agent,
                 timestep = new_timestep
             if space["env_config"]["env_type"] != "continuous":
                 hat_v = agent._v_network if space["env_config"]["model_class"] == "tabular" \
-                    else agent.get_values_for_all_states(environment.get_all_states())
+                    else agent.get_values_for_all_states(environment.get_all_states(), ls)
                 hat_error = np.abs(environment._true_v - hat_v)
                 rmsve = get_rmsve(environment, mdp_solver, hat_v, environment._true_v, weighted=weighted)
                 ep_rmsve += rmsve
@@ -106,7 +117,12 @@ def run_episodic(agent: Agent,
 
             agent.episode += 1
 
-
+        if ls == "learning":
+            agent.save_v()
+        elif ls == "models":
+            agent.save_m()
+        # agent.save_v()
+        # agent.save_m()
         rmsve_start = 0
         # rmsve_start = np.power(environment._true_v - hat_v, 2)[environment._get_state_index(environment._sX, environment._sY)]
         return round(total_rmsve, 2), round(rmsve, 2), round(rmsve_start, 2), \

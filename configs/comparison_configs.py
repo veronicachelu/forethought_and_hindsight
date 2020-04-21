@@ -31,11 +31,26 @@ configs={
         }
     },
     "linear_maze": {
-        # "all": {
-        #     "agents": ["latent_bw_intr", "latent_vanilla_intr", "vanilla_intr"],
-        #     "planning_depths": [1, 0, 0],
-        #     "replay_capacities": [0, 0, 0]
-        # }
+        "bw": {
+            "agents": ["bw_intr", "vanilla_intr"],
+            "planning_depths": [1, 0],
+            "replay_capacities": [0, 0]
+        },
+        "fw": {
+            "agents": ["fw_intr", "vanilla_intr"],
+            "planning_depths": [1, 0],
+            "replay_capacities": [0, 0]
+        },
+        "bw_fw": {
+            "agents": ["bw_intr", "fw_intr", "vanilla_intr"],
+            "planning_depths": [1, 1, 0],
+            "replay_capacities": [0, 0, 0]
+        },
+        "random_vs_learned": {
+            "agents": ["random", "learned"],
+            "planning_depths": [1, 1, 0],
+            "replay_capacities": [0, 0, 0]
+        },
         "final": {
             "agents": ["bw", "fw", "fw_rnd"],
             "planning_depths": [1, 1, 1],

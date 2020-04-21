@@ -191,8 +191,11 @@ def get_intrinsic_network(num_hidden_layers: int,
     rng_v, rng_h, rng_o, rng_fw_o, rng_r, rng_d = jrandom.split(rng, 6)
 
     if target_networks:
+        rng_t, rng_p = jrandom.split(rng_target, 2)
         rng_target_v, rng_target_h, rng_target_o,\
-            rng_target_fw_o, rng_target_r, rng_target_d = jrandom.split(rng_target, 6)
+            rng_target_fw_o, rng_target_r, rng_target_d = jrandom.split(rng_t, 6)
+        rng_planning_v, rng_planning_h, rng_planning_o, \
+        rng_planning_fw_o, rng_planning_r, rng_planning_d = jrandom.split(rng_p, 6)
 
     h_network, h_network_params = get_h_net(rng_h, num_units, input_size)
     v_network, v_network_params = get_value_net(rng_v, num_units)
@@ -216,6 +219,10 @@ def get_intrinsic_network(num_hidden_layers: int,
                             }
         network["target_value"] = {"net": target_v_network,
                             "params": target_v_network_params}
+
+        planning_v_network, planning_v_network_params = get_value_net(rng_planning_v, num_units)
+        network["planning_value"] = {"net": planning_v_network,
+                                   "params": planning_v_network_params}
 
     network["value"] = {"net": v_network,
                         "params": v_network_params}
