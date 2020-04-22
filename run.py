@@ -4,7 +4,7 @@ from jax import random as jrandom
 from tqdm import tqdm
 from main_utils import *
 import agents
-import experiment
+import backupexperiment
 import network
 import utils
 from run_utils import *

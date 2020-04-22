@@ -46,7 +46,7 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
             real_r_tmn_2_t = 0
             for i, t in enumerate(transitions):
                 real_r_tmn_2_t += (self._discount ** i) * t[2]
-            #
+
             real_d_tmn_2_t = 0
             for i, t in enumerate(transitions):
                 real_d_tmn_2_t += (self._discount ** i) * t[3]
@@ -56,20 +56,7 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
                                                        real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
                                                         v_t_target)
             real_update = vjp_fun(2 * real_td_error)[0]
-            # # When the
-            # #  Delta_m (v) = (T_m v - v) dv
-            # # is minimized, then
-            # #  v* = T_m_fw v*  with v* the fixed point
-            # #  (this is done by the model free process - fw looking)
-            # # v* is the optimal value function wrt to the real model m
-            # #  Let be a credit discriminator between the optimal model and the estim model
-            # # L = |Delta_hatm(v) - Delta_m (v)|^2_2
-            # # dL/dtheta =  (Delta_hatm (v) - Delta_m (v)) (dDelta_hatm (v))/dtheta
-            # # If v = v*
-            # # dL/dtheta =  (T_hatm v* - v*) dv* (- dT_hatm/dtheta)
-            # #
-            # ###########################################
-            #
+
             model_tmn = self._o_network(o_params, h_t)
             model_v_tmn, model_vjp_fun = jax.vjp(self._v_network, v_params, model_tmn)
             model_r_input = jnp.concatenate([model_tmn, h_t], axis=-1)
@@ -79,7 +66,7 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
                                                    real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
                                                         v_t_target)
             model_update = model_vjp_fun(2 * model_td_error)[0]
-            # corr_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_td_error, real_td_error))
+
             corr_loss = 0
             for i, (layer_model, layer_real) in enumerate(zip(model_update, real_update)):
                 for j, (param_grad_model, param_grad_real) in enumerate(zip(layer_model, layer_real)):
@@ -87,7 +74,7 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
                                                                  lax.stop_gradient(param_grad_real)))
 
             r_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_r_tmn_2_t, real_r_tmn_2_t))
-            total_loss = corr_loss + r_loss#+ d_loss #
+            total_loss = corr_loss + r_loss
 
 
             ###### Alternative
@@ -120,8 +107,8 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, 0))
         self._planning_v_forward = jax.jit(self._planning_v_network)
 
-        self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [1, 2, 3, 4], has_aux=True))
-        # self._model_loss_grad = jax.value_and_grad(model_loss, [1, 2, 3, 4], has_aux=True)
+        # self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [1, 2, 3, 4], has_aux=True))
+        self._model_loss_grad = jax.value_and_grad(model_loss, [1, 2, 3, 4], has_aux=True)
         self._o_forward = jax.jit(self._o_network)
         self._r_forward = jax.jit(self._r_network)
         self._d_forward = jax.jit(self._d_network)
