@@ -46,6 +46,21 @@ configs={
             "planning_depths": [1, 1, 0],
             "replay_capacities": [0, 0, 0]
         },
+        "intr_vs_extr": {
+            "agents": ["bw_intr", "bw", "vanilla_intr"],
+            "planning_depths": [1, 1, 0],
+            "replay_capacities": [0, 0, 0]
+        },
+        "intr_vs_extr_fw_and_bw": {
+            "agents": ["bw_intr", "bw", "fw_intr", "fw", "vanilla_intr"],
+            "planning_depths": [1, 1, 1, 1, 0],
+            "replay_capacities": [0, 0, 0, 0, 0]
+        },
+        "latent_vs_no_latent": {
+            "agents": ["bw_intr", "latent_bw_intr", "vanilla_intr"],
+            "planning_depths": [1, 1, 0],
+            "replay_capacities": [0, 0, 0]
+        },
         "random_vs_learned": {
             "agents": ["random", "learned"],
             "planning_depths": [1, 1, 0],
@@ -58,7 +73,7 @@ configs={
         }
     },
     "boyan": {
-        "final": {
+        "all": {
             "agents": ["bw", "fw", "fw_rnd"],
             "planning_depths": [1, 1, 1],
             "replay_capacities": [0, 0, 50]
