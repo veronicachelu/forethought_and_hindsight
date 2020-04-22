@@ -15,15 +15,16 @@ def run_episodic(agent: Agent,
                  aux_agent_configs,
                ):
     # ls = "learning"
-    ls = "models"
+    # ls = "models"
+    ls = "planning_full"
     # ls = "planning"
 
     weighted = False if space["env_config"]["non_gridworld"] else True
     with agent.writer.as_default() if space["plot_curves"] and agent._logs is not None else dummy_context_mgr():
-        # agent.load_model()
+        agent.load_model()
         if ls == "models":
             agent.load_v()
-        elif ls == "planning":
+        elif ls == "planning" or ls == "planning_full":
             agent.load_m()
 
         total_rmsve = 0
@@ -53,10 +54,15 @@ def run_episodic(agent: Agent,
 
                 rewards += new_timestep.reward
 
-                if ls == "planning":
+                if ls == "planning_full":
+                    if agent.model_free_train():
+                        agent.planning_value_update(timestep, action, new_timestep)
+
                     if agent.model_based_train():
-                        # agent.planning_update(timestep)
-                        agent.planning_update(new_timestep)
+                        agent.planning_update(timestep)
+
+                if ls == "planning":
+                    agent.planning_update(new_timestep)
 
                 agent.total_steps += 1
                 t += 1

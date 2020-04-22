@@ -137,7 +137,7 @@ class LpIntrinsicVanilla(Agent):
         self._r_parameters = network["model"]["params"][3]
         self._d_parameters = network["model"]["params"][4]
 
-        # self._v_step_schedule = optimizers.polynomial_decay(self._lr, self._exploration_decay_period, 0, 1)
+        self._v_step_schedule = optimizers.polynomial_decay(self._lr, self._exploration_decay_period, 0, 1)
 
         if self._target_networks:
             self._target_v_network = network["target_value"]["net"]
@@ -155,14 +155,14 @@ class LpIntrinsicVanilla(Agent):
             self._target_r_parameters = network["target_model"]["params"][3]
             self._target_d_parameters = network["target_model"]["params"][4]
 
-            # self._planning_v_network = self._v_network #network["planning_value"]["net"]
-            # self._planning_v_parameters = self._v_parameters #network["planning_value"]["params"]
+            self._planning_v_network = self._v_network #network["planning_value"]["net"]
+            self._planning_v_parameters = self._v_parameters #network["planning_value"]["params"]
             # Make an Adam optimizer.
-            # pv_opt_init, pv_opt_update, pv_get_params = optimizers.adam(step_size=self._v_step_schedule)
-            # self._pv_opt_update = jax.jit(pv_opt_update)
-            # self._pv_opt_init = pv_opt_init
-            # self._pv_opt_state = pv_opt_init(self._planning_v_parameters)
-            # self._pv_get_params = pv_get_params
+            pv_opt_init, pv_opt_update, pv_get_params = optimizers.adam(step_size=self._v_step_schedule)
+            self._pv_opt_update = jax.jit(pv_opt_update)
+            self._pv_opt_init = pv_opt_init
+            self._pv_opt_state = pv_opt_init(self._planning_v_parameters)
+            self._pv_get_params = pv_get_params
 
         # This function computes dL/dTheta
         dwrt = [0, 1] if self._latent else 0
@@ -172,7 +172,7 @@ class LpIntrinsicVanilla(Agent):
         self._h_forward = jax.jit(self._h_network)
 
         # Make an Adam optimizer.
-        v_opt_init, v_opt_update, v_get_params = optimizers.adam(step_size=self._lr)
+        v_opt_init, v_opt_update, v_get_params = optimizers.adam(step_size=self._v_step_schedule)
         self._v_opt_update = jax.jit(v_opt_update)
         value_params = [self._v_parameters, self._h_parameters] if self._latent else self._v_parameters
         self._v_opt_state = v_opt_init(value_params)
@@ -347,7 +347,7 @@ class LpIntrinsicVanilla(Agent):
         features = self._get_features(state[None, ...]) if self._feature_mapper is not None else state[None, ...]
         return self._v_forward(self._v_parameters, features)[0]
 
-    def get_values_for_all_states(self, all_states, ls=None):
+    def get_values_for_all_states(self, all_states):
         features = self._get_features(all_states) if self._feature_mapper is not None else all_states
         latents = self._h_forward(self._h_parameters, np.array(features)) if self._latent else features
         return np.array(self._v_forward(self._v_parameters, np.asarray(latents, np.float)), np.float)

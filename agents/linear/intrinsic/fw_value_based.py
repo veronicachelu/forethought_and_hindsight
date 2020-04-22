@@ -90,7 +90,6 @@ class LpFwValueBased(LpIntrinsicVanilla):
             return jnp.mean(td_error ** 2)
 
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, 0))
-        self._planning_v_forward = jax.jit(self._planning_v_network)
 
         self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [1, 2, 3, 4], has_aux=True))
         # self._model_loss_grad = jax.value_and_grad(model_loss, [1, 2, 3, 4], has_aux=True)
@@ -104,36 +103,36 @@ class LpFwValueBased(LpIntrinsicVanilla):
         self._model_opt_state = model_opt_init(model_params)
         self._model_get_params = model_get_params
 
-    def value_update(
-            self,
-            timestep: dm_env.TimeStep,
-            action: int,
-            new_timestep: dm_env.TimeStep,
-    ):
-        super(LpFwValueBased, self).value_update(timestep, action, new_timestep)
-        features = self._get_features([timestep.observation])
-        next_features = self._get_features([new_timestep.observation])
-        transitions = [np.array(features),
-                       np.array([action]),
-                       np.array([new_timestep.reward]),
-                       np.array([new_timestep.discount]),
-                       np.array(next_features)]
-
-        loss, gradients = self._v_loss_grad(self._planning_v_parameters,
-                                                    self._h_parameters,
-                                                    transitions)
-        if self._latent:
-            gradients = list(gradients)
-        self._pv_opt_state = self._pv_opt_update(self.episode, gradients,
-                                               self._pv_opt_state)
-        self._planning_v_parameters = self._pv_get_params(self._pv_opt_state)
-
-        losses_and_grads = {"losses": {"loss_pv": np.array(loss)}, }
-        # "gradients": {"grad_norm_v":
-        #                   np.sum(np.sum([np.linalg.norm(np.asarray(g), ord=2)
-        #                                  for g in gradient]))}}
-        self._log_summaries(losses_and_grads, "value")
-
+    # def value_update(
+    #         self,
+    #         timestep: dm_env.TimeStep,
+    #         action: int,
+    #         new_timestep: dm_env.TimeStep,
+    # ):
+    #     super(LpFwValueBased, self).value_update(timestep, action, new_timestep)
+    #     features = self._get_features([timestep.observation])
+    #     next_features = self._get_features([new_timestep.observation])
+    #     transitions = [np.array(features),
+    #                    np.array([action]),
+    #                    np.array([new_timestep.reward]),
+    #                    np.array([new_timestep.discount]),
+    #                    np.array(next_features)]
+    #
+    #     loss, gradients = self._v_loss_grad(self._planning_v_parameters,
+    #                                                 self._h_parameters,
+    #                                                 transitions)
+    #     if self._latent:
+    #         gradients = list(gradients)
+    #     self._pv_opt_state = self._pv_opt_update(self.episode, gradients,
+    #                                            self._pv_opt_state)
+    #     self._planning_v_parameters = self._pv_get_params(self._pv_opt_state)
+    #
+    #     losses_and_grads = {"losses": {"loss_pv": np.array(loss)}, }
+    #     # "gradients": {"grad_norm_v":
+    #     #                   np.sum(np.sum([np.linalg.norm(np.asarray(g), ord=2)
+    #     #                                  for g in gradient]))}}
+    #     self._log_summaries(losses_and_grads, "value")
+    #
 
     def model_update(
             self,
@@ -186,15 +185,15 @@ class LpFwValueBased(LpIntrinsicVanilla):
         d_t = np.array([timestep.discount])
         # plan on batch of transitions
 
-        loss, gradients = self._v_planning_loss_grad(self._planning_v_parameters,
+        loss, gradients = self._v_planning_loss_grad(self._v_parameters,
                                                     self._h_parameters,
                                                     self._o_parameters,
                                                     self._r_parameters,
                                                     self._d_parameters,
                                                     o_t)
-        self._pv_opt_state = self._pv_opt_update(self.episode, gradients,
-                                               self._pv_opt_state)
-        self._planning_v_parameters = self._pv_get_params(self._pv_opt_state)
+        self._v_opt_state = self._v_opt_update(self.episode, gradients,
+                                               self._v_opt_state)
+        self._v_parameters = self._v_get_params(self._v_opt_state)
 
         losses_and_grads = {"losses": {"loss_v_planning": np.array(loss),
                                        },}
@@ -292,8 +291,8 @@ class LpFwValueBased(LpIntrinsicVanilla):
                                           gradients[k], step=ep)
                 self.writer.flush()
 
-    def get_values_for_all_states(self, all_states):
-        features = self._get_features(all_states) if self._feature_mapper is not None else all_states
-        latents = self._h_forward(self._h_parameters, np.array(features)) if self._latent else features
-        return np.array(self._planning_v_forward(self._planning_v_parameters, np.asarray(latents, np.float)), np.float)
-
+    # def get_values_for_all_states(self, all_states):
+    #     features = self._get_features(all_states) if self._feature_mapper is not None else all_states
+    #     latents = self._h_forward(self._h_parameters, np.array(features)) if self._latent else features
+    #     return np.array(self._planning_v_forward(self._planning_v_parameters, np.asarray(latents, np.float)), np.float)
+    #

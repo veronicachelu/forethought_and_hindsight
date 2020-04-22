@@ -189,8 +189,8 @@ config = {
         "num_hidden_layers": 0,
         "num_units": 0,
         "model_family": "intrinsic",
-        "target_networks": True,
-        # "target_networks": False,
+        # "target_networks": True,
+        "target_networks": False,
         "class": {"linear": "LpExplicitValueBased"},
     },
     "learned": {
@@ -201,8 +201,8 @@ config = {
         "num_hidden_layers": 0,
         "num_units": 0,
         "model_family": "intrinsic",
-        "target_networks": True,
-        # "target_networks": False,
+        # "target_networks": True,
+        "target_networks": False,
         "class": {"linear": "LpExplicitValueBased"},
     },
     "fw_intr": {
@@ -213,8 +213,8 @@ config = {
         "num_hidden_layers": 0,
         "num_units": 0,
         "model_family": "intrinsic",
-        "target_networks": True,
-        # "target_networks": False,
+        # "target_networks": True,
+        "target_networks": False,
         "class": {"linear": "LpFwValueBased"},
     },
 }
