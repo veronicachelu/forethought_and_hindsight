@@ -113,15 +113,17 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
                                                   v_t_target)
             return jnp.mean(td_error ** 2)
 
-        self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, 0))
+        dwrt = [0, 1] if self._latent else 0
+        self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, dwrt))
 
+        self._model_step_schedule = optimizers.polynomial_decay(self._lr_model, self._exploration_decay_period, 0, 1)
         self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [1, 2, 3, 4], has_aux=True))
         # self._model_loss_grad = jax.value_and_grad(model_loss, [1, 2, 3, 4], has_aux=True)
         self._o_forward = jax.jit(self._o_network)
         self._r_forward = jax.jit(self._r_network)
         self._d_forward = jax.jit(self._d_network)
 
-        model_opt_init, model_opt_update, model_get_params = optimizers.adam(step_size=self._lr_model)
+        model_opt_init, model_opt_update, model_get_params = optimizers.adam(step_size=self._model_step_schedule)
         self._model_opt_update = jax.jit(model_opt_update)
         model_params = [self._h_parameters, self._o_parameters, self._r_parameters, self._d_parameters]
         self._model_opt_state = model_opt_init(model_params)
@@ -185,9 +187,15 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
                                                     self._r_parameters,
                                                     self._d_parameters,
                                                     o_t, d_t)
+        if self._latent:
+            gradients = list(gradients)
         self._v_opt_state = self._v_opt_update(self.episode, gradients,
                                                self._v_opt_state)
-        self._v_parameters = self._v_get_params(self._v_opt_state)
+        value_params = self._v_get_params(self._v_opt_state)
+        if self._latent:
+            self._v_parameters, _ = value_params
+        else:
+            self._v_parameters = value_params
 
         losses_and_grads = {"losses": {"loss_v_planning": np.array(loss),
                                        },}
@@ -285,7 +293,7 @@ class LpExplicitValueBased(LpIntrinsicVanilla):
                                           gradients[k], step=ep)
                 self.writer.flush()
 
-    # def get_values_for_all_states(self, all_states, ls):
+                    # def get_values_for_all_states(self, all_states, ls):
     #     # if ls == "learning" or ls == "models":
     #     #     return super(LpExplicitValueBased, self).get_values_for_all_states(all_states)
     #     features = self._get_features(all_states) if self._feature_mapper is not None else all_states

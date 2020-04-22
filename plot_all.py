@@ -153,6 +153,9 @@ def plot_tensorflow_log(space, color, linestyle):
         y = [tf.make_ndarray(m[2]) for m in msve]
         all_y_over_seeds.append(np.array(y))
 
+    those_that_are_not_99 = [i for i, a in enumerate(all_y_over_seeds) if len(a) != 99]
+    print(those_that_are_not_99)
+    all_y_over_seeds = [a for a in all_y_over_seeds if len(a) == 99]
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
     if space["crt_config"]["agent"] == "vanilla":
