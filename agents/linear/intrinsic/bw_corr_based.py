@@ -27,12 +27,12 @@ def td_learning(
   target_tm1 = r_t + discount_t * v_t
   return target_tm1 - v_tm1
 
-class LpExplicitValueBased(LpIntrinsicVanilla):
+class LpBwCorrBased(LpIntrinsicVanilla):
     def __init__(
             self,
             **kwargs
     ):
-        super(LpExplicitValueBased, self).__init__(**kwargs)
+        super(LpBwCorrBased, self).__init__(**kwargs)
 
         self._sequence = []
         self._should_reset_sequence = False

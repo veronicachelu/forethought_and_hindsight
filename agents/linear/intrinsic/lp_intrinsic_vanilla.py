@@ -20,6 +20,14 @@ from basis.feature_mapper import FeatureMapper
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
+def td_learning(
+    v_tm1,
+    r_t,
+    discount_t,
+    v_t):
+
+  target_tm1 = r_t + discount_t * jax.lax.stop_gradient(v_t)
+  return target_tm1 - v_tm1
 
 class LpIntrinsicVanilla(Agent):
     def __init__(
@@ -112,13 +120,23 @@ class LpIntrinsicVanilla(Agent):
                 os.makedirs(self._images_dir)
 
         def v_loss(v_params, h_params, transitions):
-            o_tm1, a_tm1, r_t, d_t, o_t = transitions
+            o_tm1, _, r_t, d_t, o_t = transitions
             h_t = lax.stop_gradient(self._h_network(h_params, o_t)) if self._latent else o_t
-            h_tm1 = self._h_network(h_params, o_tm1) if self._latent else o_tm1
+            h_tm1 = lax.stop_gradient(self._h_network(h_params, o_tm1)) if self._latent else o_tm1
             v_tm1 = self._v_network(v_params, h_tm1)
             v_t = self._v_network(v_params, h_t)
             v_t_target = r_t + d_t * discount * v_t
             td_error = jax.vmap(rlax.td_learning)(v_tm1, r_t, d_t * discount, v_t_target)
+            return jnp.mean(td_error ** 2)
+
+        def residual_v_loss(v_params, h_params, transitions):
+            o_tm1, _, r_t, d_t, o_t = transitions
+            h_t = lax.stop_gradient(self._h_network(h_params, o_t)) if self._latent else o_t
+            h_tm1 = lax.stop_gradient(self._h_network(h_params, o_tm1)) if self._latent else o_tm1
+            v_tm1 = self._v_network(v_params, h_tm1)
+            v_t = self._v_network(v_params, h_t)
+            v_t_target = r_t + d_t * discount * v_t
+            td_error = jax.vmap(td_learning)(v_tm1, r_t, d_t * discount, v_t_target)
             return jnp.mean(td_error ** 2)
 
         # Internalize the networks.
@@ -167,6 +185,7 @@ class LpIntrinsicVanilla(Agent):
         # This function computes dL/dTheta
         dwrt = [0, 1] if self._latent else 0
         self._v_loss_grad = jax.jit(jax.value_and_grad(v_loss, dwrt))
+        self._residual_v_loss_grad = jax.jit(jax.value_and_grad(residual_v_loss, dwrt))
         # self._v_loss_grad = jax.value_and_grad(v_loss, 0)
         self._v_forward = jax.jit(self._v_network)
         self._h_forward = jax.jit(self._h_network)
@@ -217,7 +236,8 @@ class LpIntrinsicVanilla(Agent):
                                                self._v_opt_state)
         value_params = self._v_get_params(self._v_opt_state)
         if self._latent:
-            self._v_parameters, self._h_parameters = value_params
+            self._v_parameters, _ = value_params
+            # self._v_parameters, self._h_parameters = value_params
         else:
             self._v_parameters = value_params
         losses_and_grads = {"losses": {"loss_v": np.array(loss)},}
