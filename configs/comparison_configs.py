@@ -73,6 +73,11 @@ configs={
         }
     },
     "boyan": {
+        "latent_vs_no_latent": {
+            "agents": ["bw_intr", "latent_bw_intr", "vanilla_intr"],
+            "planning_depths": [1, 1, 0],
+            "replay_capacities": [0, 0, 0]
+        },
         "all": {
             "agents": ["bw", "fw", "fw_rnd"],
             "planning_depths": [1, 1, 1],

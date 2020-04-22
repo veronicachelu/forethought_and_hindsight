@@ -197,7 +197,7 @@ def get_intrinsic_network(num_hidden_layers: int,
         rng_planning_v, rng_planning_h, rng_planning_o, \
         rng_planning_fw_o, rng_planning_r, rng_planning_d = jrandom.split(rng_p, 6)
 
-    h_network, h_network_params = get_h_net(rng_h, num_units, input_size)
+    h_network, h_network_params = get_h_net(rng_h, num_units, num_hidden_layers, input_size)
     v_network, v_network_params = get_value_net(rng_v, num_units)
     o_network, o_network_params = get_o_net(rng_o, num_units)
     fw_o_network, fw_o_network_params = get_o_net(rng_o, num_units)
@@ -265,8 +265,14 @@ def get_pg_network(num_hidden_layers: int,
 
     return network
 
-def get_h_net(rng_h, num_units, input_size):
-    h_network_init, h_network = stax.Dense(num_units)
+def get_h_net(rng_h, num_units, num_hidden_layers, input_size):
+    layers = []
+    for _ in range(num_hidden_layers):
+        layers.append(stax.Dense(num_units))
+        layers.append(stax.Relu)
+    layers.append(stax.Dense(num_units))
+    # h_network_init, h_network = stax.Dense(num_units)
+    h_network_init, h_network = stax.serial(*layers)
     _, h_network_params = h_network_init(rng_h, (-1, input_size))
     return h_network, h_network_params
 
