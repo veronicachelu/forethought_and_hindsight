@@ -30,7 +30,7 @@ flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
 # flags.DEFINE_integer('num_runs', 100, '')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
-FONTSIZE = 30
+FONTSIZE = 25
 LINEWIDTH = 3
 
 def main(argv):
@@ -65,6 +65,7 @@ def main(argv):
     if FLAGS.ymin is not None and FLAGS.ymax is not None:
         plt.ylim(FLAGS.ymin, FLAGS.ymax)
     plt.ylabel(yaxis, fontsize=FONTSIZE)
+    plt.xlabel(xaxis, fontsize=FONTSIZE)
     plt.legend(loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
                frameon=True,
                prop={'size': FONTSIZE})
