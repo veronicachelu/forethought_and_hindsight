@@ -89,6 +89,11 @@ configs={
             "agents": ["bw", "fw", "fw_rnd", "bw_fw_PWMA"],
             "planning_depths": [1, 1, 1, 1],
             "replay_capacities": [0, 0, 50, 50]
+        },
+        "all": {
+            "agents": ["bw", "fw", "fw_rnd", "bw_fw_PWMA"],
+            "planning_depths": [1, 1, 1, 1],
+            "replay_capacities": [0, 0, 50, 50]
         }
     },
     "random": {
