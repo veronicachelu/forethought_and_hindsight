@@ -176,7 +176,7 @@ class LpIntrinsicVanilla(Agent):
             # self._planning_v_network = self._v_network #network["planning_value"]["net"]
             # self._planning_v_parameters = self._v_parameters #network["planning_value"]["params"]
             # Make an Adam optimizer.
-            # pv_opt_init, pv_opt_update, pv_get_params = optimizers.adam(step_size=self._v_step_schedule)
+            # pv_opt_init, pv_opt_update, pv_get_params = optimizers.adam(step_size=self._lr)
             # self._pv_opt_update = jax.jit(pv_opt_update)
             # self._pv_opt_init = pv_opt_init
             # self._pv_opt_state = pv_opt_init(self._planning_v_parameters)
@@ -240,10 +240,9 @@ class LpIntrinsicVanilla(Agent):
             # self._v_parameters, self._h_parameters = value_params
         else:
             self._v_parameters = value_params
-        losses_and_grads = {"losses": {"loss_v": np.array(loss)},}
-                            # "gradients": {"grad_norm_v":
-                            #                   np.sum(np.sum([np.linalg.norm(np.asarray(g), ord=2)
-                            #                                  for g in gradient]))}}
+        losses_and_grads = {"losses": {"loss_v": np.array(loss)},
+                            "v_tmn": self._v_forward(self._v_parameters, np.array(features))[0]}
+
         self._log_summaries(losses_and_grads, "value")
 
     def model_based_train(self):

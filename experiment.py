@@ -26,7 +26,6 @@ def run_episodic(agent: Agent,
         for episode in np.arange(start=agent.episode, stop=space["env_config"]["num_episodes"]):
             # Run an episode.
             rewards = 0
-            ep_rmsve = 0
             t = 0
             timestep = environment.reset()
             agent.update_hyper_params(episode, space["env_config"]["num_episodes"])
@@ -45,7 +44,6 @@ def run_episodic(agent: Agent,
 
                 if agent.model_based_train():
                     agent.planning_update(timestep)
-                    # agent.planning_update(new_timestep)
 
                 agent.total_steps += 1
                 t += 1
@@ -55,18 +53,18 @@ def run_episodic(agent: Agent,
                     break
 
                 timestep = new_timestep
+
             if space["env_config"]["env_type"] != "continuous":
                 hat_v = agent._v_network if space["env_config"]["model_class"] == "tabular" \
                     else agent.get_values_for_all_states(environment.get_all_states())
                 hat_error = np.abs(environment._true_v - hat_v)
                 rmsve = get_rmsve(environment, mdp_solver, hat_v, environment._true_v, weighted=weighted)
-                ep_rmsve += rmsve
+                # ep_rmsve = rmsve
             else:
                 hat_v = agent.get_value_for_state(timestep.observation)
                 v = mdp_solver.get_value_for_state(timestep.observation)
                 hat_error = np.abs(v - hat_v)
                 rmsve = np.power(v - hat_v, 2)
-                ep_rmsve += rmsve
 
             total_rmsve += rmsve
             total_reward += rewards
@@ -108,7 +106,6 @@ def run_episodic(agent: Agent,
 
 
         rmsve_start = 0
-        # rmsve_start = np.power(environment._true_v - hat_v, 2)[environment._get_state_index(environment._sX, environment._sY)]
         return round(total_rmsve, 2), round(rmsve, 2), round(rmsve_start, 2), \
                np.mean(ep_steps, dtype=int), hat_v, hat_error
 

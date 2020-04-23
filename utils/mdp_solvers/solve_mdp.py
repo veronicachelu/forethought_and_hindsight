@@ -91,3 +91,6 @@ class MdpSolver:
             self._solve_mdp()
 
         return self._v
+
+    def get_value_for_state(self, state):
+        return self._v[np.argmax(state)]

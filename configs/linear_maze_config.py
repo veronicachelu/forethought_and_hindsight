@@ -9,7 +9,7 @@ env_config = {
     "mdp_filename": "./mdps/maze_80.mdp",
     "env_size": 80,
     "num_episodes": 100,
-    "num_runs": 5,
+    "num_runs": 100,
     "stochastic": False,
     "feature_coder": None,
     "nA": 4
@@ -28,7 +28,21 @@ volatile_agent_config = {
         "replay_capacity": [0],
         "lr": [0.01],
         "lr_p": [0.01],
-        "lr_m": np.linspace(0.01, 1.0, 10),
+        "lr_m": np.linspace(0.001, 0.1, 10),
+    },
+    "bw_vaware": {
+        "planning_depth": [1, 4, 8],
+        "replay_capacity": [0],
+        "lr": [0.01],
+        "lr_p": [0.01],
+        "lr_m": np.linspace(0.001, 0.1, 10),
+    },
+     "bw_intr": {
+        "planning_depth": [1],
+        "replay_capacity": [0],
+        "lr": [0.08],
+        "lr_p": [0.08],
+        "lr_m": np.linspace(0.001, 0.1, 10),
     },
     "fw": {
         "planning_depth": [1],

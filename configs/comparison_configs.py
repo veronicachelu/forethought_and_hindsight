@@ -46,6 +46,11 @@ configs={
             "planning_depths": [1, 1, 0],
             "replay_capacities": [0, 0, 0]
         },
+        "corr_vs_value": {
+            "agents": ["bw_intr", "bw_vaware"],
+            "planning_depths": [1, 1, 0],
+            "replay_capacities": [0, 0, 0]
+        },
         "intr_vs_extr": {
             "agents": ["bw_intr", "bw", "vanilla_intr"],
             "planning_depths": [1, 1, 0],

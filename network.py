@@ -205,7 +205,7 @@ def get_intrinsic_network(num_hidden_layers: int,
     d_network, d_network_params = get_d_net(rng_d, num_units)
 
     if target_networks:
-        target_h_network, target_h_network_params = get_h_net(rng_target_h, num_units, input_size)
+        target_h_network, target_h_network_params = get_h_net(rng_target_h, num_units, num_hidden_layers, input_size)
         target_v_network, target_v_network_params = get_value_net(rng_target_v, num_units)
         target_o_network, target_o_network_params = get_o_net(rng_target_o, num_units)
         target_fw_o_network, target_fw_o_network_params = get_o_net(rng_target_fw_o, num_units)
