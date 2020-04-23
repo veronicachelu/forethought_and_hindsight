@@ -194,6 +194,18 @@ config = {
         "target_networks": False,
         "class": {"linear": "LpBWValueAware"},
     },
+    "bw_meta": {
+        "pg": False,
+        "run_mode": "bw_meta",
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "intrinsic",
+        # "target_networks": True,
+        "target_networks": False,
+        "class": {"linear": "LpBWMeta"},
+    },
     "random": {
         "pg": False,
         "run_mode": "bw_intr",

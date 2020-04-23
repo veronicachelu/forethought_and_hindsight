@@ -155,7 +155,7 @@ class LpIntrinsicVanilla(Agent):
         self._r_parameters = network["model"]["params"][3]
         self._d_parameters = network["model"]["params"][4]
 
-        # self._v_step_schedule = optimizers.polynomial_decay(self._lr, self._exploration_decay_period, 0, 1)
+        self._v_step_schedule = optimizers.polynomial_decay(self._lr, self._exploration_decay_period, 0, 1)
 
         if self._target_networks:
             self._target_v_network = network["target_value"]["net"]
@@ -191,7 +191,7 @@ class LpIntrinsicVanilla(Agent):
         self._h_forward = jax.jit(self._h_network)
 
         # Make an Adam optimizer.
-        v_opt_init, v_opt_update, v_get_params = optimizers.adam(step_size=self._lr)
+        v_opt_init, v_opt_update, v_get_params = optimizers.adam(step_size=self._v_step_schedule)
         self._v_opt_update = jax.jit(v_opt_update)
         value_params = [self._v_parameters, self._h_parameters] if self._latent else self._v_parameters
         self._v_opt_state = v_opt_init(value_params)
