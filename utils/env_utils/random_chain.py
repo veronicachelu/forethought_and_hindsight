@@ -6,8 +6,8 @@ from utils.mdp_solvers.solve_chain import ChainSolver
 
 
 class Random(dm_env.Environment):
-    def __init__(self, rng=None, obs_type="tabular", nS = 5,
-                 left_reward=-1, right_reward=1):
+    def __init__(self, rng=None, obs_type="tabular", nS = 5, nF=0,
+                 left_reward=-1.0, right_reward=1.0):
         self._P = None
         self._R = None
         self._stochastic = False
@@ -16,6 +16,7 @@ class Random(dm_env.Environment):
         self._end_states = [0, self._nS - 1]
         self._rng = rng
         self._nA = 2
+        self._nF = nF,
         self._left_reward = left_reward
         self._right_reward = right_reward
         self._slip_prob = 0
@@ -24,11 +25,12 @@ class Random(dm_env.Environment):
 
         self._reset_next_step = True
         # self._true_v = np.linspace(left_reward * nS, right_reward * nS, nS) / nS
-        # self._dependent_features = [[1, 0, 0],
-        #                   [1/np.sqrt(2), 1/np.sqrt(2), 0],
-        #                   [1/np.sqrt(3), 1/np.sqrt(3), 1/np.sqrt(3)],
-        #                   [0, 1/np.sqrt(2), 1/np.sqrt(2)],
-        #                   [0, 0, 1]]
+        self._dependent_features = [
+                          [1, 0, 0],
+                          [1/np.sqrt(2), 1/np.sqrt(2), 0],
+                          [1/np.sqrt(3), 1/np.sqrt(3), 1/np.sqrt(3)],
+                          [0, 1/np.sqrt(2), 1/np.sqrt(2)],
+                          [0, 0, 1]]
         # self._nF = 3
         # self._inverted_features = [[0, 1/2, 1/2, 1/2, 1/2],
         #                           [1/2, 0, 1/2, 1/2, 1/2],
@@ -55,12 +57,12 @@ class Random(dm_env.Environment):
         return next_state
 
     def _get_next_reward(self, next_state):
-        if next_state == 0:
+        if next_state == 0.0:
             reward = self._left_reward
         elif next_state == self._nS - 1:
             reward = self._right_reward
         else:
-            reward = 0
+            reward = 0.0
 
         return reward
 

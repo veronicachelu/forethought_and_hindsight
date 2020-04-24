@@ -60,10 +60,10 @@ class LpBwCorrBased(LpIntrinsicVanilla):
                 real_d_tmn_2_t += t[3]
 
             v_t_target = self._v_network(v_params, h_t)
-            real_td_error = jax.vmap(rlax.td_learning)(real_v_tmn, real_r_tmn_2_t,
+            real_td_error = jax.vmap(td_learning)(real_v_tmn, real_r_tmn_2_t,
                                                        real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
                                                         v_t_target)
-            real_update = vjp_fun(2 * real_td_error)[0] # pull back real_td_error
+            real_update = vjp_fun(real_td_error)[0]# pull back real_td_error
 
             model_tmn = self._o_network(o_params, h_t)
             model_v_tmn, model_vjp_fun = jax.vjp(self._v_network, v_params, model_tmn)
@@ -73,7 +73,7 @@ class LpBwCorrBased(LpIntrinsicVanilla):
             model_td_error = jax.vmap(td_learning)(model_v_tmn, model_r_tmn_2_t,
                                                    real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
                                                         v_t_target)
-            model_update = model_vjp_fun(2 * model_td_error)[0] # pullback model_td_error
+            model_update = model_vjp_fun(model_td_error)[0] # pullback model_td_error
 
             corr_loss = 0
             for i, (layer_model, layer_real) in enumerate(zip(model_update, real_update)):
@@ -84,17 +84,6 @@ class LpBwCorrBased(LpIntrinsicVanilla):
             # r_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_r_tmn_2_t, real_r_tmn_2_t))
             total_loss = corr_loss #+ r_loss
 
-
-            ###### Alternative
-            # model_tmn = self._o_network(o_params, h_t)
-            # model_v_tmn = self._v_network(v_params, model_tmn)
-            # real_v_tmn = self._v_network(v_params, h_tmn)
-            #
-            # l_m = jnp.mean(jax.vmap(rlax.l2_loss)(model_v_tmn, lax.stop_gradient(real_v_tmn)))
-            # # model_r_tmn_2_t,
-            # #                                        real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
-            #                                        #      v_t_target)
-            # total_loss = corr_loss + r_loss
             return total_loss, {"corr_loss": corr_loss,}
                                 # "r_loss": r_loss}
 
@@ -113,13 +102,14 @@ class LpBwCorrBased(LpIntrinsicVanilla):
 
         dwrt = [0, 1] if self._latent else 0
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, dwrt))
-        # self._model_step_schedule = optimizers.polynomial_decay(self._lr_model, self._exploration_decay_period, 0, 1)
+        self._model_step_schedule = optimizers.polynomial_decay(self._lr_model,
+                                                                self._exploration_decay_period, 0, 0.9)
         self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [1, 2, 3], has_aux=True))
         # self._model_loss_grad = (jax.value_and_grad(model_loss, [1, 2, 3], has_aux=True))
         self._o_forward = jax.jit(self._o_network)
         self._r_forward = jax.jit(self._r_network)
 
-        model_opt_init, model_opt_update, model_get_params = optimizers.adam(step_size=self._lr_model)
+        model_opt_init, model_opt_update, model_get_params = optimizers.adam(step_size=self._model_step_schedule)
         self._model_opt_update = jax.jit(model_opt_update)
         model_params = [self._h_parameters, self._o_parameters, self._r_parameters]
         self._model_opt_state = model_opt_init(model_params)
@@ -147,8 +137,6 @@ class LpBwCorrBased(LpIntrinsicVanilla):
             self._h_parameters, self._o_parameters, self._r_parameters = self._model_parameters
 
             losses_and_grads = {"losses": {
-                # "loss_corr": losses["corr_loss"],
-                # "loss_r": losses["r_loss"],
                 "loss_total": total_loss,
             },
             }

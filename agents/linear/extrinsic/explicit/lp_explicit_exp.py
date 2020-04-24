@@ -67,8 +67,9 @@ class LpExplicitExp(LpVanilla):
         self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [0, 1], has_aux=True))
         self._o_forward = jax.jit(self._o_network)
         self._r_forward = jax.jit(self._r_network)
-
-        model_opt_init, model_opt_update, model_get_params = optimizers.adam(step_size=self._lr_model)
+        self._model_step_schedule = optimizers.polynomial_decay(self._lr_model,
+                                                                self._exploration_decay_period, 0, 0.9)
+        model_opt_init, model_opt_update, model_get_params = optimizers.adam(step_size=self._model_step_schedule)
         self._model_opt_update = jax.jit(model_opt_update)
         self._model_opt_state = model_opt_init([self._o_parameters, self._r_parameters])
         self._model_get_params = model_get_params
@@ -110,7 +111,8 @@ class LpExplicitExp(LpVanilla):
     ):
         if self._n == 0:
             return
-        o_t = np.array([timestep.observation])
+        features = self._get_features([timestep.observation])
+        o_t = np.array([features])
 
         # plan on batch of transitions
         loss, gradient = self._v_planning_loss_grad(self._v_parameters,
@@ -168,11 +170,16 @@ class LpExplicitExp(LpVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        self._sequence.append([np.array([timestep.observation]),
+        features = self._get_features([timestep.observation])
+        next_features = self._get_features([new_timestep.observation])
+        transitions = [np.array(features),
                        np.array([action]),
                        np.array([new_timestep.reward]),
                        np.array([new_timestep.discount]),
-                       np.array([new_timestep.observation])])
+                       np.array(next_features)]
+
+        self._sequence.append(transitions)
+
         if new_timestep.discount == 0:
             self._should_reset_sequence = True
 

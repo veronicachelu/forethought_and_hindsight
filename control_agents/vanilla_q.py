@@ -82,10 +82,8 @@ class VanillaQ(Agent):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
             q_tm1 = self._q_network(q_params, o_tm1)
             q_t = self._q_network(q_params, o_t)
-            q_target = r_t + d_t * discount * jnp.max(q_t, axis=-1)
-            q_a_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
-            td_error = q_a_tm1 - lax.stop_gradient(q_target)
-
+            batch_q_learning = jax.vmap(rlax.q_learning)
+            td_error = batch_q_learning(q_tm1, a_tm1, r_t, discount * d_t, q_t)
             return jnp.mean(td_error ** 2)
 
         # Internalize the networks.
@@ -115,7 +113,7 @@ class VanillaQ(Agent):
         if not eval and self._nrng.rand() < self._epsilon:
             return self._nrng.randint(self._nA)
         features = self._get_features(timestep.observation[None, ...])
-        q_values = self._q_forward(self._q_parameters, features)
+        q_values = self._q_forward(self._q_parameters, features)[0]
         return int(np.argmax(q_values))
 
     def v_function(self, o):

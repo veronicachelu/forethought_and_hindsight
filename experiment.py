@@ -3,6 +3,7 @@ import tensorflow as tf
 from agents import Agent
 from utils.visualizer import *
 import contextlib
+from copy import deepcopy
 
 @contextlib.contextmanager
 def dummy_context_mgr():
@@ -26,10 +27,12 @@ def run_episodic(agent: Agent,
         for episode in np.arange(start=agent.episode, stop=space["env_config"]["num_episodes"]):
             # Run an episode.
             rewards = 0
+            rmsve = 0
             t = 0
             timestep = environment.reset()
             agent.update_hyper_params(episode, space["env_config"]["num_episodes"])
             while True:
+                copy_env = deepcopy(environment)
                 action = agent.policy(timestep)
                 new_timestep = environment.step(action)
 
@@ -48,6 +51,14 @@ def run_episodic(agent: Agent,
                 agent.total_steps += 1
                 t += 1
 
+                if space["env_config"]["env_type"] == "continuous":
+                    hat_v = agent.get_value_for_state(timestep.observation)
+                    v = mdp_solver.get_value_for_state(agent, copy_env,
+                                                       timestep)
+                    hat_error = np.abs(v - hat_v)
+                    step_rmsve = np.power(v - hat_v, 2)
+                    rmsve += step_rmsve
+
                 if new_timestep.last() or (aux_agent_configs["max_len"] is not None and \
                                                    t == aux_agent_configs["max_len"]):
                     break
@@ -60,11 +71,6 @@ def run_episodic(agent: Agent,
                 hat_error = np.abs(environment._true_v - hat_v)
                 rmsve = get_rmsve(environment, mdp_solver, hat_v, environment._true_v, weighted=weighted)
                 # ep_rmsve = rmsve
-            else:
-                hat_v = agent.get_value_for_state(timestep.observation)
-                v = mdp_solver.get_value_for_state(timestep.observation)
-                hat_error = np.abs(v - hat_v)
-                rmsve = np.power(v - hat_v, 2)
 
             total_rmsve += rmsve
             total_reward += rewards
@@ -107,7 +113,7 @@ def run_episodic(agent: Agent,
 
         rmsve_start = 0
         return round(total_rmsve, 2), round(rmsve, 2), round(rmsve_start, 2), \
-               np.mean(ep_steps, dtype=int), hat_v, hat_error
+               np.mean(ep_steps, dtype=int), hat_v, None
 
 
 

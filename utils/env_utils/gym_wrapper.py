@@ -194,11 +194,10 @@ if __name__ == "__main__":
 
     agent = VanillaQ(
         run_mode="q",
-        policy=None,
         action_spec=env.action_spec(),
         network=network,
         batch_size=1,
-        discount=0.95,
+        discount=0.99,
         replay_capacity=0,
         min_replay_size=1,
         model_learning_period=1,

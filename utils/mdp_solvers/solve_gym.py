@@ -6,6 +6,7 @@ import tensorflow as tf
 from control_agents import VanillaQ
 from network import *
 import contextlib
+from copy import copy
 
 @contextlib.contextmanager
 def dummy_context_mgr():
@@ -62,6 +63,25 @@ class GymSolver:
         )
         return agent
 
+    def _run_agent_from_state(self, agent, environment, timestep,
+                              num_trajectories, max_len):
+        traj_rewards = []
+        for traj in np.arange(start=0, stop=num_trajectories):
+            traj_env = copy(environment)
+            rewards = 0
+            traj_reward = 0
+            for t in range(max_len):
+                action = agent.policy(timestep)
+                new_timestep = traj_env.step(action)
+
+                rewards += new_timestep.reward
+                traj_reward += new_timestep.reward
+                if new_timestep.last():
+                    break
+                timestep = new_timestep
+            traj_rewards.append(traj_reward)
+        return np.mean(traj_rewards)
+
     def train_agent(self, agent, environment, num_episodes, max_len):
         cumulative_reward = 0
         agent.load_model()
@@ -115,7 +135,6 @@ class GymSolver:
             ep_reward = 0
             timestep = environment.reset()
             for t in range(max_len):
-
                 if not agent:
                     action = environment.action_spec().generate_value()
                 else:
@@ -135,7 +154,6 @@ class GymSolver:
             ep_rewards.append(ep_reward)
 
         return np.mean(ep_steps), np.mean(ep_rewards)
-
 
     def get_optimal_policy(self):
         if self._policy is None or self._assigned_pi is False:
@@ -164,6 +182,8 @@ class GymSolver:
 
         return self._v
 
-    def get_value_for_state(self, state):
-        return self._v(state)
+    def get_value_for_state(self, agent, environment, timestep):
+        return self._run_agent_from_state(agent, environment, timestep,
+                                          5, 100000)
+        # return self._v(state)
 

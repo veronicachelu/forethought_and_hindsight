@@ -11,12 +11,12 @@ env_config = {
     "policy_type": "estimated",
     "mdp_filename": "CartPole-v0",
     "env_size": None,
-    "num_episodes": 100,
+    "num_episodes": 50,
     "num_runs": 100,
     "stochastic": False,
     "nA": 2,
     "env_size": 4,
-    "lr_q": 0.6
+    "lr_q": 0.4
 }
 
 volatile_agent_config = {
