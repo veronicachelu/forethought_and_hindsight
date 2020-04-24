@@ -3,7 +3,7 @@ from typing import Callable, List, Mapping, Sequence, Text, Tuple, Union
 import numpy as np
 import jax.numpy as jnp
 from jax import random as jrandom
-from jax.nn.initializers import glorot_normal, normal, ones, zeros
+import haiku as hk
 
 def Reshape(newshape):
   """Layer construction function for a reshape layer."""
@@ -53,6 +53,7 @@ def get_tabular_network(num_hidden_layers: int,
                   nA: int,
                   rng: List,
                   input_dim: Tuple,
+                  # double_input_reward_model=Fal
                         ):
 
     network = {}
@@ -73,22 +74,75 @@ def get_extrinsic_network(num_hidden_layers: int,
                   nA: int,
                   rng: List,
                   input_dim: Tuple,
+                  # double_input_reward_model=False
                           ):
 
     input_size = np.prod(input_dim)
     network = {}
     rng_v, rng_h, rng_o, rng_fw_o, rng_r, rng_d = jrandom.split(rng, 6)
 
-    v_network, v_network_params = get_value_net(rng_v, input_size)
-    o_network, o_network_params = get_o_net(rng_o, input_size)
-    fw_o_network, fw_o_network_params = get_o_net(rng_o, input_size)
-    r_network, r_network_params = get_r_net(rng_r, input_size)
+    # layers = [stax.Flatten]
+    layers = []
+    # for _ in range(num_hidden_layers):
+    #     layers.append(stax.Dense(num_units))
+    #     layers.append(stax.Relu)
+    layers.append(stax.Dense(1))
+    layers.append(Reshape((-1)))
+
+    v_network_init, v_network = stax.serial(*layers)
+    _, v_network_params = v_network_init(rng_v, (-1, input_size))
 
     network["value"] = {"net": v_network,
-                        "params": v_network_params}
-    network["model"] = {"net": [o_network, fw_o_network, r_network],
-                        "params": [o_network_params,
-                                   fw_o_network_params, r_network_params]
+                        "params": v_network_params}  # layers = [stax.Flatten]
+
+    # layers = []
+    # for _ in range(num_hidden_layers):
+    #     layers.append(stax.Dense(num_units))
+    #     layers.append(stax.Relu)
+    # layers.append(stax.Dense(input_size))
+
+    o_network_init, o_network = stax.Dense(input_size)
+    _, o_network_params = o_network_init(rng_o, (-1, input_size))
+
+    # layers = []
+    # for _ in range(num_hidden_layers):
+    #     layers.append(stax.Dense(num_units))
+    #     layers.append(stax.Relu)
+    # layers.append(stax.Dense(input_size))
+
+    fw_o_network_init, fw_o_network = stax.Dense(input_size)
+    _, fw_o_network_params = fw_o_network_init(rng_fw_o, (-1, input_size))
+
+    # reward
+    layers = []
+    # for _ in range(num_hidden_layers):
+        # layers.append(stax.FanInConcat())
+        # layers.append(stax.Dense(num_units))
+        # layers.append(stax.Relu)
+
+    layers.append(stax.Dense(1))
+    layers.append(Reshape((-1)))
+
+    r_network_init, r_network = stax.serial(*layers)
+    # if double_input_reward_model:
+    _, r_network_params = r_network_init(rng_r, (-1, 2 * input_size))
+    # else:
+    #     _, r_network_params = r_network_init(rng_r, (-1, input_size))
+
+    # gamma/discount/done
+    layers = []
+    for _ in range(num_hidden_layers):
+        layers.append(stax.Dense(num_units))
+        layers.append(stax.Relu)
+    layers.append(stax.Dense((1)))
+    layers.append(Reshape((-1)))
+
+    d_network_init, d_network = stax.serial(*layers)
+    _, d_network_params = d_network_init(rng_d, (-1, input_size))
+
+    network["model"] = {"net": [o_network, fw_o_network, r_network, None],
+                        "params": [o_network_params, fw_o_network_params,
+                                   r_network_params, None]
                         }
 
     return network
@@ -146,7 +200,7 @@ def get_intrinsic_network(num_hidden_layers: int,
         target_fw_o_network, target_fw_o_network_params = get_o_net(rng_target_fw_o, num_units)
         target_r_network, target_r_network_params = get_r_net(rng_target_r, num_units)
         network["target_model"] = {"net": [target_h_network, target_o_network, target_fw_o_network,
-                                           target_r_network, ],
+                                           target_r_network],
                             "params": [target_h_network_params, target_o_network_params,
                                        target_fw_o_network_params, target_r_network_params,
                                        ]
@@ -160,108 +214,79 @@ def get_intrinsic_network(num_hidden_layers: int,
 
     network["value"] = {"net": v_network,
                         "params": v_network_params}
-    network["model"] = {"net": [h_network, o_network, fw_o_network, r_network, ],
+    network["model"] = {"net": [h_network, o_network, fw_o_network, r_network],
                         "params": [h_network_params, o_network_params,
-                                   fw_o_network_params, r_network_params, ]
+                                   fw_o_network_params, r_network_params]
                         }
 
     return network
 
-def get_pg_network(num_hidden_layers: int,
-                  num_units: int,
-                  nA: int,
-                  rng: List,
-                  input_dim: Tuple,
-                  target_networks=False,
-                  latent=False,
-                          ):
-    input_size = np.prod(input_dim)
-    num_units = num_units if latent else input_size
-    network = {}
-    rng_pi, rng_v, rng_h, rng_o, rng_fw_o, rng_r, rng_d = jrandom.split(rng, 7)
-
-    h_network, h_network_params = get_h_net(rng_h, num_units, input_size)
-    pi_network, pi_network_params = get_pi_net(rng_pi, num_units, nA)
-    v_network, v_network_params = get_value_net(rng_v, num_units)
-    o_network, o_network_params = get_o_net(rng_o, num_units)
-    fw_o_network, fw_o_network_params = get_o_net(rng_o, num_units)
-    r_network, r_network_params = get_r_net(rng_r, num_units)
-    d_network, d_network_params = get_d_net(rng_d, num_units)
-
-    network["value"] = {"net": v_network,
-                        "params": v_network_params}
-    network["pi"] = {"net": pi_network,
-                        "params": pi_network_params}
-    network["model"] = {"net": [h_network, o_network, fw_o_network, r_network, d_network],
-                        "params": [h_network_params, o_network_params,
-                                   fw_o_network_params, r_network_params, d_network_params]
-                        }
-
-    return network
-
-def Dense_no_bias(out_dim, W_init=glorot_normal()):
-  """Layer constructor function for a dense (fully-connected) layer."""
-  def init_fun(rng, input_shape):
-    output_shape = input_shape[:-1] + (out_dim,)
-    k1, k2 = jrandom.split(rng)
-    W = W_init(k1, (input_shape[-1], out_dim))
-    return output_shape, (W)
-  def apply_fun(params, inputs, **kwargs):
-    W = params
-    return np.dot(inputs, W)
-  return init_fun, apply_fun
+# def get_pg_network(num_hidden_layers: int,
+#                   num_units: int,
+#                   nA: int,
+#                   rng: List,
+#                   input_dim: Tuple,
+#                   target_networks=False,
+#                   latent=False,
+#                           ):
+#     input_size = np.prod(input_dim)
+#     num_units = num_units if latent else input_size
+#     network = {}
+#     rng_pi, rng_v, rng_h, rng_o, rng_fw_o, rng_r, rng_d = jrandom.split(rng, 7)
+#
+#     h_network, h_network_params = get_h_net(rng_h, num_units, input_size)
+#     pi_network, pi_network_params = get_pi_net(rng_pi, num_units, nA)
+#     v_network, v_network_params = get_value_net(rng_v, num_units)
+#     o_network, o_network_params = get_o_net(rng_o, num_units)
+#     fw_o_network, fw_o_network_params = get_o_net(rng_o, num_units)
+#     r_network, r_network_params = get_r_net(rng_r, num_units)
+#     d_network, d_network_params = get_d_net(rng_d, num_units)
+#
+#     network["value"] = {"net": v_network,
+#                         "params": v_network_params}
+#     network["pi"] = {"net": pi_network,
+#                         "params": pi_network_params}
+#     network["model"] = {"net": [h_network, o_network, fw_o_network, r_network, d_network],
+#                         "params": [h_network_params, o_network_params,
+#                                    fw_o_network_params, r_network_params, d_network_params]
+#                         }
+#
+#     return network
 
 def get_h_net(rng_h, num_units, num_hidden_layers, input_size):
-    layers = []
-    for _ in range(num_hidden_layers):
-        layers.append(Dense_no_bias(num_units))
-        layers.append(stax.Relu)
-    layers.append(Dense_no_bias(num_units))
-    # h_network_init, h_network = stax.Dense(num_units)
-    h_network_init, h_network = stax.serial(*layers)
-    _, h_network_params = h_network_init(rng_h, (-1, input_size))
-    return h_network, h_network_params
-
-def get_pi_net(rng_pi, num_units, nA):
-    pi_network_init, pi_network = Dense_no_bias(nA)
-    _, pi_network_params = pi_network_init(rng_pi, (-1, num_units))
-
-    return pi_network, pi_network_params
+    def network(inputs: jnp.ndarray) -> jnp.ndarray:
+        value_output = hk.Linear(num_units, with_bias=False)(inputs)[0]
+        return value_output
+    net = hk.transform(network)
+    dummy_observation = np.zeros((1, input_size), jnp.float32)
+    initial_params = net.init(rng_h, dummy_observation)
+    return net, initial_params
 
 def get_value_net(rng_v, num_units):
-    layers = []
-    layers.append(Dense_no_bias(1))
-    layers.append(Reshape((-1)))
-    v_network_init, v_network = stax.serial(*layers)
-    _, v_network_params = v_network_init(rng_v, (-1, num_units))
-
-    return v_network, v_network_params
+    def network(inputs: jnp.ndarray) -> jnp.ndarray:
+        value_output = hk.Linear(1, with_bias=False)(inputs)[0]
+        return value_output
+    net = hk.transform(network)
+    dummy_observation = np.zeros((1, num_units), jnp.float32)
+    initial_params = net.init(rng_v, dummy_observation)
+    return net, initial_params
 
 def get_o_net(rng_o, num_units):
-    o_network_init, o_network = Dense_no_bias(num_units)
-    _, o_network_params = o_network_init(rng_o, (-1, num_units))
+    def network(inputs: jnp.ndarray) -> jnp.ndarray:
+        transition_model_output = hk.Linear(num_units, with_bias=False)(inputs)
+        return transition_model_output
 
-    return o_network, o_network_params
+    net = hk.transform(network)
+    dummy_observation = np.zeros((1, num_units), jnp.float32)
+    initial_params = net.init(rng_o, dummy_observation)
+    return net, initial_params
 
 def get_r_net(rng_r, num_units):
-    layers = []
-    layers.append(Dense_no_bias(1))
-    layers.append(Reshape((-1)))
+    def network(inputs: jnp.ndarray) -> jnp.ndarray:
+        reward_model_output = hk.Linear(1, with_bias=False)(inputs)[0]
+        return reward_model_output
 
-    r_network_init, r_network = stax.serial(*layers)
-    # if double_input_reward_model:
-    _, r_network_params = r_network_init(rng_r, (-1, 2 * num_units))
-    # else:
-    #     _, r_network_params = r_network_init(rng_r, (-1, num_units))
-
-    return r_network, r_network_params
-
-def get_d_net(rng_d, num_units):
-    layers = []
-    layers.append(Dense_no_bias(2))
-    layers.append(Reshape((-1)))
-
-    d_network_init, d_network = stax.serial(*layers)
-    _, d_network_params = d_network_init(rng_d, (-1, 2 * num_units))
-
-    return d_network, d_network_params
+    net = hk.transform(network)
+    dummy_observation = np.zeros((1, 2*num_units), jnp.float32)
+    initial_params = net.init(rng_r, dummy_observation)
+    return net, initial_params

@@ -24,7 +24,7 @@ def td_learning(
     discount_t,
     v_t):
 
-  target_tm1 = r_t + discount_t * v_t
+  target_tm1 = r_t + discount_t * lax.stop_gradient(v_t)
   return target_tm1 - v_tm1
 
 class LpBWValueAware(LpIntrinsicVanilla):
@@ -38,11 +38,17 @@ class LpBWValueAware(LpIntrinsicVanilla):
         self._should_reset_sequence = False
         self._target_update_period = 1
 
+        def latent_v_loss(v_params, h_params, transitions):
+            h_tm1, _, r_t, d_t, h_t = transitions
+            v_tm1 = self._v_network(v_params, h_tm1)
+            v_t = self._v_network(v_params, h_t)
+            td_error = jax.vmap(td_learning)(v_tm1, r_t, d_t * (self._discount ** self._n), v_t)
+            return jnp.mean(td_error ** 2)
+
         def model_loss(v_params,
                        h_params,
                        o_params,
                        r_params,
-                       d_params,
                        transitions):
             o_tmn_target = transitions[0][0]
             o_t = transitions[-1][-1]
@@ -62,9 +68,9 @@ class LpBWValueAware(LpIntrinsicVanilla):
                            jnp.array([0]),
                            real_r_tmn_2_t,
                            real_d_tmn_2_t,
-                           o_t]
+                                h_t]
 
-            _, real_gradients = self._residual_v_loss_grad(v_params,
+            _, real_gradients = self._latent_v_loss_grad(v_params,
                                                 self._h_parameters,
                                                   real_transitions)
             real_v_opt_state = self._v_opt_update(self.episode, real_gradients,
@@ -79,9 +85,9 @@ class LpBWValueAware(LpIntrinsicVanilla):
                            jnp.array([0]),
                            model_r_tmn_2_t,
                            real_d_tmn_2_t,
-                           o_t]
+                           h_t]
 
-            _, model_gradients = self._residual_v_loss_grad(v_params,
+            _, model_gradients = self._latent_v_loss_grad(v_params,
                                                   self._h_parameters,
                                                    model_transitions)
             model_v_opt_state = self._v_opt_update(self.episode, model_gradients,
@@ -100,18 +106,18 @@ class LpBWValueAware(LpIntrinsicVanilla):
             value_loss_t = jnp.sum(jax.vmap(rlax.l2_loss)(after_model_v_t,
                                                             lax.stop_gradient(after_real_v_t)))
 
-            r_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_r_tmn_2_t, real_r_tmn_2_t))
+            # r_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_r_tmn_2_t, real_r_tmn_2_t))
             total_loss = value_loss_tmn
                          # + r_loss
                          # + value_loss_t
 
-            return total_loss, {"corr_loss": value_loss_tmn + value_loss_t,
-                                "r_loss": r_loss,
+            return total_loss, {"corr_loss": value_loss_tmn, # + value_loss_t,
+                                # "r_loss": r_loss,
                                 "after_real_v_tmn": after_real_v_tmn,
                                 "after_model_v_tmn": after_model_v_tmn,
                                 }
 
-        def v_planning_loss(v_params, h_params, o_params, r_params, d_params, o_t, d_t):
+        def v_planning_loss(v_params, h_params, o_params, r_params, o_t, d_t):
             h_t = lax.stop_gradient(self._h_network(h_params, o_t)) if self._latent else o_t
             model_tmn = lax.stop_gradient(self._o_network(o_params, h_t))
 
@@ -128,16 +134,18 @@ class LpBWValueAware(LpIntrinsicVanilla):
         dwrt = [0, 1] if self._latent else 0
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, dwrt))
 
-        # self._model_step_schedule = optimizers.polynomial_decay(self._lr_model, self._exploration_decay_period, 0, 1)
-        self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [1, 2, 3, 4], has_aux=True))
-        # self._model_loss_grad = jax.value_and_grad(model_loss, [1, 2, 3, 4], has_aux=True)
+        dwrt = [0, 1] if self._latent else 0
+        self._latent_v_loss_grad = jax.jit(jax.value_and_grad(latent_v_loss, dwrt))
+
+        self._model_step_schedule = optimizers.polynomial_decay(self._lr_model, self._exploration_decay_period, 0, 1)
+        # self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [1, 2, 3, 4], has_aux=True))
+        self._model_loss_grad = jax.value_and_grad(model_loss, [1, 2, 3], has_aux=True)
         self._o_forward = jax.jit(self._o_network)
         self._r_forward = jax.jit(self._r_network)
-        self._d_forward = jax.jit(self._d_network)
 
         model_opt_init, model_opt_update, model_get_params = optimizers.adam(step_size=self._lr_model)
         self._model_opt_update = jax.jit(model_opt_update)
-        model_params = [self._h_parameters, self._o_parameters, self._r_parameters, self._d_parameters]
+        model_params = [self._h_parameters, self._o_parameters, self._r_parameters]
         self._model_opt_state = model_opt_init(model_params)
         self._model_get_params = model_get_params
 
@@ -157,18 +165,17 @@ class LpBWValueAware(LpIntrinsicVanilla):
                                                    self._h_parameters,
                                                    self._o_parameters,
                                                    self._r_parameters,
-                                                   self._d_parameters,
                                                    self._sequence)
             self._model_opt_state = self._model_opt_update(self.episode, list(gradients),
                                                    self._model_opt_state)
             self._model_parameters = self._model_get_params(self._model_opt_state)
-            self._h_parameters, self._o_parameters, self._r_parameters, self._d_parameters = self._model_parameters
+            self._h_parameters, self._o_parameters, self._r_parameters = self._model_parameters
 
             losses_and_grads = {"losses": {
-                "loss_corr": losses["corr_loss"],
+                # "loss_corr": losses["corr_loss"],
                 "after_real_v_tmn": losses["after_real_v_tmn"][0],
                 "after_model_v_tmn": losses["after_model_v_tmn"][0],
-                "loss_r": losses["r_loss"],
+                # "loss_r": losses["r_loss"],
                 "loss_total": total_loss,
             },
             }
@@ -196,7 +203,6 @@ class LpBWValueAware(LpIntrinsicVanilla):
                                                     self._h_parameters,
                                                     self._o_parameters,
                                                     self._r_parameters,
-                                                    self._d_parameters,
                                                     o_t, d_t)
         if self._latent:
             gradients = list(gradients)

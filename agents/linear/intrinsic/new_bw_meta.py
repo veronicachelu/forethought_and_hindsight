@@ -27,16 +27,23 @@ def td_learning(
   target_tm1 = r_t + discount_t * lax.stop_gradient(v_t)
   return target_tm1 - v_tm1
 
-class LpBwCorrBased(LpIntrinsicVanilla):
+class LpBWMeta(LpIntrinsicVanilla):
     def __init__(
             self,
             **kwargs
     ):
-        super(LpBwCorrBased, self).__init__(**kwargs)
+        super(LpBWMeta, self).__init__(**kwargs)
 
         self._sequence = []
         self._should_reset_sequence = False
         self._target_update_period = 1
+
+        def latent_v_loss(v_params, h_params, transitions):
+            h_tm1, _, r_t, d_t, h_t = transitions
+            v_tm1 = self._v_network.apply(v_params, h_tm1)
+            v_t = self._v_network.apply(v_params, h_t)
+            td_error = jax.vmap(td_learning)(v_tm1, r_t, d_t * (self._discount ** self._n), v_t)
+            return jnp.mean(td_error ** 2)
 
         def model_loss(v_params,
                        h_params,
@@ -46,11 +53,9 @@ class LpBwCorrBased(LpIntrinsicVanilla):
             o_tmn_target = transitions[0][0]
             o_t = transitions[-1][-1]
 
-            h_tmn = self._h_network(h_params, o_tmn_target) if self._latent else o_tmn_target
-            h_t = self._h_network(h_params, o_t) if self._latent else o_t
+            h_tmn = self._h_network.apply(h_params, o_tmn_target) if self._latent else o_tmn_target
+            h_t = self._h_network.apply(h_params, o_t) if self._latent else o_t
 
-            # #compute fwd + bwd pass
-            real_v_tmn, vjp_fun = jax.vjp(self._v_network, v_params, h_tmn)
             real_r_tmn_2_t = 0
             for i, t in enumerate(transitions):
                 real_r_tmn_2_t += (self._discount ** i) * t[2]
@@ -59,53 +64,50 @@ class LpBwCorrBased(LpIntrinsicVanilla):
             for i, t in enumerate(transitions):
                 real_d_tmn_2_t += t[3]
 
-            v_t_target = self._v_network(v_params, h_t)
-            real_td_error = jax.vmap(rlax.td_learning)(real_v_tmn, real_r_tmn_2_t,
-                                                       real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
-                                                        v_t_target)
-            real_update = vjp_fun(2 * real_td_error)[0] # pull back real_td_error
+            v_t = self._v_network.apply(v_params, h_t)
+            real_v_tmn_target = real_r_tmn_2_t + \
+                                (self._discount ** self._n) * v_t
 
-            model_tmn = self._o_network(o_params, h_t)
-            model_v_tmn, model_vjp_fun = jax.vjp(self._v_network, v_params, model_tmn)
+            model_tmn = self._o_network.apply(o_params, h_t)
             model_r_input = jnp.concatenate([model_tmn, h_t], axis=-1)
-            model_r_tmn_2_t = self._r_network(r_params, model_r_input)
+            model_r_tmn_2_t = self._r_network.apply(r_params, model_r_input)
 
-            model_td_error = jax.vmap(td_learning)(model_v_tmn, model_r_tmn_2_t,
-                                                   real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
-                                                        v_t_target)
-            model_update = model_vjp_fun(2 * model_td_error)[0] # pullback model_td_error
+            model_transitions = [model_tmn,
+                           jnp.array([0]),
+                           model_r_tmn_2_t,
+                           real_d_tmn_2_t,
+                           h_t]
 
-            corr_loss = 0
-            for i, (layer_model, layer_real) in enumerate(zip(model_update, real_update)):
-                for j, (param_grad_model, param_grad_real) in enumerate(zip(layer_model, layer_real)):
-                    corr_loss += jnp.sum(jax.vmap(rlax.l2_loss)(param_grad_model,
-                                                                 lax.stop_gradient(param_grad_real)))
+            _, model_gradients = self._latent_v_loss_grad(v_params,
+                                                  self._h_parameters,
+                                                   model_transitions)
+            model_v_opt_state = self._v_opt_update(self.episode, model_gradients,
+                                                  lax.stop_gradient(self._v_opt_state))
+            model_value_params = self._v_get_params(model_v_opt_state)
+            after_model_v_tmn = self._v_network.apply(model_value_params, h_tmn)
+
+            value_loss_tmn = jnp.sum(jax.vmap(rlax.l2_loss)(after_model_v_tmn,
+                                                    lax.stop_gradient(real_v_tmn_target)))
 
             # r_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_r_tmn_2_t, real_r_tmn_2_t))
-            total_loss = corr_loss #+ r_loss
+            total_loss = value_loss_tmn
+                         # + r_loss
+                         # + value_loss_t
 
-
-            ###### Alternative
-            # model_tmn = self._o_network(o_params, h_t)
-            # model_v_tmn = self._v_network(v_params, model_tmn)
-            # real_v_tmn = self._v_network(v_params, h_tmn)
-            #
-            # l_m = jnp.mean(jax.vmap(rlax.l2_loss)(model_v_tmn, lax.stop_gradient(real_v_tmn)))
-            # # model_r_tmn_2_t,
-            # #                                        real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
-            #                                        #      v_t_target)
-            # total_loss = corr_loss + r_loss
-            return total_loss, {"corr_loss": corr_loss,}
-                                # "r_loss": r_loss}
+            return total_loss, {"corr_loss": value_loss_tmn,
+                                # "r_loss": r_loss,
+                                "real_v_tmn_target": real_v_tmn_target,
+                                "after_model_v_tmn": after_model_v_tmn,
+                                }
 
         def v_planning_loss(v_params, h_params, o_params, r_params, o_t, d_t):
-            h_t = lax.stop_gradient(self._h_network(h_params, o_t)) if self._latent else o_t
-            model_tmn = lax.stop_gradient(self._o_network(o_params, h_t))
+            h_t = lax.stop_gradient(self._h_network.apply(h_params, o_t)) if self._latent else o_t
+            model_tmn = lax.stop_gradient(self._o_network.apply(o_params, h_t))
 
-            v_tmn = self._v_network(v_params, model_tmn)
+            v_tmn = self._v_network.apply(v_params, model_tmn)
             r_input = jnp.concatenate([model_tmn, h_t], axis=-1)
-            r_tmn = self._r_network(r_params, lax.stop_gradient(r_input))
-            v_t_target = self._v_network(v_params, h_t)
+            r_tmn = self._r_forward(r_params, lax.stop_gradient(r_input))
+            v_t_target = self._v_network.apply(v_params, h_t)
             # to the encoded current state and the value from the predecessor latent state
             td_error = jax.vmap(rlax.td_learning)(v_tmn, r_tmn, d_t * jnp.array([self._discount ** self._n]),
                                                   v_t_target)
@@ -113,11 +115,15 @@ class LpBwCorrBased(LpIntrinsicVanilla):
 
         dwrt = [0, 1] if self._latent else 0
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, dwrt))
-        # self._model_step_schedule = optimizers.polynomial_decay(self._lr_model, self._exploration_decay_period, 0, 1)
-        self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [1, 2, 3], has_aux=True))
-        # self._model_loss_grad = (jax.value_and_grad(model_loss, [1, 2, 3], has_aux=True))
-        self._o_forward = jax.jit(self._o_network)
-        self._r_forward = jax.jit(self._r_network)
+
+        dwrt = [0, 1] if self._latent else 0
+        self._latent_v_loss_grad = jax.jit(jax.value_and_grad(latent_v_loss, dwrt))
+
+        self._model_step_schedule = optimizers.polynomial_decay(self._lr_model, self._exploration_decay_period, 0, 1)
+        # self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [1, 2, 3, 4], has_aux=True))
+        self._model_loss_grad = jax.value_and_grad(model_loss, [1, 2, 3], has_aux=True)
+        self._o_forward = jax.jit(self._o_network.apply)
+        self._r_forward = jax.jit(self._r_network.apply)
 
         model_opt_init, model_opt_update, model_get_params = optimizers.adam(step_size=self._lr_model)
         self._model_opt_update = jax.jit(model_opt_update)
@@ -136,6 +142,7 @@ class LpBwCorrBased(LpIntrinsicVanilla):
             return
         if len(self._sequence) >= self._n:
             (total_loss, losses), gradients = self._model_loss_grad(
+                                                   # self._target_v_parameters,
                                                    self._v_parameters,
                                                    self._h_parameters,
                                                    self._o_parameters,
@@ -148,6 +155,8 @@ class LpBwCorrBased(LpIntrinsicVanilla):
 
             losses_and_grads = {"losses": {
                 # "loss_corr": losses["corr_loss"],
+                "real_v_tmn_target": losses["real_v_tmn_target"][0],
+                "after_model_v_tmn": losses["after_model_v_tmn"][0],
                 # "loss_r": losses["r_loss"],
                 "loss_total": total_loss,
             },
@@ -278,4 +287,8 @@ class LpBwCorrBased(LpIntrinsicVanilla):
                         tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
                                           gradients[k], step=ep)
                 self.writer.flush()
+
+    def get_value_for_state(self, state, ls=None):
+        features = self._get_features(state[None, ...]) if self._feature_mapper is not None else state[None, ...]
+        return self._v_forward(self._v_parameters, features)[0]
 

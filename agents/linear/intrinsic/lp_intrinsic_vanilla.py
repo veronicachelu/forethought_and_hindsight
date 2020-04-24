@@ -125,18 +125,7 @@ class LpIntrinsicVanilla(Agent):
             h_tm1 = lax.stop_gradient(self._h_network(h_params, o_tm1)) if self._latent else o_tm1
             v_tm1 = self._v_network(v_params, h_tm1)
             v_t = self._v_network(v_params, h_t)
-            v_t_target = r_t + d_t * discount * v_t
-            td_error = jax.vmap(rlax.td_learning)(v_tm1, r_t, d_t * discount, v_t_target)
-            return jnp.mean(td_error ** 2)
-
-        def residual_v_loss(v_params, h_params, transitions):
-            o_tm1, _, r_t, d_t, o_t = transitions
-            h_t = lax.stop_gradient(self._h_network(h_params, o_t)) if self._latent else o_t
-            h_tm1 = lax.stop_gradient(self._h_network(h_params, o_tm1)) if self._latent else o_tm1
-            v_tm1 = self._v_network(v_params, h_tm1)
-            v_t = self._v_network(v_params, h_t)
-            v_t_target = r_t + d_t * discount * v_t
-            td_error = jax.vmap(td_learning)(v_tm1, r_t, d_t * discount, v_t_target)
+            td_error = jax.vmap(rlax.td_learning)(v_tm1, r_t, d_t * discount, v_t)
             return jnp.mean(td_error ** 2)
 
         # Internalize the networks.
@@ -147,13 +136,11 @@ class LpIntrinsicVanilla(Agent):
         self._o_network = network["model"]["net"][1]
         self._fw_o_network = network["model"]["net"][2]
         self._r_network = network["model"]["net"][3]
-        self._d_network = network["model"]["net"][4]
 
         self._h_parameters = network["model"]["params"][0]
         self._o_parameters = network["model"]["params"][1]
         self._fw_o_parameters = network["model"]["params"][2]
         self._r_parameters = network["model"]["params"][3]
-        self._d_parameters = network["model"]["params"][4]
 
         self._v_step_schedule = optimizers.polynomial_decay(self._lr, self._exploration_decay_period, 0, 1)
 
@@ -165,13 +152,11 @@ class LpIntrinsicVanilla(Agent):
             self._target_o_network = network["target_model"]["net"][1]
             self._target_fw_o_network = network["target_model"]["net"][2]
             self._target_r_network = network["target_model"]["net"][3]
-            self._target_d_network = network["target_model"]["net"][4]
 
             self._target_h_parameters = network["target_model"]["params"][0]
             self._target_o_parameters = network["target_model"]["params"][1]
             self._target_fw_o_parameters = network["target_model"]["params"][2]
             self._target_r_parameters = network["target_model"]["params"][3]
-            self._target_d_parameters = network["target_model"]["params"][4]
 
             # self._planning_v_network = self._v_network #network["planning_value"]["net"]
             # self._planning_v_parameters = self._v_parameters #network["planning_value"]["params"]
@@ -185,13 +170,13 @@ class LpIntrinsicVanilla(Agent):
         # This function computes dL/dTheta
         dwrt = [0, 1] if self._latent else 0
         self._v_loss_grad = jax.jit(jax.value_and_grad(v_loss, dwrt))
-        self._residual_v_loss_grad = jax.jit(jax.value_and_grad(residual_v_loss, dwrt))
+
         # self._v_loss_grad = jax.value_and_grad(v_loss, 0)
         self._v_forward = jax.jit(self._v_network)
         self._h_forward = jax.jit(self._h_network)
 
         # Make an Adam optimizer.
-        v_opt_init, v_opt_update, v_get_params = optimizers.adam(step_size=self._v_step_schedule)
+        v_opt_init, v_opt_update, v_get_params = optimizers.adam(step_size=self._lr)
         self._v_opt_update = jax.jit(v_opt_update)
         value_params = [self._v_parameters, self._h_parameters] if self._latent else self._v_parameters
         self._v_opt_state = v_opt_init(value_params)

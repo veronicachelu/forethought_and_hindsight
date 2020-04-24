@@ -35,7 +35,7 @@ class LpExplicitExp(LpVanilla):
             o_t = transitions[-1][-1]
             model_o_tmn = self._o_network(o_online_params, o_t)
 
-            o_loss = 20 * jnp.mean(jax.vmap(rlax.l2_loss)(model_o_tmn, o_tmn_target))
+            o_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_o_tmn, o_tmn_target))
 
             r_input = jnp.concatenate([model_o_tmn, o_t], axis=-1)
             model_r_tmn = self._r_network(r_online_params, lax.stop_gradient(r_input))
