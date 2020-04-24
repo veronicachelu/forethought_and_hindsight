@@ -9,7 +9,7 @@ import network
 import utils
 from utils import *
 import csv
-import copy
+from copy import deepcopy
 import configs
 from main_utils import *
 
@@ -102,7 +102,7 @@ def run_for_agent(agent, lr_vanilla=None):
                       "lr": lr,
                       "lr_m": lr_m,
                       "lr_p": lr_p}
-        final_config = copy.deepcopy(seed_config)
+        final_config = deepcopy(seed_config)
         attributes = list(seed_config.keys())
         attributes.append("seed")
 
