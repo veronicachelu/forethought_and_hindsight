@@ -78,11 +78,12 @@ def get_extrinsic_network(num_hidden_layers: int,
 
     input_size = np.prod(input_dim)
     network = {}
-    rng_v, rng_h, rng_o, rng_fw_o, rng_r, rng_d = jrandom.split(rng, 6)
+    rng_v, rng_h, rng_o, rng_fw_o, rng_r = jrandom.split(rng, 5)
 
+    h_network, h_network_params = get_h_net(rng_h, num_units, num_hidden_layers, input_size)
     v_network, v_network_params = get_value_net(rng_v, input_size)
     o_network, o_network_params = get_o_net(rng_o, input_size)
-    fw_o_network, fw_o_network_params = get_o_net(rng_o, input_size)
+    fw_o_network, fw_o_network_params = get_o_net(rng_fw_o, input_size)
     r_network, r_network_params = get_r_net(rng_r, input_size)
 
     network["value"] = {"net": v_network,
@@ -125,7 +126,7 @@ def get_intrinsic_network(num_hidden_layers: int,
     input_size = np.prod(input_dim)
     num_units = num_units if latent else input_size
     network = {}
-    rng_v, rng_h, rng_o, rng_fw_o, rng_r, rng_d = jrandom.split(rng, 6)
+    rng_v, rng_h, rng_o, rng_fw_o, rng_r = jrandom.split(rng, 5)
 
     if target_networks:
         rng_t, rng_p = jrandom.split(rng_target, 2)
@@ -137,7 +138,7 @@ def get_intrinsic_network(num_hidden_layers: int,
     h_network, h_network_params = get_h_net(rng_h, num_units, num_hidden_layers, input_size)
     v_network, v_network_params = get_value_net(rng_v, num_units)
     o_network, o_network_params = get_o_net(rng_o, num_units)
-    fw_o_network, fw_o_network_params = get_o_net(rng_o, num_units)
+    fw_o_network, fw_o_network_params = get_o_net(rng_fw_o, num_units)
     r_network, r_network_params = get_r_net(rng_r, num_units)
 
     if target_networks:

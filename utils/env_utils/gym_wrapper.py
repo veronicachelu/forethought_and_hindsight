@@ -18,8 +18,10 @@ from utils.visualizer import plot_policy
 _GymTimestep = Tuple[np.ndarray, float, bool, Dict[str, Any]]
 
 class DMEnvFromGym(dm_env.Environment):
-  def __init__(self, game):
+  def __init__(self, game, seed):
     gym_env = gym.make(game)
+    gym_env.seed(seed)
+    gym_env.action_space.seed(seed)
     self.gym_env = gym_env
     # Convert gym action and observation spaces to dm_env specs.
     self._observation_spec = space2spec(self.gym_env.observation_space,
