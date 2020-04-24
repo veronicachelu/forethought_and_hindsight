@@ -50,7 +50,7 @@ class LpExplicitExp(LpVanilla):
                                "r_loss": r_loss
                                }
 
-        def v_planning_loss(v_params, o_params, r_params, o_t):
+        def v_planning_loss(v_params, o_params, r_params, o_t, d_t):
             o_tmn = self._o_forward(o_params, o_t)
             v_tmn = self._v_network(v_params, lax.stop_gradient(o_tmn))
             r_input = jnp.concatenate([o_tmn, o_t], axis=-1)
@@ -58,7 +58,7 @@ class LpExplicitExp(LpVanilla):
             r_tmn = self._r_forward(r_params, r_input)
             v_t_target = self._v_network(v_params, o_t)
             td_error = jax.vmap(rlax.td_learning)(v_tmn, r_tmn,
-                                                 jnp.array([self._discount ** self._n]),
+                                                  d_t * jnp.array([self._discount ** self._n]),
                                                  v_t_target)
             return jnp.mean(td_error ** 2)
 
@@ -111,14 +111,17 @@ class LpExplicitExp(LpVanilla):
     ):
         if self._n == 0:
             return
+        if timestep.discount is None:
+            return
         features = self._get_features([timestep.observation])
         o_t = np.array([features])
+        d_t = np.array([timestep.discount])
 
         # plan on batch of transitions
         loss, gradient = self._v_planning_loss_grad(self._v_parameters,
                                                     self._o_parameters,
                                                     self._r_parameters,
-                                                    o_t)
+                                                    o_t, d_t)
         self._v_opt_state = self._v_opt_update(self.episode, gradient,
                                                self._v_opt_state)
         self._v_parameters = self._v_get_params(self._v_opt_state)

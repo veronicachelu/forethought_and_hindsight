@@ -156,7 +156,8 @@ class LpBwCorrBased(LpIntrinsicVanilla):
             return
         if timestep.discount is None:
             return
-        o_t = np.array([timestep.observation])
+        features = self._get_features([timestep.observation])
+        o_t = np.array([features])
         d_t = np.array([timestep.discount])
         # plan on batch of transitions
 
@@ -240,11 +241,15 @@ class LpBwCorrBased(LpIntrinsicVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        self._sequence.append([np.array([timestep.observation]),
+        features = self._get_features([timestep.observation])
+        next_features = self._get_features([new_timestep.observation])
+        transitions = [np.array(features),
                        np.array([action]),
                        np.array([new_timestep.reward]),
                        np.array([new_timestep.discount]),
-                       np.array([new_timestep.observation])])
+                       np.array(next_features)]
+
+        self._sequence.append(transitions)
         if new_timestep.discount == 0:
             self._should_reset_sequence = True
 
