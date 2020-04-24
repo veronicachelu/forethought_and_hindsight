@@ -4,6 +4,7 @@ import numpy as np
 import jax.numpy as jnp
 from jax import random as jrandom
 from jax.nn.initializers import glorot_normal, normal, ones, zeros
+import jax.numpy as jnp
 
 def Reshape(newshape):
   """Layer construction function for a reshape layer."""
@@ -208,7 +209,7 @@ def Dense_no_bias(out_dim, W_init=glorot_normal()):
     return output_shape, (W)
   def apply_fun(params, inputs, **kwargs):
     W = params
-    return np.dot(inputs, W)
+    return jnp.dot(inputs, W)
   return init_fun, apply_fun
 
 def get_h_net(rng_h, num_units, num_hidden_layers, input_size):
