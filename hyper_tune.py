@@ -66,6 +66,9 @@ def run_for_agent(agent, lr_vanilla=None):
 
     best_fieldnames = ["agent"]
     best_fieldnames.extend(list(volatile_agent_config[agent].keys()))
+    best_fieldnames.remove("lr_ctrl")
+    final_fieldnames.remove("lr_ctrl")
+    interm_fieldnames.remove("lr_ctrl")
     best_fieldnames.extend(["steps", 'rmsve_aoc', 'rmsve_aoc_std',
                             'rmsve_min', 'rmsve_min_std',
                             'rmsve_start', 'rmsve_start_std'])
