@@ -93,21 +93,21 @@ def run_for_agent(agent, lr_vanilla=None):
         if agent != "vanilla":
             lr = lr_vanilla
             lr_p = lr_vanilla
+        seed_config = {"planning_depth": planning_depth,
+                      "replay_capacity": replay_capacity,
+                      "lr": lr,
+                      "lr_m": lr_m,
+                      "lr_p": lr_p}
+        final_config = deepcopy(seed_config)
+        attributes = list(seed_config.keys())
+        attributes.append("seed")
+
+        final_attributes = list(final_config.keys())
 
         # for seed in tqdm(range(0, env_config["num_runs"])):
         for seed in range(0, env_config["num_runs"]):
-            seed_config = {"planning_depth": planning_depth,
-                           "replay_capacity": replay_capacity,
-                           "lr": lr,
-                           "lr_m": lr_m,
-                           "lr_ctrl": lr_ctrl,
-                           "lr_p": lr_p}
-
-            attributes = list(seed_config.keys())
-            attributes.append("seed")
-            attributes.remove("lr_ctrl")
-
             seed_config["seed"] = seed
+            seed_config["lr_ctrl"] = lr_ctrl
             if not configuration_exists(interm_hyperparam_file,
                                         seed_config, attributes):
                 space = {
@@ -121,7 +121,7 @@ def run_for_agent(agent, lr_vanilla=None):
                     "crt_config": seed_config}
 
                 total_rmsve, final_rmsve, start_rmsve, avg_steps = run_objective(space)
-                seed_config.pop("lr_ctrl")
+
                 with open(interm_hyperparam_file, 'a+', newline='') as f:
                     writer = csv.DictWriter(f, fieldnames=interm_fieldnames)
                     seed_config["rmsve_aoc"] = round(total_rmsve, 2)
@@ -129,9 +129,6 @@ def run_for_agent(agent, lr_vanilla=None):
                     seed_config["rmsve_start"] = round(start_rmsve, 2)
                     seed_config["steps"] = avg_steps
                     writer.writerow(seed_config)
-
-        final_config = deepcopy(seed_config)
-        final_attributes = list(final_config.keys())
 
         if not configuration_exists(final_hyperparam_file, final_config, final_attributes):
             (rmsve_aoc_avg, rmsve_aoc_std), (rmsve_min_avg, rmsve_min_std),\
