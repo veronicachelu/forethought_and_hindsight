@@ -98,8 +98,10 @@ def run_for_agent(agent, lr_vanilla=None):
         final_config = deepcopy(seed_config)
         attributes = list(seed_config.keys())
         attributes.append("seed")
+        attributes.remove("lr_ctrl")
 
         final_attributes = list(final_config.keys())
+        final_attributes.remove("lr_ctrl")
 
         # for seed in tqdm(range(0, env_config["num_runs"])):
         for seed in range(0, env_config["num_runs"]):
