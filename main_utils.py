@@ -6,7 +6,7 @@ import configs
 import agents
 import experiment
 import utils
-import utils.env_utils as env_utils
+from utils import env_utils
 from utils import *
 from network import *
 import haiku as hk
