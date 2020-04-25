@@ -1,6 +1,6 @@
 import dm_env
 import tensorflow as tf
-from agents import Agent
+from agents.agent import Agent
 from utils.visualizer import *
 import contextlib
 from copy import deepcopy
