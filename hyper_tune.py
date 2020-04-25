@@ -123,6 +123,7 @@ def run_for_agent(agent, lr_vanilla=None):
                 total_rmsve, final_rmsve, start_rmsve, avg_steps = run_objective(space)
 
                 with open(interm_hyperparam_file, 'a+', newline='') as f:
+                    seed_config.pop("lr_ctrl")
                     writer = csv.DictWriter(f, fieldnames=interm_fieldnames)
                     seed_config["rmsve_aoc"] = round(total_rmsve, 2)
                     seed_config["rmsve_min"] = round(final_rmsve, 2)
