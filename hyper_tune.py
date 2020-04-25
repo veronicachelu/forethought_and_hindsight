@@ -102,13 +102,10 @@ def run_for_agent(agent, lr_vanilla=None):
                            "lr_m": lr_m,
                            "lr_ctrl": lr_ctrl,
                            "lr_p": lr_p}
-            final_config = deepcopy(seed_config)
+
             attributes = list(seed_config.keys())
             attributes.append("seed")
             attributes.remove("lr_ctrl")
-
-            final_attributes = list(final_config.keys())
-            final_attributes.remove("lr_ctrl")
 
             seed_config["seed"] = seed
             if not configuration_exists(interm_hyperparam_file,
@@ -132,6 +129,9 @@ def run_for_agent(agent, lr_vanilla=None):
                     seed_config["rmsve_start"] = round(start_rmsve, 2)
                     seed_config["steps"] = avg_steps
                     writer.writerow(seed_config)
+
+        final_config = deepcopy(seed_config)
+        final_attributes = list(final_config.keys())
 
         if not configuration_exists(final_hyperparam_file, final_config, final_attributes):
             (rmsve_aoc_avg, rmsve_aoc_std), (rmsve_min_avg, rmsve_min_std),\
