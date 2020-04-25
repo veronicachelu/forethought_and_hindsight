@@ -8,7 +8,7 @@
 
 source ~/.bashrc
 conda activate new
-module load cuda/10.0
+module lpython hyper_tune.py --agent=vanilla --env=cartpoleoad cuda/10.0
 module load cuda/10.0/cudnn/7.6
 
 cd ~/jax_models

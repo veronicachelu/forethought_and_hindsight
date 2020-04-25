@@ -180,7 +180,7 @@ def get_pg_network(num_hidden_layers: int,
     input_size = np.prod(input_dim)
     num_units = num_units if latent else input_size
     network = {}
-    rng_pi, rng_v, rng_h, rng_o, rng_fw_o, rng_r, rng_d = jrandom.split(rng, 7)
+    rng_v, rng_h, rng_o, rng_fw_o, rng_r, rng_pi = jrandom.split(rng, 6)
 
     h_network, h_network_params = get_h_net(rng_h, num_units, input_size)
     pi_network, pi_network_params = get_pi_net(rng_pi, num_units, nA)
@@ -188,15 +188,14 @@ def get_pg_network(num_hidden_layers: int,
     o_network, o_network_params = get_o_net(rng_o, num_units)
     fw_o_network, fw_o_network_params = get_o_net(rng_o, num_units)
     r_network, r_network_params = get_r_net(rng_r, num_units)
-    d_network, d_network_params = get_d_net(rng_d, num_units)
 
     network["value"] = {"net": v_network,
                         "params": v_network_params}
     network["pi"] = {"net": pi_network,
                         "params": pi_network_params}
-    network["model"] = {"net": [h_network, o_network, fw_o_network, r_network, d_network],
+    network["model"] = {"net": [h_network, o_network, fw_o_network, r_network],
                         "params": [h_network_params, o_network_params,
-                                   fw_o_network_params, r_network_params, d_network_params]
+                                   fw_o_network_params, r_network_params]
                         }
 
     return network
