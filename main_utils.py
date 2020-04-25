@@ -82,12 +82,13 @@ def get_continuous_gridworld_env(nrng, space, aux_agent_configs):
 
     return env, nS, policy, mdp_solver
 
-def get_continuous_gym_env(nrng, space, aux_agent_configs):
+def get_continuous_gym_env(nrng, seed, space, aux_agent_configs):
     env_class = getattr(env_utils, space["env_config"]["class"])
-    env = env_class(game=space["env_config"]["mdp_filename"])
+    env = env_class(game=space["env_config"]["mdp_filename"], seed=seed)
     input_dim = env.observation_spec().shape
     nA = env.action_spec().num_values
     gym_solver = GymSolver(env=env, nA=nA, input_dim=input_dim, space=space,
+                           seed=seed,
                            aux_agent_configs=aux_agent_configs,
                            nrng=nrng)
     nS = gym_solver._nS
@@ -97,7 +98,7 @@ def get_continuous_gym_env(nrng, space, aux_agent_configs):
 
     return env, nS, policy, gym_solver
 
-def get_env(nrng, space, aux_agent_configs):
+def get_env(nrng, seed, space, aux_agent_configs):
     if space["env_config"]["non_gridworld"]:
         if space["env_config"]["model_class"] == "tabular":
             env, nS, policy, mdp_solver = get_tabular_chain_env(nrng, space, aux_agent_configs)
@@ -105,7 +106,7 @@ def get_env(nrng, space, aux_agent_configs):
             if space["env_config"]["env_type"] == "discrete":
                 env, nS, policy, mdp_solver = get_linear_chain_env(nrng, space, aux_agent_configs)
             else:
-                env, nS, policy, mdp_solver = get_continuous_gym_env(nrng, space, aux_agent_configs)
+                env, nS, policy, mdp_solver = get_continuous_gym_env(nrng, seed, space, aux_agent_configs)
     else:
         if space["env_config"]["env_type"] == "discrete":
             env, nS, policy, mdp_solver = get_gridworld_env(nrng, space, aux_agent_configs)
@@ -117,9 +118,9 @@ def get_env(nrng, space, aux_agent_configs):
 
     return env, nS, nA, input_dim, policy, mdp_solver
 
-def get_control_env(nrng, space, aux_agent_configs):
+def get_control_env(nrng, seed, space, aux_agent_configs):
     env_class = getattr(env_utils, space["env_config"]["class"])
-    env = env_class(game=space["env_config"]["mdp_filename"])
+    env = env_class(game=space["env_config"]["mdp_filename"], seed=seed)
     input_dim = env.observation_spec().shape
     nS = np.prod(input_dim)
     nA = env.action_spec().num_values
@@ -218,13 +219,13 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, space, aux_agent_configs):
 
 def run_experiment(seed, space, aux_agent_configs):
     nrng = np.random.RandomState(seed)
-    env, nS, nA, input_dim, policy, mdp_solver = get_env(nrng, space, aux_agent_configs)
+    env, nS, nA, input_dim, policy, mdp_solver = get_env(nrng, seed, space, aux_agent_configs)
     agent = get_agent(env, seed, nrng, nA, input_dim, policy, space, aux_agent_configs)
     return env, agent, mdp_solver
 
 def run_control_experiment(seed, space, aux_agent_configs):
     nrng = np.random.RandomState(seed)
-    env, nS, nA, input_dim = get_control_env(nrng, space, aux_agent_configs)
+    env, nS, nA, input_dim = get_control_env(nrng, seed, space, aux_agent_configs)
     agent = get_control_agent(env, seed, nrng, nA, input_dim, space)
     return env, agent
 
@@ -271,6 +272,9 @@ def load_env_and_volatile_configs(env):
     elif env == "cartpole":
         env_config = configs.cartpole_config.env_config
         volatile_agent_config = configs.cartpole_config.volatile_agent_config
+    elif env == "random_linear":
+        env_config = configs.random_linear_config.env_config
+        volatile_agent_config = configs.random_linear_config.volatile_agent_config
 
     return env_config, volatile_agent_config
 

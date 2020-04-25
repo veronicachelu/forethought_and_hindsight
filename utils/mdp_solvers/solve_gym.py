@@ -7,6 +7,8 @@ from control_agents import VanillaQ
 from network import *
 import contextlib
 from copy import copy
+import control_experiment
+import main_utils
 
 @contextlib.contextmanager
 def dummy_context_mgr():
@@ -14,22 +16,23 @@ def dummy_context_mgr():
 
 class GymSolver:
     def __init__(self, env,
-                 input_dim, nA, space, aux_agent_configs, nrng):
-        self._seed = 0
+                 input_dim, nA, space, seed, aux_agent_configs, nrng):
         self._env = env
         self._nA = nA
         self._nrng = nrng
+        self._seed = seed
         self._input_dim = input_dim
         self._nS = np.prod(input_dim)
         self._space = space
-        self._num_episodes_training = 100
+        self._num_episodes_training = space["env_config"]["control_num_episodes"]
         self._aux_agent_configs = aux_agent_configs
-        rng = jrandom.PRNGKey(seed=self._seed)
-        self._rng, self._rng_target = jrandom.split(rng, 2)
-        self._agent = self.get_q_learning_agent()
         self._policy = None
         self._assigned_pi = False
         self._v = None
+
+        rng = jrandom.PRNGKey(seed=seed)
+        self._rng, self._rng_target = jrandom.split(rng, 2)
+        self._agent = self.get_q_learning_agent()
 
     def get_q_learning_agent(self):
         network = get_network(
@@ -66,20 +69,24 @@ class GymSolver:
     def _run_agent_from_state(self, agent, environment, timestep,
                               num_trajectories, max_len):
         traj_rewards = []
-        for traj in np.arange(start=0, stop=num_trajectories):
+        traj_steps = []
+        for _ in np.arange(start=0, stop=num_trajectories):
             traj_env = copy(environment)
-            rewards = 0
             traj_reward = 0
             for t in range(max_len):
-                action = agent.policy(timestep)
+
+                action = agent.policy(timestep, eval=True)
                 new_timestep = traj_env.step(action)
 
-                rewards += new_timestep.reward
                 traj_reward += new_timestep.reward
+
                 if new_timestep.last():
                     break
                 timestep = new_timestep
             traj_rewards.append(traj_reward)
+            traj_steps.append(t)
+
+        # print("traj {}, {}".format(np.mean(traj_rewards), np.mean(traj_steps)))
         return np.mean(traj_rewards)
 
     def train_agent(self, agent, environment, num_episodes, max_len):
@@ -129,6 +136,9 @@ class GymSolver:
         cumulative_reward = 0
         ep_steps = []
         ep_rewards = []
+        if agent is not None:
+            agent.load_model()
+
         for episode in np.arange(start=0, stop=num_episodes):
             # Run an episode.
             rewards = 0
@@ -138,7 +148,7 @@ class GymSolver:
                 if not agent:
                     action = environment.action_spec().generate_value()
                 else:
-                    action = agent.policy(timestep)
+                    action = agent.policy(timestep, eval=True)
                 new_timestep = environment.step(action)
 
                 rewards += new_timestep.reward
@@ -157,10 +167,20 @@ class GymSolver:
 
     def get_optimal_policy(self):
         if self._policy is None or self._assigned_pi is False:
-            self.train_agent(self._agent, self._env,
-                             self._num_episodes_training,
-                             self._aux_agent_configs["max_len"])
-            # print(self.test_agent(self._agent, self._env,
+            self._env, self._agent = main_utils.run_control_experiment(self._seed,
+                                                self._space,
+                                               self._aux_agent_configs)
+            print(control_experiment.run_episodic(
+                agent=self._agent,
+                environment=self._env,
+                num_episodes=self._num_episodes_training,
+                max_len=100000000
+            ))
+            self._agent.load_model()
+            # print(self.train_agent(self._agent, self._env,
+            #                  self._num_episodes_training,
+            #                  self._aux_agent_configs["max_len"]))
+            # print(self.test_agent(self._agent, env,
             #                  self._num_episodes_training,
             #                  self._aux_agent_configs["max_len"]))
             # print(self.test_agent(None, self._env,
@@ -184,6 +204,6 @@ class GymSolver:
 
     def get_value_for_state(self, agent, environment, timestep):
         return self._run_agent_from_state(agent, environment, timestep,
-                                          5, 100000)
+                                          20, self._aux_agent_configs["max_len"])
         # return self._v(state)
 

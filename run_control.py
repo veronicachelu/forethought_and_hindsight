@@ -25,7 +25,7 @@ flags.DEFINE_integer('model_learning_period', 1,
 flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
 flags.DEFINE_float('discount', .99, 'discounting on the agent side')
 flags.DEFINE_integer('min_replay_size', 1, 'min replay size before training.')
-flags.DEFINE_float('lr', 0.7, 'learning rate for q optimizer')
+flags.DEFINE_float('lr', 0.4, 'learning rate for q optimizer')
 flags.DEFINE_float('lr_p', 0.01, 'learning rate for q optimizer')
 flags.DEFINE_float('lr_m',  0.01, 'learning rate for model optimizer')
 
@@ -73,14 +73,34 @@ def run_objective(space):
                          "max_len": FLAGS.max_len,
                          "log_period": FLAGS.log_period}
     seed = space["crt_config"]["seed"]
-    env, agent = run_control_experiment(seed, space, aux_agent_configs)
+    # env, agent = run_control_experiment(seed, space, aux_agent_configs)
+    #
+    # reward, steps = control_experiment.run_episodic(
+    #     agent=agent,
+    #     environment=env,
+    #     num_episodes=space["env_config"]["control_num_episodes"],
+    #     max_len=FLAGS.max_len
+    # )
+    #
+    # print(reward, steps)
 
-    control_experiment.run_episodic(
+    env, agent = run_control_experiment(seed, space, aux_agent_configs)
+    agent.load_model()
+    reward, steps = control_experiment.test_agent(
         agent=agent,
         environment=env,
-        num_episodes=space["env_config"]["num_episodes"],
+        num_episodes=space["env_config"]["control_num_episodes"],
         max_len=FLAGS.max_len
     )
+    print(reward, steps)
+
+    reward, steps = control_experiment.test_agent(
+        agent=None,
+        environment=env,
+        num_episodes=space["env_config"]["control_num_episodes"],
+        max_len=FLAGS.max_len
+    )
+    print(reward, steps)
 
 
 if __name__ == '__main__':

@@ -10,6 +10,7 @@ import utils
 from utils import *
 
 
+
 def run_agent(env, agent, logs, aux_agent_configs, ignore_existent=True):
     persistent_agent_config = configs.agent_config.config[agent["agent"]]
     agent_run_mode = "{}_{}_{}".format(persistent_agent_config["run_mode"], agent["planning_depth"],
@@ -47,7 +48,7 @@ def run_agent(env, agent, logs, aux_agent_configs, ignore_existent=True):
 
 def run_objective(space, aux_agent_configs):
     seed = space["crt_config"]["seed"]
-    env, agent, mdp_solver = run_experiment(seed, space, aux_agent_configs)
+    env, agent, mdp_solver = main_utils.run_experiment(seed, space, aux_agent_configs)
     total_rmsve, final_rmsve, start_rmsve, avg_steps, values, errors = experiment.run_episodic(
         agent=agent,
         space=space,

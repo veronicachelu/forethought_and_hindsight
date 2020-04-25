@@ -59,7 +59,6 @@ class LpIntrinsicVanilla(Agent):
             target_networks=False,
             feature_coder=None,
             logs: str = "logs",
-            # double_input_reward_model=False
     ):
         super().__init__()
 
@@ -75,7 +74,6 @@ class LpIntrinsicVanilla(Agent):
         self._n = planning_depth
         self._replay_capacity = replay_capacity
         self._latent = latent
-        # self._double_input_reward_model = double_input_reward_model
         self._run_mode = "{}_{}_{}".format(self._run_mode, self._n, self._replay_capacity)
 
         self._exploration_decay_period = exploration_decay_period
@@ -142,7 +140,7 @@ class LpIntrinsicVanilla(Agent):
         self._fw_o_parameters = network["model"]["params"][2]
         self._r_parameters = network["model"]["params"][3]
 
-        self._v_step_schedule = optimizers.polynomial_decay(self._lr, self._exploration_decay_period, 0, 1)
+        # self._v_step_schedule = optimizers.polynomial_decay(self._lr, self._exploration_decay_period, 0, 1)
 
         if self._target_networks:
             self._target_v_network = network["target_value"]["net"]
@@ -225,8 +223,8 @@ class LpIntrinsicVanilla(Agent):
             # self._v_parameters, self._h_parameters = value_params
         else:
             self._v_parameters = value_params
-        losses_and_grads = {"losses": {"loss_v": np.array(loss)},
-                            "v_tmn": self._v_forward(self._v_parameters, np.array(features))[0]}
+        losses_and_grads = {"losses": {"loss_v": np.array(loss)},}
+                            # "v_tmn": self._v_forward(self._v_parameters, np.array(features))[0]}
 
         self._log_summaries(losses_and_grads, "value")
 
