@@ -15,6 +15,7 @@ import numpy as np
 from agents.agent import Agent
 import tensorflow as tf
 import rlax
+from basis.feature_mapper import FeatureMapper
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
@@ -46,9 +47,10 @@ class ACVanilla(Agent):
             exploration_decay_period: int,
             seed: int = None,
             latent=False,
+            policy_type=None,
             target_networks=False,
+            feature_coder=None,
             logs: str = "logs",
-            # double_input_reward_model=False
     ):
         super().__init__()
 
@@ -63,12 +65,16 @@ class ACVanilla(Agent):
         self._n = planning_depth
         self._replay_capacity = replay_capacity
         self._latent = latent
-        # self._double_input_reward_model = double_input_reward_model
         self._run_mode = "{}_{}_{}".format(self._run_mode, self._n, self._replay_capacity)
 
         self._exploration_decay_period = exploration_decay_period
         self._rng = rng
         self._nrng = nrng
+
+        if feature_coder is not None:
+            self._feature_mapper = FeatureMapper(feature_coder)
+        else:
+            self._feature_mapper = None
 
         self._replay = Replay(capacity=replay_capacity, nrng=self._nrng)
         self._min_replay_size = min_replay_size
@@ -108,8 +114,7 @@ class ACVanilla(Agent):
             h_tm1 = lax.stop_gradient(self._h_network(h_params, o_tm1)) if self._latent else o_tm1
             v_tm1 = self._v_network(v_params, h_tm1)
             v_t = self._v_network(v_params, h_t)
-            v_t_target = r_t + d_t * discount * v_t
-            td_error = jax.vmap(rlax.td_learning)(v_tm1, r_t, d_t * discount, v_t_target)
+            td_error = jax.vmap(rlax.td_learning)(v_tm1, r_t, d_t * discount, v_t)
             critic_loss = jnp.mean(td_error ** 2)
 
             pi_tm1 = self._pi_network(pi_params, h_tm1)
@@ -132,13 +137,11 @@ class ACVanilla(Agent):
         self._o_network = network["model"]["net"][1]
         self._fw_o_network = network["model"]["net"][2]
         self._r_network = network["model"]["net"][3]
-        self._d_network = network["model"]["net"][4]
 
         self._h_parameters = network["model"]["params"][0]
         self._o_parameters = network["model"]["params"][1]
         self._fw_o_parameters = network["model"]["params"][2]
         self._r_parameters = network["model"]["params"][3]
-        self._d_parameters = network["model"]["params"][4]
 
         # This function computes dL/dTheta
         self._ac_loss_grad = jax.jit(jax.value_and_grad(ac_loss, [0, 1, 2], has_aux=True))
@@ -153,14 +156,19 @@ class ACVanilla(Agent):
                                           self._h_parameters])
         self._ac_get_params = ac_get_params
 
+    def _get_features(self, o):
+        if self._feature_mapper is not None:
+            return self._feature_mapper.get_features(o)
+        else:
+            return o
 
     def policy(self,
                timestep: dm_env.TimeStep,
                eval: bool = False
                ) -> int:
         key = next(self._rng)
-        observation = timestep.observation[None, ...]
-        latent_state = self._pi_forward(self._pi_parameters, observation) if self._latent else observation
+        features = self._get_features(timestep.observation[None, ...])
+        latent_state = self._pi_forward(self._pi_parameters, features)
         pi_logits = self._pi_forward(self._pi_parameters, latent_state)
         action = jax.random.categorical(key, pi_logits).squeeze()
         return int(action)
@@ -171,11 +179,13 @@ class ACVanilla(Agent):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        transitions = [np.array([timestep.observation]),
+        features = self._get_features([timestep.observation])
+        next_features = self._get_features([new_timestep.observation])
+        transitions = [np.array(features),
                        np.array([action]),
                        np.array([new_timestep.reward]),
                        np.array([new_timestep.discount]),
-                       np.array([new_timestep.observation])]
+                       np.array(next_features)]
 
         (total_loss, losses), gradients = self._ac_loss_grad(self._v_parameters,
                                              self._pi_parameters,
@@ -270,12 +280,13 @@ class ACVanilla(Agent):
                 self.writer.flush()
 
     def get_values_for_all_states(self, all_states):
-        latents = self._h_forward(self._h_parameters, np.array(all_states)) if self._latent else all_states
+        features = self._get_features(all_states) if self._feature_mapper is not None else all_states
+        latents = self._h_forward(self._h_parameters, np.array(features)) if self._latent else features
         return np.array(self._v_forward(self._v_parameters, np.asarray(latents, np.float)), np.float)
 
-    def get_policy(self, all_states):
-        latents = self._h_forward(self._h_parameters, np.array(all_states)) if self._latent else all_states
-        return np.eye(self._nA)[np.argmax(np.array(self._pi_forward(self._pi_parameters, np.asarray(latents, np.float)), np.float), -1)]
+    # def get_policy(self, all_states):
+    #     latents = self._h_forward(self._h_parameters, np.array(all_states)) if self._latent else all_states
+    #     return np.eye(self._nA)[np.argmax(np.array(self._pi_forward(self._pi_parameters, np.asarray(latents, np.float)), np.float), -1)]
 
     def update_hyper_params(self, step, total_steps):
         pass

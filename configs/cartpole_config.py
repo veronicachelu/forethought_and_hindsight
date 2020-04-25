@@ -17,7 +17,7 @@ env_config = {
     "stochastic": False,
     "nA": 2,
     "env_size": 4,
-    "lr_q": 0.4
+
 }
 
 volatile_agent_config = {
@@ -26,7 +26,8 @@ volatile_agent_config = {
         "replay_capacity": [0],
         "lr": np.linspace(0.1, 1.0, 10),
         "lr_p": [0],
-        "lr_m": [0]
+        "lr_m": [0],
+        "lr_ctrl": 0.4
     },
     "bw": {
         "planning_depth": [1, 2, 3, 4],
@@ -34,6 +35,7 @@ volatile_agent_config = {
         "lr": [0.01],
         "lr_p": [0.01],
         "lr_m": np.linspace(0.001, 0.07, 10),
+        "lr_ctrl": 0.4
     },
     "fw": {
         "planning_depth": [1, 2, 3, 4],
@@ -41,6 +43,7 @@ volatile_agent_config = {
         "lr": [0.01],
         "lr_p": [0.01],
         "lr_m": np.linspace(0.001, 0.07, 10),
+        "lr_ctrl": 0.4
     },
     "fw_rnd": {
         "planning_depth": [1],
@@ -48,6 +51,7 @@ volatile_agent_config = {
         "lr": [0.01],
         "lr_p": [0.01],
         "lr_m": np.linspace(0.001, 0.07, 10),
+        "lr_ctrl": 0.4
     },
     # "ac_vanilla": {
     #     "planning_depth": [0],
