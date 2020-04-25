@@ -32,6 +32,7 @@ class VanillaQ(Agent):
             lr: float,
             log_period: int,
             nrng,
+            rng_seq,
             exploration_decay_period: int,
             seed: int = None,
             latent=False,

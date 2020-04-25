@@ -32,39 +32,39 @@ class GymSolver:
 
         rng = jrandom.PRNGKey(seed=seed)
         self._rng, self._rng_target = jrandom.split(rng, 2)
-        self._agent = self.get_q_learning_agent()
+        # self._agent = self.get_q_learning_agent()
 
-    def get_q_learning_agent(self):
-        network = get_network(
-            pg=self._space["agent_config"]["pg"],
-            num_hidden_layers=self._space["agent_config"]["num_hidden_layers"],
-            num_units=self._space["agent_config"]["num_units"],
-            nA=self._nA,
-            input_dim=self._input_dim,
-            rng=self._rng,
-            rng_target=self._rng_target,
-            feature_coder=self._space["env_config"]["feature_coder"],
-            latent=self._space["agent_config"]["latent"],
-            model_family="q",
-            model_class=self._space["env_config"]["model_class"],
-            target_networks=self._space["agent_config"]["target_networks"])
-
-        agent = VanillaQ(run_mode='q',
-            action_spec=self._env.action_spec(),
-            network=network,
-            batch_size=1,
-            discount=0.99,
-            lr=self._space["env_config"]["lr_q"],
-            exploration_decay_period=self._num_episodes_training,
-            nrng=self._nrng,
-            seed=self._seed,
-            logs=self._space["logs"],
-            log_period=self._space["log_period"],
-            latent=self._space["agent_config"]["latent"],
-            feature_coder=self._space["env_config"]["feature_coder"],
-            target_networks=self._space["agent_config"]["target_networks"]
-        )
-        return agent
+    # def get_q_learning_agent(self):
+    #     network = get_network(
+    #         pg=self._space["agent_config"]["pg"],
+    #         num_hidden_layers=self._space["agent_config"]["num_hidden_layers"],
+    #         num_units=self._space["agent_config"]["num_units"],
+    #         nA=self._nA,
+    #         input_dim=self._input_dim,
+    #         rng=self._rng,
+    #         rng_target=self._rng_target,
+    #         feature_coder=self._space["env_config"]["feature_coder"],
+    #         latent=self._space["agent_config"]["latent"],
+    #         model_family="q",
+    #         model_class=self._space["env_config"]["model_class"],
+    #         target_networks=self._space["agent_config"]["target_networks"])
+    #
+    #     agent = VanillaQ(run_mode='q',
+    #         action_spec=self._env.action_spec(),
+    #         network=network,
+    #         batch_size=1,
+    #         discount=0.99,
+    #         lr=self._space["env_config"]["lr_q"],
+    #         exploration_decay_period=self._num_episodes_training,
+    #         nrng=self._nrng,
+    #         seed=self._seed,
+    #         logs=self._space["logs"],
+    #         log_period=self._space["log_period"],
+    #         latent=self._space["agent_config"]["latent"],
+    #         feature_coder=self._space["env_config"]["feature_coder"],
+    #         target_networks=self._space["agent_config"]["target_networks"]
+    #     )
+    #     return agent
 
     def _run_agent_from_state(self, agent, environment, timestep,
                               num_trajectories, max_len):

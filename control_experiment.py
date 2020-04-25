@@ -16,7 +16,6 @@ def run_episodic(agent: Agent,
     with agent.writer.as_default():
         for episode in np.arange(start=agent.episode, stop=num_episodes):
             # Run an episode.
-            rewards = 0
             ep_reward = 0
             timestep = environment.reset()
             agent.update_hyper_params(episode, num_episodes)
@@ -27,7 +26,6 @@ def run_episodic(agent: Agent,
 
                 agent.value_update(timestep, action, new_timestep)
 
-                rewards += new_timestep.reward
                 ep_reward += new_timestep.reward
                 if new_timestep.last():
                     break
@@ -36,7 +34,7 @@ def run_episodic(agent: Agent,
 
                 agent.total_steps += 1
 
-            cumulative_reward += rewards
+            cumulative_reward += ep_reward
             agent.episode += 1
 
             ep_steps.append(t)
@@ -48,13 +46,16 @@ def run_episodic(agent: Agent,
 
     agent.save_model()
 
-    return np.mean(ep_steps), np.mean(ep_rewards)
+    avg_steps = np.mean(ep_steps) if len(ep_steps) > 0 else None
+    avg_reward = np.mean(ep_rewards) if len(ep_rewards) > 0 else None
+
+    return avg_reward, avg_steps
 
 def test_agent(agent, environment, num_episodes, max_len):
     cumulative_reward = 0
     ep_steps = []
     ep_rewards = []
-    for episode in np.arange(start=0, stop=num_episodes):
+    for _ in np.arange(start=0, stop=num_episodes):
         # Run an episode.
         rewards = 0
         ep_reward = 0

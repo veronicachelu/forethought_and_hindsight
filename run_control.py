@@ -10,7 +10,7 @@ import network
 import utils
 from utils import *
 
-flags.DEFINE_string('agent', 'q', 'what agent to run')
+flags.DEFINE_string('agent', 'ac_vanilla', 'what agent to run')
 flags.DEFINE_string('env', 'cartpole', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
@@ -25,9 +25,10 @@ flags.DEFINE_integer('model_learning_period', 1,
 flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
 flags.DEFINE_float('discount', .99, 'discounting on the agent side')
 flags.DEFINE_integer('min_replay_size', 1, 'min replay size before training.')
-flags.DEFINE_float('lr', 0.4, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_p', 0.01, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_m',  0.01, 'learning rate for model optimizer')
+# flags.DEFINE_float('lr', 0.4, 'learning rate for q optimizer')
+flags.DEFINE_float('lr_ctrl', 0.001, 'learning rate for q optimizer')
+# flags.DEFINE_float('lr_p', 0.01, 'learning rate for q optimizer')
+# flags.DEFINE_float('lr_m',  0.01, 'learning rate for model optimizer')
 
 FLAGS = flags.FLAGS
 
@@ -45,9 +46,10 @@ def main(argv):
 
     seed_config = {"planning_depth": FLAGS.planning_depth,
                    "replay_capacity": FLAGS.replay_capacity,
-                   "lr": FLAGS.lr,
-                   "lr_m": FLAGS.lr_m,
-                   "lr_p": FLAGS.lr_m}
+                   # "lr": FLAGS.lr,
+                   "lr_ctrl": FLAGS.lr_ctrl,}
+                   # "lr_m": FLAGS.lr_m,
+                   # "lr_p": FLAGS.lr_m}
 
     for seed in range(0, env_config["num_runs"]):
     # for seed in tqdm(range(0, env_config["num_runs"])):
@@ -73,19 +75,18 @@ def run_objective(space):
                          "max_len": FLAGS.max_len,
                          "log_period": FLAGS.log_period}
     seed = space["crt_config"]["seed"]
-    # env, agent = run_control_experiment(seed, space, aux_agent_configs)
-    #
-    # reward, steps = control_experiment.run_episodic(
-    #     agent=agent,
-    #     environment=env,
-    #     num_episodes=space["env_config"]["control_num_episodes"],
-    #     max_len=FLAGS.max_len
-    # )
-    #
-    # print(reward, steps)
-
     env, agent = run_control_experiment(seed, space, aux_agent_configs)
-    agent.load_model()
+
+    reward, steps = control_experiment.run_episodic(
+        agent=agent,
+        environment=env,
+        num_episodes=space["env_config"]["control_num_episodes"],
+        max_len=FLAGS.max_len
+    )
+
+    print(reward, steps)
+
+
     reward, steps = control_experiment.test_agent(
         agent=agent,
         environment=env,
@@ -94,8 +95,9 @@ def run_objective(space):
     )
     print(reward, steps)
 
+    env, agent = run_control_experiment(seed, space, aux_agent_configs)
     reward, steps = control_experiment.test_agent(
-        agent=None,
+        agent=agent,
         environment=env,
         num_episodes=space["env_config"]["control_num_episodes"],
         max_len=FLAGS.max_len

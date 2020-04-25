@@ -4,6 +4,7 @@ from jax import random as jrandom
 from tqdm import tqdm
 import configs
 import agents
+import control_agents
 import experiment
 import utils
 from utils import env_utils
@@ -11,6 +12,7 @@ from utils import *
 from utils.mdp_solvers.solve_gym import *
 from network import *
 import haiku as hk
+from copy import deepcopy
 
 def get_tabular_chain_env(nrng, space, aux_agent_configs):
     env_class = getattr(env_utils, space["env_config"]["class"])
@@ -130,40 +132,87 @@ def get_control_env(nrng, seed, space, aux_agent_configs):
 
     return env, nS, nA, input_dim
 
+# def get_control_agent(env, seed, nrng, nA, input_dim, space):
+#     rng = jrandom.PRNGKey(seed=seed)
+#     rng_q, rng_model, rng_agent = jrandom.split(rng, 3)
+#     rng_sequence = hk.PRNGSequence(rng_agent)
+#     network = get_network(
+#         pg=space["agent_config"]["pg"],
+#         num_hidden_layers=space["agent_config"]["num_hidden_layers"],
+#         num_units=space["agent_config"]["num_units"],
+#         nA=nA,
+#         input_dim=input_dim,
+#         rng=rng_model,
+#         rng_target=rng_q,
+#         feature_coder=space["env_config"]["feature_coder"],
+#         latent=space["agent_config"]["latent"],
+#         model_family="q",
+#         model_class=space["env_config"]["model_class"],
+#         target_networks=space["agent_config"]["target_networks"])
+#
+#     agent = VanillaQ(run_mode='q',
+#                      action_spec=env.action_spec(),
+#                      network=network,
+#                      batch_size=1,
+#                      discount=0.99,
+#                      lr=space["crt_config"]["lr"],
+#                      exploration_decay_period=space["env_config"]["num_episodes"],
+#                      nrng=nrng,
+#                      seed=seed,
+#                      logs=space["logs"],
+#                      log_period=space["log_period"],
+#                      latent=space["agent_config"]["latent"],
+#                      feature_coder=space["env_config"]["feature_coder"],
+#                      target_networks=space["agent_config"]["target_networks"]
+#                      )
+#
+#     return agent
+
 def get_control_agent(env, seed, nrng, nA, input_dim, space):
     rng = jrandom.PRNGKey(seed=seed)
     rng_q, rng_model, rng_agent = jrandom.split(rng, 3)
     rng_sequence = hk.PRNGSequence(rng_agent)
+    if space["agent_config"]["task_type"] == "prediction":
+        control_space = deepcopy(space)
+        control_space["agent_config"] = \
+            configs.agent_config.config[space["agent_config"]["control_agent"]]
+    else:
+        control_space = deepcopy(space)
+
     network = get_network(
-        pg=space["agent_config"]["pg"],
-        num_hidden_layers=space["agent_config"]["num_hidden_layers"],
-        num_units=space["agent_config"]["num_units"],
+        pg=control_space["agent_config"]["pg"],
+        num_hidden_layers=control_space["agent_config"]["num_hidden_layers"],
+        num_units=control_space["agent_config"]["num_units"],
         nA=nA,
         input_dim=input_dim,
         rng=rng_model,
         rng_target=rng_q,
-        feature_coder=space["env_config"]["feature_coder"],
-        latent=space["agent_config"]["latent"],
-        model_family="q",
-        model_class=space["env_config"]["model_class"],
-        target_networks=space["agent_config"]["target_networks"])
+        feature_coder=control_space["env_config"]["feature_coder"],
+        latent=control_space["agent_config"]["latent"],
+        model_family=control_space["agent_config"]["model_family"],
+        model_class=control_space["env_config"]["model_class"],
+        target_networks=control_space["agent_config"]["target_networks"])
 
-    agent = VanillaQ(run_mode='q',
-                     action_spec=env.action_spec(),
-                     network=network,
-                     batch_size=1,
-                     discount=0.99,
-                     lr=space["crt_config"]["lr"],
-                     exploration_decay_period=space["env_config"]["num_episodes"],
-                     nrng=nrng,
-                     seed=seed,
-                     logs=space["logs"],
-                     log_period=space["log_period"],
-                     latent=space["agent_config"]["latent"],
-                     feature_coder=space["env_config"]["feature_coder"],
-                     target_networks=space["agent_config"]["target_networks"]
-                     )
+    agent_class = getattr(control_agents,
+                          control_space["agent_config"]["class"][control_space["env_config"]["model_class"]])
 
+    agent = agent_class(
+        run_mode=control_space["agent_config"]["run_mode"],
+        action_spec=env.action_spec(),
+        network=network,
+        batch_size=1,
+        discount=0.99,
+        lr=control_space["crt_config"]["lr_ctrl"],
+        exploration_decay_period=control_space["env_config"]["num_episodes"],
+        seed=seed,
+        rng_seq=rng_sequence,
+        nrng=nrng,
+        logs=control_space["logs"],
+        log_period=control_space["log_period"],
+        latent=control_space["agent_config"]["latent"],
+        feature_coder=control_space["env_config"]["feature_coder"],
+        target_networks=control_space["agent_config"]["target_networks"]
+    )
     return agent
 
 def get_agent(env, seed, nrng, nA, input_dim, policy, space, aux_agent_configs):
@@ -292,5 +341,6 @@ def build_hyper_list(agent, volatile_agent_config, up_to=None):
                 for lr_p in volatile_agent_config[agent]["lr_p"]:
                     for lr_m in volatile_agent_config[agent]["lr_m"]:
                         volatile_to_run.append([planning_depth, replay_capacity,
-                                                round(lr, 3), round(lr_p, 3), round(lr_m, 3)])
+                                                round(lr, 3), round(lr_p, 3), round(lr_m, 3),
+                                                round(volatile_agent_config[agent]["lr_ctrl"], 3)])
     return limited_volatile_to_run, volatile_to_run

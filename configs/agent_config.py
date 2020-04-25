@@ -1,5 +1,6 @@
 config = {
     "q": {
+        "task_type": "control",
         "pg": False,
         "run_mode": "q",
         "planning_depth": 0,
@@ -13,6 +14,8 @@ config = {
                   "tabular": ""}
     },
     "vanilla": {
+        "task_type": "prediction",
+        "control_agent": "q",
         "pg": False,
         "run_mode": "vanilla",
         "planning_depth": 0,
@@ -26,6 +29,8 @@ config = {
                  "tabular": "TpVanilla"}
         },
     "vanilla_intr": {
+        "task_type": "prediction",
+        "control_agent": "q",
         "pg": False,
         "run_mode": "vanilla_intr",
         "planning_depth": 0,
@@ -38,6 +43,8 @@ config = {
         "class": {"linear": "LpIntrinsicVanilla"}
     },
     "bw": {
+        "task_type": "prediction",
+        "control_agent": "q",
         "pg": False,
         "run_mode": "bw_extr",
         "planning_iter": 1,
@@ -50,6 +57,8 @@ config = {
                   "tabular": "TpExplicitDistrib"},
     },
     "fw": {
+        "task_type": "prediction",
+        "control_agent": "q",
         "pg": False,
         "run_mode": "fw",
         "planning_iter": 1,
@@ -62,6 +71,8 @@ config = {
                   "tabular": "TpFw"},
     },
     "bw_fw": {
+        "task_type": "prediction",
+        "control_agent": "q",
         "pg": False,
         "run_mode": "fw_bw",
         "planning_iter": 1,
@@ -74,6 +85,8 @@ config = {
                   "tabular": "TpBwFwDistrib"},
     },
     "bw_iter": {
+        "task_type": "prediction",
+        "control_agent": "q",
         "pg": False,
         "run_mode": "bw_iter",
         "latent": False,
@@ -85,6 +98,8 @@ config = {
                   "tabular": "TpExplicitIterat"},
     },
     "bw_fw_PWMA": {
+        "task_type": "prediction",
+        "control_agent": "q",
         "pg": False,
         "run_mode": "bw_fw_PWMA",
         "planning_iter": 1,
@@ -97,6 +112,8 @@ config = {
                   "tabular": "TpFwBwPWMA"},
     },
     "bw_fw_MG": {
+        "task_type": "prediction",
+        "control_agent": "q",
         "pg": False,
         "run_mode": "bw_fw_MG",
         "planning_iter": 1,
@@ -109,6 +126,8 @@ config = {
                   "tabular": "TpFwBwMG"},
     },
     "fw_rnd": {
+        "task_type": "prediction",
+        "control_agent": "q",
         "pg": False,
         "run_mode": "fw_rnd",
         "planning_iter": 1,
@@ -134,14 +153,15 @@ config = {
     },
 
     "ac_vanilla": {
+        "task_type": "control",
         "pg": True,
         "run_mode": "ac_vanilla",
         "planning_depth": 0,
         "planning_iter": 1,
-        "model_family": "extrinsic",
+        "model_family": "ac",
         "latent": False,
         "num_hidden_layers": 0,
-        "num_units": 80,
+        "num_units": 0,
         "target_networks": False,
         "class": {"linear": "ACVanilla"}
     },

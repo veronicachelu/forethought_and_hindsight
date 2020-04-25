@@ -4,7 +4,7 @@ from utils.replay import Replay
 from typing import Callable, List, Mapping, Sequence, Text, Tuple, Union
 import dm_env
 from dm_env import specs
-
+from rlax._src import distributions
 import jax
 from jax import lax
 from jax import numpy as jnp
@@ -25,29 +25,17 @@ class ACVanilla(Agent):
     def __init__(
             self,
             run_mode: str,
-            policy,
             action_spec: specs.DiscreteArray,
             network,
             batch_size: int,
             discount: float,
-            replay_capacity: int,
-            min_replay_size: int,
-            model_learning_period: int,
-            planning_iter: int,
-            planning_period: int,
-            planning_depth: int,
             lr: float,
-            max_len: int,
-            lr_model: float,
-            lr_planning: float,
             log_period: int,
-            rng,
             nrng,
-            input_dim: int,
+            rng_seq,
             exploration_decay_period: int,
             seed: int = None,
             latent=False,
-            policy_type=None,
             target_networks=False,
             feature_coder=None,
             logs: str = "logs",
@@ -55,40 +43,26 @@ class ACVanilla(Agent):
         super().__init__()
 
         self._run_mode = run_mode
-        self._pi = policy
         self._nA = action_spec.num_values
         self._discount = discount
         self._batch_size = batch_size
-        self._model_learning_period = model_learning_period
-        self._planning_iter = planning_iter
-        self._planning_period = planning_period
-        self._n = planning_depth
-        self._replay_capacity = replay_capacity
         self._latent = latent
-        self._run_mode = "{}_{}_{}".format(self._run_mode, self._n, self._replay_capacity)
+        self._run_mode = "{}".format(self._run_mode)
 
         self._exploration_decay_period = exploration_decay_period
-        self._rng = rng
         self._nrng = nrng
+        self._rng_seq = rng_seq
 
         if feature_coder is not None:
             self._feature_mapper = FeatureMapper(feature_coder)
         else:
             self._feature_mapper = None
 
-        self._replay = Replay(capacity=replay_capacity, nrng=self._nrng)
-        self._min_replay_size = min_replay_size
         self._initial_lr = lr
         self._lr = lr
-        self._lr_model = lr_model
-        self._initial_lr_model = lr_model
-        self._lr_planning = lr_planning
-        self._initial_lr_planning = lr_planning
         self._warmup_steps = 0
         self._logs = logs
         self._seed = seed
-        self._max_len = max_len
-        self._input_dim = input_dim
         self._log_period = log_period
 
         if self._logs is not None:
@@ -118,10 +92,16 @@ class ACVanilla(Agent):
             critic_loss = jnp.mean(td_error ** 2)
 
             pi_tm1 = self._pi_network(pi_params, h_tm1)
-            actor_loss = rlax.policy_gradient_loss(pi_tm1, a_tm1, td_error,
-                                                             jnp.ones_like(td_error))
+            log_pi_a = distributions.softmax().logprob(a_tm1, pi_tm1)
+            actor_error = - log_pi_a * jax.lax.stop_gradient(td_error)
+            actor_loss = jnp.mean(actor_error)
 
-            total_loss = actor_loss + critic_loss
+            entropy_error = distributions.softmax().entropy(pi_tm1)
+            entropy_loss = -jnp.mean(entropy_error)
+            # actor_loss = rlax.policy_gradient_loss(pi_tm1, a_tm1, td_error,
+            #                                                  jnp.ones_like(td_error))
+            #
+            total_loss = actor_loss + critic_loss + entropy_loss
             return total_loss,\
                    {"critic": critic_loss,
                     "actor": actor_loss}
@@ -144,7 +124,8 @@ class ACVanilla(Agent):
         self._r_parameters = network["model"]["params"][3]
 
         # This function computes dL/dTheta
-        self._ac_loss_grad = jax.jit(jax.value_and_grad(ac_loss, [0, 1, 2], has_aux=True))
+        self._ac_loss_grad = (jax.value_and_grad(ac_loss, [0, 1, 2], has_aux=True))
+        # self._ac_loss_grad = jax.jit(jax.value_and_grad(ac_loss, [0, 1, 2], has_aux=True))
         self._v_forward = jax.jit(self._v_network)
         self._pi_forward = jax.jit(self._pi_network)
 
@@ -166,10 +147,9 @@ class ACVanilla(Agent):
                timestep: dm_env.TimeStep,
                eval: bool = False
                ) -> int:
-        key = next(self._rng)
+        key = next(self._rng_seq)
         features = self._get_features(timestep.observation[None, ...])
-        latent_state = self._pi_forward(self._pi_parameters, features)
-        pi_logits = self._pi_forward(self._pi_parameters, latent_state)
+        pi_logits = self._pi_forward(self._pi_parameters, features)
         action = jax.random.categorical(key, pi_logits).squeeze()
         return int(action)
 
@@ -222,18 +202,19 @@ class ACVanilla(Agent):
                 self.episode = to_load["episode"]
                 self.total_steps = to_load["total_steps"]
                 self._v_parameters = to_load["v_parameters"]
+                self._pi_parameters = to_load["pi_parameters"]
                 print("Restored from {}".format(checkpoint))
             else:
                 print("Initializing from scratch.")
 
     def save_model(self):
         if self._logs is not None:
-            return
             checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
             to_save = {
                 "episode": self.episode,
                 "total_steps": self.total_steps,
                 "v_parameters": self._v_parameters,
+                "pi_parameters": self._pi_parameters,
             }
             np.save(checkpoint, to_save)
             print("Saved checkpoint for episode {}, total_steps {}: {}".format(self.episode,

@@ -24,11 +24,10 @@ def get_network(num_hidden_layers: int,
                   pg=False,
                   latent=False,
                   feature_coder=None,
-                  # double_input_reward_model=False
                 ):
     if feature_coder is not None:
         input_dim = get_input_dim(input_dim, feature_coder)
-    if pg:
+    if model_family == "ac":
         return get_pg_network(num_hidden_layers, num_units, nA,
                             rng, input_dim, latent)
     if model_class == "tabular":
@@ -81,7 +80,7 @@ def get_extrinsic_network(num_hidden_layers: int,
     rng_v, rng_h, rng_o, rng_fw_o, rng_r = jrandom.split(rng, 5)
 
     h_network, h_network_params = get_h_net(rng_h, num_units, num_hidden_layers, input_size)
-    v_network, v_network_params = get_value_net(rng_v, input_size)
+    v_network, v_network_params = get_value_net(rng_v, input_size, bias=False)
     o_network, o_network_params = get_o_net(rng_o, input_size)
     fw_o_network, fw_o_network_params = get_o_net(rng_fw_o, input_size)
     r_network, r_network_params = get_r_net(rng_r, input_size)
@@ -143,7 +142,7 @@ def get_intrinsic_network(num_hidden_layers: int,
 
     if target_networks:
         target_h_network, target_h_network_params = get_h_net(rng_target_h, num_units, num_hidden_layers, input_size)
-        target_v_network, target_v_network_params = get_value_net(rng_target_v, num_units)
+        target_v_network, target_v_network_params = get_value_net(rng_target_v, num_units, bias=False)
         target_o_network, target_o_network_params = get_o_net(rng_target_o, num_units)
         target_fw_o_network, target_fw_o_network_params = get_o_net(rng_target_fw_o, num_units)
         target_r_network, target_r_network_params = get_r_net(rng_target_r, num_units)
@@ -182,9 +181,9 @@ def get_pg_network(num_hidden_layers: int,
     network = {}
     rng_v, rng_h, rng_o, rng_fw_o, rng_r, rng_pi = jrandom.split(rng, 6)
 
-    h_network, h_network_params = get_h_net(rng_h, num_units, input_size)
+    h_network, h_network_params = get_h_net(rng_h, num_units, num_hidden_layers, input_size)
     pi_network, pi_network_params = get_pi_net(rng_pi, num_units, nA)
-    v_network, v_network_params = get_value_net(rng_v, num_units)
+    v_network, v_network_params = get_value_net(rng_v, num_units, bias=True)
     o_network, o_network_params = get_o_net(rng_o, num_units)
     fw_o_network, fw_o_network_params = get_o_net(rng_o, num_units)
     r_network, r_network_params = get_r_net(rng_r, num_units)
@@ -215,23 +214,26 @@ def Dense_no_bias(out_dim, W_init=glorot_normal()):
 def get_h_net(rng_h, num_units, num_hidden_layers, input_size):
     layers = []
     for _ in range(num_hidden_layers):
-        layers.append(Dense_no_bias(num_units))
+        layers.append(stax.Dense(num_units))
         layers.append(stax.Relu)
-    layers.append(Dense_no_bias(num_units))
-    # h_network_init, h_network = stax.Dense(num_units)
+    layers.append(stax.Dense(num_units))
+
     h_network_init, h_network = stax.serial(*layers)
     _, h_network_params = h_network_init(rng_h, (-1, input_size))
     return h_network, h_network_params
 
 def get_pi_net(rng_pi, num_units, nA):
-    pi_network_init, pi_network = Dense_no_bias(nA)
+    pi_network_init, pi_network = stax.Dense(nA)
     _, pi_network_params = pi_network_init(rng_pi, (-1, num_units))
 
     return pi_network, pi_network_params
 
-def get_value_net(rng_v, num_units):
+def get_value_net(rng_v, num_units, bias=False):
     layers = []
-    layers.append(Dense_no_bias(1))
+    if bias == False:
+        layers.append(Dense_no_bias(1))
+    else:
+        layers.append(stax.Dense(1))
     layers.append(Reshape((-1)))
     v_network_init, v_network = stax.serial(*layers)
     _, v_network_params = v_network_init(rng_v, (-1, num_units))
@@ -250,10 +252,7 @@ def get_r_net(rng_r, num_units):
     layers.append(Reshape((-1)))
 
     r_network_init, r_network = stax.serial(*layers)
-    # if double_input_reward_model:
     _, r_network_params = r_network_init(rng_r, (-1, 2 * num_units))
-    # else:
-    #     _, r_network_params = r_network_init(rng_r, (-1, num_units))
 
     return r_network, r_network_params
 

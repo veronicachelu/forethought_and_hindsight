@@ -85,7 +85,7 @@ def run_for_agent(agent, lr_vanilla=None):
                                                                 volatile_agent_config)
 
 
-    for planning_depth, replay_capacity, lr, lr_p, lr_m in volatile_to_run:
+    for planning_depth, replay_capacity, lr, lr_p, lr_m, lr_ctrl in volatile_to_run:
         if agent != "vanilla":
             lr = lr_vanilla
             lr_p = lr_vanilla
@@ -93,6 +93,7 @@ def run_for_agent(agent, lr_vanilla=None):
                       "replay_capacity": replay_capacity,
                       "lr": lr,
                       "lr_m": lr_m,
+                      "lr_ctrl": lr_ctrl,
                       "lr_p": lr_p}
         final_config = deepcopy(seed_config)
         attributes = list(seed_config.keys())
