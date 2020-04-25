@@ -4,6 +4,7 @@
 #SBATCH --error=./errors/hypertune__vanilla__cartpole__error.txt
 #SBATCH --ntasks=1
 #SBATCH --time=12:00:00
+#SBATCH --gres=gpu:1
 
 source ~/.bashrc
 conda activate new
