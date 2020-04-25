@@ -8,7 +8,7 @@ import experiment
 import utils
 from utils import env_utils
 from utils import *
-from utils.mdp_solvers.solve_gym import GymSolver
+from utils.mdp_solvers.solve_gym import *
 from network import *
 import haiku as hk
 
