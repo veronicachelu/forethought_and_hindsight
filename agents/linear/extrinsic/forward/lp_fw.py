@@ -49,7 +49,7 @@ class LpFw(LpVanilla):
                                 "r_loss": r_loss
                                 }
 
-        def v_planning_loss(v_params, fw_o_params, r_params, o_tmn):
+        def v_planning_loss(v_params, fw_o_params, r_params, o_tmn, d_t):
             o_t = self._fw_o_forward(fw_o_params, o_tmn)
             v_tmn = self._v_network(v_params, o_tmn)
             r_input = jnp.concatenate([o_tmn, o_t], axis=-1)
@@ -57,7 +57,7 @@ class LpFw(LpVanilla):
             r_tmn = self._r_forward(r_params, r_input)
             v_t_target = self._v_network(v_params, o_t)
             td_error = jax.vmap(rlax.td_learning)(v_tmn, r_tmn,
-                                                  jnp.array([self._discount ** self._n]),
+                                                  d_t * jnp.array([self._discount ** self._n]),
                                                   v_t_target)
             return jnp.mean(td_error ** 2)
 
@@ -110,13 +110,17 @@ class LpFw(LpVanilla):
     ):
         if self._n == 0:
             return
-        o_tm1 = np.array([timestep.observation])
+        if timestep.discount is None:
+            return
+        features = self._get_features([timestep.observation])
+        o_t = np.array([features])
+        d_t = np.array([timestep.discount])
 
         # plan on batch of transitions
         loss, gradient = self._v_planning_loss_grad(self._v_parameters,
                                                     self._fw_o_parameters,
                                                     self._r_parameters,
-                                                    o_tm1)
+                                                    o_t, d_t)
         self._v_opt_state = self._v_opt_update(self.episode, gradient,
                                                self._v_opt_state)
         self._v_parameters = self._v_get_params(self._v_opt_state)
@@ -132,7 +136,6 @@ class LpFw(LpVanilla):
 
     def model_free_train(self):
         return True
-        # return False
 
     def load_model(self):
         return
@@ -169,11 +172,16 @@ class LpFw(LpVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        self._sequence.append([np.array([timestep.observation]),
+        features = self._get_features([timestep.observation])
+        next_features = self._get_features([new_timestep.observation])
+        transitions = [np.array(features),
                        np.array([action]),
                        np.array([new_timestep.reward]),
                        np.array([new_timestep.discount]),
-                       np.array([new_timestep.observation])])
+                       np.array(next_features)]
+
+        self._sequence.append(transitions)
+
         if new_timestep.discount == 0:
             self._should_reset_sequence = True
 
@@ -195,6 +203,3 @@ class LpFw(LpVanilla):
                         tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
                                           gradients[k], step=ep)
                 self.writer.flush()
-
-    def get_values_for_all_states(self, all_states):
-        return np.array(self._v_forward(self._v_parameters, np.array(all_states)), np.float)

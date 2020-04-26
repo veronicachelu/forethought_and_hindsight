@@ -50,7 +50,7 @@ class LpFwValueBased(LpIntrinsicVanilla):
             #
             real_d_tmn_2_t = 0
             for i, t in enumerate(transitions):
-                real_d_tmn_2_t += (self._discount ** i) * t[3]
+                real_d_tmn_2_t += t[3]
 
             real_td_target = real_r_tmn_2_t + real_d_tmn_2_t * \
                                               jnp.array([self._discount ** self._n]) * \
@@ -176,7 +176,8 @@ class LpFwValueBased(LpIntrinsicVanilla):
             return
         if timestep.discount is None:
             return
-        o_t = np.array([timestep.observation])
+        features = self._get_features([timestep.observation])
+        o_t = np.array([features])
         d_t = np.array([timestep.discount])
         # plan on batch of transitions
 
@@ -258,11 +259,15 @@ class LpFwValueBased(LpIntrinsicVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        self._sequence.append([np.array([timestep.observation]),
+        features = self._get_features([timestep.observation])
+        next_features = self._get_features([new_timestep.observation])
+        transitions = [np.array(features),
                        np.array([action]),
                        np.array([new_timestep.reward]),
                        np.array([new_timestep.discount]),
-                       np.array([new_timestep.observation])])
+                       np.array(next_features)]
+
+        self._sequence.append(transitions)
         if new_timestep.discount == 0:
             self._should_reset_sequence = True
 

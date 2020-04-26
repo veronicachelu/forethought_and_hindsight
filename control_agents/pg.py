@@ -16,12 +16,13 @@ from agents.agent import Agent
 import tensorflow as tf
 import rlax
 from basis.feature_mapper import FeatureMapper
+from scipy.signal import lfilter
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class ACVanilla(Agent):
+class PG(Agent):
     def __init__(
             self,
             run_mode: str,
@@ -48,6 +49,8 @@ class ACVanilla(Agent):
         self._batch_size = batch_size
         self._latent = latent
         self._run_mode = "{}".format(self._run_mode)
+        self._sequence = []
+        self._should_reset_sequence = False
 
         self._exploration_decay_period = exploration_decay_period
         self._nrng = nrng
@@ -81,65 +84,42 @@ class ACVanilla(Agent):
             if not os.path.exists(self._images_dir):
                 os.makedirs(self._images_dir)
 
-        def ac_loss(v_params, pi_params, h_params, transitions):
-            o_tm1, a_tm1, r_t, d_t, o_t = transitions
-            h_t = lax.stop_gradient(self._h_network(h_params, o_t)) if self._latent else o_t
+        def pg_loss(pi_params, h_params, transitions):
+            rewards = [t[2] for t in transitions]
+            returns = np.array(lfilter([1], [1, -self._discount], rewards[::-1], axis=0)[::-1])
+            a_tm1 = np.array([t[1] for t in transitions])
+            o_tm1 = np.array([t[0] for t in transitions])
             h_tm1 = lax.stop_gradient(self._h_network(h_params, o_tm1)) if self._latent else o_tm1
-            v_tm1 = self._v_network(v_params, h_tm1)
-            v_t = self._v_network(v_params, h_t)
-            td_error = jax.vmap(rlax.td_learning)(v_tm1, r_t, d_t * discount, v_t)
-            critic_loss = jnp.mean(td_error ** 2)
-
             pi_tm1 = self._pi_network(pi_params, h_tm1)
-            log_pi_a = distributions.softmax().logprob(a_tm1, pi_tm1)
-            actor_error = - log_pi_a * jax.lax.stop_gradient(td_error)
-            actor_loss = jnp.mean(actor_error)
 
-            entropy_error = distributions.softmax().entropy(pi_tm1)
-            entropy = - jnp.mean(entropy_error)
-            # actor_loss = rlax.policy_gradient_loss(pi_tm1, a_tm1, td_error,
-            #                                                  jnp.ones_like(td_error))
-            #
-            entropy_loss = - 0.1 * entropy
-            total_loss = actor_loss + critic_loss + entropy_loss
+            actor_loss = rlax.policy_gradient_loss(pi_tm1, a_tm1, returns,
+                                                             jnp.ones_like(returns))
+
+            total_loss = actor_loss
             return total_loss,\
-                   {"critic": critic_loss,
-                    "actor": actor_loss,
-                    "entropy": entropy_loss
+                   {"returns": returns[0],
                     }
 
         # Internalize the networks.
-        self._v_network = network["value"]["net"]
-        self._v_parameters = network["value"]["params"]
-
         self._pi_network = network["pi"]["net"]
         self._pi_parameters = network["pi"]["params"]
 
         self._h_network = network["model"]["net"][0]
-        self._o_network = network["model"]["net"][1]
-        self._fw_o_network = network["model"]["net"][2]
-        self._r_network = network["model"]["net"][3]
-
         self._h_parameters = network["model"]["params"][0]
-        self._o_parameters = network["model"]["params"][1]
-        self._fw_o_parameters = network["model"]["params"][2]
-        self._r_parameters = network["model"]["params"][3]
 
         # This function computes dL/dTheta
-        self._ac_loss_grad = (jax.value_and_grad(ac_loss, [0, 1, 2], has_aux=True))
+        self._pg_loss_grad = (jax.value_and_grad(pg_loss, [0, 1], has_aux=True))
         # self._ac_loss_grad = jax.jit(jax.value_and_grad(ac_loss, [0, 1, 2], has_aux=True))
-        self._v_forward = jax.jit(self._v_network)
         self._pi_forward = jax.jit(self._pi_network)
 
         # Make an Adam optimizer.
         self._step_schedule = optimizers.polynomial_decay(self._lr,
-                                                                self._exploration_decay_period, 0, 0.9)
-        ac_opt_init, ac_opt_update, ac_get_params = optimizers.adam(step_size=self._step_schedule)
-        self._ac_opt_update = jax.jit(ac_opt_update)
-        self._ac_opt_state = ac_opt_init([self._v_parameters,
-                                          self._pi_parameters,
+                                                    self._exploration_decay_period, 0, 0.9)
+        pg_opt_init, pg_opt_update, pg_get_params = optimizers.adam(step_size=self._step_schedule)
+        self._pg_opt_update = jax.jit(pg_opt_update)
+        self._pg_opt_state = pg_opt_init([self._pi_parameters,
                                           self._h_parameters])
-        self._ac_get_params = ac_get_params
+        self._pg_get_params = pg_get_params
 
     def _get_features(self, o):
         if self._feature_mapper is not None:
@@ -163,32 +143,27 @@ class ACVanilla(Agent):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        features = self._get_features([timestep.observation])
-        next_features = self._get_features([new_timestep.observation])
-        transitions = [np.array(features),
-                       np.array([action]),
-                       np.array([new_timestep.reward]),
-                       np.array([new_timestep.discount]),
-                       np.array(next_features)]
 
-        (total_loss, losses), gradients = self._ac_loss_grad(self._v_parameters,
-                                             self._pi_parameters,
-                                             self._h_parameters,
-                                            transitions)
-        self._ac_opt_state = self._ac_opt_update(self.episode, list(gradients),
-                                               self._ac_opt_state)
-        ac_parameters = self._ac_get_params(self._ac_opt_state)
-        self._v_parameters, self._pi_parameters, self._h_parameters = ac_parameters
+        if self._should_reset_sequence:
+            (total_loss, losses), gradients = self._pg_loss_grad(
+                                                 self._pi_parameters,
+                                                 self._h_parameters,
+                                                  self._sequence)
+            self._pg_opt_state = self._pg_opt_update(self.episode, list(gradients),
+                                                   self._pg_opt_state)
+            pg_parameters = self._pg_get_params(self._pg_opt_state)
+            self._pi_parameters, self._h_parameters = pg_parameters
 
-        losses_and_grads = {"losses": {
-                                    "total_loss": np.array(total_loss),
-                                    "critic_loss": np.array(losses["critic"]),
-                                    "entropy_loss": np.array(losses["entropy"]),
-                                    "actor_loss": np.array(losses["actor"])
-                            },
-                            "gradients": {
-                                }}
-        self._log_summaries(losses_and_grads, "value")
+            losses_and_grads = {"losses": {
+                                        "total_loss": np.array(total_loss),
+                                        "returns": np.array(losses["returns"])
+                                },
+                                "gradients": {
+                                    }}
+            self._log_summaries(losses_and_grads, "value")
+
+            self._sequence = []
+            self._should_reset_sequence = False
 
     def model_based_train(self):
         return False
@@ -203,7 +178,6 @@ class ACVanilla(Agent):
                 to_load = np.load(checkpoint, allow_pickle=True)[()]
                 self.episode = to_load["episode"]
                 self.total_steps = to_load["total_steps"]
-                self._v_parameters = to_load["v_parameters"]
                 self._pi_parameters = to_load["pi_parameters"]
                 print("Restored from {}".format(checkpoint))
             else:
@@ -215,7 +189,6 @@ class ACVanilla(Agent):
             to_save = {
                 "episode": self.episode,
                 "total_steps": self.total_steps,
-                "v_parameters": self._v_parameters,
                 "pi_parameters": self._pi_parameters,
             }
             np.save(checkpoint, to_save)
@@ -243,7 +216,18 @@ class ACVanilla(Agent):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        pass
+        features = self._get_features([timestep.observation])[0]
+        next_features = self._get_features([new_timestep.observation])[0]
+        transitions = [features,
+                       action,
+                       new_timestep.reward,
+                       new_timestep.discount,
+                       next_features]
+
+        self._sequence.append(transitions)
+
+        if new_timestep.discount == 0:
+            self._should_reset_sequence = True
 
     def _log_summaries(self, losses_and_grads, summary_name):
         if self._logs is not None:
