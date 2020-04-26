@@ -163,7 +163,10 @@ def run_for_agent(agent, lr_vanilla=None):
                     writer = csv.DictWriter(f, fieldnames=best_fieldnames)
                     for key, value in the_best_hyperparms.items():
                         best_config[key] = value
-                    writer.writerow(best_config)
+                    try:
+                        writer.writerow(best_config)
+                    except:
+                        print("Error")
 
 def get_lr(best_hyperparam_file, agent="vanilla"):
     lr = None
