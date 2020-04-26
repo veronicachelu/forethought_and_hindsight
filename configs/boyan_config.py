@@ -29,7 +29,7 @@ volatile_agent_config = {
         "replay_capacity": [0],
         "lr": [1.0],
         "lr_p": [1.0],
-        "lr_m": np.linspace(0.002, 0.02, 10),
+        "lr_m": np.linspace(0.001, 0.02, 11),
         "lr_ctrl": 0.4
     },
     "bw_intr": {
@@ -37,7 +37,7 @@ volatile_agent_config = {
         "replay_capacity": [0],
         "lr": [1.0],
         "lr_p": [1.0],
-        "lr_m": np.linspace(0.002, 0.02, 10),
+        "lr_m": np.linspace(0.001, 0.02, 11),
         "lr_ctrl": 0.4
     },
     "bw_vaware": {
