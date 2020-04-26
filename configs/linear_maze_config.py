@@ -30,7 +30,7 @@ volatile_agent_config = {
         "replay_capacity": [0],
         "lr": [0.01],
         "lr_p": [0.01],
-        "lr_m": np.linspace(0.005, 0.05, 10),
+        "lr_m": np.linspace(0.001, 0.1, 10),
         "lr_ctrl": 0.4
     },
     "bw_vaware": {
@@ -38,7 +38,7 @@ volatile_agent_config = {
         "replay_capacity": [0],
         "lr": [0.01],
         "lr_p": [0.01],
-        "lr_m": np.linspace(0.0001, 0.01, 10),
+        "lr_m": np.linspace(0.001, 0.1, 10),
         "lr_ctrl": 0.4
     },
     "bw_meta": {
@@ -46,7 +46,7 @@ volatile_agent_config = {
         "replay_capacity": [0],
         "lr": [0.01],
         "lr_p": [0.01],
-        "lr_m": np.linspace(0.0001, 0.01, 10),
+        "lr_m": np.linspace(0.001, 0.1, 10),
         "lr_ctrl": 0.4
     },
      "bw_intr": {
@@ -62,7 +62,15 @@ volatile_agent_config = {
         "replay_capacity": [0],
         "lr": [0.01],
         "lr_p": [0.01],
-        "lr_m": np.linspace(0.01, 1.0, 10),
+        "lr_m": np.linspace(0.001, 0.1, 10),
+        "lr_ctrl": 0.4
+    },
+    "fw_intr": {
+        "planning_depth": [1],
+        "replay_capacity": [0],
+        "lr": [0.01],
+        "lr_p": [0.01],
+        "lr_m": np.linspace(0.001, 0.1, 10),
         "lr_ctrl": 0.4
     },
     "fw_rnd": {
@@ -70,7 +78,7 @@ volatile_agent_config = {
         "replay_capacity": [50],
         "lr": [0.01],
         "lr_p": [0.01],
-        "lr_m": np.linspace(0.01, 1.0, 10),
+        "lr_m": np.linspace(0.001, 0.1, 10),
         "lr_ctrl": 0.4
     },
     # "ac_vanilla": {
