@@ -140,6 +140,8 @@ config = {
                   "tabular": "TpFwRnd"},
     },
     "fw_pri": {
+        "task_type": "prediction",
+        "control_agent": "q",
         "pg": False,
         "run_mode": "fw_pri",
         "planning_iter": 1,
@@ -178,20 +180,9 @@ config = {
         "target_networks": False,
         "class": {"linear": "PG"}
     },
-
-    # "latent_vanilla_intr": {
-    #     "pg": False,
-    #     "run_mode": "latent_vanilla_intr",
-    #     "planning_depth": 0,
-    #     "planning_iter": 1,
-    #     "latent": True,
-    #     "num_hidden_layers": 0,
-    #     "num_units": 80,
-    #     "model_family": "intrinsic",
-    #     "target_networks": False,
-    #     "class": {"linear": "LpIntrinsicVanilla"}
-    # },
     "latent_bw_intr": {
+        "task_type": "prediction",
+        "control_agent": "q",
         "pg": False,
         "run_mode": "latent_bw_intr",
         "planning_iter": 1,
@@ -204,6 +195,8 @@ config = {
         "class": {"linear": "LpBwCorrBased"},
     },
     "bw_intr": {
+        "task_type": "prediction",
+        "control_agent": "q",
         "pg": False,
         "run_mode": "bw_intr",
         "planning_iter": 1,
@@ -216,6 +209,8 @@ config = {
         "class": {"linear": "LpBwCorrBased"},
     },
     "bw_vaware": {
+        "task_type": "prediction",
+        "control_agent": "q",
         "pg": False,
         "run_mode": "bw_vaware",
         "planning_iter": 1,
@@ -228,6 +223,8 @@ config = {
         "class": {"linear": "LpBWValueAware"},
     },
     "bw_meta": {
+        "task_type": "prediction",
+        "control_agent": "q",
         "pg": False,
         "run_mode": "bw_meta",
         "planning_iter": 1,
@@ -240,6 +237,8 @@ config = {
         "class": {"linear": "LpBWMeta"},
     },
     "random": {
+        "task_type": "prediction",
+        "control_agent": "q",
         "pg": False,
         "run_mode": "bw_intr",
         "planning_iter": 1,
@@ -252,6 +251,8 @@ config = {
         "class": {"linear": "LpExplicitValueBased"},
     },
     "learned": {
+        "task_type": "prediction",
+        "control_agent": "q",
         "pg": False,
         "run_mode": "bw_intr",
         "planning_iter": 1,
@@ -264,6 +265,8 @@ config = {
         "class": {"linear": "LpExplicitValueBased"},
     },
     "fw_intr": {
+        "task_type": "prediction",
+        "control_agent": "q",
         "pg": False,
         "run_mode": "fw_intr",
         "planning_iter": 1,
