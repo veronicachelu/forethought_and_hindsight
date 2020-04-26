@@ -123,10 +123,21 @@ def get_env(nrng, seed, space, aux_agent_configs):
     return env, nS, nA, input_dim, policy, mdp_solver
 
 def get_control_env(nrng, seed, space, aux_agent_configs):
-    env_class = getattr(env_utils, space["env_config"]["class"])
-    env = env_class(game=space["env_config"]["mdp_filename"], seed=seed)
-    input_dim = env.observation_spec().shape
-    nS = np.prod(input_dim)
+    if space["env_config"]["env_type"] == "discrete":
+        env_class = getattr(env_utils, space["env_config"]["class"])
+        env = env_class(path=space["env_config"]["mdp_filename"],
+                        stochastic=space["env_config"]["stochastic"],
+                        rng=nrng,
+                        obs_type=space["env_config"]["obs_type"],
+                        env_size=space["env_config"]["env_size"],
+                        )
+        nS = env._nS
+    else:
+        env_class = getattr(env_utils, space["env_config"]["class"])
+        env = env_class(game=space["env_config"]["mdp_filename"], seed=seed)
+        input_dim = env.observation_spec().shape
+        nS = np.prod(input_dim)
+
     nA = env.action_spec().num_values
     input_dim = env.observation_spec().shape
 

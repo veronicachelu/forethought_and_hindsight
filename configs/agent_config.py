@@ -165,6 +165,19 @@ config = {
         "target_networks": False,
         "class": {"linear": "ACVanilla"}
     },
+    "pg": {
+        "task_type": "control",
+        "pg": True,
+        "run_mode": "pg",
+        "planning_depth": 0,
+        "planning_iter": 1,
+        "model_family": "ac",
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "target_networks": False,
+        "class": {"linear": "PG"}
+    },
 
     # "latent_vanilla_intr": {
     #     "pg": False,
