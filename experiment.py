@@ -115,7 +115,7 @@ def run_episodic(agent: Agent,
 
         rmsve_start = 0
         return round(total_rmsve, 2), round(rmsve, 2), round(rmsve_start, 2), \
-               np.mean(ep_steps, dtype=int), hat_v, None
+               np.mean(ep_steps, dtype=int), hat_v, hat_error
 
 
 
