@@ -5,8 +5,8 @@ from copy import deepcopy
 import configs
 from main_utils import *
 
-flags.DEFINE_string('agent', 'bw', 'what agent to run')
-flags.DEFINE_string('env', 'boyan', 'env')
+flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
+flags.DEFINE_string('env', 'cartpole', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', 100000, 'Maximum number of time steps an episode may last (default: 100).')
@@ -194,7 +194,10 @@ def get_avg_over_seeds(interm_hyperparam_file, final_config, final_attributes):
             if ok == True:
                 rmsve_aoc_avg.append(float(row['rmsve_aoc']))
                 rmsve_min_avg.append(float(row['rmsve_min']))
-                rmsve_start_avg.append(float(row['rmsve_start']))
+                if row['rmsve_start'] is None:
+                    rmsve_start_avg.append(0)
+                else:
+                    rmsve_start_avg.append(float(row['rmsve_start']))
                 steps_avg.append(float(row['steps']))
         return (np.mean(rmsve_aoc_avg), np.std(rmsve_aoc_avg)), (np.mean(rmsve_min_avg), np.std(rmsve_min_avg)),\
                (np.mean(rmsve_start_avg), np.std(rmsve_start_avg)), \
