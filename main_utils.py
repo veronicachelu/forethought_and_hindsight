@@ -337,6 +337,10 @@ def load_env_and_volatile_configs(env):
     elif env == "random_linear":
         env_config = configs.random_linear_config.env_config
         volatile_agent_config = configs.random_linear_config.volatile_agent_config
+    elif env == "stoch_linear_maze":
+        env_config = configs.stoch_linear_maze_config.env_config
+        volatile_agent_config = configs.stoch_linear_maze_config.volatile_agent_config
+
 
     return env_config, volatile_agent_config
 
