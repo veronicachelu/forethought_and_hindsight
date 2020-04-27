@@ -35,7 +35,7 @@ class LpFwRnd(LpVanilla):
             o_t = transitions[-1][-1]
             model_o_t = self._fw_o_network(fw_o_online_params, o_tmn_target)
 
-            fw_o_loss = 20 * jnp.mean(jax.vmap(rlax.l2_loss)(model_o_t, o_t))
+            fw_o_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_o_t, o_t))
 
             r_input = jnp.concatenate([o_tmn_target, model_o_t], axis=-1)
             model_r_tmn = self._r_network(r_online_params, lax.stop_gradient(r_input))
@@ -50,7 +50,7 @@ class LpFwRnd(LpVanilla):
                                 "r_loss": r_loss
                                 }
 
-        def v_planning_loss(v_params, fw_o_params, r_params, o_tmn):
+        def v_planning_loss(v_params, fw_o_params, r_params, o_tmn, d_t):
             o_t = self._fw_o_forward(fw_o_params, o_tmn)
             v_tmn = self._v_network(v_params, o_tmn)
             r_input = jnp.concatenate([o_tmn, o_t], axis=-1)
@@ -58,17 +58,18 @@ class LpFwRnd(LpVanilla):
             r_tmn = self._r_forward(r_params, r_input)
             v_t_target = self._v_network(v_params, o_t)
             td_error = jax.vmap(rlax.td_learning)(v_tmn, r_tmn,
-                                                  jnp.array([self._discount ** self._n]),
+                                                  d_t * jnp.array([self._discount ** self._n]),
                                                   v_t_target)
             return jnp.mean(td_error ** 2)
 
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, 0))
-
+        self._model_step_schedule = optimizers.polynomial_decay(self._lr_model,
+                                                                self._exploration_decay_period, 0, 0.9)
         self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [0, 1], has_aux=True))
         self._fw_o_forward = jax.jit(self._fw_o_network)
         self._r_forward = jax.jit(self._r_network)
 
-        model_opt_init, model_opt_update, model_get_params = optimizers.adam(step_size=self._lr_model)
+        model_opt_init, model_opt_update, model_get_params = optimizers.adam(step_size=self._model_step_schedule)
         self._model_opt_update = jax.jit(model_opt_update)
         self._model_opt_state = model_opt_init([self._fw_o_parameters, self._r_parameters])
         self._model_get_params = model_get_params
@@ -110,16 +111,19 @@ class LpFwRnd(LpVanilla):
     ):
         if self._n == 0:
             return
+
         if self._replay.size < self._min_replay_size:
             return
         if self.total_steps % self._planning_period == 0:
             for k in range(self._planning_iter):
-                o_tm1 = self._replay.sample(self._batch_size)[0]
+                replay_sample = self._replay.sample(self._batch_size)
+                o_tm1 = replay_sample[0]
+                d_tm1 = replay_sample[3]
                 # plan on batch of transitions
                 loss, gradient = self._v_planning_loss_grad(self._v_parameters,
                                                             self._fw_o_parameters,
                                                             self._r_parameters,
-                                                            o_tm1)
+                                                            o_tm1, d_tm1)
                 self._v_opt_state = self._v_opt_update(self.episode, gradient,
                                                        self._v_opt_state)
                 self._v_parameters = self._v_get_params(self._v_opt_state)
@@ -135,7 +139,6 @@ class LpFwRnd(LpVanilla):
 
     def model_free_train(self):
         return True
-        # return False
 
     def load_model(self):
         return
@@ -172,19 +175,24 @@ class LpFwRnd(LpVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        self._sequence.append([np.array([timestep.observation]),
-                               np.array([action]),
-                               np.array([new_timestep.reward]),
-                               np.array([new_timestep.discount]),
-                               np.array([new_timestep.observation])])
+        features = self._get_features([timestep.observation])
+        next_features = self._get_features([new_timestep.observation])
+        transitions = [np.array(features),
+                       np.array([action]),
+                       np.array([new_timestep.reward]),
+                       np.array([new_timestep.discount]),
+                       np.array(next_features)]
+
+        self._sequence.append(transitions)
+
         if new_timestep.discount == 0:
             self._should_reset_sequence = True
         self._replay.add([
-            timestep.observation,
+            features,
             action,
             new_timestep.reward,
             new_timestep.discount,
-            new_timestep.observation,
+            next_features,
         ])
 
     def _log_summaries(self, losses_and_grads, summary_name):
