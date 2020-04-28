@@ -39,6 +39,7 @@ def get_hyperparams():
     with open(maze_best_aoc_hyperparams, 'r', newline='') as f:
         reader = csv.DictReader(f)
         for agent in reader:
+            agent["lr_ctrl"] = 0.4
             agents.append(agent)
 
     return agents
