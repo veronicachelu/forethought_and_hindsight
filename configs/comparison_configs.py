@@ -30,11 +30,23 @@ configs={
             "replay_capacities": [0, 0, 0, 50, 50, 50, 50]
         }
     },
+    "stoch_linear_maze": {
+        "all": {
+            "agents": ["bw", "bw_intr", "fw", "fw_intr"],
+            "planning_depths": [1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 0]
+        }
+    },
     "linear_maze": {
         "bw": {
             "agents": ["bw_intr", "vanilla_intr"],
             "planning_depths": [1, 0],
             "replay_capacities": [0, 0]
+        },
+        "weird_bw": {
+            "agents": ["weird_bw"],
+            "planning_depths": [1],
+            "replay_capacities": [0]
         },
         "fw": {
             "agents": ["fw_intr", "vanilla_intr"],
@@ -75,6 +87,11 @@ configs={
             "agents": ["bw", "fw", "fw_rnd"],
             "planning_depths": [1, 1, 1],
             "replay_capacities": [0, 0, 50]
+        },
+        "all": {
+            "agents": ["bw", "bw_intr", "fw", "fw_intr"],
+            "planning_depths": [1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 0]
         }
     },
     "random_linear": {
