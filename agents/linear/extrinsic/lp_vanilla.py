@@ -250,11 +250,11 @@ class LpVanilla(Agent):
 
     def get_value_for_state(self, state):
         features = self._get_features(state[None, ...]) if self._feature_mapper is not None else state[None, ...]
-        return jnp.squeeze(self._v_forward(self._v_parameters, features), axis=-1)[0]
+        return np.squeeze(self._v_forward(self._v_parameters, features), axis=-1)[0]
 
     def get_values_for_all_states(self, all_states):
         features = self._get_features(all_states) if self._feature_mapper is not None else all_states
-        return np.array(jnp.squeeze(self._v_forward(self._v_parameters, np.array(features)), axis=-1), np.float)
+        return np.array(np.squeeze(self._v_forward(self._v_parameters, np.array(features)), axis=-1), np.float)
 
     def update_hyper_params(self, step, total_steps):
         pass

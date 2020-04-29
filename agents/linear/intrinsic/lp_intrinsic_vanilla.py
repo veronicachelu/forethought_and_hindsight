@@ -349,12 +349,12 @@ class LpIntrinsicVanilla(Agent):
 
     def get_value_for_state(self, state):
         features = self._get_features(state[None, ...]) if self._feature_mapper is not None else state[None, ...]
-        return self._v_forward(self._v_parameters, features)[0]
+        return np.squeeze(self._v_forward(self._v_parameters, features), axis=-1)[0]
 
     def get_values_for_all_states(self, all_states, ls=None):
         features = self._get_features(all_states) if self._feature_mapper is not None else all_states
         latents = self._h_forward(self._h_parameters, np.array(features)) if self._latent else features
-        return np.array(self._v_forward(self._v_parameters, np.asarray(latents, np.float)), np.float)
+        return np.array(np.squeeze(self._v_forward(self._v_parameters, np.asarray(latents, np.float)), axis=-1), np.float)
 
     def update_hyper_params(self, step, total_steps):
         pass

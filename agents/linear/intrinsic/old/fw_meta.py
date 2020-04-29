@@ -18,12 +18,12 @@ from agents.linear.intrinsic.lp_intrinsic_vanilla import LpIntrinsicVanilla
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
-class LpFwValueBased(LpIntrinsicVanilla):
+class LpFwIntr(LpIntrinsicVanilla):
     def __init__(
             self,
             **kwargs
     ):
-        super(LpFwValueBased, self).__init__(**kwargs)
+        super(LpFwIntr, self).__init__(**kwargs)
 
         self._sequence = []
         self._should_reset_sequence = False
@@ -109,7 +109,7 @@ class LpFwValueBased(LpIntrinsicVanilla):
     #         action: int,
     #         new_timestep: dm_env.TimeStep,
     # ):
-    #     super(LpFwValueBased, self).value_update(timestep, action, new_timestep)
+    #     super(LpFwIntr, self).value_update(timestep, action, new_timestep)
     #     features = self._get_features([timestep.observation])
     #     next_features = self._get_features([new_timestep.observation])
     #     transitions = [np.array(features),
