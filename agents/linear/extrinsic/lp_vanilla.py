@@ -86,6 +86,7 @@ class LpVanilla(Agent):
         self._input_dim = input_dim
         self._log_period = log_period
         self._nrng = nrng
+        self._network = network
 
         if feature_coder is not None:
             self._feature_mapper = FeatureMapper(feature_coder)
@@ -109,29 +110,24 @@ class LpVanilla(Agent):
 
         def v_loss(v_params, transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
-            v_tm1 = self._v_network(v_params, o_tm1)
-            v_t = self._v_network(v_params, o_t)
+            v_tm1 = jnp.squeeze(self._v_network(v_params, o_tm1), axis=-1)
+            v_t = jnp.squeeze(self._v_network(v_params, o_t), axis=-1)
             td_error = jax.vmap(rlax.td_learning)(v_tm1, r_t, d_t * discount, v_t)
             return jnp.mean(td_error ** 2)
 
+        self._network = network
         # Internalize the networks.
         self._v_network = network["value"]["net"]
         self._v_parameters = network["value"]["params"]
-
-        self._o_network = network["model"]["net"][0]
-        self._fw_o_network = network["model"]["net"][1]
-        self._r_network = network["model"]["net"][2]
-
-        self._o_parameters = network["model"]["params"][0]
-        self._fw_o_parameters = network["model"]["params"][1]
-        self._r_parameters = network["model"]["params"][2]
 
         # This function computes dL/dTheta
         self._v_loss_grad = jax.jit(jax.value_and_grad(v_loss))
         self._v_forward = jax.jit(self._v_network)
 
+        self._step_schedule = optimizers.polynomial_decay(self._lr,
+                                            self._exploration_decay_period, 0, 0.9)
         # Make an Adam optimizer.
-        v_opt_init, v_opt_update, v_get_params = optimizers.adam(step_size=self._lr)
+        v_opt_init, v_opt_update, v_get_params = optimizers.adam(step_size=self._step_schedule)
         self._v_opt_update = jax.jit(v_opt_update)
         self._v_opt_state = v_opt_init(self._v_parameters)
         self._v_get_params = v_get_params
@@ -148,6 +144,8 @@ class LpVanilla(Agent):
                ) -> int:
         if self._policy_type == "estimated":
             return self._pi(timestep, eval=True)
+        elif self._policy_type == "random":
+            return self._pi(self._nrng)
         else:
             features = self._get_features(timestep.observation[None, ...])
             return self._pi(np.argmax(features[0]), self._nrng)
@@ -252,11 +250,11 @@ class LpVanilla(Agent):
 
     def get_value_for_state(self, state):
         features = self._get_features(state[None, ...]) if self._feature_mapper is not None else state[None, ...]
-        return self._v_forward(self._v_parameters, features)[0]
+        return jnp.squeeze(self._v_forward(self._v_parameters, features), axis=-1)[0]
 
     def get_values_for_all_states(self, all_states):
         features = self._get_features(all_states) if self._feature_mapper is not None else all_states
-        return np.array(self._v_forward(self._v_parameters, np.array(features)), np.float)
+        return np.array(jnp.squeeze(self._v_forward(self._v_parameters, np.array(features)), axis=-1), np.float)
 
     def update_hyper_params(self, step, total_steps):
         pass

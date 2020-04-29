@@ -61,6 +61,14 @@ class LpFw(LpVanilla):
                                                   v_t_target)
             return jnp.mean(td_error ** 2)
 
+        self._o_network = self._network["model"]["net"][0]
+        self._fw_o_network = self._network["model"]["net"][1]
+        self._r_network = self._network["model"]["net"][2]
+
+        self._o_parameters = self._network["model"]["params"][0]
+        self._fw_o_parameters = self._network["model"]["params"][1]
+        self._r_parameters = self._network["model"]["params"][2]
+
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, 0))
         self._model_step_schedule = optimizers.polynomial_decay(self._lr_model,
                                                                 self._exploration_decay_period, 0, 0.9)

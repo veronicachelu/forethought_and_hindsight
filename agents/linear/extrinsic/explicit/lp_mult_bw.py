@@ -18,12 +18,12 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class LpExplicitExp(LpVanilla):
+class LpMultBw(LpVanilla):
     def __init__(
             self,
             **kwargs
     ):
-        super(LpExplicitExp, self).__init__(**kwargs)
+        super(LpMultBw, self).__init__(**kwargs)
 
         self._sequence = []
         self._should_reset_sequence = False
@@ -37,8 +37,8 @@ class LpExplicitExp(LpVanilla):
 
             o_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_o_tmn, o_tmn_target))
 
-            r_input = jnp.concatenate([model_o_tmn, o_t], axis=-1)
-            model_r_tmn = self._r_network(r_online_params, lax.stop_gradient(r_input))
+            model_r_tmn = self._r_network(r_online_params,
+                                          (lax.stop_gradient(model_o_tmn), o_t))
             r_t_target = 0
             for i, t in enumerate(transitions):
                 r_t_target += (self._discount ** i) * t[2]
@@ -52,15 +52,23 @@ class LpExplicitExp(LpVanilla):
 
         def v_planning_loss(v_params, o_params, r_params, o_t, d_t):
             o_tmn = self._o_forward(o_params, o_t)
-            v_tmn = self._v_network(v_params, lax.stop_gradient(o_tmn))
-            r_input = jnp.concatenate([o_tmn, o_t], axis=-1)
+            v_tmn = jnp.squeeze(self._v_network(v_params, lax.stop_gradient(o_tmn)), axis=-1)
 
-            r_tmn = self._r_forward(r_params, r_input)
-            v_t_target = self._v_network(v_params, o_t)
+            r_tmn = self._r_forward(r_params, (o_tmn, o_t))
+            v_t_target = jnp.squeeze(self._v_network(v_params, o_t), axis=-1)
+
             td_error = jax.vmap(rlax.td_learning)(v_tmn, r_tmn,
                                                   d_t * jnp.array([self._discount ** self._n]),
                                                  v_t_target)
             return jnp.mean(td_error ** 2)
+
+        self._o_network = self._network["model"]["net"][0]
+        self._fw_o_network = self._network["model"]["net"][1]
+        self._r_network = self._network["model"]["net"][2]
+
+        self._o_parameters = self._network["model"]["params"][0]
+        self._fw_o_parameters = self._network["model"]["params"][1]
+        self._r_parameters = self._network["model"]["params"][2]
 
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, 0))
 
@@ -114,8 +122,8 @@ class LpExplicitExp(LpVanilla):
         if timestep.discount is None:
             return
         features = self._get_features([timestep.observation])
-        o_t = np.array([features])
-        d_t = np.array([timestep.discount])
+        o_t = np.array(features)
+        d_t = np.array(timestep.discount)
 
         # plan on batch of transitions
         loss, gradient = self._v_planning_loss_grad(self._v_parameters,

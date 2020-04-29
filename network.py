@@ -1,6 +1,8 @@
 from jax.experimental import stax
 from typing import Callable, List, Mapping, Sequence, Text, Tuple, Union
 import numpy as np
+import jax
+from jax import lax
 import jax.numpy as jnp
 from jax import random as jrandom
 from jax.nn.initializers import glorot_normal, normal, ones, zeros
@@ -33,9 +35,22 @@ def get_network(num_hidden_layers: int,
     if model_class == "tabular":
         return get_tabular_network(num_hidden_layers, num_units, nA,
                             rng, input_dim)
+
     if model_family == "extrinsic":
         return get_extrinsic_network(num_hidden_layers, num_units, nA,
                         rng, input_dim)
+
+    if model_family == "mult_extrinsic":
+        return get_mult_extrinsic_network(num_hidden_layers, num_units, nA,
+                        rng, input_dim)
+
+    if model_family == "true":
+        return get_true_network(num_hidden_layers, num_units, nA,
+                                rng, input_dim)
+    if model_family == "true_mult":
+        return get_mult_true_network(num_hidden_layers, num_units, nA,
+                                rng, input_dim)
+
     if model_family == "q":
         return get_q_network(num_hidden_layers, num_units, nA,
                         rng, input_dim)
@@ -68,6 +83,56 @@ def get_tabular_network(num_hidden_layers: int,
                         }
     return network
 
+def get_true_network(num_hidden_layers: int,
+                     num_units: int,
+                     nA: int,
+                     rng: List,
+                     input_dim: Tuple,
+                     ):
+    input_size = np.prod(input_dim)
+    network = {}
+    rng_v, _, rng_b, rng_a, rng_c = jrandom.split(rng, 5)
+
+    v_network, v_network_params = get_value_net(rng_v, input_size, bias=False)
+    c_network, c_network_params = get_c_net(rng_c, input_size)
+    a_network, a_network_params = get_a_net(rng_a, input_size)
+    b_network, b_network_params = get_b_net(rng_b, input_size)
+
+    network["value"] = {"net": v_network,
+                        "params": v_network_params}
+    network["model"] = {"net": [b_network, a_network, c_network],
+                        "params": [b_network_params,
+                                   a_network_params,
+                                   c_network_params]
+                        }
+
+    return network
+
+def get_mult_true_network(num_hidden_layers: int,
+                     num_units: int,
+                     nA: int,
+                     rng: List,
+                     input_dim: Tuple,
+                     ):
+    input_size = np.prod(input_dim)
+    network = {}
+    rng_v, _, rng_b, rng_a, rng_c = jrandom.split(rng, 5)
+
+    v_network, v_network_params = get_value_net(rng_v, input_size, bias=False)
+    c_network, c_network_params = get_mult_c_net(rng_c, input_size)
+    a_network, a_network_params = get_a_net(rng_a, input_size)
+    b_network, b_network_params = get_b_net(rng_b, input_size)
+
+    network["value"] = {"net": v_network,
+                        "params": v_network_params}
+    network["model"] = {"net": [b_network, a_network, c_network],
+                        "params": [b_network_params,
+                                   a_network_params,
+                                   c_network_params]
+                        }
+
+    return network
+
 def get_extrinsic_network(num_hidden_layers: int,
                   num_units: int,
                   nA: int,
@@ -77,13 +142,36 @@ def get_extrinsic_network(num_hidden_layers: int,
 
     input_size = np.prod(input_dim)
     network = {}
-    rng_v, rng_h, rng_o, rng_fw_o, rng_r = jrandom.split(rng, 5)
+    rng_v, _, rng_o, rng_fw_o, rng_r = jrandom.split(rng, 5)
 
-    h_network, h_network_params = get_h_net(rng_h, num_units, num_hidden_layers, input_size)
     v_network, v_network_params = get_value_net(rng_v, input_size, bias=False)
     o_network, o_network_params = get_o_net(rng_o, input_size)
     fw_o_network, fw_o_network_params = get_o_net(rng_fw_o, input_size)
     r_network, r_network_params = get_r_net(rng_r, input_size)
+
+    network["value"] = {"net": v_network,
+                        "params": v_network_params}
+    network["model"] = {"net": [o_network, fw_o_network, r_network],
+                        "params": [o_network_params,
+                                   fw_o_network_params, r_network_params]
+                        }
+
+    return network
+
+def get_mult_extrinsic_network(num_hidden_layers: int,
+                  num_units: int,
+                  nA: int,
+                  rng: List,
+                  input_dim: Tuple,
+                          ):
+    input_size = np.prod(input_dim)
+    network = {}
+    rng_v, _, rng_o, rng_fw_o, rng_r = jrandom.split(rng, 5)
+
+    v_network, v_network_params = get_value_net(rng_v, input_size, bias=False)
+    o_network, o_network_params = get_o_net(rng_o, input_size)
+    fw_o_network, fw_o_network_params = get_o_net(rng_fw_o, input_size)
+    r_network, r_network_params = get_mult_r_net(rng_r, input_size)
 
     network["value"] = {"net": v_network,
                         "params": v_network_params}
@@ -203,12 +291,10 @@ def Dense_no_bias(out_dim, W_init=glorot_normal()):
   """Layer constructor function for a dense (fully-connected) layer."""
   def init_fun(rng, input_shape):
     output_shape = input_shape[:-1] + (out_dim,)
-    k1, k2 = jrandom.split(rng)
-    W = W_init(k1, (input_shape[-1], out_dim))
-    return output_shape, (W)
+    W = W_init(rng, (input_shape[-1], out_dim))
+    return output_shape, W
   def apply_fun(params, inputs, **kwargs):
-    W = params
-    return jnp.dot(inputs, W)
+    return jnp.dot(inputs, params)
   return init_fun, apply_fun
 
 def get_h_net(rng_h, num_units, num_hidden_layers, input_size):
@@ -229,16 +315,108 @@ def get_pi_net(rng_pi, num_units, nA):
     return pi_network, pi_network_params
 
 def get_value_net(rng_v, num_units, bias=False):
-    layers = []
     if bias == False:
-        layers.append(Dense_no_bias(1))
+        v_network_init, v_network = Dense_no_bias(1)
     else:
-        layers.append(stax.Dense(1))
-    layers.append(Reshape((-1)))
-    v_network_init, v_network = stax.serial(*layers)
+        v_network_init, v_network = stax.Dense(1)
     _, v_network_params = v_network_init(rng_v, (-1, num_units))
 
     return v_network, v_network_params
+
+def MultReward(out_dim, W_init=glorot_normal()):
+    def init_fun(rng, feature_shape):
+        output_shape = feature_shape[:-1] + (1,)
+        W = W_init(rng, (feature_shape[-1], feature_shape[-1]))
+        return output_shape, W
+
+    def apply_fun(params, inputs, **kwargs):
+        predecessor, current = inputs
+        second_product = lax.batch_matmul(params[None, ...], current[..., None])
+        first_product = lax.batch_matmul(jnp.transpose(predecessor[..., None],
+                                         axes=[0, 2, 1]),
+                                         second_product)
+        return jnp.squeeze(first_product, axis=[-1, -2])
+
+    return init_fun, apply_fun
+
+def get_a_net(rng_a, num_units):
+    layers = []
+    # for _ in range(1):
+    #     layers.append(stax.Dense(256))
+    #     layers.append(stax.Relu)
+    layers.append(Dense_no_bias(num_units * num_units))
+    layers.append(Reshape((-1, num_units, num_units)))
+    # a_network_init, a_network = FeatureCovariance(num_units)
+    a_network_init, a_network = stax.serial(*layers)
+
+    # a_network_init, a_network = Dense_no_bias(num_units*num_units)
+    _, a_network_params = a_network_init(rng_a, (-1, num_units))
+
+    return a_network, a_network_params
+
+def RewardUpdate(out_dim, W_init=glorot_normal()):
+    def init_fun(rng, feature_shape):
+        # output_shape = feature_shape[:-1] + (out_dim,)
+        # W = W_init(rng, (feature_shape[-1], out_dim))
+        output_shape = feature_shape[:-1] + (feature_shape[-1],)
+        W = W_init(rng, (feature_shape[-1] * 2, 1))
+        # W = W_init(rng, (feature_shape[-1], out_dim))
+        return output_shape, W
+
+    def apply_fun(params, inputs, **kwargs):
+        # expected_predecessors, current = inputs
+        # input = jnp.concatenate([expected_predecessors, current], axis=-1)
+        # output = jnp.dot(input, params)
+        # return output
+        cross_predecessors, expected_predecessors, current = inputs
+        params_shape = params.shape[0]
+        pred_contrib = lax.batch_matmul(cross_predecessors,
+                                        params[:params_shape//2, :][None, ...])
+
+        cross_exp_pred_current = lax.batch_matmul(expected_predecessors[..., None],
+                         jnp.transpose(current[..., None], axes=[0, 2, 1]))
+
+        current_contrib = lax.batch_matmul(cross_exp_pred_current,
+                                        params[params_shape//2:, :][None, ...])
+        # first_product = jnp.squeeze(lax.batch_matmul(expected_predecessors[..., None],
+        #                                              second_product), axis=-1)
+        return jnp.squeeze(pred_contrib + current_contrib, axis=[-1])
+        # cross_predecessors, current = inputs
+        # second_product = lax.batch_matmul(params[None, ...], current[..., None])
+        # first_product = lax.batch_matmul(cross_predecessors, second_product)
+        # return jnp.squeeze(first_product, axis=-1)
+
+    return init_fun, apply_fun
+
+def MultRewardUpdate(out_dim, W_init=glorot_normal()):
+    def init_fun(rng, feature_shape):
+        output_shape = feature_shape[:-1] + (feature_shape[-1],)
+        W = W_init(rng, (feature_shape[-1], feature_shape[-1]))
+        return output_shape, W
+
+    def apply_fun(params, inputs, **kwargs):
+        cross_predecessors, current = inputs
+        second_product = lax.batch_matmul(params[None, ...], current[..., None])
+        first_product = lax.batch_matmul(cross_predecessors, second_product)
+        return jnp.squeeze(first_product, axis=-1)
+
+    return init_fun, apply_fun
+
+def get_c_net(rng_c, num_units):
+    c_network_init, c_network = RewardUpdate(num_units)
+    _, c_network_params = c_network_init(rng_c, (-1, num_units))
+    return c_network, c_network_params
+
+
+def get_mult_c_net(rng_c, num_units):
+    c_network_init, c_network = MultRewardUpdate(num_units)
+    _, c_network_params = c_network_init(rng_c, (-1, num_units, num_units))
+    return c_network, c_network_params
+
+def get_b_net(rng_b, num_units):
+    b_network_init, b_network = Dense_no_bias(num_units)
+    _, b_network_params = b_network_init(rng_b, (-1, num_units))
+    return b_network, b_network_params
 
 def get_o_net(rng_o, num_units):
     o_network_init, o_network = Dense_no_bias(num_units)
@@ -253,6 +431,12 @@ def get_r_net(rng_r, num_units):
 
     r_network_init, r_network = stax.serial(*layers)
     _, r_network_params = r_network_init(rng_r, (-1, 2 * num_units))
+
+    return r_network, r_network_params
+
+def get_mult_r_net(rng_r, num_units):
+    r_network_init, r_network = MultReward(num_units)
+    _, r_network_params = r_network_init(rng_r, (-1, num_units, num_units))
 
     return r_network, r_network_params
 

@@ -28,21 +28,13 @@ class LpBw(LpVanilla):
         self._sequence = []
         self._should_reset_sequence = False
 
-        # self._a_network = self._network["model"]["net"][0]
-        # self._b_network = self._network["model"]["net"][1]
-        # self._c_network = self._network["model"]["net"][2]
-        #
-        # self._a_parameters = self._network["model"]["params"][0]
-        # self._b_parameters = self._network["model"]["params"][1]
-        # self._c_parameters = self._network["model"]["params"][2]
+        self._a_network = self._network["model"]["net"][0]
+        self._b_network = self._network["model"]["net"][1]
+        self._c_network = self._network["model"]["net"][2]
 
-        self._o_network = self._network["model"]["net"][0]
-        self._fw_o_network = self._network["model"]["net"][1]
-        self._r_network = self._network["model"]["net"][2]
-
-        self._o_parameters = self._network["model"]["params"][0]
-        self._fw_o_parameters = self._network["model"]["params"][1]
-        self._r_parameters = self._network["model"]["params"][2]
+        self._a_parameters = self._network["model"]["params"][0]
+        self._b_parameters = self._network["model"]["params"][1]
+        self._c_parameters = self._network["model"]["params"][2]
 
         def model_loss(a_params,
                        b_params,

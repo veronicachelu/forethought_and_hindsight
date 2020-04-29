@@ -43,8 +43,8 @@ configs={
             "planning_depths": [1, 0],
             "replay_capacities": [0, 0]
         },
-        "weird_bw": {
-            "agents": ["weird_bw", "bw"],
+        "true_bw": {
+            "agents": ["true_bw", "bw"],
             "planning_depths": [1, 1],
             "replay_capacities": [0, 0]
         },
@@ -106,9 +106,12 @@ configs={
             "replay_capacities": [0, 0, 0]
         },
         "all": {
-            "agents": ["bw", "fw", "fw_rnd"],
-            "planning_depths": [1, 1, 1],
-            "replay_capacities": [0, 0, 50]
+            "agents": ["bw", "mult_bw",
+                       "true_bw", "true_mult_bw",
+                       "fw", "fw_intr",
+                       "bw_intr"],
+            "planning_depths": [1, 1, 1, 1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 0, 0, 0, 0]
         },
         "corr_vs_value_vs_meta": {
             "agents": ["bw_intr", "bw_vaware", "bw_meta"],

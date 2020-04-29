@@ -6,7 +6,7 @@ from utils.mdp_solvers.solve_chain import ChainSolver
 
 
 class Random(dm_env.Environment):
-    def __init__(self, rng=None, obs_type="tabular", nS = 5, nF=0,
+    def __init__(self, rng=None, obs_type="tabular", nS = 7, nF=0,
                  left_reward=-1.0, right_reward=1.0):
         self._P = None
         self._R = None
@@ -25,13 +25,16 @@ class Random(dm_env.Environment):
 
         self._reset_next_step = True
         # self._true_v = np.linspace(left_reward * nS, right_reward * nS, nS) / nS
-        self._dependent_features = [
+        self._dependent_features = np.array([
+                           [0, 0, 0],
                           [1, 0, 0],
                           [1/np.sqrt(2), 1/np.sqrt(2), 0],
                           [1/np.sqrt(3), 1/np.sqrt(3), 1/np.sqrt(3)],
                           [0, 1/np.sqrt(2), 1/np.sqrt(2)],
-                          [0, 0, 1]]
-        # self._nF = 3
+                          [0, 0, 1],
+                            [0, 0, 0],
+                        ])
+        self._nF = 3
         # self._inverted_features = [[0, 1/2, 1/2, 1/2, 1/2],
         #                           [1/2, 0, 1/2, 1/2, 1/2],
         #                           [1/2, 1/2, 0, 1/2, 1/2],
@@ -166,10 +169,11 @@ class Random(dm_env.Environment):
 
 if __name__ == "__main__":
     nrng = np.random.RandomState(0)
-    nS = 5
+    nS = 7
     nA = 2
     discount = 0.9
-    env = Random(rng=nrng, obs_type="tabular", nS=nS, left_reward=-1, right_reward=1)
+    env = Random(rng=nrng, obs_type="dependent_features",
+                 nS=nS, left_reward=-1, right_reward=1)
     mdp_solver = ChainSolver(env, nS, nA, discount)
     # policy = mdp_solver.get_optimal_policy()
     v = mdp_solver.get_optimal_v()

@@ -192,6 +192,8 @@ class LpIntrinsicVanilla(Agent):
                ) -> int:
         if self._policy_type == "estimated":
             return self._pi(timestep, eval=True)
+        elif self._policy_type == "random":
+            return self._pi(self._nrng)
         else:
             features = self._get_features(timestep.observation[None, ...])
             return self._pi(np.argmax(features[0]), self._nrng)

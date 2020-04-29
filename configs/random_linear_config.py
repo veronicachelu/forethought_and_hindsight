@@ -4,13 +4,13 @@ env_config = {
     "non_gridworld": True,
     "model_class": "linear",
     "env_type": "discrete",
-    "policy_type": "greedy",
+    "policy_type": "random",
     "obs_type": "dependent_features",
     "mdp_filename": None,
-    "env_size": 10,
-    "obs_size": 10,
+    "env_size": 5,
+    "obs_size": 5,
     "num_episodes": 100,
-    "num_runs": 5,
+    "num_runs": 100,
     "stochastic": False,
     "feature_coder": None,
     "nA": 2
@@ -20,7 +20,7 @@ volatile_agent_config = {
     "vanilla": {
         "planning_depth": [0],
         "replay_capacity": [0],
-        "lr": np.linspace(0.1, 1.0, 10),
+        "lr": np.linspace(0.001, 1.0, retstep=5, endpoint=False),
         "lr_p": [0],
         "lr_m": [0]
     },

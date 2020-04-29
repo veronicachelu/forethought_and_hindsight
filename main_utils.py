@@ -39,7 +39,7 @@ def get_linear_chain_env(nrng, space, aux_agent_configs):
                              space["env_config"]["nA"], aux_agent_configs["discount"])
     env._true_v = mdp_solver.get_optimal_v()
     nS = env._nS
-    policy = lambda x, nrng: nrng.choice(range(env._nA), p=env._nA * [1 / env._nA])
+    policy = lambda nrng: nrng.choice(range(env._nA), p=env._nA * [1 / env._nA])
 
     return env, nS, policy, mdp_solver
 
