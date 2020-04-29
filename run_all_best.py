@@ -20,7 +20,7 @@ flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experien
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')
 flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
-flags.DEFINE_float('discount', .95, 'discounting on the agent side')
+flags.DEFINE_float('discount', .99, 'discounting on the agent side')
 flags.DEFINE_integer('min_replay_size', 1, 'min replay size before training.')
 
 FLAGS = flags.FLAGS
