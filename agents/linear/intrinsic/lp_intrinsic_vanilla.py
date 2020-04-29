@@ -121,8 +121,8 @@ class LpIntrinsicVanilla(Agent):
             o_tm1, _, r_t, d_t, o_t = transitions
             h_t = lax.stop_gradient(self._h_network(h_params, o_t)) if self._latent else o_t
             h_tm1 = lax.stop_gradient(self._h_network(h_params, o_tm1)) if self._latent else o_tm1
-            v_tm1 = self._v_network(v_params, h_tm1)
-            v_t = self._v_network(v_params, h_t)
+            v_tm1 = jnp.squeeze(self._v_network(v_params, h_tm1), axis=-1)
+            v_t = jnp.squeeze(self._v_network(v_params, h_t), axis=-1)
             td_error = jax.vmap(rlax.td_learning)(v_tm1, r_t, d_t * discount, v_t)
             return jnp.mean(td_error ** 2)
 

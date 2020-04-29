@@ -75,14 +75,9 @@ class LpBwCorrBased(LpIntrinsicVanilla):
                                                         v_t_target)
             model_update = model_vjp_fun(model_td_error)[0] # pullback model_td_error
 
-            corr_loss = 0
-            for i, (layer_model, layer_real) in enumerate(zip(model_update, real_update)):
-                for j, (param_grad_model, param_grad_real) in enumerate(zip(layer_model, layer_real)):
-                    corr_loss += jnp.sum(jax.vmap(rlax.l2_loss)(param_grad_model,
-                                                                 lax.stop_gradient(param_grad_real)))
-
+            corr_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_update, lax.stop_gradient(real_update)))
             # r_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_r_tmn_2_t, real_r_tmn_2_t))
-            total_loss = corr_loss #+ r_loss
+            total_loss = corr_loss
 
             return total_loss, {"corr_loss": corr_loss,}
                                 # "r_loss": r_loss}
@@ -90,12 +85,11 @@ class LpBwCorrBased(LpIntrinsicVanilla):
         def v_planning_loss(v_params, h_params, o_params, r_params, o_t, d_t):
             h_t = lax.stop_gradient(self._h_network(h_params, o_t)) if self._latent else o_t
             model_tmn = lax.stop_gradient(self._o_network(o_params, h_t))
-
-            v_tmn = self._v_network(v_params, model_tmn)
+            v_tmn = jnp.squeeze(self._v_network(v_params, model_tmn), axis=-1)
             r_input = jnp.concatenate([model_tmn, h_t], axis=-1)
             r_tmn = self._r_network(r_params, lax.stop_gradient(r_input))
-            v_t_target = self._v_network(v_params, h_t)
-            # to the encoded current state and the value from the predecessor latent state
+            v_t_target = jnp.squeeze(self._v_network(v_params, h_t), axis=-1)
+
             td_error = jax.vmap(rlax.td_learning)(v_tmn, r_tmn, d_t * jnp.array([self._discount ** self._n]),
                                                   v_t_target)
             return jnp.mean(td_error ** 2)
@@ -157,7 +151,7 @@ class LpBwCorrBased(LpIntrinsicVanilla):
         if timestep.discount is None:
             return
         features = self._get_features([timestep.observation])
-        o_t = np.array([features])
+        o_t = np.array(features)
         d_t = np.array([timestep.discount])
         # plan on batch of transitions
 
