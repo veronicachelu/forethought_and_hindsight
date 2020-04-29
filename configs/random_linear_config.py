@@ -30,23 +30,7 @@ volatile_agent_config = {
         "replay_capacity": [0],
         "lr": [1.0],
         "lr_p": [1.0],
-        "lr_m": np.linspace(0.001, 0.1, 10),
-        "lr_ctrl": 0.4
-    },
-    "bw_vaware": {
-        "planning_depth": [1],
-        "replay_capacity": [0],
-        "lr": [1.0],
-        "lr_p": [1.0],
-        "lr_m": np.linspace(0.001, 0.1, 10),
-        "lr_ctrl": 0.4
-    },
-    "bw_meta": {
-        "planning_depth": [1],
-        "replay_capacity": [0],
-        "lr": [1.0],
-        "lr_p": [1.0],
-        "lr_m": np.linspace(0.001, 0.1, 10),
+        "lr_m": np.array([0.001, 0.005, 0.01, 0.05, 0.1, 0.5]),
         "lr_ctrl": 0.4
     },
     "fw": {
@@ -54,55 +38,39 @@ volatile_agent_config = {
         "replay_capacity": [0],
         "lr": [0.114],
         "lr_p": [0.114],
-        "lr_m": np.linspace(0.01, 1.0, 10),
+        "lr_m": np.array([0.001, 0.005, 0.01, 0.05, 0.1, 0.5]),
         "lr_ctrl": 0.4
     },
     "bw": {
-        "planning_depth": [1, 2, 3, 4],
-        "replay_capacity": [0],
-        "lr": [0.114],
-        "lr_p": [0.114],
-        "lr_m": np.linspace(0.01, 1.0, 10),
-        "lr_ctrl": 0.4
-    },
-    "bw_fw": {
         "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [0.114],
         "lr_p": [0.114],
-        "lr_m": np.linspace(0.01, 1.0, 10),
+        "lr_m": np.array([0.001, 0.005, 0.01, 0.05, 0.1, 0.5]),
         "lr_ctrl": 0.4
     },
-    "bw_fw_PWMA": {
+    "mult_bw": {
         "planning_depth": [1],
-        "replay_capacity": [50],
+        "replay_capacity": [0],
         "lr": [0.114],
         "lr_p": [0.114],
-        "lr_m": np.linspace(0.01, 1.0, 10),
+        "lr_m": np.array([0.001, 0.005, 0.01, 0.05, 0.1, 0.5]),
         "lr_ctrl": 0.4
     },
-    "bw_fw_MG": {
+    "true_bw": {
         "planning_depth": [1],
-        "replay_capacity": [50],
+        "replay_capacity": [0],
         "lr": [0.114],
         "lr_p": [0.114],
-        "lr_m": np.linspace(0.01, 1.0, 10),
+        "lr_m": np.array([0.001, 0.005, 0.01, 0.05, 0.1, 0.5]),
         "lr_ctrl": 0.4
     },
-    "fw_rnd": {
+    "true_mult_bw": {
         "planning_depth": [1],
-        "replay_capacity": [50],
+        "replay_capacity": [0],
         "lr": [0.114],
         "lr_p": [0.114],
-        "lr_m": np.linspace(0.01, 1.0, 10),
-        "lr_ctrl": 0.4
-    },
-    "fw_pri": {
-        "planning_depth": [1],
-        "replay_capacity": [50],
-        "lr": [0.114],
-        "lr_p": [0.114],
-        "lr_m": np.linspace(0.01, 1.0, 10),
+        "lr_m": np.array([0.001, 0.005, 0.01, 0.05, 0.1, 0.5]),
         "lr_ctrl": 0.4
     },
 }
