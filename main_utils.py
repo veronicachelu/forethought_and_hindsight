@@ -295,6 +295,9 @@ def load_env_and_volatile_configs(env):
     if env == "repeat":
         env_config = configs.repeat_config.env_config
         volatile_agent_config = configs.repeat_config.volatile_agent_config
+    elif env == "split":
+        env_config = configs.split_config.env_config
+        volatile_agent_config = configs.split_config.volatile_agent_config
     elif env == "loop":
         env_config = configs.loop_config.env_config
         volatile_agent_config = configs.loop_config.volatile_agent_config

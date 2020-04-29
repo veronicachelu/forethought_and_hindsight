@@ -21,7 +21,7 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class ACMB(Agent):
+class ACLSD(Agent):
     def __init__(
             self,
             run_mode: str,
@@ -84,28 +84,6 @@ class ACMB(Agent):
             self._images_dir = os.path.join(self._logs, '{}/images/seed_{}'.format(self._run_mode, seed))
             if not os.path.exists(self._images_dir):
                 os.makedirs(self._images_dir)
-
-        def model_loss(o_online_params,
-                       r_online_params,
-                       transitions):
-            o_tmn_target = transitions[0][0]
-            o_t = transitions[-1][-1]
-            model_o_tmn = self._o_network(o_online_params, o_t)
-
-            o_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_o_tmn, o_tmn_target))
-
-            r_input = jnp.concatenate([model_o_tmn, o_t], axis=-1)
-            model_r_tmn = self._r_network(r_online_params, lax.stop_gradient(r_input))
-            r_t_target = 0
-            for i, t in enumerate(transitions):
-                r_t_target += (self._discount ** i) * t[2]
-
-            r_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_r_tmn, r_t_target))
-            total_loss = o_loss + r_loss
-
-            return total_loss, {"o_loss": o_loss,
-                               "r_loss": r_loss
-                               }
 
         def ac_loss(v_params, pi_params, h_params, transitions):
             a_tm1 = np.array([t[1] for t in transitions])

@@ -2,6 +2,7 @@ import configs.agent_config as agent_config
 import configs.loop_config as loop_config
 import configs.repeat_config as repeat_config
 import configs.shortcut_config as shortcut_config
+import configs.split_config as split_config
 import configs.random_config as random_config
 import configs.maze_config as maze_config
 import configs.linear_maze_config as linear_maze_config

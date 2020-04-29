@@ -44,9 +44,9 @@ configs={
             "replay_capacities": [0, 0]
         },
         "weird_bw": {
-            "agents": ["weird_bw"],
-            "planning_depths": [1],
-            "replay_capacities": [0]
+            "agents": ["weird_bw", "bw"],
+            "planning_depths": [1, 1],
+            "replay_capacities": [0, 0]
         },
         "fw": {
             "agents": ["fw_intr", "vanilla_intr"],
@@ -316,4 +316,12 @@ configs={
             "replay_capacities": [0, 0, 0]
         },
     },
+    "split": {
+        "all": {
+            "agents": ["bw", "bw_fw", "fw", "fw_rnd", "fw_pri",
+                       "bw_fw_PWMA", "bw_fw_MG"],
+            "planning_depths": [1, 1, 1, 1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 50, 50, 50, 50]
+        }
+    }
 }

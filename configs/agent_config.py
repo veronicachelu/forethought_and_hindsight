@@ -1,4 +1,18 @@
 config = {
+    "weird_bw": {
+        "task_type": "prediction",
+        "control_agent": "q",
+        "pg": False,
+        "run_mode": "weird_bw",
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "weird",
+        "target_networks": False,
+        "class": {"linear": "LpBw",
+                  "tabular": "TpExplicitDistrib"},
+    },
     "q": {
         "task_type": "control",
         "pg": False,

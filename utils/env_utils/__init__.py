@@ -7,4 +7,5 @@ from utils.env_utils.po import *
 from utils.env_utils.boyan import *
 from utils.env_utils.obstacle_world import *
 from utils.env_utils.gym_wrapper import *
+from utils.env_utils.split import *
 

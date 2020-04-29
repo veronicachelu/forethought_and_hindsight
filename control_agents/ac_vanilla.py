@@ -106,13 +106,13 @@ class ACVanilla(Agent):
             entropy_error = distributions.softmax().entropy(pi_tm1)
             entropy = - jnp.mean(entropy_error)
 
-            entropy_loss = - self._epsilon * entropy
+            # entropy_loss = - self._epsilon * entropy
 
             total_loss = actor_loss + critic_loss #+ entropy_loss
             return total_loss,\
                    {"critic": critic_loss,
                     "actor": actor_loss,
-                    "entropy": entropy_loss
+                    "entropy": entropy
                     }
 
         # Internalize the networks.
