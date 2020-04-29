@@ -22,6 +22,7 @@ volatile_agent_config = {
         "lr": np.linspace(0.1, 1.0, 10),
         "lr_m": [0],
         "lr_p": [0],
+        "lr_ctrl": 0.4
     },
     "bw": {
         "planning_depth": [1, 2, 3, 4],
@@ -29,6 +30,7 @@ volatile_agent_config = {
         "lr": [0.1],
         "lr_p": [0.1],
         "lr_m": np.linspace(0.01, 0.1, 10),
+        "lr_ctrl": 0.4
     },
     "fw": {
         "planning_depth": [1],
@@ -36,6 +38,7 @@ volatile_agent_config = {
         "lr": [0.1],
         "lr_p": [0.1],
         "lr_m": np.linspace(0.01, 0.1, 10),
+        "lr_ctrl": 0.4
     },
     "bw_fw": {
         "planning_depth": [1],
@@ -43,6 +46,7 @@ volatile_agent_config = {
         "lr": [0.1],
         "lr_p": [0.1],
         "lr_m": np.linspace(0.01, 0.1, 10),
+        "lr_ctrl": 0.4
     },
     "bw_fw_PWMA": {
         "planning_depth": [1],
@@ -50,6 +54,7 @@ volatile_agent_config = {
         "lr": [0.1],
         "lr_p": [0.1],
         "lr_m": np.linspace(0.01, 0.1, 10),
+        "lr_ctrl": 0.4
     },
     "bw_fw_MG": {
         "planning_depth": [1],
@@ -64,6 +69,7 @@ volatile_agent_config = {
         "lr": [0.1],
         "lr_p": [0.1],
         "lr_m": np.linspace(0.01, 0.1, 10),
+        "lr_ctrl": 0.4
     },
     "fw_pri": {
         "planning_depth": [1],
@@ -71,5 +77,6 @@ volatile_agent_config = {
         "lr": [0.1],
         "lr_p": [0.1],
         "lr_m": np.linspace(0.01, 0.1, 10),
+        "lr_ctrl": 0.4
     },
 }
