@@ -4,6 +4,7 @@
 #SBATCH --error=./errors/hypertune__fw__random_linear__error.txt
 #SBATCH --ntasks=1
 #SBATCH --time=12:00:00
+#SBATCH --gres=gpu:1
 
 source ~/.bashrc
 cd ~/jax_models
