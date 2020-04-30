@@ -121,7 +121,7 @@ class LpMultFw(LpVanilla):
         if timestep.discount is None:
             return
         features = self._get_features([timestep.observation])
-        o_t = np.array([features])
+        o_t = np.array(features)
         d_t = np.array([timestep.discount])
 
         # plan on batch of transitions
