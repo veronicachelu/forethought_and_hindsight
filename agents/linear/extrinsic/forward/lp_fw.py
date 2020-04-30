@@ -51,11 +51,12 @@ class LpFw(LpVanilla):
 
         def v_planning_loss(v_params, fw_o_params, r_params, o_tmn, d_t):
             o_t = self._fw_o_forward(fw_o_params, o_tmn)
-            v_tmn = self._v_network(v_params, o_tmn)
+            v_tmn = jnp.squeeze(self._v_network(v_params, o_tmn), axis=-1)
             r_input = jnp.concatenate([o_tmn, o_t], axis=-1)
 
             r_tmn = self._r_forward(r_params, r_input)
-            v_t_target = self._v_network(v_params, o_t)
+            v_t_target = jnp.squeeze(self._v_network(v_params, o_t), axis=-1)
+
             td_error = jax.vmap(rlax.td_learning)(v_tmn, r_tmn,
                                                   d_t * jnp.array([self._discount ** self._n]),
                                                   v_t_target)
@@ -70,12 +71,12 @@ class LpFw(LpVanilla):
         self._r_parameters = self._network["model"]["params"][2]
 
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, 0))
-        self._model_step_schedule = optimizers.polynomial_decay(self._lr_model,
-                                                                self._exploration_decay_period, 0, 0.9)
+
         self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [0, 1], has_aux=True))
         self._fw_o_forward = jax.jit(self._fw_o_network)
         self._r_forward = jax.jit(self._r_network)
-
+        self._model_step_schedule = optimizers.polynomial_decay(self._lr_model,
+                                                                self._exploration_decay_period, 0, 0.9)
         model_opt_init, model_opt_update, model_get_params = optimizers.adam(step_size=self._model_step_schedule)
         self._model_opt_update = jax.jit(model_opt_update)
         self._model_opt_state = model_opt_init([self._fw_o_parameters, self._r_parameters])

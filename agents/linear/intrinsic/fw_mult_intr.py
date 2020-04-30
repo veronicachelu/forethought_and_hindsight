@@ -18,7 +18,7 @@ from agents.linear.intrinsic.lp_intrinsic_vanilla import LpIntrinsicVanilla
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
-class LpFwIntr(LpIntrinsicVanilla):
+class LpFwMultIntr(LpIntrinsicVanilla):
     def __init__(
             self,
             **kwargs
@@ -41,7 +41,7 @@ class LpFwIntr(LpIntrinsicVanilla):
             h_t = self._h_network(h_params, o_t) if self._latent else o_t
 
             # #compute fwd + bwd pass
-            real_v_tmn = self._v_network(v_params, h_tmn)
+            # real_v_tmn = self._v_network(v_params, h_tmn)
             real_v_t_target = jnp.squeeze(self._v_network(v_params, h_t), axis=-1)
 
             real_r_tmn_2_t = 0
@@ -59,8 +59,7 @@ class LpFwIntr(LpIntrinsicVanilla):
             model_t = self._fw_o_network(fw_o_params, h_tmn)
             model_v_t_target = jnp.squeeze(self._v_network(v_params, model_t), axis=-1)
 
-            model_r_input = jnp.concatenate([h_tmn, model_t], axis=-1)
-            model_r_tmn_2_t = self._r_network(r_params, model_r_input)
+            model_r_tmn_2_t = self._r_network(r_params, (h_tmn, lax.stop_gradient(model_t)))
 
             model_td_target = model_r_tmn_2_t + real_d_tmn_2_t *\
                               jnp.array([self._discount ** self._n]) * \
@@ -79,8 +78,7 @@ class LpFwIntr(LpIntrinsicVanilla):
             model_t = lax.stop_gradient(self._o_network(fw_o_params, h_tmn))
 
             v_t_target = jnp.squeeze(self._v_network(v_params, model_t), axis=-1)
-            r_input = jnp.concatenate([o_tmn, model_t], axis=-1)
-            r_t = self._r_network(r_params, lax.stop_gradient(r_input))
+            r_t = self._r_network(r_params, (o_tmn, lax.stop_gradient(model_t)))
             v_tmn = jnp.squeeze(self._v_network(v_params, h_tmn), axis=-1)
 
             td_error = jax.vmap(rlax.td_learning)(v_tmn, r_t, d_tmn * jnp.array([self._discount ** self._n]),
