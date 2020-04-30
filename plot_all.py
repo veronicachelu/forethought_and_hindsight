@@ -19,11 +19,12 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_string('env', "linear_maze", 'where to save results')
+flags.DEFINE_string('env', "split", 'where to save results')
+# flags.DEFINE_string('env', "random_linear", 'where to save results')
 flags.DEFINE_float('ymin', None, 'plot up to')
 flags.DEFINE_float('ymax', None, 'plot up to')
-# flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
-flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
+flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
+# flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
 # flags.DEFINE_integer('num_runs', 100, '')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
@@ -153,9 +154,9 @@ def plot_tensorflow_log(space, color, linestyle):
         y = [tf.make_ndarray(m[2]) for m in msve]
         all_y_over_seeds.append(np.array(y))
 
-    those_that_are_not_99 = [i for i, a in enumerate(all_y_over_seeds) if len(a) != 99]
-    print(those_that_are_not_99)
-    all_y_over_seeds = [a for a in all_y_over_seeds if len(a) == 99]
+    # those_that_are_not_99 = [i for i, a in enumerate(all_y_over_seeds) if len(a) != 99]
+    # print(those_that_are_not_99)
+    all_y_over_seeds = [a[:99] for a in all_y_over_seeds if len(a) == 99]
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
     if space["crt_config"]["agent"] == "vanilla":
