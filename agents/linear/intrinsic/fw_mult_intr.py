@@ -23,7 +23,7 @@ class LpFwMultIntr(LpIntrinsicVanilla):
             self,
             **kwargs
     ):
-        super(LpFwIntr, self).__init__(**kwargs)
+        super(LpFwMultIntr, self).__init__(**kwargs)
 
         self._sequence = []
         self._should_reset_sequence = False
