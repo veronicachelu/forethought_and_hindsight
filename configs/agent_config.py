@@ -123,7 +123,7 @@ config = {
         "num_units": 0,
         "model_family": "mult_extrinsic",
         "target_networks": False,
-        "class": {"linear": "LpFwMult",
+        "class": {"linear": "LpMultFw",
                   "tabular": "TpFwMult"},
     },
     "bw_fw": {
