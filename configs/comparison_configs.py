@@ -108,10 +108,11 @@ configs={
         "all": {
             "agents": ["bw", "mult_bw",
                        "true_bw", "true_mult_bw",
-                       "fw", "fw_intr",
+                       "fw", "mult_fw",
+                       "fw_intr", "fw_mult_intr",
                        "bw_intr", "bw_mult_intr"],
-            "planning_depths": [1, 1, 1, 1, 1, 1, 1, 1],
-            "replay_capacities": [0, 0, 0, 0, 0, 0, 0, 0]
+            "planning_depths": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         },
         "corr_vs_value_vs_meta": {
             "agents": ["bw_intr", "bw_vaware", "bw_meta"],
