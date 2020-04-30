@@ -49,6 +49,30 @@ volatile_agent_config = {
         "lr_m": np.array([0.001, 0.005, 0.01, 0.05, 0.1, 0.5]),
         "lr_ctrl": 0.4
     },
+    "mult_fw": {
+        "planning_depth": [1],
+        "replay_capacity": [0],
+        "lr": [0.114],
+        "lr_p": [0.114],
+        "lr_m": np.array([0.001, 0.005, 0.01, 0.05, 0.1, 0.5]),
+        "lr_ctrl": 0.4
+    },
+    "fw_intr": {
+        "planning_depth": [1],
+        "replay_capacity": [0],
+        "lr": [0.114],
+        "lr_p": [0.114],
+        "lr_m": np.array([0.001, 0.005, 0.01, 0.05, 0.1, 0.5]),
+        "lr_ctrl": 0.4
+    },
+    "fw_mult_intr": {
+        "planning_depth": [1],
+        "replay_capacity": [0],
+        "lr": [0.114],
+        "lr_p": [0.114],
+        "lr_m": np.array([0.001, 0.005, 0.01, 0.05, 0.1, 0.5]),
+        "lr_ctrl": 0.4
+    },
     "bw": {
         "planning_depth": [1],
         "replay_capacity": [0],

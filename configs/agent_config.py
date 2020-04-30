@@ -112,7 +112,7 @@ config = {
         "class": {"linear": "LpFw",
                   "tabular": "TpFw"},
     },
-    "fw_mult": {
+    "mult_fw": {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
