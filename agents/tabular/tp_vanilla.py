@@ -82,7 +82,7 @@ class TpVanilla(Agent):
 
         if self._logs is not None:
             self._checkpoint_dir = os.path.join(self._logs,
-                                            '{}/checkpoints/seed_{}'.format(self._run_mode, self._seed))
+                                            '{}_{}/checkpoints/seed_{}'.format(self._run_mode, self._lr_model, self._seed))
             if not os.path.exists(self._checkpoint_dir):
                 os.makedirs(self._checkpoint_dir)
 
@@ -91,9 +91,9 @@ class TpVanilla(Agent):
             self._nrng = nrng
 
             self.writer = tf.summary.create_file_writer(
-                os.path.join(self._logs, '{}/summaries/seed_{}'.format(self._run_mode, seed)))
+                os.path.join(self._logs, '{}_{}/summaries/seed_{}'.format(self._run_mode, self._lr_model, seed)))
 
-            self._images_dir = os.path.join(self._logs, '{}/images/seed_{}'.format(self._run_mode, seed))
+            self._images_dir = os.path.join(self._logs, '{}_{}/images/seed_{}'.format(self._run_mode, self._lr_model, seed))
             if not os.path.exists(self._images_dir):
                 os.makedirs(self._images_dir)
 
@@ -101,10 +101,7 @@ class TpVanilla(Agent):
         self._v_network = network["value"]["net"]
         self._v_parameters = network["value"]["params"]
 
-        self._o_network = network["model"]["net"][0]
-        self._fw_o_network = network["model"]["net"][1]
-        self._r_network = network["model"]["net"][2]
-        self._d_network = network["model"]["net"][3]
+        self._network = network
 
         def v_loss(v_params, transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions

@@ -15,13 +15,13 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class TpFw(TpVanilla):
+class TpTrueFw(TpVanilla):
     def __init__(
             self,
             **kwargs
     ):
 
-        super(TpFw, self).__init__(**kwargs)
+        super(TpTrueFw, self).__init__(**kwargs)
         self._sequence = []
         self._should_reset_sequence = False
 
@@ -29,34 +29,6 @@ class TpFw(TpVanilla):
         self._fw_o_network = self._network["model"]["net"][1]
         self._r_network = self._network["model"]["net"][2]
         self._d_network = self._network["model"]["net"][3]
-
-        def model_loss(fw_o_params, r_params, transitions):
-            o_tmn_target = transitions[0][0]
-            o_t = transitions[-1][-1]
-
-            # forward
-            model_o_t = fw_o_params[o_tmn_target]
-            fw_o_target = np.eye(np.prod(self._input_dim))[o_t] - model_o_t
-            fw_o_error = fw_o_target - model_o_t
-            fw_o_loss = np.mean(fw_o_error ** 2)
-
-            # if self._double_input_reward_model:
-            r_tmn = r_params[o_tmn_target][o_t]
-            # else:
-            #     r_tmn = r_params[o_tmn_target]
-            r_tmn_target = 0
-            for i, t in enumerate(transitions):
-                r_tmn_target += (self._discount ** i) * t[2]
-
-            r_error = (r_tmn_target - r_tmn)
-            r_loss = np.mean(r_error ** 2)
-
-            total_error = fw_o_loss + r_loss
-            return (total_error, fw_o_loss, r_loss), (fw_o_error, r_error)
-
-        self._model_loss_grad = model_loss
-        self._model_opt_update = lambda gradients, params:\
-            [param + self._lr_model * grad for grad, param in zip(gradients, params)]
 
         def v_planning_loss(v_params, fw_o_params, r_params, o_tmn, d):
             o_tmn = o_tmn[0]
@@ -94,37 +66,7 @@ class TpFw(TpVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        if self._n == 0:
-            return
-        if len(self._sequence) >= self._n:
-            o_tmn = self._sequence[0][0]
-            o_t = self._sequence[-1][-1]
-            losses, gradients = self._model_loss_grad(self._fw_o_network, self._r_network, self._sequence)
-            # if self._double_input_reward_model:
-            self._fw_o_network[o_tmn], self._r_network[o_tmn][o_t] = \
-                self._model_opt_update(gradients, [self._fw_o_network[o_tmn],
-                                               self._r_network[o_tmn][o_t]])
-            # else:
-            #     self._fw_o_network[o_tmn], self._r_network[o_tmn] = \
-            #         self._model_opt_update(gradients, [self._fw_o_network[o_tmn],
-            #                                        self._r_network[o_tmn]])
-            total_loss, o_loss, r_loss = losses
-            o_grad, r_grad = gradients
-            o_grad = np.linalg.norm(np.asarray(o_grad), ord=2)
-            losses_and_grads = {"losses": {
-                "loss": total_loss,
-                "o_loss": o_loss,
-                "r_loss": r_loss,
-                "o_grad": o_grad,
-                "r_grad": r_grad,
-            },
-            }
-            self._log_summaries(losses_and_grads, "model")
-            self._sequence = self._sequence[1:]
-
-        if self._should_reset_sequence:
-            self._sequence = []
-            self._should_reset_sequence = False
+        pass
 
     def planning_update(
             self,
@@ -188,13 +130,7 @@ class TpFw(TpVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        self._sequence.append([timestep.observation,
-                               action,
-                               new_timestep.reward,
-                               new_timestep.discount,
-                               new_timestep.observation])
-        if new_timestep.discount == 0:
-            self._should_reset_sequence = True
+        pass
 
     def _log_summaries(self, losses_and_grads, summary_name):
         if self._logs is not None:

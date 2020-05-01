@@ -5,8 +5,8 @@ from copy import deepcopy
 import configs
 from main_utils import *
 
-flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
-flags.DEFINE_string('env', 'cartpole', 'env')
+flags.DEFINE_string('agent', 'bw', 'what agent to run')
+flags.DEFINE_string('env', 'split', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', 100000, 'Maximum number of time steps an episode may last (default: 100).')
@@ -112,9 +112,9 @@ def run_for_agent(agent, lr_vanilla=None):
                                         seed_config, attributes):
                 space = {
                     "logs": env_hyperparam_folder,
-                    "plot_errors": False,
-                    "plot_values": False,
-                    "plot_curves": False,
+                    "plot_errors": True,
+                    "plot_values": True,
+                    "plot_curves": True,
                     "log_period": FLAGS.log_period,
                     "env_config": env_config,
                     "agent_config": persistent_agent_config,
@@ -257,7 +257,7 @@ def run_objective(space):
         mdp_solver=mdp_solver,
         environment=env,
     )
-
+    print(total_rmsve, final_rmsve, start_rmsve, avg_steps, values, errors)
     return total_rmsve, final_rmsve, start_rmsve, avg_steps
 
 if __name__ == '__main__':

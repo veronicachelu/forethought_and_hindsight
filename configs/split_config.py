@@ -8,7 +8,7 @@ env_config = {
     "mdp_filename": None,
     "policy_type": "greedy",
     "env_size": 10,
-    "num_episodes": 100,
+    "num_episodes": 200,
     "num_runs": 100,
     "stochastic": False,
     "feature_coder": None,
@@ -29,7 +29,8 @@ volatile_agent_config = {
         "replay_capacity": [0],
         "lr": [0.1],
         "lr_p": [0.1],
-        "lr_m": np.linspace(0.1, 0.5, 5),
+        # "lr_m": np.linspace(0.1, 0.5, 5),
+        "lr_m": np.array([0.1, 0.5]),
         "lr_ctrl": 0.4
     },
     "fw": {

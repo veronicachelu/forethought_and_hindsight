@@ -15,53 +15,21 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class TpExplicitDistrib(TpVanilla):
+class TpTrueBw(TpVanilla):
     def __init__(
             self,
             **kwargs
     ):
 
-        super(TpExplicitDistrib, self).__init__(**kwargs)
+        super(TpTrueBw, self).__init__(**kwargs)
         self._sequence = []
         self._should_reset_sequence = False
-
-        self._o_network = self._network["model"]["net"][0]
-        self._fw_o_network = self._network["model"]["net"][1]
-        self._r_network = self._network["model"]["net"][2]
-        self._d_network = self._network["model"]["net"][3]
-
-        def model_loss(o_params, r_params, transitions):
-            o_tmn_target = transitions[0][0]
-            o_t = transitions[-1][-1]
-
-            o_tmn = o_params[o_t]
-            o_target = np.eye(np.prod(self._input_dim))[o_tmn_target] - o_tmn
-            o_error = o_target - o_tmn
-            o_loss = np.mean(o_error ** 2)
-
-            r_tmn = r_params[o_tmn_target, o_t]
-
-            r_tmn_target = 0
-            for i, t in enumerate(transitions):
-                r_tmn_target += (self._discount ** i) * t[2]
-
-            r_error = r_tmn_target - r_tmn
-            r_loss = np.mean(r_error ** 2)
-
-            total_error = o_loss + r_loss
-            return (total_error, o_loss, r_loss), (o_error, r_error)
-
-        self._model_loss_grad = model_loss
-        self._model_opt_update = lambda gradients, params:\
-            [param + self._lr_model * grad for grad, param in zip(gradients, params)]
 
         def v_planning_loss(v_params, o_params, r_params, o, d):
             o_tmn = o_params[o]
             td_errors = []
             losses = []
 
-            divisior = np.sum(o_tmn, axis=-1, keepdims=True)
-            o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0, axis=-1))
             for prev_o_tmn in range(np.prod(self._input_dim)):
                 v_tmn = v_params[prev_o_tmn]
                 r_tmn = r_params[prev_o_tmn, o]
@@ -82,32 +50,7 @@ class TpExplicitDistrib(TpVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        if self._n == 0:
-            return
-        if len(self._sequence) >= self._n:
-            o_tmn = self._sequence[0][0]
-            o_t = self._sequence[-1][-1]
-            losses, gradients = self._model_loss_grad(self._o_network, self._r_network, self._sequence)
-            self._o_network[o_t], self._r_network[o_tmn, o_t] = \
-                self._model_opt_update(gradients, [self._o_network[o_t],
-                                               self._r_network[o_tmn, o_t]])
-            total_loss, o_loss, r_loss = losses
-            o_grad, r_grad = gradients
-            o_grad = np.linalg.norm(np.asarray(o_grad), ord=2)
-            losses_and_grads = {"losses": {
-                "loss": total_loss,
-                "o_loss": o_loss,
-                "r_loss": r_loss,
-                "o_grad": o_grad,
-                "r_grad": r_grad,
-            },
-            }
-            self._log_summaries(losses_and_grads, "model")
-            self._sequence = self._sequence[1:]
-
-        if self._should_reset_sequence:
-            self._sequence = []
-            self._should_reset_sequence = False
+        pass
 
     def planning_update(
             self,
@@ -124,7 +67,7 @@ class TpExplicitDistrib(TpVanilla):
                                                     self._r_network,
                                                     o_tm1, d_tm1)
         for prev_o_tmn in range(np.prod(self._input_dim)):
-            self._v_network[prev_o_tmn] = self._v_planning_opt_update(gradients[prev_o_tmn],
+            self._v_network[prev_o_tmn] = self._v_planning_opt_update(gradients[prev_o_tmn][0],
                                                              self._v_network[prev_o_tmn])
 
         losses_and_grads = {"losses": {"loss_v_planning": np.array(np.sum(losses))},
@@ -172,13 +115,7 @@ class TpExplicitDistrib(TpVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        self._sequence.append([timestep.observation,
-                               action,
-                               new_timestep.reward,
-                               new_timestep.discount,
-                               new_timestep.observation])
-        if new_timestep.discount == 0:
-            self._should_reset_sequence = True
+       pass
 
     def _log_summaries(self, losses_and_grads, summary_name):
         if self._logs is not None:

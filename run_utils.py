@@ -31,8 +31,8 @@ def run_agent(env, agent, logs, aux_agent_configs, ignore_existent=True):
         seed_config["seed"] = seed
         space = {
             "logs": logs,
-            "plot_errors": False,
-            "plot_values": False,
+            "plot_errors": True,
+            "plot_values": True,
             "plot_curves": True,
             "log_period": aux_agent_configs["log_period"],
             "env_config": env_config,
@@ -50,6 +50,10 @@ def run_agent(env, agent, logs, aux_agent_configs, ignore_existent=True):
 def run_objective(space, aux_agent_configs):
     seed = space["crt_config"]["seed"]
     env, agent, mdp_solver = main_utils.run_experiment(seed, space, aux_agent_configs)
+
+    if space["agent_config"]["model_family"] == "true" and \
+                    space["env_config"]["model_class"] == "tabular":
+        agent._o_network, agent._fw_o_network, agent._r_network = mdp_solver.get_true_model()
     total_rmsve, final_rmsve, start_rmsve, avg_steps, values, errors = experiment.run_episodic(
         agent=agent,
         space=space,

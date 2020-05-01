@@ -75,13 +75,15 @@ def get_continuous_gridworld_env(nrng, space, aux_agent_configs):
                     obs_type=space["env_config"]["obs_type"],
                     env_size=space["env_config"]["env_size"]
                     )
-    mdp_solver = MdpSolver(env, None, space["env_config"]["nA"],
-                           aux_agent_configs["discount"],
+    mdp_solver = MdpSolver(env, nS=None, nA=space["env_config"]["nA"],
+                           discount=aux_agent_configs["discount"],
                            feature_coder=space["env_config"]["feature_coder"])
-    if space["env_config"]["policy_type"] == "greedy":
+    if space["env_config"]["policy_type"] in ["greedy", "continuous_greedy"]:
         pi = mdp_solver.get_optimal_policy()
         policy = lambda x, nrng: np.argmax(pi[x])
     nS = mdp_solver._nS
+    if space["env_config"]["feature_coder"]["type"] == "rbf":
+        nS = np.prod(space["env_config"]["feature_coder"]["num_centers"])
     env._true_v = mdp_solver.get_optimal_v()
 
     return env, nS, policy, mdp_solver
@@ -123,7 +125,9 @@ def get_env(nrng, seed, space, aux_agent_configs):
     return env, nS, nA, input_dim, policy, mdp_solver
 
 def get_control_env(nrng, seed, space, aux_agent_configs):
-    if space["env_config"]["env_type"] == "discrete":
+    if space["env_config"]["env_type"] == "discrete" or \
+        space["env_config"]["env_type"] == "continuous" and \
+        "gym" not in space["env_config"].keys():
         env_class = getattr(env_utils, space["env_config"]["class"])
         env = env_class(path=space["env_config"]["mdp_filename"],
                         stochastic=space["env_config"]["stochastic"],
@@ -132,7 +136,7 @@ def get_control_env(nrng, seed, space, aux_agent_configs):
                         env_size=space["env_config"]["env_size"],
                         )
         nS = env._nS
-    else:
+    elif space["env_config"]["env_type"] == "continuous":
         env_class = getattr(env_utils, space["env_config"]["class"])
         env = env_class(game=space["env_config"]["mdp_filename"], seed=seed)
         input_dim = env.observation_spec().shape
@@ -179,7 +183,7 @@ def get_control_env(nrng, seed, space, aux_agent_configs):
 #
 #     return agent
 
-def get_control_agent(env, seed, nrng, nA, input_dim, space):
+def get_control_agent(env, seed, nrng, nA, input_dim, space, aux_agent_configs):
     rng = jrandom.PRNGKey(seed=seed)
     rng_q, rng_model, rng_agent = jrandom.split(rng, 3)
     rng_sequence = hk.PRNGSequence(rng_agent)
@@ -212,7 +216,8 @@ def get_control_agent(env, seed, nrng, nA, input_dim, space):
         action_spec=env.action_spec(),
         network=network,
         batch_size=1,
-        discount=0.99,
+        discount=aux_agent_configs["discount"],
+        max_len=aux_agent_configs["max_len"],
         lr=control_space["crt_config"]["lr_ctrl"],
         exploration_decay_period=control_space["env_config"]["num_episodes"],
         seed=seed,
@@ -288,7 +293,7 @@ def run_experiment(seed, space, aux_agent_configs):
 def run_control_experiment(seed, space, aux_agent_configs):
     nrng = np.random.RandomState(seed)
     env, nS, nA, input_dim = get_control_env(nrng, seed, space, aux_agent_configs)
-    agent = get_control_agent(env, seed, nrng, nA, input_dim, space)
+    agent = get_control_agent(env, seed, nrng, nA, input_dim, space, aux_agent_configs)
     return env, agent
 
 def load_env_and_volatile_configs(env):

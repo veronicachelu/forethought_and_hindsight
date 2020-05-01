@@ -4,7 +4,7 @@ from utils.replay import Replay
 from typing import Callable, List, Mapping, Sequence, Text, Tuple, Union
 import dm_env
 from dm_env import specs
-
+from copy import deepcopy
 import jax
 from jax import lax
 from jax import numpy as jnp
@@ -90,8 +90,12 @@ class LpVanilla(Agent):
 
         if feature_coder is not None:
             self._feature_mapper = FeatureMapper(feature_coder)
+            sparse_feature_coder = deepcopy(feature_coder)
+            sparse_feature_coder["type"] = "tile"
+            self._sparse_feature_mapper = FeatureMapper(sparse_feature_coder)
         else:
             self._feature_mapper = None
+            self._sparse_feature_mapper = None
 
         if self._logs is not None:
             self._checkpoint_dir = os.path.join(self._logs,
@@ -138,6 +142,12 @@ class LpVanilla(Agent):
         else:
             return o
 
+    def _get_sparse_features(self, o):
+        if self._sparse_feature_mapper is not None:
+            return self._sparse_feature_mapper.get_features(o)
+        else:
+            return o
+
     def policy(self,
                timestep: dm_env.TimeStep,
                eval: bool = False
@@ -146,8 +156,11 @@ class LpVanilla(Agent):
             return self._pi(timestep, eval=True)
         elif self._policy_type == "random":
             return self._pi(self._nrng)
-        else:
+        elif self._policy_type == "greedy":
             features = self._get_features(timestep.observation[None, ...])
+            return self._pi(np.argmax(features[0]), self._nrng)
+        elif self._policy_type == "continuous_greedy":
+            features = self._get_sparse_features(timestep.observation[None, ...])
             return self._pi(np.argmax(features[0]), self._nrng)
 
     def value_update(
@@ -231,22 +244,21 @@ class LpVanilla(Agent):
         pass
 
     def _log_summaries(self, losses_and_grads, summary_name):
-        return
-        # if self._logs is not None:
-        # losses = losses_and_grads["losses"]
-        # gradients = losses_and_grads["gradients"]
-        # if self._max_len == -1:
-        #     ep = self.total_steps
-        # else:
-        #     ep = self.episode
-        # if ep % self._log_period == 0:
-        #     for k, v in losses.items():
-        #         tf.summary.scalar("train/losses/{}/{}".format(summary_name, k),
-        #                           losses[k], step=ep)
-        #     for k, v in gradients.items():
-        #         tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
-        #                           gradients[k], step=ep)
-        #     self.writer.flush()
+        if self._logs is not None:
+            losses = losses_and_grads["losses"]
+            gradients = losses_and_grads["gradients"]
+            if self._max_len == -1:
+                ep = self.total_steps
+            else:
+                ep = self.episode
+            if ep % self._log_period == 0:
+                for k, v in losses.items():
+                    tf.summary.scalar("train/losses/{}/{}".format(summary_name, k),
+                                      losses[k], step=ep)
+                for k, v in gradients.items():
+                    tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
+                                      gradients[k], step=ep)
+                self.writer.flush()
 
     def get_value_for_state(self, state):
         features = self._get_features(state[None, ...]) if self._feature_mapper is not None else state[None, ...]

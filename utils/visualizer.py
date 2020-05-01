@@ -82,8 +82,8 @@ def plot_v(env, values, logs=None, colormap='Blues',
            policy=None,
            ):#vmin=-1, vmax=10):
     plt.clf()
-    vmin = np.min(values)
-    vmax = np.max(values)
+    vmin = 0 #np.minimum(np.min(values), 0)
+    vmax = 1.0 #np.max(values)
     plot_grid(env, env_type=env_type, vmin=vmin, vmax=vmax)
     if policy is not None:
         plot_policy(env, policy, env_type=env_type)
@@ -122,6 +122,12 @@ def plot_error(env, values, logs=None, colormap='Greys',
     plt.yticks([])
     plt.xticks([])
     plt.colorbar(ticks=[vmin, vmax])
+    normalized_eta_pi = (eta_pi - np.min(eta_pi))/(np.max(eta_pi) - np.min(eta_pi))
+    for i in range(values.shape[0]):
+        for j in range(values.shape[1]):
+            t = plt.annotate(r"$\cdot$", xy=(j, i), ha='center', va='center')
+            t.set_alpha(normalized_eta_pi[i][j])
+
     if logs is not None:
         plt.savefig(os.path.join(logs, filename))
 

@@ -20,13 +20,17 @@ def run_episodic(agent: Agent,
             timestep = environment.reset()
             agent.update_hyper_params(episode, num_episodes)
             for t in range(max_len):
-
                 action = agent.policy(timestep)
                 new_timestep = environment.step(action)
 
+                agent.save_transition(timestep, action, new_timestep)
                 agent.value_update(timestep, action, new_timestep)
 
                 ep_reward += new_timestep.reward
+
+                if agent.model_based_train():
+                    agent.planning_update(timestep)
+
                 if new_timestep.last():
                     break
 
@@ -40,8 +44,10 @@ def run_episodic(agent: Agent,
             ep_steps.append(t)
             ep_rewards.append(ep_reward)
 
+            tf.summary.scalar("train/reward", np.mean(ep_reward), step=agent.episode)
             tf.summary.scalar("train/avg_reward", np.mean(ep_rewards), step=agent.episode)
             tf.summary.scalar("train/avg_steps", np.mean(ep_steps), step=agent.episode)
+            tf.summary.scalar("train/steps", np.mean(t), step=agent.episode)
             agent.writer.flush()
 
     agent.save_model()
@@ -49,7 +55,7 @@ def run_episodic(agent: Agent,
     avg_steps = np.mean(ep_steps) if len(ep_steps) > 0 else None
     avg_reward = np.mean(ep_rewards) if len(ep_rewards) > 0 else None
 
-    return avg_reward, avg_steps
+    return avg_steps, avg_reward
 
 def test_agent(agent, environment, num_episodes, max_len):
     cumulative_reward = 0

@@ -130,40 +130,35 @@ class LpIntrinsicVanilla(Agent):
         self._v_network = network["value"]["net"]
         self._v_parameters = network["value"]["params"]
 
-        self._h_network = network["model"]["net"][0]
-        self._o_network = network["model"]["net"][1]
-        self._fw_o_network = network["model"]["net"][2]
-        self._r_network = network["model"]["net"][3]
-
-        self._h_parameters = network["model"]["params"][0]
-        self._o_parameters = network["model"]["params"][1]
-        self._fw_o_parameters = network["model"]["params"][2]
-        self._r_parameters = network["model"]["params"][3]
+        self._network = network
 
         # self._v_step_schedule = optimizers.polynomial_decay(self._lr, self._exploration_decay_period, 0, 1)
 
-        if self._target_networks:
-            self._target_v_network = network["target_value"]["net"]
-            self._target_v_parameters = network["target_value"]["params"]
+        # if self._target_networks:
+        #     self._target_v_network = network["target_value"]["net"]
+        #     self._target_v_parameters = network["target_value"]["params"]
+        #
+        #     self._target_h_network = network["target_model"]["net"][0]
+        #     self._target_o_network = network["target_model"]["net"][1]
+        #     self._target_fw_o_network = network["target_model"]["net"][2]
+        #     self._target_r_network = network["target_model"]["net"][3]
+        #
+        #     self._target_h_parameters = network["target_model"]["params"][0]
+        #     self._target_o_parameters = network["target_model"]["params"][1]
+        #     self._target_fw_o_parameters = network["target_model"]["params"][2]
+        #     self._target_r_parameters = network["target_model"]["params"][3]
+        #
+        #     # self._planning_v_network = self._v_network #network["planning_value"]["net"]
+        #     # self._planning_v_parameters = self._v_parameters #network["planning_value"]["params"]
+        #     # Make an Adam optimizer.
+        #     # pv_opt_init, pv_opt_update, pv_get_params = optimizers.adam(step_size=self._lr)
+        #     # self._pv_opt_update = jax.jit(pv_opt_update)
+        #     # self._pv_opt_init = pv_opt_init
+        #     # self._pv_opt_state = pv_opt_init(self._planning_v_parameters)
+        #     # self._pv_get_params = pv_get_params
 
-            self._target_h_network = network["target_model"]["net"][0]
-            self._target_o_network = network["target_model"]["net"][1]
-            self._target_fw_o_network = network["target_model"]["net"][2]
-            self._target_r_network = network["target_model"]["net"][3]
-
-            self._target_h_parameters = network["target_model"]["params"][0]
-            self._target_o_parameters = network["target_model"]["params"][1]
-            self._target_fw_o_parameters = network["target_model"]["params"][2]
-            self._target_r_parameters = network["target_model"]["params"][3]
-
-            # self._planning_v_network = self._v_network #network["planning_value"]["net"]
-            # self._planning_v_parameters = self._v_parameters #network["planning_value"]["params"]
-            # Make an Adam optimizer.
-            # pv_opt_init, pv_opt_update, pv_get_params = optimizers.adam(step_size=self._lr)
-            # self._pv_opt_update = jax.jit(pv_opt_update)
-            # self._pv_opt_init = pv_opt_init
-            # self._pv_opt_state = pv_opt_init(self._planning_v_parameters)
-            # self._pv_get_params = pv_get_params
+        self._h_network = network["model"]["net"][0]
+        self._h_parameters = network["model"]["params"][0]
 
         # This function computes dL/dTheta
         dwrt = [0, 1] if self._latent else 0

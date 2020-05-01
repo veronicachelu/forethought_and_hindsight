@@ -15,6 +15,7 @@ class ChainSolver:
         self._theta = 1e-8
         self._pi = np.full((self._nS, self._nA), 1 / self._nA)
         self._assigned_pi = False
+        self._true_model = None
 
         # mdp_root_path = os.path.split(os.path.split(env._path)[0])[0]
         # baseline = os.path.basename(env._path)
@@ -88,3 +89,10 @@ class ChainSolver:
             self._solve_mdp()
 
         return self._v
+
+    def get_true_model(self):
+        if self._true_model is None:
+            ppi = np.einsum('kij, ik->ij', self._p_absorbing, self._pi)
+            self._true_model = (ppi.transpose(), ppi, np.mean(self._r, axis=0))
+
+        return self._true_model

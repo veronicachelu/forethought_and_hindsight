@@ -290,11 +290,14 @@ if __name__ == "__main__":
                         rng=nrng, env_size=None)
     nS = env._nS
     nA = 4
+    # feature_coder = {
+    #     "type": "tile",
+    #     "ranges": [[0.0, 0.0], [1.0, 1.0]],
+    #     "num_tiles": [5, 5],
+    #     "num_tilings": 1}
     feature_coder = {
-        "type": "tile",
-        "ranges": [[0.0, 0.0], [1.0, 1.0]],
-        "num_tiles": [5, 5],
-        "num_tilings": 1}
+        "type": "rbf"
+    }
     mdp_solver = MdpSolver(env, nS, nA, discount, feature_coder=feature_coder)
     v = mdp_solver.get_optimal_v()
     # v = env.reshape_v(v)

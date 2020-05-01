@@ -162,9 +162,9 @@ class ObstacleWorld(dm_env.Environment):
         if self._obs_type == "position":
             return specs.BoundedArray(shape=(2,), dtype=np.int32,
                                       name="state", minimum=0, maximum=1)
-        elif self._obs_type == "tile":
-            return specs.BoundedArray(shape=(self._bins,), dtype=np.int32,
-                                      name="state", minimum=0, maximum=1)
+        # elif self._obs_type == "tile":
+        #     return specs.BoundedArray(shape=(self._bins,), dtype=np.int32,
+        #                               name="state", minimum=0, maximum=1)
 
     def action_spec(self):
         return specs.DiscreteArray(
@@ -283,7 +283,7 @@ if __name__ == "__main__":
     nrng = np.random.RandomState(0)
     nS = None
     nA = 2
-    discount = 0.95
+    discount = 0.99
     mdp_filename = "../../continuous_mdps/obstacle.mdp"
     env = ObstacleWorld(path=mdp_filename, stochastic=False,
                         random_restarts=False,
@@ -293,7 +293,7 @@ if __name__ == "__main__":
     feature_coder = {
         "type": "tile",
         "ranges": [[0.0, 0.0], [1.0, 1.0]],
-        "num_tiles": [5, 5],
+        "num_tiles": [25, 25],
         "num_tilings": 1}
     mdp_solver = MdpSolver(env, nS, nA, discount, feature_coder=feature_coder)
     v = mdp_solver.get_optimal_v()
@@ -304,7 +304,7 @@ if __name__ == "__main__":
     # mdp_solver = MdpSolver(env, nS, nA, discount)
     # # policy = mdp_solver.get_optimal_policy()
     # v = mdp_solver.get_optimal_v()
-    # v = env.reshape_v(v)
+    v = env.reshape_v(v)
     plot_v(env, v, str(os.environ['LOGS']), env_type="continuous")
     plot_policy(env, env.reshape_pi(pi), str((os.environ['LOGS'])),
                 env_type="continuous")

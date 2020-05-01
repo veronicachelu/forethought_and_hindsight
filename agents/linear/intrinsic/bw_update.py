@@ -27,12 +27,12 @@ def td_learning(
   target_tm1 = r_t + discount_t * lax.stop_gradient(v_t)
   return target_tm1 - v_tm1
 
-class LpBwIntr(LpIntrinsicVanilla):
+class LpBwUpdate(LpIntrinsicVanilla):
     def __init__(
             self,
             **kwargs
     ):
-        super(LpBwIntr, self).__init__(**kwargs)
+        super(LpBwUpdate, self).__init__(**kwargs)
 
         self._sequence = []
         self._should_reset_sequence = False
@@ -40,8 +40,7 @@ class LpBwIntr(LpIntrinsicVanilla):
 
         def model_loss(v_params,
                        h_params,
-                       o_params,
-                       r_params,
+                       updt_params,
                        transitions):
             o_tmn_target = transitions[0][0]
             o_t = transitions[-1][-1]
@@ -66,57 +65,33 @@ class LpBwIntr(LpIntrinsicVanilla):
                                                         v_t_target)
             real_update = vjp_fun(real_td_error[..., None])[0]# pull back real_td_error
 
-            model_tmn = self._o_network(o_params, h_t)
-            model_v_tmn, model_vjp_fun = jax.vjp(self._v_network, v_params, model_tmn)
-            model_v_tmn = jnp.squeeze(model_v_tmn, axis=-1)
+            ######### THIS IS THE TRUE UPDATE TO BE MATCHED ###########
 
-            model_r_input = jnp.concatenate([model_tmn, h_t], axis=-1)
-            model_r_tmn_2_t = self._r_network(r_params, model_r_input)
+            model_update = self._updt_network(updt_params,
+                                              [h_t, jnp.squeeze(v_params, axis=-1)[None, ...]])[0][..., None]
 
-            model_td_error = jax.vmap(td_learning)(model_v_tmn, model_r_tmn_2_t,
-                                                   real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
-                                                        v_t_target)
-            model_update = model_vjp_fun(model_td_error[None, ...])[0] # pullback model_td_error
+            param_corr_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_update,
+                                                             lax.stop_gradient(real_update)))
 
-            corr_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_update, lax.stop_gradient(real_update)))
-            # r_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_r_tmn_2_t, real_r_tmn_2_t))
-            total_loss = corr_loss
+            return param_corr_loss
 
-            return total_loss, {"corr_loss": corr_loss,}
-                                # "r_loss": r_loss}
-
-        def v_planning_loss(v_params, h_params, o_params, r_params, o_t, d_t):
+        def v_planning_grad(v_params, h_params, updt_params, o_t, d_t):
             h_t = lax.stop_gradient(self._h_network(h_params, o_t)) if self._latent else o_t
-            model_tmn = lax.stop_gradient(self._o_network(o_params, h_t))
-            v_tmn = jnp.squeeze(self._v_network(v_params, model_tmn), axis=-1)
-            r_input = jnp.concatenate([model_tmn, h_t], axis=-1)
-            r_tmn = self._r_network(r_params, lax.stop_gradient(r_input))
-            v_t_target = jnp.squeeze(self._v_network(v_params, h_t), axis=-1)
+            model_update = self._updt_network(updt_params, [h_t, jnp.squeeze(v_params, axis=-1)[None, ...]])[0][..., None]
+            return -model_update
 
-            td_error = jax.vmap(rlax.td_learning)(v_tmn, r_tmn, d_t * jnp.array([self._discount ** self._n]),
-                                                  v_t_target)
-            return jnp.mean(td_error ** 2)
+        self._updt_network = self._network["model"]["net"][1]
+        self._updt_parameters = self._network["model"]["params"][1]
 
-        self._o_network = self._network["model"]["net"][1]
-        self._fw_o_network = self._network["model"]["net"][2]
-        self._r_network = self._network["model"]["net"][3]
-
-        self._o_parameters = self._network["model"]["params"][1]
-        self._fw_o_parameters = self._network["model"]["params"][2]
-        self._r_parameters = self._network["model"]["params"][3]
-
-        dwrt = [0, 1] if self._latent else 0
-        self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, dwrt))
+        self._v_planning_loss_grad = jax.jit(v_planning_grad)
         self._model_step_schedule = optimizers.polynomial_decay(self._lr_model,
                                                                 self._exploration_decay_period, 0, 0.9)
-        self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [1, 2, 3], has_aux=True))
-        # self._model_loss_grad = (jax.value_and_grad(model_loss, [1, 2, 3], has_aux=True))
-        self._o_forward = jax.jit(self._o_network)
-        self._r_forward = jax.jit(self._r_network)
+        self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [1, 2]))
+        self._updt_forward = jax.jit(self._updt_network)
 
         model_opt_init, model_opt_update, model_get_params = optimizers.adam(step_size=self._model_step_schedule)
         self._model_opt_update = jax.jit(model_opt_update)
-        model_params = [self._h_parameters, self._o_parameters, self._r_parameters]
+        model_params = [self._h_parameters, self._updt_parameters]
         self._model_opt_state = model_opt_init(model_params)
         self._model_get_params = model_get_params
 
@@ -130,16 +105,15 @@ class LpBwIntr(LpIntrinsicVanilla):
         if self._n == 0:
             return
         if len(self._sequence) >= self._n:
-            (total_loss, losses), gradients = self._model_loss_grad(
+            total_loss, gradients = self._model_loss_grad(
                                                    self._v_parameters,
                                                    self._h_parameters,
-                                                   self._o_parameters,
-                                                   self._r_parameters,
+                                                   self._updt_parameters,
                                                    self._sequence)
             self._model_opt_state = self._model_opt_update(self.episode, list(gradients),
                                                    self._model_opt_state)
             self._model_parameters = self._model_get_params(self._model_opt_state)
-            self._h_parameters, self._o_parameters, self._r_parameters = self._model_parameters
+            self._h_parameters, self._updt_parameters = self._model_parameters
 
             losses_and_grads = {"losses": {
                 "loss_total": total_loss,
@@ -166,23 +140,18 @@ class LpBwIntr(LpIntrinsicVanilla):
         d_t = np.array([timestep.discount])
         # plan on batch of transitions
 
-        loss, gradients = self._v_planning_loss_grad(self._v_parameters,
+        gradients = self._v_planning_loss_grad(self._v_parameters,
                                                     self._h_parameters,
-                                                    self._o_parameters,
-                                                    self._r_parameters,
+                                                    self._updt_parameters,
                                                     o_t, d_t)
-        if self._latent:
-            gradients = list(gradients)
         self._v_opt_state = self._v_opt_update(self.episode, gradients,
                                                self._v_opt_state)
         value_params = self._v_get_params(self._v_opt_state)
-        if self._latent:
-            self._v_parameters, _ = value_params
-        else:
-            self._v_parameters = value_params
+        self._v_parameters = value_params
 
-        losses_and_grads = {"losses": {"loss_v_planning": np.array(loss),
-                                       },}
+        losses_and_grads = {"losses": {},
+                            "gradients": {"grad_norm_v_planning": np.sum(
+                                np.sum([np.linalg.norm(np.asarray(g), ord=2) for g in gradients]))}}
         self._log_summaries(losses_and_grads, "value_planning")
 
     # def _update_model_targets(self):
