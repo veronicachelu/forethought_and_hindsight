@@ -1,6 +1,7 @@
 # Python imports
 import sys
 import basis.tile as tile
+import basis.rbf as rbf
 import numpy as np
 import math
 
@@ -12,7 +13,13 @@ class FeatureMapper(object):
                                                 offsets=(0.0, 0.0))]
             self._bins = (feature_coder["num_tiles"][0], feature_coder["num_tiles"][0])
             self.get_features = self.get_tile_features
+
         elif feature_coder["type"] == "rbf":
+            self._rbf = rbf.RBF(low=feature_coder["ranges"][0],
+                               high=feature_coder["ranges"][1],
+                               num_centers=(feature_coder["num_centers"][0], feature_coder["num_centers"][0]),
+                               offsets=(0.0, 0.0))
+
             self.get_features = self.get_rbf_features
 
     def get_tile_features(self, observations):
@@ -25,11 +32,9 @@ class FeatureMapper(object):
         return np.array(states)
 
     def get_rbf_features(self, observations):
-        # Perform feature bucketing.
-        new_features = [np.vectorize(lambda x: -(x) ** 2)(o)
-                        for o in observations]
+        features = self._rbf.get_features(observations)
 
-        return np.array(new_features)
+        return features
 
 
 
