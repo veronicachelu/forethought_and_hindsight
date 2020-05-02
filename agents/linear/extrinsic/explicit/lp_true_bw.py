@@ -98,11 +98,11 @@ class LpTrueBw(LpVanilla):
 
             return -v_grad
 
-        # self._v_planning_loss_grad = jax.jit(v_planning_grad)
-        self._v_planning_loss_grad = v_planning_grad
+        self._v_planning_loss_grad = jax.jit(v_planning_grad)
+        # self._v_planning_loss_grad = v_planning_grad
 
-        # self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [0, 1, 2], has_aux=True))
-        self._model_loss_grad = jax.value_and_grad(model_loss, [0, 1, 2], has_aux=True)
+        self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [0, 1, 2], has_aux=True))
+        # self._model_loss_grad = jax.value_and_grad(model_loss, [0, 1, 2], has_aux=True)
         self._a_forward = jax.jit(self._a_network)
         self._b_forward = jax.jit(self._b_network)
         self._c_forward = jax.jit(self._c_network)
