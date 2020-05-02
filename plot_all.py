@@ -20,6 +20,7 @@ plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_string('env', "split", 'where to save results')
+flags.DEFINE_float('lr', 0.1, 'where to save results')
 # flags.DEFINE_string('env', "random_linear", 'where to save results')
 flags.DEFINE_float('ymin', None, 'plot up to')
 flags.DEFINE_float('ymax', None, 'plot up to')
@@ -89,7 +90,8 @@ def main(argv):
     plt.xlabel(xaxis, fontsize=FONTSIZE)
     plt.legend(loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
                frameon=True,
-               prop={'size': FONTSIZE})
+               prop={'size': FONTSIZE}),
+               # bbox_to_anchor=(1.05, 1))
     if not os.path.exists(plots):
         os.makedirs(plots)
 
@@ -102,7 +104,11 @@ def main(argv):
 def plot_for_agent(agent, env_config, persistent_agent_config,
                    volatile_agent_config, planning_depth, replay_capacity, logs, color, linestyle):
     print(agent)
-    log_folder_agent = os.path.join(logs, "{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth, replay_capacity))
+    if FLAGS.lr is None:
+        log_folder_agent = os.path.join(logs, "{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth, replay_capacity))
+    else:
+        log_folder_agent = os.path.join(logs, "{}_{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth,
+                                                                replay_capacity, FLAGS.lr))
     volatile_config = {"agent": agent,
                        "planning_depth": planning_depth,
                        "replay_capacity": replay_capacity,
@@ -152,7 +158,7 @@ def plot_tensorflow_log(space, color, linestyle):
 
         x = [m[1] for m in msve]
         y = [tf.make_ndarray(m[2]) for m in msve]
-        all_y_over_seeds.append(np.array(y[:99]))
+        all_y_over_seeds.append(np.array(y))
 
     # those_that_are_not_99 = [i for i, a in enumerate(all_y_over_seeds) if len(a) != 99]
     # print(those_that_are_not_99)
