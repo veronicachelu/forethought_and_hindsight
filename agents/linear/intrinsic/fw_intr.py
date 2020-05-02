@@ -74,7 +74,7 @@ class LpFwIntr(LpIntrinsicVanilla):
             return total_loss, {"target_loss": target_loss,
                                 "r_loss": r_loss}
 
-        def v_planning_loss(v_params, h_params, fw_o_params, r_params, o_tmn, d_tmn):
+        def v_planning_loss(v_params, h_params, fw_o_params, r_params, o_tmn):
             h_tmn = lax.stop_gradient(self._h_network(h_params, o_tmn)) if self._latent else o_tmn
             model_t = lax.stop_gradient(self._o_network(fw_o_params, h_tmn))
 
@@ -83,7 +83,7 @@ class LpFwIntr(LpIntrinsicVanilla):
             r_t = self._r_network(r_params, lax.stop_gradient(r_input))
             v_tmn = jnp.squeeze(self._v_network(v_params, h_tmn), axis=-1)
 
-            td_error = jax.vmap(rlax.td_learning)(v_tmn, r_t, d_tmn * jnp.array([self._discount ** self._n]),
+            td_error = jax.vmap(rlax.td_learning)(v_tmn, r_t, jnp.array([self._discount ** self._n]),
                                                   v_t_target)
             return jnp.mean(td_error ** 2)
 
@@ -186,14 +186,13 @@ class LpFwIntr(LpIntrinsicVanilla):
             return
         features = self._get_features([timestep.observation])
         o_t = np.array(features)
-        d_t = np.array([timestep.discount])
         # plan on batch of transitions
 
         loss, gradients = self._v_planning_loss_grad(self._v_parameters,
                                                     self._h_parameters,
                                                     self._o_parameters,
                                                     self._r_parameters,
-                                                    o_t, d_t)
+                                                    o_t)
         self._v_opt_state = self._v_opt_update(self.episode, gradients,
                                                self._v_opt_state)
         self._v_parameters = self._v_get_params(self._v_opt_state)
