@@ -99,8 +99,12 @@ class LpIntrinsicVanilla(Agent):
 
         if feature_coder is not None:
             self._feature_mapper = FeatureMapper(feature_coder)
+            sparse_feature_coder = deepcopy(feature_coder)
+            sparse_feature_coder["type"] = "tile"
+            self._sparse_feature_mapper = FeatureMapper(sparse_feature_coder)
         else:
             self._feature_mapper = None
+            self._sparse_feature_mapper = None
 
         if self._logs is not None:
             self._checkpoint_dir = os.path.join(self._logs,
@@ -178,6 +182,12 @@ class LpIntrinsicVanilla(Agent):
     def _get_features(self, o):
         if self._feature_mapper is not None:
             return self._feature_mapper.get_features(o)
+        else:
+            return o
+
+    def _get_sparse_features(self, o):
+        if self._sparse_feature_mapper is not None:
+            return self._sparse_feature_mapper.get_features(o)
         else:
             return o
 
