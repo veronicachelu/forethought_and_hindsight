@@ -21,7 +21,7 @@ class Split(dm_env.Environment):
         self._states_chain_2 = np.arange(self._fanout_state + 2,
                                          self._nS - 4, 2)
         self._fanin_state = self._nS - 4
-        self._distr_state = self._nS - 6
+        self._distr_state = self._nS - 5
         self._fanin_end_state = self._nS - 2
         self._distr_end_state = self._nS - 1
         self._pre_end_states = [self._fanin_state, self._fanin_state + 1]

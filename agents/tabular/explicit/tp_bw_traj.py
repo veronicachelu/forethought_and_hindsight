@@ -119,7 +119,7 @@ class TpBwTraj(TpVanilla):
         o_t = np.array(timestep.observation)
 
         traj = deque()
-        traj.append((o_t))
+        traj.append(o_t)
         sum_of_losses = 0
         while len(traj) > 0:
             o_t = traj.pop()
