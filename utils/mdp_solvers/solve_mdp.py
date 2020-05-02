@@ -121,5 +121,5 @@ class MdpSolver:
             traj_rewards.append(traj_reward)
             traj_steps.append(t)
 
-        print("traj {}, {}".format(np.mean(traj_rewards), np.mean(traj_steps)))
+        # print("traj {}, {}".format(np.mean(traj_rewards), np.mean(traj_steps)))
         return np.mean(traj_rewards)
