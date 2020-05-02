@@ -189,8 +189,11 @@ class LpIntrinsicVanilla(Agent):
             return self._pi(timestep, eval=True)
         elif self._policy_type == "random":
             return self._pi(self._nrng)
-        else:
+        elif self._policy_type == "greedy":
             features = self._get_features(timestep.observation[None, ...])
+            return self._pi(np.argmax(features[0]), self._nrng)
+        elif self._policy_type == "continuous_greedy":
+            features = self._get_sparse_features(timestep.observation[None, ...])
             return self._pi(np.argmax(features[0]), self._nrng)
 
     def value_update(
