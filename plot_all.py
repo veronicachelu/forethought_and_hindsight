@@ -163,6 +163,7 @@ def plot_tensorflow_log(space, color, linestyle):
 
     # those_that_are_not_99 = [i for i, a in enumerate(all_y_over_seeds) if len(a) != 99]
     # print(those_that_are_not_99)
+    print(len(all_y_over_seeds))
     # all_y_over_seeds = [a[:99] for a in all_y_over_seeds]
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
