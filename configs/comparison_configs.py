@@ -323,10 +323,21 @@ configs={
     },
     "split": {
         "all": {
-            "agents": ["bw", "bw_fw", "fw", "fw_rnd", "fw_pri",
-                       "bw_fw_PWMA", "bw_fw_MG"],
-            "planning_depths": [1, 1, 1, 1, 1, 1, 1],
-            "replay_capacities": [0, 0, 0, 50, 50, 50, 50]
+            "agents": ["bw", "true_bw", "fw", "true_fw"],
+            "planning_depths": [1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 0]
         }
-    }
+    },
+    "obstacle": {
+        "all": {
+            "agents": ["bw", "mult_bw",
+                       "true_bw", "true_mult_bw",
+                       "fw", "mult_fw",
+                       "fw_intr", "fw_mult_intr",
+                       "bw_intr", "bw_mult_intr",
+                       "bw_update"],
+            "planning_depths": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        },
+    },
 }

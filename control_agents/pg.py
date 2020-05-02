@@ -34,6 +34,7 @@ class PG(Agent):
             log_period: int,
             nrng,
             rng_seq,
+            max_len,
             exploration_decay_period: int,
             seed: int = None,
             latent=False,
@@ -49,6 +50,7 @@ class PG(Agent):
         self._batch_size = batch_size
         self._latent = latent
         self._run_mode = "{}".format(self._run_mode)
+        self._max_len = max_len
         self._sequence = []
         self._should_reset_sequence = False
 

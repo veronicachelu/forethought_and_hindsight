@@ -1,5 +1,6 @@
 import numpy as np
 import os
+from copy import deepcopy
 
 class MdpSolver:
     def __init__(self, env,
@@ -92,5 +93,33 @@ class MdpSolver:
 
         return self._v
 
-    def get_value_for_state(self, state):
-        return self._v[np.argmax(state)]
+    # def get_value_for_state(self, state):
+    #     return self._v[np.argmax(state)]
+
+    def get_value_for_state(self, agent, environment, timestep):
+        return self._run_agent_from_state(agent, environment, timestep,
+                                          20, 100000)
+        # return self._v(state)
+
+    def _run_agent_from_state(self, agent, environment, timestep,
+                              num_trajectories, max_len):
+        traj_rewards = []
+        traj_steps = []
+        for _ in np.arange(start=0, stop=num_trajectories):
+            traj_env = deepcopy(environment)
+            traj_reward = 0
+            for t in range(max_len):
+
+                action = agent.policy(timestep, eval=True)
+                new_timestep = traj_env.step(action)
+
+                traj_reward += new_timestep.reward
+
+                if new_timestep.last():
+                    break
+                timestep = new_timestep
+            traj_rewards.append(traj_reward)
+            traj_steps.append(t)
+
+        print("traj {}, {}".format(np.mean(traj_rewards), np.mean(traj_steps)))
+        return np.mean(traj_rewards)

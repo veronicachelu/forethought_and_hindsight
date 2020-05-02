@@ -33,6 +33,7 @@ class VanillaQ(Agent):
             log_period: int,
             nrng,
             rng_seq,
+            max_len,
             exploration_decay_period: int,
             seed: int = None,
             latent=False,
@@ -49,8 +50,9 @@ class VanillaQ(Agent):
         self._latent = latent
         # self._double_input_reward_model = double_input_reward_model
         self._run_mode = "{}".format(self._run_mode)
-
-        self._epsilon = 0.1
+        self._max_len = max_len
+        self._final_epsilon = 0.0
+        self._epsilon = 1.0
         self._exploration_decay_period = exploration_decay_period
         self._nrng = nrng
         self._lr = lr
@@ -58,6 +60,7 @@ class VanillaQ(Agent):
         self._logs = logs
         self._seed = seed
         self._log_period = log_period
+        self._replay = Replay(capacity=1000, nrng=self._nrng)
 
         if feature_coder is not None:
             self._feature_mapper = FeatureMapper(feature_coder)
@@ -138,7 +141,7 @@ class VanillaQ(Agent):
 
         loss, gradient = self._q_loss_grad(self._q_parameters,
                                 transitions)
-        self._q_opt_state = self._q_opt_update(self.total_steps, gradient,
+        self._q_opt_state = self._q_opt_update(self.episode, gradient,
                                                self._q_opt_state)
         self._q_parameters = self._q_get_params(self._q_opt_state)
 
@@ -146,9 +149,35 @@ class VanillaQ(Agent):
                             "gradients": {"grad_norm_q": np.sum(np.sum([np.linalg.norm(np.asarray(g), ord=2) for g in gradient]))}}
         self._log_summaries(losses_and_grads, "value")
 
+    def planning_update(
+            self,
+            timestep: dm_env.TimeStep,
+            prev_timestep=None
+    ):
+        replay_sample = self._replay.sample(32)
+        features = self._get_features([replay_sample[0]])
+        next_features = self._get_features([replay_sample[4]])
+        transitions = [np.array(features),
+                       np.array([replay_sample[1]]),
+                       np.array([replay_sample[2]]),
+                       np.array([replay_sample[3]]),
+                       np.array(next_features)]
+
+        loss, gradient = self._q_loss_grad(self._q_parameters,
+                                           transitions)
+        self._q_opt_state = self._q_opt_update(self.episode, gradient,
+                                               self._q_opt_state)
+        self._q_parameters = self._q_get_params(self._q_opt_state)
+
+        losses_and_grads = {"losses": {"loss_v_planning": np.array(loss),
+                                       },
+                            "gradients": {"grad_norm_v_planning": np.sum(
+                                np.sum([np.linalg.norm(np.asarray(g), ord=2) for g in gradient]))}}
+        self._log_summaries(losses_and_grads, "value_planning")
+
 
     def model_based_train(self):
-        return False
+        return True
 
     def model_free_train(self):
         return True
@@ -198,10 +227,33 @@ class VanillaQ(Agent):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        pass
+        features = self._get_features([timestep.observation])
+        next_features = self._get_features([new_timestep.observation])
+
+        self._replay.add([
+            features,
+            action,
+            new_timestep.reward,
+            new_timestep.discount,
+            next_features,
+        ])
 
     def _log_summaries(self, losses_and_grads, summary_name):
-        return
+        if self._logs is not None:
+            losses = losses_and_grads["losses"]
+            gradients = losses_and_grads["gradients"]
+            if self._max_len == -1:
+                ep = self.total_steps
+            else:
+                ep = self.episode
+            if ep % self._log_period == 0:
+                for k, v in losses.items():
+                    tf.summary.scalar("train/losses/{}/{}".format(summary_name, k),
+                                      losses[k], step=ep)
+                for k, v in gradients.items():
+                    tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
+                                      gradients[k], step=ep)
+                self.writer.flush()
 
     def get_values_for_all_states(self, all_states):
         features = self._get_features(all_states) if self._feature_mapper is not None else all_states
@@ -216,6 +268,36 @@ class VanillaQ(Agent):
         #     for k, v in gradients.items():
         #         tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k), gradients[k], step=self.episode)
         #     self.writer.flush()
+
+    def update_hyper_params(self, episode, total_episodes):
+        # decay_period, step, warmup_steps, epsilon):
+        """Returns the current epsilon for the agent's epsilon-greedy policy.
+        This follows the Nature DQN schedule of a linearly decaying epsilon (Mnih et
+        al., 2015). The schedule is as follows:
+          Begin at 1. until warmup_steps steps have been taken; then
+          Linearly decay epsilon from 1. to epsilon in decay_period steps; and then
+          Use epsilon from there on.
+        Args:
+          decay_period: float, the period over which epsilon is decayed.
+          step: int, the number of training steps completed so far.
+          warmup_steps: int, the number of steps taken before epsilon is decayed.
+          epsilon: float, the final value to which to decay the epsilon parameter.
+        Returns:
+          A float, the current epsilon value computed according to the schedule.
+        """
+        steps_left = total_episodes + 0 - episode
+        bonus = (1.0 - self._final_epsilon) * steps_left / total_episodes
+        bonus = np.clip(bonus, 0., 1. - self._final_epsilon)
+        self._epsilon = self._final_epsilon + bonus
+        if self._logs is not None:
+            if self._max_len == -1:
+                ep = self.total_steps
+            else:
+                ep = self.episode
+            if ep % self._log_period == 0:
+                tf.summary.scalar("train/epsilon",
+                                  self._epsilon, step=ep)
+                self.writer.flush()
 
     # def td_error(self,
     #             transitions):

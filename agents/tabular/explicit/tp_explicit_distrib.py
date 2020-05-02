@@ -55,24 +55,15 @@ class TpExplicitDistrib(TpVanilla):
         self._model_opt_update = lambda gradients, params:\
             [param + self._lr_model * grad for grad, param in zip(gradients, params)]
 
-        def v_planning_loss(v_params, o_params, r_params, o, d):
-            o_tmn = o_params[o]
-            td_errors = []
-            losses = []
+        def v_planning_loss(v_params, r_params, o_t, o_tmn):
+            v_tmn = v_params[o_tmn]
+            r_tmn = r_params[o_tmn, o_t]
+            td_error = (r_tmn + (self._discount ** self._n) *
+                        v_params[o_t] - v_tmn)
 
-            divisior = np.sum(o_tmn, axis=-1, keepdims=True)
-            o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0, axis=-1))
-            for prev_o_tmn in range(np.prod(self._input_dim)):
-                v_tmn = v_params[prev_o_tmn]
-                r_tmn = r_params[prev_o_tmn, o]
-                td_error = (r_tmn + d * (self._discount ** self._n) *
-                            v_params[o] - v_tmn)
+            loss = td_error ** 2
 
-                td_errors.append(o_tmn[:, prev_o_tmn] * td_error)
-                loss = td_error ** 2
-                losses.append(o_tmn[:, prev_o_tmn] * loss)
-
-            return losses, td_errors
+            return loss, td_error
 
         self._v_planning_loss_grad = v_planning_loss
 
@@ -117,17 +108,21 @@ class TpExplicitDistrib(TpVanilla):
         if timestep.discount is None:
             return
 
-        o_tm1 = np.array([timestep.observation])
-        d_tm1 = np.array(timestep.discount)
-        losses, gradients = self._v_planning_loss_grad(self._v_network,
-                                                    self._o_network,
-                                                    self._r_network,
-                                                    o_tm1, d_tm1)
+        o_t = np.array(timestep.observation)
+        losses = 0
+        o_tmn = self._o_network[o_t]
+        divisior = np.sum(o_tmn, axis=-1, keepdims=True)
+        o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0, axis=-1))
         for prev_o_tmn in range(np.prod(self._input_dim)):
-            self._v_network[prev_o_tmn] = self._v_planning_opt_update(gradients[prev_o_tmn],
-                                                             self._v_network[prev_o_tmn])
+            loss, gradient = self._v_planning_loss_grad(self._v_network,
+                                                           self._r_network,
+                                                           o_t, prev_o_tmn)
+            losses += loss
+            self._v_network[prev_o_tmn] = self._v_planning_opt_update(
+                o_tmn[prev_o_tmn] * gradient,
+                self._v_network[prev_o_tmn])
 
-        losses_and_grads = {"losses": {"loss_v_planning": np.array(np.sum(losses))},
+        losses_and_grads = {"losses": {"loss_v_planning": np.array(loss)},
                             }
         self._log_summaries(losses_and_grads, "value_planning")
 

@@ -112,18 +112,24 @@ class ObstacleWorld(dm_env.Environment):
 
     def _take_action(self, action):
         potential_pos = np.copy(self._cPos)
-        if action == Actions.up:
-            potential_pos[0] -= self._step_size
-        elif action == Actions.right:
-            potential_pos[1] += self._step_size
-        elif action == Actions.down:
-            potential_pos[0] += self._step_size
-        elif action == Actions.left:
-            potential_pos[1] -= self._step_size
 
+        DIR_TO_VEC = [
+            # up
+            np.array((-1, 0)),
+            # right
+            np.array((0, 1)),
+            # down
+            np.array((1, 0)),
+            # left
+            np.array((0, -1)),
+        ]
+
+        step_size = DIR_TO_VEC[action] * self._step_size
         if self._stochastic:
-            potential_pos += self._rng.normal(loc=self._mean_step_size,
+            step_size += self._rng.normal(loc=self._mean_step_size,
                                          scale=self._var_step_size, size=(2,))
+
+        potential_pos += step_size
         potential_pos = potential_pos.clip([0, 0], [self._height, self._width])
 
         if not self._is_obstacle(potential_pos):
@@ -220,6 +226,7 @@ class ObstacleWorld(dm_env.Environment):
             for j in range(self._ww):
                 for k in range(self._nA):
                     fwd_pos = np.array([i, j]) + DIR_TO_VEC[k]
+
                     fwd_i, fwd_j = fwd_pos
                     if self._mdp_tilings[i][j] != -1:
                         if not ((i, j) in self._g_tilings):
@@ -285,7 +292,7 @@ if __name__ == "__main__":
     nA = 2
     discount = 0.99
     mdp_filename = "../../continuous_mdps/obstacle.mdp"
-    env = ObstacleWorld(path=mdp_filename, stochastic=False,
+    env = ObstacleWorld(path=mdp_filename, stochastic=True,
                         random_restarts=False,
                         rng=nrng, env_size=None)
     nS = env._nS

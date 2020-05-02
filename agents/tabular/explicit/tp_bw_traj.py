@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 from dm_env import specs
 from jax import numpy as jnp
-
+from collections import deque
 from agents.tabular.tp_vanilla import TpVanilla
 from utils.replay import Replay
 
@@ -15,13 +15,13 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class TpBwFwDistrib(TpVanilla):
+class TpBwTraj(TpVanilla):
     def __init__(
             self,
             **kwargs
     ):
 
-        super(TpBwFwDistrib, self).__init__(**kwargs)
+        super(TpBwTraj, self).__init__(**kwargs)
         self._sequence = []
         self._should_reset_sequence = False
 
@@ -30,24 +30,19 @@ class TpBwFwDistrib(TpVanilla):
         self._r_network = self._network["model"]["net"][2]
         self._d_network = self._network["model"]["net"][3]
 
+        self._method = "bfs"
 
-        def model_loss(bw_o_params, fw_o_params, r_params, transitions):
+        def model_loss(o_params, r_params, transitions):
             o_tmn_target = transitions[0][0]
             o_t = transitions[-1][-1]
 
-            model_o_tmn = bw_o_params[o_t]
-            bw_o_target = np.eye(np.prod(self._input_dim))[o_tmn_target] - model_o_tmn
+            o_tmn = o_params[o_t]
+            o_target = np.eye(np.prod(self._input_dim))[o_tmn_target] - o_tmn
+            o_error = o_target - o_tmn
+            o_loss = np.mean(o_error ** 2)
 
-            bw_o_error = bw_o_target - model_o_tmn
-            bw_o_loss = np.mean(bw_o_error ** 2)
+            r_tmn = r_params[o_tmn_target, o_t]
 
-            # forward
-            model_o_t = fw_o_params[o_tmn_target]
-            fw_o_target = np.eye(np.prod(self._input_dim))[o_t] - model_o_t
-            fw_o_error = fw_o_target - model_o_t
-            fw_o_loss = np.mean(fw_o_error ** 2)
-
-            r_tmn = r_params[o_tmn_target][o_t]
             r_tmn_target = 0
             for i, t in enumerate(transitions):
                 r_tmn_target += (self._discount ** i) * t[2]
@@ -55,28 +50,19 @@ class TpBwFwDistrib(TpVanilla):
             r_error = r_tmn_target - r_tmn
             r_loss = np.mean(r_error ** 2)
 
-            total_error = bw_o_loss + fw_o_loss + r_loss
-            return (total_error, bw_o_loss, fw_o_loss, r_loss), (bw_o_error, fw_o_error, r_error)
+            total_error = o_loss + r_loss
+            return (total_error, o_loss, r_loss), (o_error, r_error)
 
         self._model_loss_grad = model_loss
         self._model_opt_update = lambda gradients, params:\
             [param + self._lr_model * grad for grad, param in zip(gradients, params)]
 
-        def v_planning_loss(v_params, fw_o_params, r_params, o_t, o_tmn):
-            v_tmn = v_params[o_tmn]
-            o_t = fw_o_params[o_tmn]
-            r_tmn = r_params[o_tmn]
-            target = 0
-            divisior = np.sum(o_t, axis=-1, keepdims=True)
-            o_t = np.divide(o_t, divisior, out=np.zeros_like(o_t), where=np.all(divisior != 0))
-            for next_o_t in range(np.prod(self._input_dim)):
-                target_per_next_o = o_t[next_o_t] * \
-                (r_tmn[next_o_t] + (self._discount ** self._n) *\
-                      v_params[next_o_t])
-                target += target_per_next_o
-            td_error = (target - v_tmn)
+        def v_planning_loss(v_params, r_params, o, prev_o_tmn):
+            v_tmn = v_params[prev_o_tmn]
+            r_tmn = r_params[prev_o_tmn, o]
+            td_error = (r_tmn + (self._discount ** self._n) *
+                        v_params[o] - v_tmn)
             loss = td_error ** 2
-
             return loss, td_error
 
         self._v_planning_loss_grad = v_planning_loss
@@ -92,31 +78,18 @@ class TpBwFwDistrib(TpVanilla):
         if len(self._sequence) >= self._n:
             o_tmn = self._sequence[0][0]
             o_t = self._sequence[-1][-1]
-            losses, gradients = self._model_loss_grad(self._o_network, self._fw_o_network, self._r_network, self._sequence)
-            self._o_network[o_t], \
-            self._fw_o_network[o_tmn], \
-            self._r_network[o_tmn][o_t] = \
+            losses, gradients = self._model_loss_grad(self._o_network, self._r_network, self._sequence)
+            self._o_network[o_t], self._r_network[o_tmn, o_t] = \
                 self._model_opt_update(gradients, [self._o_network[o_t],
-                                                   self._fw_o_network[o_tmn],
-                                                   self._r_network[o_tmn][o_t]])
-            # else:
-            #     self._o_network[o_t], \
-            #     self._fw_o_network[o_tmn], \
-            #     self._r_network[o_tmn] = \
-            #         self._model_opt_update(gradients, [self._o_network[o_t],
-            #                                            self._fw_o_network[o_tmn],
-            #                                            self._r_network[o_tmn]])
-            total_loss, bw_o_loss, fw_o_loss, r_loss = losses
-            bw_o_grad, fw_o_grad, r_grad = gradients
-            bw_o_grad = np.linalg.norm(np.asarray(bw_o_grad), ord=2)
-            fw_o_grad = np.linalg.norm(np.asarray(fw_o_grad), ord=2)
+                                               self._r_network[o_tmn, o_t]])
+            total_loss, o_loss, r_loss = losses
+            o_grad, r_grad = gradients
+            o_grad = np.linalg.norm(np.asarray(o_grad), ord=2)
             losses_and_grads = {"losses": {
                 "loss": total_loss,
-                "bw_o_loss": bw_o_loss,
-                "fw_o_loss": fw_o_loss,
+                "o_loss": o_loss,
                 "r_loss": r_loss,
-                "bw_o_grad": bw_o_grad,
-                "fw_o_grad": fw_o_grad,
+                "o_grad": o_grad,
                 "r_grad": r_grad,
             },
             }
@@ -135,23 +108,38 @@ class TpBwFwDistrib(TpVanilla):
         if timestep.discount is None:
             return
 
-        o_t = np.array(timestep.observation)
-        losses = 0
-        o_tmn = self._o_network[o_t]
-        divisior = np.sum(o_tmn, axis=-1, keepdims=True)
-        o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0, axis=-1))
-        for prev_o_tmn in range(np.prod(self._input_dim)):
-            loss, gradient = self._v_planning_loss_grad(self._v_network,
-                                                        self._fw_o_network,
-                                                        self._r_network,
-                                                        o_t, prev_o_tmn)
-            losses += loss
-            self._v_network[prev_o_tmn] = self._v_planning_opt_update(
-                o_tmn[prev_o_tmn] * gradient,
-                self._v_network[prev_o_tmn])
+        if self._method == "bfs":
+            self.planning_update_bfs(timestep, prev_timestep)
 
-        losses_and_grads = {"losses": {"loss_v_planning": np.array(loss)},
-                            }
+    def planning_update_bfs(
+            self,
+            timestep: dm_env.TimeStep,
+            prev_timestep=None
+    ):
+        o_t = np.array(timestep.observation)
+
+        traj = deque()
+        traj.append((o_t))
+        sum_of_losses = 0
+        while len(traj) > 0:
+            o_t = traj.pop()
+            for k in range(self._planning_iter):
+                o_tmn = self._o_network[o_t]
+                divisior = np.sum(o_tmn, axis=-1, keepdims=True)
+                o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0, axis=-1))
+                for prev_o_tmn in range(np.prod(self._input_dim)):
+                    if o_tmn[prev_o_tmn] != 0:
+                        loss, gradient = self._v_planning_loss_grad(self._v_network,
+                                                                       self._r_network,
+                                                                       o_t, prev_o_tmn)
+                        sum_of_losses += loss
+                        self._v_network[prev_o_tmn] = self._v_planning_opt_update(o_tmn[prev_o_tmn] * gradient,
+                                                                                  self._v_network[prev_o_tmn])
+                        if prev_o_tmn not in traj:
+                            traj.append(prev_o_tmn)
+
+        losses_and_grads = {"losses": {"loss_v_planning": np.array(sum_of_losses)},
+                                    }
         self._log_summaries(losses_and_grads, "value_planning")
 
     def model_based_train(self):
@@ -224,6 +212,5 @@ class TpBwFwDistrib(TpVanilla):
             steps_left = total_episodes - episode - flat_period
             if steps_left <= 0:
                 return
-
             self._lr_planning = self._initial_lr_planning * (steps_left / decay_period)
 

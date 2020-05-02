@@ -18,13 +18,13 @@ class Split(dm_env.Environment):
         self._states_chain_0 = np.arange(0, self._fanout_state)
         self._states_chain_1 = np.arange(self._fanout_state + 1,
                                          self._nS - 4, 2)
-        self._states_chain_1 = np.arange(self._fanout_state + 2,
+        self._states_chain_2 = np.arange(self._fanout_state + 2,
                                          self._nS - 4, 2)
         self._fanin_state = self._nS - 4
-        self._distr_state = self._nS - 3
+        self._distr_state = self._nS - 6
         self._fanin_end_state = self._nS - 2
         self._distr_end_state = self._nS - 1
-        self._pre_end_states = [self._fanin_state, self._distr_state]
+        self._pre_end_states = [self._fanin_state, self._fanin_state + 1]
         self._end_states = [self._fanin_end_state, self._distr_end_state]
         self._rng = rng
         self._nA = 1
@@ -41,7 +41,7 @@ class Split(dm_env.Environment):
     def _get_next_state(self, state, action):
         if state in self._end_states:
             next_state = self._start_state
-        elif state == self._fanout_state:
+        elif state == self._fanout_state or state == self._distr_state:
             state_mask = self._rng.choice(range(2),
                                           p=[0.5, 0.5])
             next_state = state + state_mask + 1
@@ -117,7 +117,7 @@ class Split(dm_env.Environment):
         for s in range(self._nS):
             for k in range(self._nA):
                 if not (s in self._end_states):
-                    if s == self._fanout_state:
+                    if s == self._fanout_state or s == self._distr_state:
                         self._P[k][s][s + 1] = 0.5
                         self._P[k][s][s + 2] = 0.5
                         self._P_absorbing[k][s][s + 1] = 0.5

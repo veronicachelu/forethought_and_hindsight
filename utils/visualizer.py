@@ -104,11 +104,13 @@ def plot_error(env, values, logs=None, colormap='Greys',
            filename="error.png",
            eta_pi=None,
            env_type="discrete",
+           non_gridworld=False,
            policy=None,):
     plt.clf()
     vmin = np.min(values)
     vmax = np.max(values)
-    plot_grid(env, env_type=env_type, vmin=vmin, vmax=vmax)
+    if not non_gridworld:
+        plot_grid(env, env_type=env_type, vmin=vmin, vmax=vmax)
     if policy is not None:
         plot_policy(env, policy, env_type=env_type)
     # if true_v is not None:
@@ -119,9 +121,10 @@ def plot_error(env, values, logs=None, colormap='Greys',
     values = values[None, ...] if len(values.shape) == 1 else values
     plt.imshow(values, interpolation="nearest",
                cmap=colormap)
-    plt.yticks([])
-    plt.xticks([])
-    plt.colorbar(ticks=[vmin, vmax])
+    if not non_gridworld:
+        plt.yticks([])
+        plt.xticks([])
+        plt.colorbar(ticks=[vmin, vmax])
     normalized_eta_pi = (eta_pi - np.min(eta_pi))/(np.max(eta_pi) - np.min(eta_pi))
     for i in range(values.shape[0]):
         for j in range(values.shape[1]):

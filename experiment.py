@@ -52,8 +52,11 @@ def run_episodic(agent: Agent,
                 agent.total_steps += 1
                 t += 1
 
-                if space["env_config"]["env_type"] == "continuous" and \
-                    space["env_config"]["policy_type"] == "estimate":
+                if (space["env_config"]["env_type"] == "continuous" and \
+                    space["env_config"]["policy_type"] == "estimate") or \
+                    (space["env_config"]["env_type"] == "continuous" and
+                    space["env_config"]["policy_type"] == "continuous_greedy" and \
+                      space["env_config"]["stochastic"]) and t % 10 == 0:
                     hat_v = agent.get_value_for_state(timestep.observation)
                     v = mdp_solver.get_value_for_state(agent, copy_env,
                                                        timestep)
@@ -70,14 +73,15 @@ def run_episodic(agent: Agent,
 
             if space["env_config"]["env_type"] != "continuous" or \
                     (space["env_config"]["env_type"] == "continuous" and
-                    space["env_config"]["policy_type"] == "continuous_greedy"):
+                    space["env_config"]["policy_type"] == "continuous_greedy" and \
+                     not space["env_config"]["stochastic"]):
                 hat_v = agent._v_network if space["env_config"]["model_class"] == "tabular" \
                     else agent.get_values_for_all_states(environment.get_all_states())
                 hat_error = np.abs(environment._true_v - hat_v)
                 rmsve = get_rmsve(environment, mdp_solver, hat_v, environment._true_v, weighted=weighted)
                 # ep_rmsve = rmsve
             else:
-                rmsve /= t
+                rmsve /= (t % 10)
 
             total_rmsve += rmsve
             total_reward += rewards
@@ -94,6 +98,16 @@ def run_episodic(agent: Agent,
                            env_type=space["env_config"]["env_type"],
                            eta_pi=environment.reshape_v(mdp_solver.get_eta_pi(mdp_solver._pi)),
                            filename="error_{}.png".format(agent.episode))
+            # if space["plot_errors"] and agent.episode % space["log_period"] == 0 and \
+            #         space["env_config"]["non_gridworld"]:
+            #     plot_error(env=environment,
+            #                values=(environment.reshape_v(mdp_solver.get_optimal_v()) - environment.reshape_v(
+            #                    hat_v)) ** 2,
+            #                logs=agent._images_dir,
+            #                non_gridworld=space["env_config"]["non_gridworld"],
+            #                env_type=space["env_config"]["env_type"],
+            #                eta_pi=environment.reshape_v(mdp_solver.get_eta_pi(mdp_solver._pi)),
+            #                filename="error_{}.png".format(agent.episode))
             if space["plot_values"] and agent.episode % space["log_period"] == 0 and\
                     not space["env_config"]["non_gridworld"]:
                 plot_v(env=environment,

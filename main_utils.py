@@ -339,6 +339,9 @@ def load_env_and_volatile_configs(env):
     elif env == "obstacle":
         env_config = configs.obstacle_config.env_config
         volatile_agent_config = configs.obstacle_config.volatile_agent_config
+    elif env == "stoch_obstacle":
+        env_config = configs.stoch_obstacle_config.env_config
+        volatile_agent_config = configs.stoch_obstacle_config.volatile_agent_config
     elif env == "cartpole":
         env_config = configs.cartpole_config.env_config
         volatile_agent_config = configs.cartpole_config.volatile_agent_config
