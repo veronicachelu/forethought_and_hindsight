@@ -323,9 +323,9 @@ configs={
     },
     "split": {
         "all": {
-            "agents": ["bw", "true_bw", "fw", "true_fw"],
-            "planning_depths": [1, 1, 1, 1],
-            "replay_capacities": [0, 0, 0, 0]
+            "agents": ["bw", "true_bw", "fw", "true_fw", "bw_traj"],
+            "planning_depths": [1, 1, 1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 0, 0, 0]
         }
     },
     "obstacle": {
