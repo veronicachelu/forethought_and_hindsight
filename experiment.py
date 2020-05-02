@@ -90,7 +90,10 @@ def run_episodic(agent: Agent,
             ep_rewards.append(rewards)
 
             if space["plot_errors"] and agent.episode % space["log_period"] == 0 and\
-                    not space["env_config"]["non_gridworld"]:
+                    not space["env_config"]["non_gridworld"] and (space["env_config"]["env_type"] != "continuous" or \
+                    (space["env_config"]["env_type"] == "continuous" and
+                    space["env_config"]["policy_type"] == "continuous_greedy" and \
+                     not space["env_config"]["stochastic"])):
                 plot_error(env=environment,
                            values=(environment.reshape_v(mdp_solver.get_optimal_v()) - environment.reshape_v(
                                hat_v)) ** 2,
@@ -109,7 +112,10 @@ def run_episodic(agent: Agent,
             #                eta_pi=environment.reshape_v(mdp_solver.get_eta_pi(mdp_solver._pi)),
             #                filename="error_{}.png".format(agent.episode))
             if space["plot_values"] and agent.episode % space["log_period"] == 0 and\
-                    not space["env_config"]["non_gridworld"]:
+                    not space["env_config"]["non_gridworld"] and (space["env_config"]["env_type"] != "continuous" or \
+                    (space["env_config"]["env_type"] == "continuous" and
+                    space["env_config"]["policy_type"] == "continuous_greedy" and \
+                     not space["env_config"]["stochastic"])):
                 plot_v(env=environment,
                        values=environment.reshape_v(hat_v),
                        logs=agent._images_dir,
