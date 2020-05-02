@@ -119,7 +119,7 @@ class LpFw(LpVanilla):
     ):
         if self._n == 0:
             return
-        if timestep.discount is None:
+        if timestep.last():
             return
         features = self._get_features([timestep.observation])
         o_t = np.array(features)

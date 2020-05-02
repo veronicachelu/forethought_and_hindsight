@@ -346,7 +346,7 @@ config = {
         "model_family": "intrinsic",
         # "target_networks": True,
         "target_networks": False,
-        "class": {"linear": "LpBWMeta"},
+        "class": {"linear": "LpBwMeta"},
     },
     "fw_intr": {
         "task_type": "prediction",

@@ -30,28 +30,20 @@ class TpTrueFw(TpVanilla):
         self._r_network = self._network["model"]["net"][2]
         self._d_network = self._network["model"]["net"][3]
 
-        def v_planning_loss(v_params, fw_o_params, r_params, o_tmn, d):
+        def v_planning_loss(v_params, fw_o_params, r_params, o_tmn):
             o_tmn = o_tmn[0]
             o_t = fw_o_params[o_tmn]
             r_tmn = r_params[o_tmn]
             v_tmn = v_params[o_tmn]
 
-            # if self._double_input_reward_model:
             target = 0
-            # else:
-            #     target = r_tmn
 
             divisior = np.sum(o_t, axis=-1, keepdims=True)
             o_t = np.divide(o_t, divisior, out=np.zeros_like(o_t), where=np.all(divisior != 0))
             for next_o_t in range(np.prod(self._input_dim)):
-                # if self._double_input_reward_model:
                 target_per_next_o = o_t[next_o_t] * \
-                (r_tmn[next_o_t] + d * (self._discount ** self._n) *\
+                (r_tmn[next_o_t] + (self._discount ** self._n) *\
                       v_params[next_o_t])
-                # else:
-                #     target_per_next_o = o_t[next_o_t] * \
-                #         (self._discount ** self._n) *\
-                #             v_params[next_o_t]
                 target += target_per_next_o
             td_error = (target - v_tmn)
             loss = td_error ** 2
@@ -73,15 +65,13 @@ class TpTrueFw(TpVanilla):
             timestep: dm_env.TimeStep,
             prev_timestep=None
     ):
-        if timestep.discount is None:
+        if timestep.last():
             return
-
         o_tm1 = np.array([timestep.observation])
-        d_tm1 = np.array(timestep.discount)
         loss, gradient = self._v_planning_loss_grad(self._v_network,
                                                     self._fw_o_network,
                                                     self._r_network,
-                                                    o_tm1, d_tm1)
+                                                    o_tm1)
         self._v_network[o_tm1] = self._v_planning_opt_update(gradient,
                                                          self._v_network[o_tm1])
 

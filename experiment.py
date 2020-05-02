@@ -66,6 +66,8 @@ def run_episodic(agent: Agent,
 
                 if new_timestep.last() or (aux_agent_configs["max_len"] is not None and \
                                                    t == aux_agent_configs["max_len"]):
+                    if agent.model_based_train():
+                        agent.planning_update(new_timestep)
                     break
 
                 prev_timestep = timestep
