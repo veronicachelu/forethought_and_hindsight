@@ -257,7 +257,7 @@ def run_objective(space):
         mdp_solver=mdp_solver,
         environment=env,
     )
-    print(total_rmsve, final_rmsve, start_rmsve, avg_steps, values, errors)
+    # print(total_rmsve, final_rmsve, start_rmsve, avg_steps, values, errors)
     return total_rmsve, final_rmsve, start_rmsve, avg_steps
 
 if __name__ == '__main__':
