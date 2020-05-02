@@ -4,7 +4,7 @@ from utils.replay import Replay
 from typing import Callable, List, Mapping, Sequence, Text, Tuple, Union
 import dm_env
 from dm_env import specs
-
+from copy import deepcopy
 import jax
 from jax import lax
 from jax import numpy as jnp
