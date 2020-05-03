@@ -6,7 +6,7 @@ env_config = {
     "feature_coder": {
         "type": "rbf",
         "ranges": [[0.0, 0.0], [1.0, 1.0]],
-        "num_tiles": [25, 25],
+        "num_tiles": [20, 20],
         "num_centers": [4, 4],
         "num_tilings": 1},
     "env_type": "continuous",

@@ -18,7 +18,7 @@ def run_episodic(agent: Agent,
             # Run an episode.
             ep_reward = 0
             timestep = environment.reset()
-            agent.update_hyper_params(episode, num_episodes)
+            agent.update_hyper_params(agent.total_steps, 60000)
             for t in range(max_len):
                 action = agent.policy(timestep)
                 new_timestep = environment.step(action)
@@ -28,8 +28,9 @@ def run_episodic(agent: Agent,
 
                 ep_reward += new_timestep.reward
 
-                if agent.model_based_train():
-                    agent.planning_update(timestep)
+                # if agent.model_based_train():
+                #     agent.planning_update(timestep)
+                tf.summary.scalar("train/ep_steps", t, step=agent.total_steps)
 
                 if new_timestep.last():
                     break

@@ -53,10 +53,11 @@ def run_episodic(agent: Agent,
                 t += 1
 
                 if (space["env_config"]["env_type"] == "continuous" and \
-                    space["env_config"]["policy_type"] == "estimate") or \
-                    (space["env_config"]["env_type"] == "continuous" and
-                    space["env_config"]["policy_type"] == "continuous_greedy" and \
-                      space["env_config"]["stochastic"]) and t % 10 == 0:
+                    space["env_config"]["policy_type"] == "estimate"):
+                        # or \
+                    # (space["env_config"]["env_type"] == "continuous" and
+                    # space["env_config"]["policy_type"] == "continuous_greedy" and \
+                    #   space["env_config"]["stochastic"]) and t % 10 == 0:
                     hat_v = agent.get_value_for_state(timestep.observation)
                     v = mdp_solver.get_value_for_state(agent, copy_env,
                                                        timestep)
@@ -75,15 +76,17 @@ def run_episodic(agent: Agent,
 
             if space["env_config"]["env_type"] != "continuous" or \
                     (space["env_config"]["env_type"] == "continuous" and
-                    space["env_config"]["policy_type"] == "continuous_greedy" and \
-                     not space["env_config"]["stochastic"]):
+                    space["env_config"]["policy_type"] == "continuous_greedy"):
+                # and \
+                #      not space["env_config"]["stochastic"]):
                 hat_v = agent._v_network if space["env_config"]["model_class"] == "tabular" \
                     else agent.get_values_for_all_states(environment.get_all_states())
                 hat_error = np.abs(environment._true_v - hat_v)
                 rmsve = get_rmsve(environment, mdp_solver, hat_v, environment._true_v, weighted=weighted)
                 # ep_rmsve = rmsve
             else:
-                rmsve /= (t % 10)
+                # rmsve /= (t % 10)
+                rmsve /= t
 
             total_rmsve += rmsve
             total_reward += rewards

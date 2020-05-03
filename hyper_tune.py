@@ -5,7 +5,7 @@ from copy import deepcopy
 import configs
 from main_utils import *
 
-flags.DEFINE_string('agent', 'bw_intr', 'what agent to run')
+flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
 flags.DEFINE_string('env', 'obstacle', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')

@@ -6,7 +6,7 @@ env_config = {
     "feature_coder": {
         "type": "rbf",
         "ranges": [[0.0, 0.0], [1.0, 1.0]],
-        "num_tiles": [25, 25],
+        "num_tiles": [20, 20],
         "num_centers": [4, 4],
         "num_tilings": 1},
     "env_type": "continuous",
@@ -15,9 +15,9 @@ env_config = {
     "mdp_filename": "./continuous_mdps/obstacle.mdp",
     "env_size": None,
     "num_episodes": 200,
-    "control_num_episodes": 200,
-    "num_runs": 3,
-    "stochastic": False,
+    "control_num_episodes": 300,
+    "num_runs": 5,
+    "stochastic": True,
     "nA": 4
 }
 
@@ -25,7 +25,7 @@ volatile_agent_config = {
     "vanilla": {
         "planning_depth": [0],
         "replay_capacity": [0],
-        "lr": np.array([0.001, 0.005, 0.01]),
+        "lr": np.array([0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01]),
         "lr_p": [0],
         "lr_m": [0],
         "lr_ctrl": 0.4

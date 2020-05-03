@@ -51,7 +51,7 @@ class VanillaQ(Agent):
         # self._double_input_reward_model = double_input_reward_model
         self._run_mode = "{}".format(self._run_mode)
         self._max_len = max_len
-        self._final_epsilon = 0.0
+        self._final_epsilon = 0.1
         self._epsilon = 1.0
         self._exploration_decay_period = exploration_decay_period
         self._nrng = nrng
@@ -154,27 +154,28 @@ class VanillaQ(Agent):
             timestep: dm_env.TimeStep,
             prev_timestep=None
     ):
-        replay_sample = self._replay.sample(32)
-        features = self._get_features([replay_sample[0]])
-        next_features = self._get_features([replay_sample[4]])
-        transitions = [np.array(features),
-                       np.array([replay_sample[1]]),
-                       np.array([replay_sample[2]]),
-                       np.array([replay_sample[3]]),
-                       np.array(next_features)]
-
-        loss, gradient = self._q_loss_grad(self._q_parameters,
-                                           transitions)
-        self._q_opt_state = self._q_opt_update(self.episode, gradient,
-                                               self._q_opt_state)
-        self._q_parameters = self._q_get_params(self._q_opt_state)
-
-        losses_and_grads = {"losses": {"loss_v_planning": np.array(loss),
-                                       },
-                            "gradients": {"grad_norm_v_planning": np.sum(
-                                np.sum([np.linalg.norm(np.asarray(g), ord=2) for g in gradient]))}}
-        self._log_summaries(losses_and_grads, "value_planning")
-
+        pass
+        # replay_sample = self._replay.sample(32)
+        # features = self._get_features([replay_sample[0]])
+        # next_features = self._get_features([replay_sample[4]])
+        # transitions = [np.array(features),
+        #                np.array([replay_sample[1]]),
+        #                np.array([replay_sample[2]]),
+        #                np.array([replay_sample[3]]),
+        #                np.array(next_features)]
+        #
+        # loss, gradient = self._q_loss_grad(self._q_parameters,
+        #                                    transitions)
+        # self._q_opt_state = self._q_opt_update(self.episode, gradient,
+        #                                        self._q_opt_state)
+        # self._q_parameters = self._q_get_params(self._q_opt_state)
+        #
+        # losses_and_grads = {"losses": {"loss_v_planning": np.array(loss),
+        #                                },
+        #                     "gradients": {"grad_norm_v_planning": np.sum(
+        #                         np.sum([np.linalg.norm(np.asarray(g), ord=2) for g in gradient]))}}
+        # self._log_summaries(losses_and_grads, "value_planning")
+        #
 
     def model_based_train(self):
         return True
@@ -230,13 +231,13 @@ class VanillaQ(Agent):
         features = self._get_features([timestep.observation])
         next_features = self._get_features([new_timestep.observation])
 
-        self._replay.add([
-            features,
-            action,
-            new_timestep.reward,
-            new_timestep.discount,
-            next_features,
-        ])
+        # self._replay.add([
+        #     features,
+        #     action,
+        #     new_timestep.reward,
+        #     new_timestep.discount,
+        #     next_features,
+        # ])
 
     def _log_summaries(self, losses_and_grads, summary_name):
         if self._logs is not None:
@@ -290,10 +291,10 @@ class VanillaQ(Agent):
         bonus = np.clip(bonus, 0., 1. - self._final_epsilon)
         self._epsilon = self._final_epsilon + bonus
         if self._logs is not None:
-            if self._max_len == -1:
-                ep = self.total_steps
-            else:
-                ep = self.episode
+            # if self._max_len == -1:
+            ep = self.total_steps
+            # else:
+            #     ep = self.episode
             if ep % self._log_period == 0:
                 tf.summary.scalar("train/epsilon",
                                   self._epsilon, step=ep)

@@ -45,15 +45,15 @@ class ObstacleWorld(dm_env.Environment):
 
         self._obs_type = obs_type
 
-        self._h = int(self._height // self._step_size)
-        self._w = int(self._width // self._step_size)
+        self._h = int(self._height / self._step_size)
+        self._w = int(self._width / self._step_size)
 
         self._mdp = np.zeros((self._h, self._w))
 
-        self._sX = int(self._sPos[0]//self._step_size)
-        self._sY = int(self._sPos[1]//self._step_size)
-        self._g = [(int(self._gPos[0]//self._step_size),
-                    int(self._gPos[1]//self._step_size)
+        self._sX = int(self._sPos[0]/self._step_size)
+        self._sY = int(self._sPos[1]/self._step_size)
+        self._g = [(int(self._gPos[0]/self._step_size),
+                    int(self._gPos[1]/self._step_size)
                     )]
 
     def _read_file(self, path):
@@ -123,6 +123,12 @@ class ObstacleWorld(dm_env.Environment):
             # left
             np.array((0, -1)),
         ]
+
+        if self._stochastic:
+            random_move = self._rng.choice(range(2), p=[0.9, 0.1])
+            if random_move:
+                action = self._rng.choice(range(self._nA),
+                                          p=[1/self._nA for _ in range(self._nA)])
 
         step_size = DIR_TO_VEC[action] * self._step_size
         if self._stochastic:
@@ -212,6 +218,13 @@ class ObstacleWorld(dm_env.Environment):
             for j in range(self._ww):
                 self._index_matrix[i][j] = int(np.ravel_multi_index((i, j), (self._hh, self._ww)))
 
+
+
+        if self._stochastic:
+            random_move_prob = 0.1
+        else:
+            random_move_prob = 0
+
         DIR_TO_VEC = [
             # up
             np.array((-1, 0)),
@@ -222,36 +235,47 @@ class ObstacleWorld(dm_env.Environment):
             # left
             np.array((0, -1)),
         ]
+
         for i in range(self._hh):
             for j in range(self._ww):
                 for k in range(self._nA):
-                    fwd_pos = np.array([i, j]) + DIR_TO_VEC[k]
+                    action_exec_prob = 1 - random_move_prob + random_move_prob/self._nA
+                    dir_move = DIR_TO_VEC[k]
+                    self.fill_action_prob(i, j, k, action_exec_prob, dir_move)
+                    for other_k in range(self._nA):
+                        if other_k != k:
+                            action_exec_prob = random_move_prob / self._nA
+                            dir_move = DIR_TO_VEC[other_k]
+                            self.fill_action_prob(i, j, k, action_exec_prob, dir_move)
 
-                    fwd_i, fwd_j = fwd_pos
-                    if self._mdp_tilings[i][j] != -1:
-                        if not ((i, j) in self._g_tilings):
-                            if fwd_i >= 0 and fwd_i < self._h and \
-                                            fwd_j >= 0 and fwd_j < self._w and self._mdp[fwd_i][fwd_j] != -1:
-                                self._P[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = 1
-                                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = 1
-                                self._R[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = \
-                                    self._reward if (fwd_i, fwd_j) in self._g_tilings else 0
-                                self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 0
-                                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 0
-                                self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
-                                    self._reward if (i, j) in self._g_tilings else 0
-                            else:
-                                self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
-                                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
-                                self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
-                                    self._reward if (i, j) in self._g_tilings else 0
-                        else:
-                            self._P[k][self._index_matrix[i][j]][
-                                self._index_matrix[self._sX_tilings][self._sY_tilings]] = 1
-                            self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
-                            self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 0
-                            # \
-                            #     self._reward if (i, j) in self._g_tilings else 0
+    def fill_action_prob(self, i, j, k, action_exec_prob, dir_move):
+        fwd_pos = np.array([i, j]) + dir_move
+        fwd_i, fwd_j = fwd_pos
+        if self._mdp_tilings[i][j] != -1:
+            if not ((i, j) in self._g_tilings):
+                if fwd_i >= 0 and fwd_i < self._h and \
+                                fwd_j >= 0 and fwd_j < self._w and self._mdp[fwd_i][fwd_j] != -1:
+                    self._P[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] += \
+                        action_exec_prob
+                    self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] += \
+                        action_exec_prob
+                    if (fwd_i, fwd_j) in self._g_tilings:
+                        self._R[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = \
+                            self._reward
+                        # self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
+                        #     self._reward
+                else:
+                    self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] += \
+                        action_exec_prob
+                    self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] += \
+                        action_exec_prob
+                    if (i, j) in self._g_tilings:
+                        self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
+                            self._reward
+            else:
+                self._P[k][self._index_matrix[i][j]][
+                    self._index_matrix[self._sX_tilings][self._sY_tilings]] += action_exec_prob
+                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] += action_exec_prob
 
     def _get_dynamics(self, feature_coder=None):
         if self._P == None or self._R == None or self._P_absorbing == None:
@@ -300,7 +324,7 @@ if __name__ == "__main__":
     feature_coder = {
         "type": "tile",
         "ranges": [[0.0, 0.0], [1.0, 1.0]],
-        "num_tiles": [25, 25],
+        "num_tiles": [20, 20],
         "num_tilings": 1}
     mdp_solver = MdpSolver(env, nS, nA, discount, feature_coder=feature_coder)
     v = mdp_solver.get_optimal_v()

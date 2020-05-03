@@ -16,7 +16,7 @@ class MdpSolver:
         self._discount = discount
         self._pi = None
         self._eta_pi = None
-        self._theta = 1e-8
+        self._theta = 1e-4
         self._pi = np.full((self._nS, self._nA), 1 / self._nA)
         self._assigned_pi = False
 

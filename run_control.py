@@ -10,11 +10,11 @@ import network
 import utils
 from utils import *
 
-flags.DEFINE_string('agent', 'ac_vanilla', 'what agent to run')
-flags.DEFINE_string('env', 'cartpole', 'env')
+flags.DEFINE_string('agent', 'q', 'what agent to run')
+flags.DEFINE_string('env', 'obstacle', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
-flags.DEFINE_integer('max_len', 100000, 'Maximum number of time steps an episode may last (default: 100).')
+flags.DEFINE_integer('max_len', 10000, 'Maximum number of time steps an episode may last (default: 100).')
 flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('planning_iter', 1, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
@@ -23,10 +23,10 @@ flags.DEFINE_integer('replay_capacity', 0, 'Replay capacity')
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')
 flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
-flags.DEFINE_float('discount', .99, 'discounting on the agent side')
+flags.DEFINE_float('discount', 0.99, 'discounting on the agent side')
 flags.DEFINE_integer('min_replay_size', 1, 'min replay size before training.')
 # flags.DEFINE_float('lr', 0.4, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_ctrl', 0.001, 'learning rate for q optimizer')
+flags.DEFINE_float('lr_ctrl', 0.01, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr_p', 0.01, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr_m',  0.01, 'learning rate for model optimizer')
 
@@ -55,6 +55,7 @@ def main(argv):
     # for seed in tqdm(range(0, env_config["num_runs"])):
         seed_config["seed"] = seed
         space = {
+            "discount": FLAGS.discount,
             "logs": logs,
             "plot_errors": True,
             "plot_values": True,
@@ -83,26 +84,24 @@ def run_objective(space):
         num_episodes=space["env_config"]["control_num_episodes"],
         max_len=FLAGS.max_len
     )
-
     print(reward, steps)
 
+    # reward, steps = control_experiment.test_agent(
+    #     agent=agent,
+    #     environment=env,
+    #     num_episodes=space["env_config"]["control_num_episodes"],
+    #     max_len=FLAGS.max_len
+    # )
+    # print(reward, steps)
 
-    reward, steps = control_experiment.test_agent(
-        agent=agent,
-        environment=env,
-        num_episodes=space["env_config"]["control_num_episodes"],
-        max_len=FLAGS.max_len
-    )
-    print(reward, steps)
-
-    env, agent = run_control_experiment(seed, space, aux_agent_configs)
-    reward, steps = control_experiment.test_agent(
-        agent=agent,
-        environment=env,
-        num_episodes=space["env_config"]["control_num_episodes"],
-        max_len=FLAGS.max_len
-    )
-    print(reward, steps)
+    # env, agent = run_control_experiment(seed, space, aux_agent_configs)
+    # reward, steps = control_experiment.test_agent(
+    #     agent=agent,
+    #     environment=env,
+    #     num_episodes=space["env_config"]["control_num_episodes"],
+    #     max_len=FLAGS.max_len
+    # )
+    # print(reward, steps)
 
 
 if __name__ == '__main__':
