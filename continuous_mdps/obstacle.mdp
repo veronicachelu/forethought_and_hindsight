@@ -1,7 +1,7 @@
 # Dimension H W
 1 1
 # Step_size Noise_mean Noise_var #0.05 0.0 0.01
-0.05 0.00 0.01
+0.05 0.00 0.00
 # Start_state H W
 0.0 0.0
 # Goal_state X Y Fudge Reward Reward_noise_var #0.0 1.0 0.2 1 0.0
