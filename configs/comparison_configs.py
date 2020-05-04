@@ -105,15 +105,25 @@ configs={
             "planning_depths": [1, 1, 0],
             "replay_capacities": [0, 0, 0]
         },
+        # "all": {
+        #     "agents": ["bw", "mult_bw",
+        #                "true_bw", "true_mult_bw",
+        #                "fw", "mult_fw",
+        #                "fw_intr", "fw_mult_intr",
+        #                "bw_intr", "bw_mult_intr",
+        #                "bw_update"],
+        #     "planning_depths": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        #     "replay_capacities": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        # },
         "all": {
-            "agents": ["bw", "mult_bw",
-                       "true_bw", "true_mult_bw",
-                       "fw", "mult_fw",
-                       "fw_intr", "fw_mult_intr",
-                       "bw_intr", "bw_mult_intr",
+            "agents": ["bw",
+                       "true_bw",
+                       "fw",
+                       "fw_intr",
+                       "bw_intr",
                        "bw_update"],
-            "planning_depths": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            "replay_capacities": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            "planning_depths": [1, 1, 1, 1, 1, 1, ],
+            "replay_capacities": [0, 0, 0, 0, 0, 0,]
         },
         "corr_vs_value_vs_meta": {
             "agents": ["bw_intr", "bw_vaware", "bw_meta"],
