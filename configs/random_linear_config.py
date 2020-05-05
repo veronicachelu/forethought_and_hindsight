@@ -9,7 +9,7 @@ env_config = {
     "mdp_filename": None,
     "env_size": 5,
     "obs_size": 5,
-    "num_episodes": 100,
+    "num_episodes": 200,
     "num_runs": 50,
     "stochastic": False,
     "feature_coder": None,
