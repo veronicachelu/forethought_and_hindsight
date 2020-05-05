@@ -66,6 +66,7 @@ def main(argv):
                          "planning_period": FLAGS.planning_period,
                          "max_len": FLAGS.max_len,
                          "log_period": FLAGS.log_period}
+    aux_agent_configs["mb"] = True if agent["agent"].split("_")[0] == "mb" else False
     run_agent(FLAGS.env, agent, logs, aux_agent_configs)
 
 
