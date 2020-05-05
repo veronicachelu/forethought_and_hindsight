@@ -10,7 +10,7 @@ import utils
 from run_utils import *
 from utils import *
 
-flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
+flags.DEFINE_string('agent', 'mb_bw', 'what agent to run')
 flags.DEFINE_string('env', 'obstacle', 'env')
 # flags.DEFINE_string('env', 'split', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
@@ -28,16 +28,18 @@ flags.DEFINE_float('discount', .99, 'discounting on the agent side')
 # flags.DEFINE_float('discount', .95, 'discounting on the agent side')
 flags.DEFINE_integer('min_replay_size', 1, 'min replay size before training.')
 flags.DEFINE_float('lr', 0.001, 'learning rate for q optimizer')
+# flags.DEFINE_float('lr', 0.01, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr', 0.06, 'learning rate for q optimizer')
 flags.DEFINE_float('lr_ctrl', 0.4, 'learning rate for q optimizer')
 flags.DEFINE_float('lr_p', 0.001, 'learning rate for q optimizer')
+# flags.DEFINE_float('lr_p', 0.01, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr_p', 0.06, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr_m',  0.005, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_m',  0.01, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_m',  0.005, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_m',  0.04, 'learning rate for model optimizer')
 # flags.DEFINE_float('lr_m',  0.02, 'learning rate for model optimizer')
-flags.DEFINE_float('lr_m',  0.001, 'learning rate for model optimizer')
+flags.DEFINE_float('lr_m',  0.005, 'learning rate for model optimizer')
 
 FLAGS = flags.FLAGS
 
@@ -67,7 +69,7 @@ def main(argv):
                          "max_len": FLAGS.max_len,
                          "log_period": FLAGS.log_period}
     aux_agent_configs["mb"] = True if agent["agent"].split("_")[0] == "mb" else False
-    run_agent(FLAGS.env, agent, logs, aux_agent_configs)
+    run_agent(FLAGS.env, agent, logs, aux_agent_configs, ignore_existent=False)
 
 
 if __name__ == '__main__':
