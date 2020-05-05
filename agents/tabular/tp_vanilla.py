@@ -210,7 +210,10 @@ class TpVanilla(Agent):
                 self.writer.flush()
 
     def update_hyper_params(self, episode, total_episodes):
-        pass
+        if episode >= total_episodes:
+            return
+        self._lr = self._initial_lr * ((total_episodes - episode) / total_episodes)
+
         # warmup_episodes = 0
         # flat_period = 0
         # decay_period = total_episodes - warmup_episodes - flat_period

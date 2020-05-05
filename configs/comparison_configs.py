@@ -120,10 +120,18 @@ configs={
                        "true_bw",
                        "fw",
                        "fw_intr",
-                       "bw_intr",
-                       "bw_update"],
-            "planning_depths": [1, 1, 1, 1, 1, 1, ],
+                       "bw_intr"],
+            "planning_depths": [1, 1, 1, 1, 1, ],
             "replay_capacities": [0, 0, 0, 0, 0, 0,]
+        },
+        "mb_all": {
+            "agents": ["mb_bw",
+                       "mb_true_bw",
+                       "mb_fw",
+                       "mb_fw_intr",
+                       "mb_bw_intr"],
+            "planning_depths": [1, 1, 1, 1, 1, ],
+            "replay_capacities": [0, 0, 0, 0, 0, ]
         },
         "corr_vs_value_vs_meta": {
             "agents": ["bw_intr", "bw_vaware", "bw_meta"],
@@ -333,21 +341,35 @@ configs={
     },
     "split": {
         "all": {
-            "agents": ["bw", "true_bw", "fw", "true_fw", "bw_traj"],
+            "agents": ["bw", "true_bw", "fw", "true_fw", "bw_traj", "true_bw_traj"],
+            "planning_depths": [1, 1, 1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 0, 0, 0]
+        },
+        "mb_all": {
+            "agents": ["mb_bw", "mb_true_bw", "mb_fw", "mb_true_fw",
+                       "mb_bw_traj", "mb_true_bw_traj"],
             "planning_depths": [1, 1, 1, 1, 1, 1],
             "replay_capacities": [0, 0, 0, 0, 0, 0]
         }
     },
     "obstacle": {
         "all": {
-            "agents": ["bw", "mult_bw",
-                       "true_bw", "true_mult_bw",
-                       "fw", "mult_fw",
-                       "fw_intr", "fw_mult_intr",
-                       "bw_intr", "bw_mult_intr",
-                       "bw_update"],
-            "planning_depths": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            "replay_capacities": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            "agents": ["bw",
+                       "true_bw",
+                       "fw",
+                       "fw_intr",
+                       "bw_intr"],
+            "planning_depths": [1, 1, 1, 1, 1, ],
+            "replay_capacities": [0, 0, 0, 0, 0, ]
+        },
+        "mb_all": {
+            "agents": ["mb_bw",
+                       "mb_true_bw",
+                       "mb_fw",
+                       "mb_fw_intr",
+                       "mb_bw_intr"],
+            "planning_depths": [1, 1, 1, 1, 1, ],
+            "replay_capacities": [0, 0, 0, 0, 0, ]
         },
     },
 }

@@ -41,13 +41,17 @@ def run_episodic(agent: Agent,
                     agent.save_transition(timestep, action, new_timestep)
                     agent.model_update(timestep, action, new_timestep)
 
-                if agent.model_free_train():
+                if agent.model_free_train() and not aux_agent_configs["mb"]:
                     agent.value_update(timestep, action, new_timestep)
 
                 rewards += new_timestep.reward
 
                 if agent.model_based_train():
-                    agent.planning_update(timestep)
+                    if aux_agent_configs["mb"]:
+                        agent.planning_update(new_timestep)
+                    else:
+                        agent.planning_update(timestep)
+
 
                 agent.total_steps += 1
                 t += 1
@@ -67,7 +71,7 @@ def run_episodic(agent: Agent,
 
                 if new_timestep.last() or (aux_agent_configs["max_len"] is not None and \
                                                    t == aux_agent_configs["max_len"]):
-                    if agent.model_based_train():
+                    if not aux_agent_configs["mb"] and agent.model_based_train():
                         agent.planning_update(new_timestep)
                     break
 

@@ -131,6 +131,7 @@ class TpExplicitDistrib(TpVanilla):
         return True
 
     def model_free_train(self):
+        # return False
         return True
 
     def load_model(self):

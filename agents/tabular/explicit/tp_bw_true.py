@@ -77,6 +77,7 @@ class TpTrueBw(TpVanilla):
 
     def model_free_train(self):
         return True
+        # return False
 
     def load_model(self):
         if self._logs is not None:

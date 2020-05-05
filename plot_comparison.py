@@ -19,10 +19,18 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_string('comparison_config', "bw_fw", 'where to save results')
+# flags.DEFINE_string('comparison_config', "latent_vs_no_latent", 'where to save results')
+# flags.DEFINE_string('comparison_config', "intr_vs_extr_fw_and_bw", 'where to save results')
+# flags.DEFINE_string('comparison_config', "bw_fw", 'where to save results')
+flags.DEFINE_string('comparison_config', "true_bw", 'where to save results')
+# flags.DEFINE_string('comparison_config', "corr_vs_value_vs_meta", 'where to save results')
 # flags.DEFINE_string('comparison_config', "random_vs_learned", 'where to save results')
 flags.DEFINE_string('env', "linear_maze", 'where to save results')
+# flags.DEFINE_string('env', "boyan", 'where to save results')
+# flags.DEFINE_string('env', "cartpole", 'where to save results')
+# flags.DEFINE_float('ymin', -5, 'plot up to')
 flags.DEFINE_float('ymin', None, 'plot up to')
+# flags.DEFINE_float('ymax', 35, 'plot up to')
 flags.DEFINE_float('ymax', None, 'plot up to')
 flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 # flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
@@ -91,8 +99,8 @@ def main(argv):
 def plot_for_agent(agent, env_config, persistent_agent_config,
                    volatile_agent_config, planning_depth, replay_capacity, logs):
     print(agent)
-    # log_folder_agent = os.path.join(logs, "{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth, replay_capacity))
-    log_folder_agent = os.path.join(logs, "{}_{}_{}".format(agent, planning_depth, replay_capacity))
+    log_folder_agent = os.path.join(logs, "{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth, replay_capacity))
+    # log_folder_agent = os.path.join(logs, "{}_{}_{}".format(agent, planning_depth, replay_capacity))
     volatile_config = {"agent": agent,
                        "planning_depth": planning_depth,
                        "replay_capacity": replay_capacity,
@@ -145,9 +153,9 @@ def plot_tensorflow_log(space):
         # print(len(y))
         all_y_over_seeds.append(np.array(y))
 
-    those_that_are_not_99 = [i for i, a in enumerate(all_y_over_seeds) if len(a) != 99]
-    print(those_that_are_not_99)
-    all_y_over_seeds = [a for a in all_y_over_seeds if len(a) == 99]
+    # those_that_are_not_99 = [i for i, a in enumerate(all_y_over_seeds) if len(a) != 99]
+    # print(those_that_are_not_99)
+    # all_y_over_seeds = [a for a in all_y_over_seeds if len(a) == 99]
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
     if space["crt_config"]["agent"] == "vanilla":

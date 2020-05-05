@@ -10,7 +10,7 @@ import utils
 from run_utils import *
 from utils import *
 
-flags.DEFINE_string('agent', 'fw', 'what agent to run')
+flags.DEFINE_string('agent', 'mb_bw', 'what agent to run')
 flags.DEFINE_string('env', 'split', 'env')
 # flags.DEFINE_string('env', 'split', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
@@ -66,6 +66,7 @@ def main(argv):
                          "planning_period": FLAGS.planning_period,
                          "max_len": FLAGS.max_len,
                          "log_period": FLAGS.log_period}
+    aux_agent_configs["mb"] = True if agent["agent"].split("_")[0] == "mb" else False
     run_agent(FLAGS.env, agent, logs, aux_agent_configs)
 
 

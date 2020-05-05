@@ -10,7 +10,7 @@ env_config = {
     "env_size": 80,
     "num_episodes": 100,
     "control_num_episodes": 500,
-    "num_runs": 20,
+    "num_runs": 3,
     "stochastic": False,
     "feature_coder": None,
     "nA": 4

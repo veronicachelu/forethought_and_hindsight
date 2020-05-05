@@ -30,7 +30,7 @@ class TpTrueFw(TpVanilla):
         self._r_network = self._network["model"]["net"][2]
         self._d_network = self._network["model"]["net"][3]
 
-        def v_planning_loss(v_params, fw_o_params, r_params, o_tmn):
+        def v_planning_loss(v_params, fw_o_params, r_params, o_tmn, d_tmn):
             o_tmn = o_tmn[0]
             o_t = fw_o_params[o_tmn]
             r_tmn = r_params[o_tmn]
@@ -67,13 +67,16 @@ class TpTrueFw(TpVanilla):
     ):
         if timestep.last():
             return
-        o_tm1 = np.array([timestep.observation])
+        # if timestep.discount is None:
+        #     return
+        o_t = np.array([timestep.observation])
+        d_t = np.array(timestep.discount)
         loss, gradient = self._v_planning_loss_grad(self._v_network,
                                                     self._fw_o_network,
                                                     self._r_network,
-                                                    o_tm1)
-        self._v_network[o_tm1] = self._v_planning_opt_update(gradient,
-                                                         self._v_network[o_tm1])
+                                                    o_t, d_t)
+        self._v_network[o_t] = self._v_planning_opt_update(gradient,
+                                                         self._v_network[o_t])
 
         losses_and_grads = {"losses": {"loss_q_planning": np.array(loss)},
                             }
@@ -84,6 +87,7 @@ class TpTrueFw(TpVanilla):
 
     def model_free_train(self):
         return True
+        # return False
 
     def load_model(self):
         if self._logs is not None:

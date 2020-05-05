@@ -148,6 +148,7 @@ class TpBwTraj(TpVanilla):
 
     def model_free_train(self):
         return True
+        # return False
 
     def load_model(self):
         if self._logs is not None:
@@ -206,12 +207,8 @@ class TpBwTraj(TpVanilla):
                 self.writer.flush()
 
     def update_hyper_params(self, episode, total_episodes):
-        warmup_episodes = 0
-        flat_period = 0
-        decay_period = total_episodes - warmup_episodes - flat_period
-        if episode > warmup_episodes:
-            steps_left = total_episodes - episode - flat_period
-            if steps_left <= 0:
-                return
-            self._lr_planning = self._initial_lr_planning * (steps_left / decay_period)
+        if episode >= total_episodes:
+            return
+        self._lr_planning = self._initial_lr_planning * ((total_episodes - episode) / total_episodes)
+        self._lr_model = self._initial_lr_planning * ((total_episodes - episode) / total_episodes)
 

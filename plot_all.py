@@ -21,6 +21,7 @@ plt.rcParams.update({'axes.labelsize': 'large'})
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_string('env', "split", 'where to save results')
 flags.DEFINE_bool('tabular', True, 'where to save results')
+flags.DEFINE_bool('mb', False, 'where to save results')
 flags.DEFINE_float('lr', 0.1, 'where to save results')
 # flags.DEFINE_string('env', "random_linear", 'where to save results')
 flags.DEFINE_float('ymin', None, 'plot up to')
@@ -46,7 +47,7 @@ def main(argv):
 
     env_config, volatile_agent_config = load_env_and_volatile_configs(FLAGS.env)
 
-    comparison_config = configs.comparison_configs.configs[FLAGS.env]["all"]
+    comparison_config = configs.comparison_configs.configs[FLAGS.env]["mb_all" if FLAGS.mb else "all"]
 
     unique_color_configs = [c for c in comparison_config["agents"] if c not in dashed.keys()]
     n = len(unique_color_configs)
@@ -91,13 +92,13 @@ def main(argv):
     plt.xlabel(xaxis, fontsize=FONTSIZE)
     plt.legend(loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
                frameon=True,
-               prop={'size': FONTSIZE}),
-               # bbox_to_anchor=(1.05, 1))
+               prop={'size': FONTSIZE},
+               bbox_to_anchor=(1.1, 1.1))
     if not os.path.exists(plots):
         os.makedirs(plots)
 
     plt.savefig(os.path.join(plots,
-                             "{}_{}.png".format("all",
+                             "{}_{}.png".format("mb_all" if FLAGS.mb else "all",
                                                 "CumRMSVE" if
                                                 FLAGS.cumulative_rmsve else
                                                 "RMSVE")))
@@ -131,7 +132,7 @@ def plot_tensorflow_log(space, color, linestyle):
     all_y_over_seeds = []
     num_runs = space["env_config"]["num_runs"]
     for seed in range(num_runs):
-        print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))
+        # print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))
         logs = os.path.join(os.path.join(space["crt_config"]["logs"],
                                          "summaries"),
                                         "seed_{}".format(seed))

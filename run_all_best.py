@@ -63,6 +63,7 @@ def main(argv):
                          "log_period": FLAGS.log_period}
 
     for agent in agents:
+        aux_agent_configs["mb"] = True if agent["agent"].split("_")[0] == "mb" else False
         run_agent(FLAGS.env, agent, logs, aux_agent_configs, ignore_existent=False)
 
 if __name__ == '__main__':
