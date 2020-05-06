@@ -10,7 +10,7 @@ env_config = {
         "num_centers": [4, 4],
         "num_tilings": 1,
         "noise": True,
-        "noise_dim": 8,
+        "noise_dim": 16,
         "alpha_reg1": 1.0,
         "alpha_reg2": 0.0
     },
