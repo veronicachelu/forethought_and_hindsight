@@ -347,6 +347,9 @@ def load_env_and_volatile_configs(env):
     elif env == "reg1_16_obstacle":
         env_config = configs.reg1_16_obstacle_config.env_config
         volatile_agent_config = configs.reg1_16_obstacle_config.volatile_agent_config
+    elif env == "noise_obstacle":
+        env_config = configs.noise_obstacle_config.env_config
+        volatile_agent_config = configs.noise_obstacle_config.volatile_agent_config
     elif env == "reg2_obstacle":
         env_config = configs.reg2_obstacle_config.env_config
         volatile_agent_config = configs.reg2_obstacle_config.volatile_agent_config

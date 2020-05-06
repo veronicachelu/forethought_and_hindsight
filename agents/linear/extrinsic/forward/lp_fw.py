@@ -106,6 +106,7 @@ class LpFw(LpVanilla):
             self._model_parameters = self._model_get_params(self._model_opt_state)
             self._o_parameters, self._r_parameters = self._model_parameters
 
+            # self._o_parameters = self._euclidean_proj_l1ball(self._o_parameters, 2)
             self._o_parameters_norm = np.linalg.norm(self._o_parameters, 1)
             self._r_parameters_norm = np.linalg.norm(self._r_parameters[0], 1)
 

@@ -21,6 +21,7 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
+
 class LpVanilla(Agent):
     def __init__(
             self,
@@ -140,6 +141,46 @@ class LpVanilla(Agent):
         self._v_opt_update = jax.jit(v_opt_update)
         self._v_opt_state = v_opt_init(self._v_parameters)
         self._v_get_params = v_get_params
+
+        def euclidean_proj_simplex(v, s=1):
+            assert s > 0, "Radius s must be strictly positive (%d <= 0)" % s
+            n, = v.shape  # will raise ValueError if v is not 1-D
+            # check if we are already on the simplex
+            if v.sum() == s and jnp.alltrue(v >= 0):
+                # best projection: itself!
+                return v
+            # get the array of cumulative sums of a sorted (decreasing) copy of v
+            u = jnp.sort(v)[::-1]
+            cssv = jnp.cumsum(u)
+            # get the number of > 0 components of the optimal solution
+            rho = jnp.nonzero(u * jnp.arange(1, n + 1) > (cssv - s))[0][-1]
+            # compute the Lagrange multiplier associated to the simplex constraint
+            theta = float(cssv[rho] - s) / rho
+            # compute the projection by thresholding v using theta
+            w = jnp.clip((v - theta), a_min=0)
+            return w
+
+        def euclidean_proj_l1ball(v, s=1):
+            assert s > 0, "Radius s must be strictly positive (%d <= 0)" % s
+            v_shape = v.shape
+            flat_v = v.reshape(-1)
+            n, = flat_v.shape  # will raise ValueError if v is not 1-D
+            # compute the vector of absolute values
+            u = jnp.abs(flat_v)
+            # check if v is already a solution
+            if u.sum() <= s:
+                # L1-norm is <= s
+                return v
+            # v is not already a solution: optimum lies on the boundary (norm == s)
+            # project *u* on the simplex
+            w = euclidean_proj_simplex(u, s=s)
+            # compute the solution to the original problem on v
+            w *= jnp.sign(flat_v)
+
+            reshaped_w = jnp.reshape(w, v_shape)
+            return reshaped_w
+
+        self._euclidean_proj_l1ball = euclidean_proj_l1ball
 
     def _get_features(self, o):
         if self._feature_mapper is not None:
