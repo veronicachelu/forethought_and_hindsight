@@ -344,6 +344,9 @@ def load_env_and_volatile_configs(env):
     elif env == "reg1_obstacle":
         env_config = configs.reg1_obstacle_config.env_config
         volatile_agent_config = configs.reg1_obstacle_config.volatile_agent_config
+    elif env == "reg01_obstacle":
+        env_config = configs.reg01_obstacle_config.env_config
+        volatile_agent_config = configs.reg01_obstacle_config.volatile_agent_config
     elif env == "reg1_16_obstacle":
         env_config = configs.reg1_16_obstacle_config.env_config
         volatile_agent_config = configs.reg1_16_obstacle_config.volatile_agent_config

@@ -10,7 +10,7 @@ import utils
 from run_utils import *
 from utils import *
 
-flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
+flags.DEFINE_string('agent', 'mb_bw', 'what agent to run')
 flags.DEFINE_string('env', 'reg1_obstacle', 'env')
 # flags.DEFINE_string('env', 'split', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
