@@ -14,5 +14,6 @@ import configs.boyan_config as boyan_config
 import configs.random_linear_config as random_linear_config
 import configs.puddle_config as puddle_config
 import configs.obstacle_config as obstacle_config
-import configs.stoch_obstacle_config as stoch_obstacle_config
+import configs.reg1_obstacle_config as reg1_obstacle_config
+import configs.reg2_obstacle_config as reg2_obstacle_config
 import configs.cartpole_config as cartpole_config

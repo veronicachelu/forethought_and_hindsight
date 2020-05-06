@@ -22,6 +22,10 @@ class FeatureMapper(object):
 
             self.get_features = self.get_rbf_features
 
+            if feature_coder["noise"]:
+                self.get_features = self.get_noisy_rbf_features
+                self._noise_dim = feature_coder["noise_dim"]
+
     def get_tile_features(self, observations):
         states = []
         for o in observations:
@@ -31,9 +35,19 @@ class FeatureMapper(object):
             states.append(onehotstate)
         return np.array(states)
 
-    def get_rbf_features(self, observations):
+    def get_rbf_features(self, observations, nrng):
         features = self._rbf.get_features(observations)
 
+        return features
+
+    def get_noisy_rbf_features(self, observations, nrng):
+        features = self._rbf.get_features(observations)
+
+        batch_size = features.shape[0]
+        noise = nrng.normal(loc=0.0,
+                              scale=1.0, size=(batch_size, self._noise_dim))
+
+        features = np.concatenate([features, noise], axis=-1)
         return features
 
 

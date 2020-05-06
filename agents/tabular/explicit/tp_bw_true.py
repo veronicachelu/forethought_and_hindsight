@@ -57,8 +57,8 @@ class TpTrueBw(TpVanilla):
         d_t = np.array(timestep.discount)
         losses = 0
         o_tmn = self._o_network[o_t]
-        divisior = np.sum(o_tmn, axis=-1, keepdims=True)
-        o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0, axis=-1))
+        # divisior = np.sum(o_tmn, axis=-1, keepdims=True)
+        # o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0, axis=-1))
         for prev_o_tmn in range(np.prod(self._input_dim)):
             loss, gradient = self._v_planning_loss_grad(self._v_network,
                                                            self._r_network,

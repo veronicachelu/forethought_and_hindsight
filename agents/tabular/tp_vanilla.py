@@ -80,6 +80,24 @@ class TpVanilla(Agent):
         self._input_dim = input_dim
         self._log_period = log_period
 
+        def cross_entropy(logprobs, targets):
+            target_class = np.argmax(targets, axis=-1)
+            nll = np.take_along_axis(logprobs, np.expand_dims(target_class, axis=0), axis=0)
+            ce = -np.mean(nll)
+            return ce
+
+        def log_softmax(x):
+            e_x = np.exp(x - np.max(x))
+            return np.log(e_x / e_x.sum())
+
+        def softmax(x):
+            e_x = np.exp(x - np.max(x))
+            return e_x / e_x.sum()
+
+        self._softmax = softmax
+        self._log_softmax = log_softmax
+        self._ce = cross_entropy
+
         if self._logs is not None:
             self._checkpoint_dir = os.path.join(self._logs,
                                             '{}_{}/checkpoints/seed_{}'.format(self._run_mode, self._lr_model, self._seed))

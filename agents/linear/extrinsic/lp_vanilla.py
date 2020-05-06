@@ -68,6 +68,7 @@ class LpVanilla(Agent):
         self._latent = latent
         self._run_mode = "{}_{}_{}".format(self._run_mode, self._n, self._replay_capacity)
 
+
         self._exploration_decay_period = exploration_decay_period
         self._nrng = nrng
 
@@ -93,9 +94,13 @@ class LpVanilla(Agent):
             sparse_feature_coder = deepcopy(feature_coder)
             sparse_feature_coder["type"] = "tile"
             self._sparse_feature_mapper = FeatureMapper(sparse_feature_coder)
+            self._alpha_reg1 = feature_coder["alpha_reg1"] if "alpha_reg1" in feature_coder.keys() else 0.0
+            self._alpha_reg2 = feature_coder["alpha_reg2"] if "alpha_reg2" in feature_coder.keys() else 0.0
         else:
             self._feature_mapper = None
             self._sparse_feature_mapper = None
+            self._alpha_reg1 = 0.0
+            self._alpha_reg2 = 0.0
 
         if self._logs is not None:
             self._checkpoint_dir = os.path.join(self._logs,
@@ -138,7 +143,7 @@ class LpVanilla(Agent):
 
     def _get_features(self, o):
         if self._feature_mapper is not None:
-            return self._feature_mapper.get_features(o)
+            return self._feature_mapper.get_features(o, self._nrng)
         else:
             return o
 

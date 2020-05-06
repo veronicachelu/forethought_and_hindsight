@@ -38,8 +38,8 @@ class TpTrueFw(TpVanilla):
 
             target = 0
 
-            divisior = np.sum(o_t, axis=-1, keepdims=True)
-            o_t = np.divide(o_t, divisior, out=np.zeros_like(o_t), where=np.all(divisior != 0))
+            # divisior = np.sum(o_t, axis=-1, keepdims=True)
+            # o_t = np.divide(o_t, divisior, out=np.zeros_like(o_t), where=np.all(divisior != 0))
             for next_o_t in range(np.prod(self._input_dim)):
                 target_per_next_o = o_t[next_o_t] * \
                 (r_tmn[next_o_t] + (self._discount ** self._n) *\

@@ -31,7 +31,7 @@ class LpFwIntr(LpIntrinsicVanilla):
 
         def model_loss(v_params,
                        h_params,
-                       fw_o_params,
+                       o_params,
                        r_params,
                        transitions):
             o_tmn = transitions[0][0]
@@ -56,7 +56,7 @@ class LpFwIntr(LpIntrinsicVanilla):
                                               jnp.array([self._discount ** self._n]) * \
                                               real_v_t_target
 
-            model_t = self._fw_o_network(fw_o_params, h_tmn)
+            model_t = self._o_network(o_params, h_tmn)
             model_v_t_target = jnp.squeeze(self._v_network(v_params, model_t), axis=-1)
 
             model_r_input = jnp.concatenate([h_tmn, model_t], axis=-1)
@@ -69,14 +69,20 @@ class LpFwIntr(LpIntrinsicVanilla):
                                                                  lax.stop_gradient(real_td_target)))
 
             r_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_r_tmn_2_t, real_r_tmn_2_t))
-            total_loss = target_loss + r_loss #+ d_loss #
+            l1_reg = jnp.linalg.norm(o_params, 1)
+            l2_reg = jnp.linalg.norm(o_params, 2)
+            total_loss = target_loss + r_loss + self._alpha_reg1 * l1_reg + \
+                         self._alpha_reg2 * l2_reg
 
             return total_loss, {"target_loss": target_loss,
-                                "r_loss": r_loss}
+                                "r_loss": r_loss,
+                                 "reg1": l1_reg,
+                                 "reg2": l2_reg
+                                }
 
-        def v_planning_loss(v_params, h_params, fw_o_params, r_params, o_tmn):
+        def v_planning_loss(v_params, h_params, o_params, r_params, o_tmn):
             h_tmn = lax.stop_gradient(self._h_network(h_params, o_tmn)) if self._latent else o_tmn
-            model_t = lax.stop_gradient(self._o_network(fw_o_params, h_tmn))
+            model_t = lax.stop_gradient(self._o_network(o_params, h_tmn))
 
             v_t_target = jnp.squeeze(self._v_network(v_params, model_t), axis=-1)
             r_input = jnp.concatenate([o_tmn, model_t], axis=-1)
@@ -88,11 +94,11 @@ class LpFwIntr(LpIntrinsicVanilla):
             return jnp.mean(td_error ** 2)
 
         self._o_network = self._network["model"]["net"][1]
-        self._fw_o_network = self._network["model"]["net"][2]
+        # self._fw_o_network = self._network["model"]["net"][2]
         self._r_network = self._network["model"]["net"][3]
 
         self._o_parameters = self._network["model"]["params"][1]
-        self._fw_o_parameters = self._network["model"]["params"][2]
+        # self._fw_o_parameters = self._network["model"]["params"][2]
         self._r_parameters = self._network["model"]["params"][3]
 
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, 0))
@@ -161,10 +167,14 @@ class LpFwIntr(LpIntrinsicVanilla):
             self._model_parameters = self._model_get_params(self._model_opt_state)
             self._h_parameters, self._o_parameters, self._r_parameters = self._model_parameters
 
+            self._o_parameters_norm = np.linalg.norm(self._o_parameters, 1)
+            self._r_parameters_norm = np.linalg.norm(self._r_parameters[0], 1)
             losses_and_grads = {"losses": {
                 "loss_target": losses["target_loss"],
                 "loss_r": losses["r_loss"],
                 "loss_total": total_loss,
+                "grad_norm_o": self._o_parameters_norm,
+                "grad_norm_r": self._r_parameters_norm,
             },
             }
             self._log_summaries(losses_and_grads, "model")

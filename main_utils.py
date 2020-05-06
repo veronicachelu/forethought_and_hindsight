@@ -84,6 +84,8 @@ def get_continuous_gridworld_env(nrng, space, aux_agent_configs):
     nS = mdp_solver._nS
     if space["env_config"]["feature_coder"]["type"] == "rbf":
         nS = np.prod(space["env_config"]["feature_coder"]["num_centers"])
+        if "noise" in space["env_config"]["feature_coder"].keys() and space["env_config"]["feature_coder"]["noise"]:
+            nS += space["env_config"]["feature_coder"]["noise_dim"]
     env._true_v = mdp_solver.get_optimal_v()
 
     return env, nS, policy, mdp_solver
@@ -339,9 +341,12 @@ def load_env_and_volatile_configs(env):
     elif env == "obstacle":
         env_config = configs.obstacle_config.env_config
         volatile_agent_config = configs.obstacle_config.volatile_agent_config
-    elif env == "stoch_obstacle":
-        env_config = configs.stoch_obstacle_config.env_config
-        volatile_agent_config = configs.stoch_obstacle_config.volatile_agent_config
+    elif env == "reg1_obstacle":
+        env_config = configs.reg1_obstacle_config.env_config
+        volatile_agent_config = configs.reg1_obstacle_config.volatile_agent_config
+    elif env == "reg2_obstacle":
+        env_config = configs.reg2_obstacle_config.env_config
+        volatile_agent_config = configs.reg2_obstacle_config.volatile_agent_config
     elif env == "cartpole":
         env_config = configs.cartpole_config.env_config
         volatile_agent_config = configs.cartpole_config.volatile_agent_config

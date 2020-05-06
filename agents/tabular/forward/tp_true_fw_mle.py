@@ -15,13 +15,13 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class TpTrueFw(TpVanilla):
+class TpTrueFwMLE(TpVanilla):
     def __init__(
             self,
             **kwargs
     ):
 
-        super(TpTrueFw, self).__init__(**kwargs)
+        super(TpTrueFwMLE, self).__init__(**kwargs)
         self._sequence = []
         self._should_reset_sequence = False
 
@@ -37,9 +37,9 @@ class TpTrueFw(TpVanilla):
             v_tmn = v_params[o_tmn]
 
             target = 0
-
-            divisior = np.sum(o_t, axis=-1, keepdims=True)
-            o_t = np.divide(o_t, divisior, out=np.zeros_like(o_t), where=np.all(divisior != 0))
+            # o_t = self._softmax(o_t)
+            # divisior = np.sum(o_t, axis=-1, keepdims=True)
+            # o_t = np.divide(o_t, divisior, out=np.zeros_like(o_t), where=np.all(divisior != 0))
             for next_o_t in range(np.prod(self._input_dim)):
                 target_per_next_o = o_t[next_o_t] * \
                 (r_tmn[next_o_t] + (self._discount ** self._n) *\

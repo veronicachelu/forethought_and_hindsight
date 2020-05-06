@@ -9,7 +9,7 @@ from jax.nn.initializers import glorot_normal, normal, ones, zeros
 import jax.numpy as jnp
 from custom_layers import *
 
-def get_h_net(rng_h, num_units, num_hidden_layers, input_size):
+def get_h_net(rng_h, input_size, num_hidden_layers, num_units):
     layers = []
     for _ in range(num_hidden_layers):
         layers.append(stax.Dense(num_units))

@@ -15,13 +15,13 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class TpFw(TpVanilla):
+class TpFwMLE(TpVanilla):
     def __init__(
             self,
             **kwargs
     ):
 
-        super(TpFw, self).__init__(**kwargs)
+        super(TpFwMLE, self).__init__(**kwargs)
         self._sequence = []
         self._should_reset_sequence = False
 
@@ -36,14 +36,18 @@ class TpFw(TpVanilla):
 
             # forward
             model_o_t = fw_o_params[o_tmn_target]
-            fw_o_target = np.eye(np.prod(self._input_dim))[o_t] - model_o_t
-            fw_o_error = fw_o_target - model_o_t
-            fw_o_loss = np.mean(fw_o_error ** 2)
+            o_target = np.eye(np.prod(self._input_dim))[o_t]
+            fw_o_loss = 100 * self._ce(self._log_softmax(model_o_t), o_target)
+            # fw_o_target = np.eye(np.prod(self._input_dim))[o_t] - model_o_t
+            # fw_o_error = fw_o_target - model_o_t
+            # fw_o_loss = np.mean(fw_o_error ** 2)
 
-            # if self._double_input_reward_model:
+            o_tmn_probs = self._softmax(model_o_t)
+            o_tmn_probs[o_tmn_target] -= 1
+            o_tmn_probs /= len(o_tmn_probs)
+            fw_o_error = - 100 * o_tmn_probs
+
             r_tmn = r_params[o_tmn_target][o_t]
-            # else:
-            #     r_tmn = r_params[o_tmn_target]
             r_tmn_target = 0
             for i, t in enumerate(transitions):
                 r_tmn_target += (self._discount ** i) * t[2]
@@ -66,8 +70,9 @@ class TpFw(TpVanilla):
 
             target = 0
 
-            divisior = np.sum(o_t, axis=-1, keepdims=True)
-            o_t = np.divide(o_t, divisior, out=np.zeros_like(o_t), where=np.all(divisior != 0))
+            o_t = self._softmax(o_t)
+            # divisior = np.sum(o_t, axis=-1, keepdims=True)
+            # o_t = np.divide(o_t, divisior, out=np.zeros_like(o_t), where=np.all(divisior != 0))
             for next_o_t in range(np.prod(self._input_dim)):
                 target_per_next_o = o_t[next_o_t] * \
                 (r_tmn[next_o_t] + (self._discount ** self._n) *\

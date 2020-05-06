@@ -9,8 +9,10 @@ env_config = {
         "num_tiles": [20, 20],
         "num_centers": [4, 4],
         "num_tilings": 1,
-        "noise": False,
-        "noise_dim": 0,
+        "noise": True,
+        "noise_dim": 8,
+        "alpha_reg_l1": 1.0,
+        "alpha_reg_l2": 0.0
     },
     "env_type": "continuous",
     "obs_type": "position",
@@ -18,7 +20,7 @@ env_config = {
     "mdp_filename": "./continuous_mdps/obstacle.mdp",
     "env_size": None,
     "num_episodes": 200,
-    "control_num_episodes": 300,
+    "control_num_episodes": 200,
     "num_runs": 50,
     "stochastic": True,
     "nA": 4
@@ -28,7 +30,7 @@ volatile_agent_config = {
     "vanilla": {
         "planning_depth": [0],
         "replay_capacity": [0],
-        "lr": np.array([0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01]),
+        "lr": np.array([0.001, 0.005, 0.01]),
         "lr_p": [0],
         "lr_m": [0],
         "lr_ctrl": 0.4

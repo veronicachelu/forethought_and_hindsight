@@ -21,6 +21,7 @@ plt.rcParams.update({'axes.labelsize': 'large'})
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_string('env', "split", 'where to save results')
 flags.DEFINE_bool('tabular', True, 'where to save results')
+flags.DEFINE_bool('mle', True, 'where to save results')
 flags.DEFINE_bool('mb', False, 'where to save results')
 flags.DEFINE_float('lr', 0.1, 'where to save results')
 # flags.DEFINE_string('env', "random_linear", 'where to save results')
@@ -47,7 +48,12 @@ def main(argv):
 
     env_config, volatile_agent_config = load_env_and_volatile_configs(FLAGS.env)
 
-    comparison_config = configs.comparison_configs.configs[FLAGS.env]["mb_all" if FLAGS.mb else "all"]
+    name = "all"
+    if FLAGS.mb:
+        name = "mb_" + name
+    if FLAGS.mle:
+        name = name + "_mle"
+    comparison_config = configs.comparison_configs.configs[FLAGS.env][name]
 
     unique_color_configs = [c for c in comparison_config["agents"] if c not in dashed.keys()]
     n = len(unique_color_configs)
@@ -97,8 +103,13 @@ def main(argv):
     if not os.path.exists(plots):
         os.makedirs(plots)
 
+    name = "all"
+    if FLAGS.mb:
+        name = "mb_" + name
+    if FLAGS.mle:
+        name = name + "_mle"
     plt.savefig(os.path.join(plots,
-                             "{}_{}.png".format("mb_all" if FLAGS.mb else "all",
+                             "{}_{}.png".format(name,
                                                 "CumRMSVE" if
                                                 FLAGS.cumulative_rmsve else
                                                 "RMSVE")))

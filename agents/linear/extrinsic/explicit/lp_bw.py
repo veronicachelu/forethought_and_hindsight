@@ -28,12 +28,12 @@ class LpBw(LpVanilla):
         self._sequence = []
         self._should_reset_sequence = False
 
-        def model_loss(o_online_params,
+        def model_loss(o_params,
                        r_online_params,
                        transitions):
             o_tmn_target = transitions[0][0]
             o_t = transitions[-1][-1]
-            model_o_tmn = self._o_network(o_online_params, o_t)
+            model_o_tmn = self._o_network(o_params, o_t)
 
             o_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_o_tmn, o_tmn_target))
 
@@ -44,10 +44,15 @@ class LpBw(LpVanilla):
                 r_t_target += (self._discount ** i) * t[2]
 
             r_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_r_tmn, r_t_target))
-            total_loss = o_loss + r_loss
+            l1_reg = jnp.linalg.norm(o_params, 1)
+            l2_reg = jnp.linalg.norm(o_params, 2)
+            total_loss = o_loss + r_loss + self._alpha_reg1 * l1_reg + \
+                         self._alpha_reg2 * l2_reg
 
             return total_loss, {"o_loss": o_loss,
-                               "r_loss": r_loss
+                               "r_loss": r_loss,
+                                "reg1": l1_reg,
+                                "reg2": l2_reg
                                }
 
         def v_planning_loss(v_params, o_params, r_params, o_t, d_t):
@@ -64,11 +69,11 @@ class LpBw(LpVanilla):
             return jnp.mean(td_error ** 2)
 
         self._o_network = self._network["model"]["net"][0]
-        self._fw_o_network = self._network["model"]["net"][1]
+        # self._fw_o_network = self._network["model"]["net"][1]
         self._r_network = self._network["model"]["net"][2]
 
         self._o_parameters = self._network["model"]["params"][0]
-        self._fw_o_parameters = self._network["model"]["params"][1]
+        # self._fw_o_parameters = self._network["model"]["params"][1]
         self._r_parameters = self._network["model"]["params"][2]
 
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, 0))
@@ -100,9 +105,14 @@ class LpBw(LpVanilla):
             self._model_parameters = self._model_get_params(self._model_opt_state)
             self._o_parameters, self._r_parameters = self._model_parameters
 
+            self._o_parameters_norm = np.linalg.norm(self._o_parameters, 1)
+            self._r_parameters_norm = np.linalg.norm(self._r_parameters[0], 1)
+
             losses_and_grads = {"losses": {
                 "loss_total": total_loss,
                 "loss_o": losses["o_loss"],
+                "grad_norm_o": self._o_parameters_norm,
+                "grad_norm_r": self._r_parameters_norm,
                 "loss_r": losses["r_loss"],
             },
             }

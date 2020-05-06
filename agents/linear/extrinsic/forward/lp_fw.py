@@ -27,30 +27,35 @@ class LpFw(LpVanilla):
         self._sequence = []
         self._should_reset_sequence = False
 
-        def model_loss(fw_o_online_params,
-                       r_online_params,
+        def model_loss(o_params,
+                       r_params,
                        transitions):
             o_tmn_target = transitions[0][0]
             o_t = transitions[-1][-1]
-            model_o_t = self._fw_o_network(fw_o_online_params, o_tmn_target)
+            model_o_t = self._o_network(o_params, o_tmn_target)
 
             fw_o_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_o_t, o_t))
 
             r_input = jnp.concatenate([o_tmn_target, model_o_t], axis=-1)
-            model_r_tmn = self._r_network(r_online_params, lax.stop_gradient(r_input))
+            model_r_tmn = self._r_network(r_params, lax.stop_gradient(r_input))
             r_t_target = 0
             for i, t in enumerate(transitions):
                 r_t_target += (self._discount ** i) * t[2]
 
             r_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_r_tmn, r_t_target))
-            total_loss = fw_o_loss + r_loss
+            l1_reg = jnp.linalg.norm(o_params, 1)
+            l2_reg = jnp.linalg.norm(o_params, 2)
+            total_loss = fw_o_loss + r_loss + self._alpha_reg1 * l1_reg + \
+                         self._alpha_reg2 * l2_reg
 
             return total_loss, {"fw_o_loss": fw_o_loss,
-                                "r_loss": r_loss
+                                "r_loss": r_loss,
+                                "reg1": l1_reg,
+                                "reg2": l2_reg
                                 }
 
-        def v_planning_loss(v_params, fw_o_params, r_params, o_tmn):
-            o_t = self._fw_o_forward(fw_o_params, o_tmn)
+        def v_planning_loss(v_params, o_params, r_params, o_tmn):
+            o_t = self._o_forward(o_params, o_tmn)
             v_tmn = jnp.squeeze(self._v_network(v_params, o_tmn), axis=-1)
             r_input = jnp.concatenate([o_tmn, o_t], axis=-1)
 
@@ -63,23 +68,23 @@ class LpFw(LpVanilla):
             return jnp.mean(td_error ** 2)
 
         self._o_network = self._network["model"]["net"][0]
-        self._fw_o_network = self._network["model"]["net"][1]
+        # self._o_network = self._network["model"]["net"][1]
         self._r_network = self._network["model"]["net"][2]
 
         self._o_parameters = self._network["model"]["params"][0]
-        self._fw_o_parameters = self._network["model"]["params"][1]
+        # self._o_parameters = self._network["model"]["params"][1]
         self._r_parameters = self._network["model"]["params"][2]
 
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, 0))
 
         self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [0, 1], has_aux=True))
-        self._fw_o_forward = jax.jit(self._fw_o_network)
+        self._o_forward = jax.jit(self._o_network)
         self._r_forward = jax.jit(self._r_network)
         self._model_step_schedule = optimizers.polynomial_decay(self._lr_model,
                                                                 self._exploration_decay_period, 0, 0.9)
         model_opt_init, model_opt_update, model_get_params = optimizers.adam(step_size=self._model_step_schedule)
         self._model_opt_update = jax.jit(model_opt_update)
-        self._model_opt_state = model_opt_init([self._fw_o_parameters, self._r_parameters])
+        self._model_opt_state = model_opt_init([self._o_parameters, self._r_parameters])
         self._model_get_params = model_get_params
 
     def model_update(
@@ -93,17 +98,22 @@ class LpFw(LpVanilla):
         if self._n == 0:
             return
         if len(self._sequence) >= self._n:
-            (total_loss, losses), gradients = self._model_loss_grad(self._fw_o_parameters,
+            (total_loss, losses), gradients = self._model_loss_grad(self._o_parameters,
                                                                     self._r_parameters,
                                                                     self._sequence)
             self._model_opt_state = self._model_opt_update(self.episode, list(gradients),
                                                            self._model_opt_state)
             self._model_parameters = self._model_get_params(self._model_opt_state)
-            self._fw_o_parameters, self._r_parameters = self._model_parameters
+            self._o_parameters, self._r_parameters = self._model_parameters
+
+            self._o_parameters_norm = np.linalg.norm(self._o_parameters, 1)
+            self._r_parameters_norm = np.linalg.norm(self._r_parameters[0], 1)
 
             losses_and_grads = {"losses": {
                 "loss_total": total_loss,
-                "loss_fw_o": losses["fw_o_loss"],
+                "loss_o": losses["fw_o_loss"],
+                "grad_norm_o": self._o_parameters_norm,
+                "grad_norm_r": self._r_parameters_norm,
                 "loss_r": losses["r_loss"],
             },
             }
@@ -129,7 +139,7 @@ class LpFw(LpVanilla):
 
         # plan on batch of transitions
         loss, gradient = self._v_planning_loss_grad(self._v_parameters,
-                                                    self._fw_o_parameters,
+                                                    self._o_parameters,
                                                     self._r_parameters,
                                                     o_t)
         self._v_opt_state = self._v_opt_update(self.episode, gradient,
@@ -156,7 +166,7 @@ class LpFw(LpVanilla):
             self.episode = to_load["episode"]
             self.total_steps = to_load["total_steps"]
             self._v_parameters = to_load["v_parameters"]
-            self._fw_o_parameters = to_load["o_parameters"]
+            self._o_parameters = to_load["o_parameters"]
             self._r_parameters = to_load["r_parameters"]
             print("Restored from {}".format(checkpoint))
         else:
@@ -169,7 +179,7 @@ class LpFw(LpVanilla):
             "episode": self.episode,
             "total_steps": self.total_steps,
             "v_parameters": self._v_parameters,
-            "o_parameters": self._fw_o_parameters,
+            "o_parameters": self._o_parameters,
             "r_parameters": self._r_parameters,
         }
         np.save(checkpoint, to_save)

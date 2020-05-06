@@ -24,7 +24,7 @@ def get_network(num_hidden_layers: int,
                   feature_coder=None,
                 ):
     if feature_coder is not None:
-        input_dim = get_input_dim(input_dim, feature_coder)
+        input_dim, output_dim = get_input_dim(input_dim, feature_coder, model_family)
     if model_family == "ac":
         return get_pg_network(num_hidden_layers, num_units, nA,
                             rng, input_dim, latent)
@@ -34,7 +34,7 @@ def get_network(num_hidden_layers: int,
 
     if model_family == "extrinsic":
         return get_extrinsic_network(num_hidden_layers, num_units, nA,
-                        rng, input_dim)
+                        rng, input_dim, output_dim)
 
     if model_family == "mult_extrinsic":
         return get_mult_extrinsic_network(num_hidden_layers, num_units, nA,
@@ -42,7 +42,7 @@ def get_network(num_hidden_layers: int,
 
     if model_family == "true":
         return get_true_network(num_hidden_layers, num_units, nA,
-                                rng, input_dim)
+                                rng, input_dim, output_dim)
     if model_family == "true_mult":
         return get_mult_true_network(num_hidden_layers, num_units, nA,
                                 rng, input_dim)
@@ -53,7 +53,7 @@ def get_network(num_hidden_layers: int,
 
     if model_family == "intrinsic":
         return get_intrinsic_network(num_hidden_layers, num_units, nA,
-                rng, rng_target, input_dim, target_networks, latent)
+                rng, rng_target, input_dim, output_dim, target_networks, latent)
 
     if model_family == "mult_intrinsic":
         return get_mult_intrinsic_network(num_hidden_layers, num_units, nA,
@@ -64,13 +64,20 @@ def get_network(num_hidden_layers: int,
                 rng, rng_target, input_dim, target_networks, latent)
 
 
-def get_input_dim(input_dim, feature_coder):
+def get_input_dim(input_dim, feature_coder, model_family):
     if feature_coder["type"] == "tile":
-        return np.prod(feature_coder["num_tiles"]) * feature_coder["num_tilings"]
+        nS = np.prod(feature_coder["num_tiles"]) * feature_coder["num_tilings"]
+        return nS, nS
     elif feature_coder["type"] == "rbf":
-        return np.prod(feature_coder["num_centers"])
+        nS = np.prod(feature_coder["num_centers"])
+        nF = nS
+        if "noise" in feature_coder.keys() and feature_coder["noise"]:
+            nS += feature_coder["noise_dim"]
+        # if model_family != "intrinsic":
+        #     nF = nS
+        return nS, nS
     else:
-        return input_dim
+        return input_dim, input_dim
 
 def get_tabular_network(num_hidden_layers: int,
                   num_units: int,
@@ -96,16 +103,17 @@ def get_true_network(num_hidden_layers: int,
                      num_units: int,
                      nA: int,
                      rng: List,
-                     input_dim: Tuple,
+                     input_size: Tuple,
+                     output_size
                      ):
-    input_size = np.prod(input_dim)
+    # input_size = np.prod(input_dim)
     network = {}
     rng_v, _, rng_b, rng_a, rng_c = jrandom.split(rng, 5)
 
     v_network, v_network_params = get_value_net(rng_v, input_size, bias=False)
     c_network, c_network_params = get_c_net(rng_c, input_size)
-    a_network, a_network_params = get_a_net(rng_a, input_size)
-    b_network, b_network_params = get_b_net(rng_b, input_size)
+    a_network, a_network_params = get_a_net(rng_a, input_size, output_size)
+    b_network, b_network_params = get_b_net(rng_b, input_size, output_size)
 
     network["value"] = {"net": v_network,
                         "params": v_network_params}
@@ -146,16 +154,17 @@ def get_extrinsic_network(num_hidden_layers: int,
                   num_units: int,
                   nA: int,
                   rng: List,
-                  input_dim: Tuple,
+                  input_size: Tuple,
+                  output_size,
                           ):
 
-    input_size = np.prod(input_dim)
+    # input_size = np.prod(input_dim)
     network = {}
     rng_v, _, rng_o, rng_fw_o, rng_r = jrandom.split(rng, 5)
 
     v_network, v_network_params = get_value_net(rng_v, input_size, bias=False)
-    o_network, o_network_params = get_o_net(rng_o, input_size)
-    fw_o_network, fw_o_network_params = get_o_net(rng_fw_o, input_size)
+    o_network, o_network_params = get_o_net(rng_o, input_size, output_size)
+    fw_o_network, fw_o_network_params = get_o_net(rng_fw_o, input_size, output_size)
     r_network, r_network_params = get_r_net(rng_r, input_size)
 
     network["value"] = {"net": v_network,
@@ -214,47 +223,48 @@ def get_intrinsic_network(num_hidden_layers: int,
                   nA: int,
                   rng: List,
                   rng_target: List,
-                  input_dim: Tuple,
+                  input_size: Tuple,
+                  output_size,
                   target_networks=False,
                   latent=False,
                           ):
 
-    input_size = np.prod(input_dim)
-    num_units = num_units if latent else input_size
+    # input_size = np.prod(input_dim)
+    num_units = num_units if latent else output_size
     network = {}
     rng_v, rng_h, rng_o, rng_fw_o, rng_r = jrandom.split(rng, 5)
 
-    if target_networks:
-        rng_t, rng_p = jrandom.split(rng_target, 2)
-        rng_target_v, rng_target_h, rng_target_o,\
-            rng_target_fw_o, rng_target_r, rng_target_d = jrandom.split(rng_t, 6)
-        rng_planning_v, rng_planning_h, rng_planning_o, \
-        rng_planning_fw_o, rng_planning_r, rng_planning_d = jrandom.split(rng_p, 6)
+    # if target_networks:
+    #     rng_t, rng_p = jrandom.split(rng_target, 2)
+    #     rng_target_v, rng_target_h, rng_target_o,\
+    #         rng_target_fw_o, rng_target_r, rng_target_d = jrandom.split(rng_t, 6)
+    #     rng_planning_v, rng_planning_h, rng_planning_o, \
+    #     rng_planning_fw_o, rng_planning_r, rng_planning_d = jrandom.split(rng_p, 6)
 
     h_network, h_network_params = get_h_net(rng_h, num_units, num_hidden_layers, input_size)
-    v_network, v_network_params = get_value_net(rng_v, num_units)
-    o_network, o_network_params = get_o_net(rng_o, num_units)
-    fw_o_network, fw_o_network_params = get_o_net(rng_fw_o, num_units)
-    r_network, r_network_params = get_r_net(rng_r, num_units)
+    v_network, v_network_params = get_value_net(rng_v, input_size)
+    o_network, o_network_params = get_o_net(rng_o, input_size, num_units)
+    fw_o_network, fw_o_network_params = get_o_net(rng_fw_o, input_size, num_units)
+    r_network, r_network_params = get_r_net(rng_r, input_size)
 
-    if target_networks:
-        target_h_network, target_h_network_params = get_h_net(rng_target_h, num_units, num_hidden_layers, input_size)
-        target_v_network, target_v_network_params = get_value_net(rng_target_v, num_units, bias=False)
-        target_o_network, target_o_network_params = get_o_net(rng_target_o, num_units)
-        target_fw_o_network, target_fw_o_network_params = get_o_net(rng_target_fw_o, num_units)
-        target_r_network, target_r_network_params = get_r_net(rng_target_r, num_units)
-        network["target_model"] = {"net": [target_h_network, target_o_network, target_fw_o_network,
-                                           target_r_network, ],
-                            "params": [target_h_network_params, target_o_network_params,
-                                       target_fw_o_network_params, target_r_network_params,
-                                       ]
-                            }
-        network["target_value"] = {"net": target_v_network,
-                            "params": target_v_network_params}
-
-        planning_v_network, planning_v_network_params = get_value_net(rng_planning_v, num_units)
-        network["planning_value"] = {"net": planning_v_network,
-                                   "params": planning_v_network_params}
+    # if target_networks:
+    #     target_h_network, target_h_network_params = get_h_net(rng_target_h, num_units, num_hidden_layers, input_size)
+    #     target_v_network, target_v_network_params = get_value_net(rng_target_v, input_size, bias=False)
+    #     target_o_network, target_o_network_params = get_o_net(rng_target_o, num_units)
+    #     target_fw_o_network, target_fw_o_network_params = get_o_net(rng_target_fw_o, num_units)
+    #     target_r_network, target_r_network_params = get_r_net(rng_target_r, num_units)
+    #     network["target_model"] = {"net": [target_h_network, target_o_network, target_fw_o_network,
+    #                                        target_r_network, ],
+    #                         "params": [target_h_network_params, target_o_network_params,
+    #                                    target_fw_o_network_params, target_r_network_params,
+    #                                    ]
+    #                         }
+    #     network["target_value"] = {"net": target_v_network,
+    #                         "params": target_v_network_params}
+    #
+    #     planning_v_network, planning_v_network_params = get_value_net(rng_planning_v, num_units)
+    #     network["planning_value"] = {"net": planning_v_network,
+    #                                "params": planning_v_network_params}
 
     network["value"] = {"net": v_network,
                         "params": v_network_params}

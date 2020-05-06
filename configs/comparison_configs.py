@@ -341,9 +341,16 @@ configs={
     },
     "split": {
         "all": {
-            "agents": ["bw", "true_bw", "fw", "true_fw", "bw_traj", "true_bw_traj"],
+            "agents": ["bw", "true_bw", "fw", "true_fw", "bw_traj",
+                       "true_bw_traj"],
             "planning_depths": [1, 1, 1, 1, 1, 1],
             "replay_capacities": [0, 0, 0, 0, 0, 0]
+        },
+        "all_mle": {
+            "agents": ["bw_mle", "true_bw", "fw_mle",
+                       "true_fw"],
+            "planning_depths": [1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 0]
         },
         "mb_all": {
             "agents": ["mb_bw", "mb_true_bw", "mb_fw", "mb_true_fw",
