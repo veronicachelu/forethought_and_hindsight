@@ -399,6 +399,26 @@ configs={
             "replay_capacities": [0, 0, 0, 0, 0, ]
         },
     },
+    "reg01_obstacle": {
+        "all": {
+            "agents": ["bw",
+                       "true_bw",
+                       "fw",
+                       "fw_intr",
+                       "bw_intr"],
+            "planning_depths": [1, 1, 1, 1, 1, ],
+            "replay_capacities": [0, 0, 0, 0, 0, ]
+        },
+        "mb_all": {
+            "agents": ["mb_bw",
+                       "mb_true_bw",
+                       "mb_fw",
+                       "mb_fw_intr",
+                       "mb_bw_intr"],
+            "planning_depths": [1, 1, 1, 1, 1, ],
+            "replay_capacities": [0, 0, 0, 0, 0, ]
+        },
+    },
     "reg2_obstacle": {
         "all": {
             "agents": ["bw",
