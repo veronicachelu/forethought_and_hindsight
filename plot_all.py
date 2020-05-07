@@ -13,8 +13,8 @@ from main_utils import *
 import glob
 style.available
 style.use('seaborn-poster') #sets the size of the charts
-style.use('ggplot')
-# style.use("classic")
+# style.use('ggplot')
+style.use("default")
 plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
@@ -32,10 +32,24 @@ flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 # flags.DEFINE_integer('num_runs', 100, '')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
-FONTSIZE = 30
-LINEWIDTH = 3
+FONTSIZE = 17
+LINEWIDTH = 3.5
 
-dashed = {"bw_fw": "bw", "fw_pri": "fw_rnd", "bw_fw_MG": "bw_fw_PWMA"}
+# dashed = {"bw_fw": "bw", "fw_pri": "fw_rnd", "bw_fw_MG": "bw_fw_PWMA"}
+
+dashed = {"bw_intr": "bw",
+          "fw_intr": "fw",
+          "bw_intr_mle": "bw",
+          "fw_intr_mle": "fw",
+          "mb_true_bw": "bw",
+          "true_bw": "bw",
+          "true_fw": "fw",
+          "mb_true_bw_recur": "bw_recur",
+          "true_bw_recur": "bw_recur",
+          "mb_true_fw": "fw"}
+
+dotted = ["true_bw", "true_fw", "mb_true_fw", "mb_true_bw",
+          "true_bw_recur", "mb_true_bw_recur"]
 
 def main(argv):
     del argv  # Unused.
@@ -55,24 +69,37 @@ def main(argv):
         name = name + "_mle"
     comparison_config = configs.comparison_configs.configs[FLAGS.env][name]
 
-    unique_color_configs = [c for c in comparison_config["agents"] if c not in dashed.keys()]
+    unique_color_configs = [c for c in comparison_config["agents"]
+                            if c not in dashed.keys()]
     n = len(unique_color_configs)
 
-    cmap_color = plt.cm.rainbow(np.linspace(0.0, 1.0, n)[::-1])
+    # cmap_color = plt.cm.rainbow(np.linspace(0.0, 1.0, n)[::-1])
     # hexcolor = map(lambda rgb: '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
     #                tuple(color[:, 0:-1]))
     # color = hexcolor  # plt.cm.viridis(np.linspace(0, 1, n))
     # mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
-    colors = ['#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)) for rgb in
-                   tuple(cmap_color[:, 0:-1])]
+    # colors = ['#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)) for rgb in
+    #                tuple(cmap_color[:, 0:-1])]
+    colors = ["C{}".format(c) for c in range(n)]
     alg_to_color = {alg: color for alg, color in zip(unique_color_configs, colors)}
     for i, agent in enumerate(comparison_config["agents"]):
         if agent not in dashed:
             color = alg_to_color[agent]
             linestyle = "-"
         else:
-            color = alg_to_color[dashed[agent]]
-            linestyle = ":"
+            if FLAGS.mle:
+                color = alg_to_color[dashed[agent] + "_mle"]
+            elif FLAGS.mb:
+                if "mb_" + dashed[agent] in alg_to_color.keys():
+                    color = alg_to_color["mb_" + dashed[agent]]
+                else:
+                    color = alg_to_color[dashed[agent]]
+            else:
+                color = alg_to_color[dashed[agent]]
+            linestyle = "--"
+            if agent not in dotted:
+                linestyle = ":"
+
         planning_depth = comparison_config["planning_depths"][i]
         replay_capacity = comparison_config["replay_capacities"][i]
         persistent_agent_config = configs.agent_config.config[agent]
@@ -81,7 +108,7 @@ def main(argv):
 
     persistent_agent_config = configs.agent_config.config["vanilla"]
     plot_for_agent("vanilla", env_config, persistent_agent_config,
-                   volatile_agent_config, 0, 0, logs, "k", ":")
+                   volatile_agent_config, 0, 0, logs, "gray", "-")
 
 
     if FLAGS.cumulative_rmsve:
@@ -108,6 +135,9 @@ def main(argv):
         name = "mb_" + name
     if FLAGS.mle:
         name = name + "_mle"
+
+    plt.grid()
+    plt.tight_layout()
     plt.savefig(os.path.join(plots,
                              "{}_{}.png".format(name,
                                                 "CumRMSVE" if
@@ -180,17 +210,15 @@ def plot_tensorflow_log(space, color, linestyle):
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
     if space["crt_config"]["agent"] == "vanilla":
-        plt.plot(x, mean_y_over_seeds, label="vanilla", c="k", alpha=1, linewidth=LINEWIDTH, linestyle="-")
+        plt.plot(x, mean_y_over_seeds, label="vanilla", c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
-                         color="k", alpha=0.1)
+                         color="gray", alpha=0.07)
     else:
-        plt.plot(x, mean_y_over_seeds, label=format_name(space["crt_config"]["agent"],
-                                            space["crt_config"]["planning_depth"],
-                                            space["crt_config"]["replay_capacity"]),
+        plt.plot(x, mean_y_over_seeds, label=space["crt_config"]["agent"],
                  alpha=1, linewidth=LINEWIDTH, color=color,
                  linestyle=linestyle)
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
-                         alpha=0.1, color=color,
+                         alpha=0.07, color=color,
                          linestyle=linestyle)
 
 def format_name(agent, planning_perf, replay_capacity):

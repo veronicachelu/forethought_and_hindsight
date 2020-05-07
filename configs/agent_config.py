@@ -69,11 +69,11 @@ config = {
         "class": {"linear": "LpFw",
                   "tabular": "TpFw"},
     },
-    "bw_traj": {
+    "bw_recur": {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
-        "run_mode": "bw_traj",
+        "run_mode": "bw_recur",
         "planning_iter": 1,
         "latent": False,
         "num_hidden_layers": 0,
@@ -83,11 +83,11 @@ config = {
         "class": {"linear": "LpBwTraj",
                   "tabular": "TpBwTraj"},
     },
-    "true_bw_traj": {
+    "true_bw_recur": {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
-        "run_mode": "true_bw_traj",
+        "run_mode": "true_bw_recur",
         "planning_iter": 1,
         "latent": False,
         "num_hidden_layers": 0,
@@ -97,11 +97,11 @@ config = {
         "class": {"linear": "LpBwTraj",
                   "tabular": "TpBwTraj"},
     },
-    "mb_bw_traj": {
+    "mb_bw_recur": {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
-        "run_mode": "mb_bw_traj",
+        "run_mode": "mb_bw_recur",
         "planning_iter": 1,
         "latent": False,
         "num_hidden_layers": 0,
@@ -111,11 +111,11 @@ config = {
         "class": {"linear": "LpBwTraj",
                   "tabular": "TpBwTraj"},
     },
-    "mb_true_bw_traj": {
+    "mb_true_bw_recur": {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
-        "run_mode": "mb_true_bw_traj",
+        "run_mode": "mb_true_bw_recur",
         "planning_iter": 1,
         "latent": False,
         "num_hidden_layers": 0,
