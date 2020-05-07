@@ -22,11 +22,14 @@ flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_string('env', "split", 'where to save results')
 flags.DEFINE_bool('tabular', True, 'where to save results')
 flags.DEFINE_bool('mle', True, 'where to save results')
-flags.DEFINE_bool('mb', True, 'where to save results')
+flags.DEFINE_bool('mb', False, 'where to save results')
+flags.DEFINE_string('pivoting', "bw_p_fw_p", 'where to save results')
 flags.DEFINE_float('lr', 0.1, 'where to save results')
 # flags.DEFINE_string('env', "random_linear", 'where to save results')
-flags.DEFINE_float('ymin', 0.0, 'plot up to')
-flags.DEFINE_float('ymax', 1.0, 'plot up to')
+flags.DEFINE_float('ymin', None, 'plot up to')
+# flags.DEFINE_float('ymin', 0.0, 'plot up to')
+flags.DEFINE_float('ymax', None, 'plot up to')
+# flags.DEFINE_float('ymax', 1.0, 'plot up to')
 flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 # flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
 # flags.DEFINE_integer('num_runs', 100, '')
@@ -37,28 +40,45 @@ LINEWIDTH = 3.5
 
 
 mle_dashed = {
-          "true_bw_recur": "bw_recur_MLE",
-          "true_bw": "bw_MLE",
-          "true_fw": "fw_MLE",
+          "p_true_bw_recur": "p_bw_recur_MLE",
+          "c_true_bw_recur": "c_bw_recur_MLE",
+          "p_true_bw": "p_bw_MLE",
+          "c_true_bw": "c_bw_MLE",
+          "p_true_fw": "p_fw_MLE",
+          "c_true_fw": "c_fw_MLE",
           }
 mb_dashed = {
-          "mb_true_bw": "mb_bw",
-          "mb_true_fw": "mb_fw",
-          "mb_true_bw_recur": "mb_bw_recur",
+          "mb_c_true_bw": "mb_c_bw",
+          "mb_p_true_bw": "mb_c_bw",
+          "mb_p_true_fw": "mb_p_fw",
+          "mb_c_true_fw": "mb_c_fw",
+          "mb_p_true_bw_recur": "mb_p_bw_recur",
+          "mb_c_true_bw_recur": "mb_c_bw_recur",
           }
 mb_mle_dashed = {
-          "mb_true_bw": "mb_bw_MLE",
-          "mb_true_fw": "mb_fw_MLE",
-          "mb_true_bw_recur": "mb_bw_recur_MLE",
+          "mb_p_true_bw": "mb_p_bw_MLE",
+          "mb_c_true_bw": "mb_c_bw_MLE",
+          "mb_p_true_fw": "mb_p_fw_MLE",
+          "mb_c_true_fw": "mb_c_fw_MLE",
+          "mb_p_true_bw_recur": "mb_p_bw_recur_MLE",
+          "mb_c_true_bw_recur": "mb_c_bw_recur_MLE",
 }
 
-dashed = {"bw_PAML": "bw",
-          "fw_PAML": "fw",
-          "bw_PAML_MLE": "bw",
-          "fw_PAML_MLE": "fw",
-          "true_bw_recur": "bw_recur",
-          "true_bw": "bw",
-          "true_fw": "fw",
+dashed = {
+          "p_bw_PAML": "p_bw",
+          "c_bw_PAML": "c_bw",
+          "p_fw_PAML": "p_fw",
+          "c_fw_PAML": "c_fw",
+          "p_bw_PAML_MLE": "p_bw",
+          "c_bw_PAML_MLE": "c_bw",
+          "p_fw_PAML_MLE": "p_fw",
+          "c_fw_PAML_MLE": "c_fw",
+          "p_true_bw_recur": "p_bw_recur",
+          "c_true_bw_recur": "c_bw_recur",
+          "p_true_bw": "p_bw",
+          "c_true_bw": "c_bw",
+          "p_true_fw": "p_fw",
+          "c_true_fw": "c_fw",
           }
 
 # dotted = ["true_bw", "true_fw", "mb_true_fw", "mb_true_bw",
@@ -77,9 +97,9 @@ def main(argv):
 
     name = "all"
     if FLAGS.mb:
-        name = "mb_" + name
+        name = "mb_" + FLAGS.pivoting + "_" + name
     if FLAGS.mle:
-        name = name + "_mle"
+        name = FLAGS.pivoting + "_" + name + "_mle"
 
     internal_dashed = dashed
     if FLAGS.mle and FLAGS.mb:
@@ -146,9 +166,9 @@ def main(argv):
 
     name = "all"
     if FLAGS.mb:
-        name = "mb_" + name
+        name = "mb_" + FLAGS.pivoting + "_" + name
     if FLAGS.mle:
-        name = name + "_mle"
+        name = FLAGS.pivoting + "_" + name + "_mle"
 
     plt.grid()
     plt.tight_layout()

@@ -143,7 +143,7 @@ class TpBwTrajMLE(TpVanilla):
             o_tmn = self._o_network[o_t]
             divisior = np.sum(o_tmn, axis=-1, keepdims=False)
             recur_level += 1
-            if divisior == 0 or recur_level > 4:
+            if divisior == 0 or recur_level > 2:
                 continue
             o_tmn = self._softmax(o_tmn)
             for prev_o_tmn in range(np.prod(self._input_dim)):

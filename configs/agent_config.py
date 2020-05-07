@@ -16,11 +16,11 @@ config = {
     },
 
     #### BW RECURRENT ###
-    "bw_recur": {
+    "p_bw_recur": {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
-        "run_mode": "bw_recur",
+        "run_mode": "p_bw_recur",
         "planning_iter": 1,
         "latent": False,
         "num_hidden_layers": 0,
@@ -30,11 +30,39 @@ config = {
         "class": {"linear": "LpBwTraj",
                   "tabular": "TpBwTraj"},
     },
-    "true_bw_recur": {
+    "p_true_bw_recur": {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
-        "run_mode": "true_bw_recur",
+        "run_mode": "p_true_bw_recur",
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "true",
+        "target_networks": False,
+        "class": {"linear": "LpBwTraj",
+                  "tabular": "TpTrueBwTraj"},
+    },
+    "c_bw_recur": {
+        "task_type": "prediction",
+        "control_agent": "q",
+        "pg": False,
+        "run_mode": "c_bw_recur",
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "extrinsic",
+        "target_networks": False,
+        "class": {"linear": "LpBwTraj",
+                  "tabular": "TpBwTraj"},
+    },
+    "c_true_bw_recur": {
+        "task_type": "prediction",
+        "control_agent": "q",
+        "pg": False,
+        "run_mode": "c_true_bw_recur",
         "planning_iter": 1,
         "latent": False,
         "num_hidden_layers": 0,
@@ -102,11 +130,25 @@ config = {
                   "tabular": "TpTrueBwTraj"},
     },
     ### BW REC MLE ####
-    "bw_recur_MLE": {
+    "p_bw_recur_MLE": {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
-        "run_mode": "bw_recur_mle",
+        "run_mode": "p_bw_recur_mle",
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "extrinsic",
+        "target_networks": False,
+        "class": {"linear": "LpBwTraj",
+                  "tabular": "TpBwTrajMLE"},
+    },
+    "c_bw_recur_MLE": {
+        "task_type": "prediction",
+        "control_agent": "q",
+        "pg": False,
+        "run_mode": "c_bw_recur_mle",
         "planning_iter": 1,
         "latent": False,
         "num_hidden_layers": 0,
@@ -147,11 +189,11 @@ config = {
     },
 
     #### BW ####
-    "bw": {
+    "p_bw": {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
-        "run_mode": "bw_extr",
+        "run_mode": "p_bw_extr",
         "planning_iter": 1,
         "latent": False,
         "num_hidden_layers": 0,
@@ -161,11 +203,39 @@ config = {
         "class": {"linear": "LpBw",
                   "tabular": "TpExplicitDistrib"},
     },
-    "true_bw": {
+    "p_true_bw": {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
-        "run_mode": "true_bw",
+        "run_mode": "p_true_bw",
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "true",
+        "target_networks": False,
+        "class": {"linear": "LpTrueBw",
+                  "tabular": "TpTrueBw"},
+    },
+    "c_bw": {
+        "task_type": "prediction",
+        "control_agent": "q",
+        "pg": False,
+        "run_mode": "c_bw_extr",
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "extrinsic",
+        "target_networks": False,
+        "class": {"linear": "LpBw",
+                  "tabular": "TpExplicitDistrib"},
+    },
+    "c_true_bw": {
+        "task_type": "prediction",
+        "control_agent": "q",
+        "pg": False,
+        "run_mode": "c_true_bw",
         "planning_iter": 1,
         "latent": False,
         "num_hidden_layers": 0,
@@ -176,11 +246,11 @@ config = {
                   "tabular": "TpTrueBw"},
     },
     #### BW MLE ###
-    "bw_MLE": {
+    "p_bw_MLE": {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
-        "run_mode": "bw_mle",
+        "run_mode": "p_bw_mle",
         "planning_iter": 1,
         "latent": False,
         "num_hidden_layers": 0,
@@ -190,20 +260,21 @@ config = {
         "class": {"linear": "LpBw",
                   "tabular": "TpBwMLE"},
     },
-    "true_bw_MLE": {
+    "c_bw_MLE": {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
-        "run_mode": "true_bw_mle",
+        "run_mode": "c_bw_mle",
         "planning_iter": 1,
         "latent": False,
         "num_hidden_layers": 0,
         "num_units": 0,
-        "model_family": "true",
+        "model_family": "extrinsic",
         "target_networks": False,
         "class": {"linear": "LpBw",
-                  "tabular": "TpTrueBw"},
+                  "tabular": "TpBwMLE"},
     },
+
     #### BW MB ####
     "mb_c_bw_MLE": {
         "task_type": "prediction",
@@ -291,11 +362,11 @@ config = {
     },
 
     #### FW ####
-    "fw": {
+    "p_fw": {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
-        "run_mode": "fw",
+        "run_mode": "p_fw",
         "planning_iter": 1,
         "latent": False,
         "num_hidden_layers": 0,
@@ -305,11 +376,39 @@ config = {
         "class": {"linear": "LpFw",
                   "tabular": "TpFw"},
     },
-    "true_fw": {
+    "p_true_fw": {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
-        "run_mode": "true_fw",
+        "run_mode": "p_true_fw",
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "true",
+        "target_networks": False,
+        "class": {"linear": "LpTrueFw",
+                  "tabular": "TpTrueFw"},
+    },
+    "c_fw": {
+        "task_type": "prediction",
+        "control_agent": "q",
+        "pg": False,
+        "run_mode": "c_fw",
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "extrinsic",
+        "target_networks": False,
+        "class": {"linear": "LpFw",
+                  "tabular": "TpFw"},
+    },
+    "c_true_fw": {
+        "task_type": "prediction",
+        "control_agent": "q",
+        "pg": False,
+        "run_mode": "c_true_fw",
         "planning_iter": 1,
         "latent": False,
         "num_hidden_layers": 0,
@@ -320,11 +419,11 @@ config = {
                   "tabular": "TpTrueFw"},
     },
     ### FW MLE ####
-    "fw_MLE": {
+    "p_fw_MLE": {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
-        "run_mode": "fw_mle",
+        "run_mode": "p_fw_mle",
         "planning_iter": 1,
         "latent": False,
         "num_hidden_layers": 0,
@@ -334,20 +433,21 @@ config = {
         "class": {"linear": "LpBw",
                   "tabular": "TpFwMLE"},
     },
-    "true_fw_MLE": {
+    "c_fw_MLE": {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
-        "run_mode": "true_fw_mle",
+        "run_mode": "c_fw_mle",
         "planning_iter": 1,
         "latent": False,
         "num_hidden_layers": 0,
         "num_units": 0,
-        "model_family": "true",
+        "model_family": "extrinsic",
         "target_networks": False,
         "class": {"linear": "LpBw",
-                  "tabular": "TpTrueFw"},
+                  "tabular": "TpFwMLE"},
     },
+
     ### FW MB ###
     "mb_c_fw": {
         "task_type": "prediction",
@@ -451,11 +551,25 @@ config = {
     },
 
     #### BW PAML ###
-    "bw_PAML": {
+    "p_bw_PAML": {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
-        "run_mode": "bw_intr",
+        "run_mode": "p_bw_intr",
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "intrinsic",
+        # "target_networks": True,
+        "target_networks": False,
+        "class": {"linear": "LpBwIntr"},
+    },
+    "c_bw_PAML": {
+        "task_type": "prediction",
+        "control_agent": "q",
+        "pg": False,
+        "run_mode": "pcbw_intr",
         "planning_iter": 1,
         "latent": False,
         "num_hidden_layers": 0,
@@ -495,11 +609,25 @@ config = {
     },
 
     #### FW PAML
-    "fw_PAML": {
+    "p_fw_PAML": {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
         "run_mode": "fw_intr",
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "intrinsic",
+        # "target_networks": True,
+        "target_networks": False,
+        "class": {"linear": "LpFwIntr"},
+    },
+    "c_fw_PAML": {
+        "task_type": "prediction",
+        "control_agent": "q",
+        "pg": False,
+        "run_mode": "c_fw_intr",
         "planning_iter": 1,
         "latent": False,
         "num_hidden_layers": 0,

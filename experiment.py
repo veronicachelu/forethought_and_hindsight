@@ -47,11 +47,8 @@ def run_episodic(agent: Agent,
                 rewards += new_timestep.reward
 
                 if agent.model_based_train():
-                    if aux_agent_configs["mb"]:
-                        if aux_agent_configs["pivot"] == "current":
-                            agent.planning_update(new_timestep)
-                        else:
-                            agent.planning_update(timestep)
+                    if aux_agent_configs["pivot"] == "c":
+                        agent.planning_update(new_timestep)
                     else:
                         agent.planning_update(timestep)
 
@@ -73,8 +70,7 @@ def run_episodic(agent: Agent,
 
                 if new_timestep.last() or (aux_agent_configs["max_len"] is not None and \
                                                    t == aux_agent_configs["max_len"]):
-                    if (not aux_agent_configs["mb"] and agent.model_based_train()) or \
-                     aux_agent_configs["mb"] and aux_agent_configs["pivot"] == "previous":
+                    if aux_agent_configs["pivot"] == "p":
                         agent.planning_update(new_timestep)
                     break
 
