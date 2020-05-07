@@ -38,9 +38,9 @@ LINEWIDTH = 3.5
 # dashed = {"bw_fw": "bw", "fw_pri": "fw_rnd", "bw_fw_MG": "bw_fw_PWMA"}
 
 dashed = {"bw_intr": "bw",
-          "fw_intr": "fw",
-          "bw_intr_mle": "bw",
-          "fw_intr_mle": "fw",
+          "fw_PAML": "fw",
+          "bw_PAML_mle": "bw",
+          "fw_PAML_mle": "fw",
           "mb_true_bw": "bw",
           "true_bw": "bw",
           "true_fw": "fw",
