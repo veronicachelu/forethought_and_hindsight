@@ -32,7 +32,7 @@ volatile_agent_config = {
         "lr_m": np.linspace(0.001, 0.02, 11),
         "lr_ctrl": 0.4
     },
-    "bw_intr": {
+    "bw_PAML": {
         "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [1.0],
@@ -64,7 +64,7 @@ volatile_agent_config = {
         "lr_m": np.linspace(0.002, 0.02, 10),
         "lr_ctrl": 0.4
     },
-    "fw_intr": {
+    "fw_PAML": {
         "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [1.0],
@@ -81,14 +81,14 @@ volatile_agent_config = {
         "lr_ctrl": 0.4
     },
 
-    # "bw_intr": {
+    # "bw_PAML": {
     #     "planning_depth": [1, 2, 3, 4],
     #     "replay_capacity": [0],
     #     "lr": [1.0],
     #     "lr_p": [1.0],
     #     "lr_m": np.linspace(0.01, 1.0, 10),
     # },
-    # "latent_bw_intr": {
+    # "latent_bw_PAML": {
     #     "planning_depth": [1, 2, 3, 4],
     #     "replay_capacity": [0],
     #     "lr": [1.0],

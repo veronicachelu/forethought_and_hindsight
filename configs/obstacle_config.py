@@ -33,7 +33,7 @@ volatile_agent_config = {
         "lr_m": [0],
         "lr_ctrl": 0.4
     },
-    "bw_intr": {
+    "bw_PAML": {
         "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [1.0],
@@ -49,7 +49,7 @@ volatile_agent_config = {
         "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
         "lr_ctrl": 0.4
     },
-    "bw_mult_intr": {
+    "bw_mult_PAML": {
         "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [1.0],
@@ -73,7 +73,7 @@ volatile_agent_config = {
         "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
         "lr_ctrl": 0.4
     },
-    "fw_intr": {
+    "fw_PAML": {
         "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [0.114],
@@ -81,7 +81,7 @@ volatile_agent_config = {
         "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
         "lr_ctrl": 0.4
     },
-    "fw_mult_intr": {
+    "fw_mult_PAML": {
         "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [0.114],
@@ -128,28 +128,28 @@ volatile_agent_config = {
     #     "lr_p": [0],
     #     "lr_m": [0]
     # },
-    # "vanilla_intr": {
+    # "vanilla_PAML": {
     #     "planning_depth": [0],
     #     "replay_capacity": [0],
     #     "lr": np.linspace(0.01, 0.1, 10),
     #     "lr_p": [0],
     #     "lr_m": [0]
     # },
-    # "latent_vanilla_intr": {
+    # "latent_vanilla_PAML": {
     #     "planning_depth": [0],
     #     "replay_capacity": [0],
     #     "lr": np.linspace(0.01, 0.1, 10),
     #     "lr_p": [0],
     #     "lr_m": [0]
     # },
-    # "bw_intr": {
+    # "bw_PAML": {
     #     "planning_depth": [1, 4, 8],
     #     "replay_capacity": [0],
     #     "lr": [0.08],
     #     "lr_p": [0.08],
     #     "lr_m": np.linspace(0.001, 0.08, 10),
     # },
-    # "latent_bw_intr": {
+    # "latent_bw_PAML": {
     #     "planning_depth": [1, 4, 8],
     #     "replay_capacity": [0],
     #     "lr": [0.01],

@@ -18,7 +18,7 @@ def get_network(num_hidden_layers: int,
                   rng_target: List,
                   input_dim: Tuple,
                   model_class="tabular",
-                  model_family="extrinsic",
+                  model_family="MLE",
                   target_networks=False,
                   pg=False,
                   latent=False,
@@ -33,13 +33,13 @@ def get_network(num_hidden_layers: int,
     if model_class == "tabular":
         return get_tabular_network(num_hidden_layers, num_units, nA,
                             rng, input_dim)
-    if model_family == "extrinsic":
-        return get_extrinsic_network(num_hidden_layers, num_units, nA,
+    if model_family == "MLE":
+        return get_MLE_network(num_hidden_layers, num_units, nA,
                         rng, input_dim)
     if model_family == "q":
         return get_q_network(num_hidden_layers, num_units, nA,
                         rng, input_dim)
-    return get_intrinsic_network(num_hidden_layers, num_units, nA,
+    return get_PAML_network(num_hidden_layers, num_units, nA,
                 rng, rng_target, input_dim, target_networks, latent)
 
 def get_input_dim(input_dim, feature_coder):
@@ -69,7 +69,7 @@ def get_tabular_network(num_hidden_layers: int,
                         }
     return network
 
-def get_extrinsic_network(num_hidden_layers: int,
+def get_MLE_network(num_hidden_layers: int,
                   num_units: int,
                   nA: int,
                   rng: List,
@@ -165,7 +165,7 @@ def get_q_network(num_hidden_layers: int,
 
     return network
 
-def get_intrinsic_network(num_hidden_layers: int,
+def get_PAML_network(num_hidden_layers: int,
                   num_units: int,
                   nA: int,
                   rng: List,

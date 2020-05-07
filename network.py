@@ -17,7 +17,7 @@ def get_network(num_hidden_layers: int,
                   rng_target: List,
                   input_dim: Tuple,
                   model_class="tabular",
-                  model_family="extrinsic",
+                  model_family="MLE",
                   target_networks=False,
                   pg=False,
                   latent=False,
@@ -32,12 +32,12 @@ def get_network(num_hidden_layers: int,
         return get_tabular_network(num_hidden_layers, num_units, nA,
                             rng, input_dim)
 
-    if model_family == "extrinsic":
-        return get_extrinsic_network(num_hidden_layers, num_units, nA,
+    if model_family == "MLE":
+        return get_MLE_network(num_hidden_layers, num_units, nA,
                         rng, input_dim, output_dim)
 
-    if model_family == "mult_extrinsic":
-        return get_mult_extrinsic_network(num_hidden_layers, num_units, nA,
+    if model_family == "mult_MLE":
+        return get_mult_MLE_network(num_hidden_layers, num_units, nA,
                         rng, input_dim)
 
     if model_family == "true":
@@ -51,12 +51,12 @@ def get_network(num_hidden_layers: int,
         return get_q_network(num_hidden_layers, num_units, nA,
                         rng, input_dim)
 
-    if model_family == "intrinsic":
-        return get_intrinsic_network(num_hidden_layers, num_units, nA,
+    if model_family == "PAML":
+        return get_PAML_network(num_hidden_layers, num_units, nA,
                 rng, rng_target, input_dim, output_dim, target_networks, latent)
 
-    if model_family == "mult_intrinsic":
-        return get_mult_intrinsic_network(num_hidden_layers, num_units, nA,
+    if model_family == "mult_PAML":
+        return get_mult_PAML_network(num_hidden_layers, num_units, nA,
                 rng, rng_target, input_dim, target_networks, latent)
 
     if model_family == "update":
@@ -73,7 +73,7 @@ def get_input_dim(input_dim, feature_coder, model_family):
         nF = nS
         if "noise" in feature_coder.keys() and feature_coder["noise"]:
             nS += feature_coder["noise_dim"]
-        # if model_family != "intrinsic":
+        # if model_family != "PAML":
         #     nF = nS
         return nS, nS
     else:
@@ -150,7 +150,7 @@ def get_mult_true_network(num_hidden_layers: int,
 
     return network
 
-def get_extrinsic_network(num_hidden_layers: int,
+def get_MLE_network(num_hidden_layers: int,
                   num_units: int,
                   nA: int,
                   rng: List,
@@ -176,7 +176,7 @@ def get_extrinsic_network(num_hidden_layers: int,
 
     return network
 
-def get_mult_extrinsic_network(num_hidden_layers: int,
+def get_mult_MLE_network(num_hidden_layers: int,
                   num_units: int,
                   nA: int,
                   rng: List,
@@ -218,7 +218,7 @@ def get_q_network(num_hidden_layers: int,
 
     return network
 
-def get_intrinsic_network(num_hidden_layers: int,
+def get_PAML_network(num_hidden_layers: int,
                   num_units: int,
                   nA: int,
                   rng: List,
@@ -275,7 +275,7 @@ def get_intrinsic_network(num_hidden_layers: int,
 
     return network
 
-def get_mult_intrinsic_network(num_hidden_layers: int,
+def get_mult_PAML_network(num_hidden_layers: int,
                   num_units: int,
                   nA: int,
                   rng: List,

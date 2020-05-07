@@ -1,3 +1,3 @@
-from agents.linear.extrinsic import *
-from agents.linear.extrinsic.lp_vanilla import *
-from agents.linear.intrinsic import *
+from agents.linear.MLE import *
+from agents.linear.MLE.lp_vanilla import *
+from agents.linear.PAML import *

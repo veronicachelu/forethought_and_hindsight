@@ -20,7 +20,7 @@ plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 # flags.DEFINE_string('comparison_config', "latent_vs_no_latent", 'where to save results')
-# flags.DEFINE_string('comparison_config', "intr_vs_extr_fw_and_bw", 'where to save results')
+# flags.DEFINE_string('comparison_config', "PAML_vs_MLE_fw_and_bw", 'where to save results')
 # flags.DEFINE_string('comparison_config', "bw_fw", 'where to save results')
 flags.DEFINE_string('comparison_config', "true_bw", 'where to save results')
 # flags.DEFINE_string('comparison_config', "corr_vs_value_vs_meta", 'where to save results')

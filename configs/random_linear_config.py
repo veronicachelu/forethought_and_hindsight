@@ -25,7 +25,7 @@ volatile_agent_config = {
         "lr_m": [0],
         "lr_ctrl": 0.4
     },
-    "bw_intr": {
+    "bw_PAML": {
         "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [1.0],
@@ -49,7 +49,7 @@ volatile_agent_config = {
         "lr_m": np.array([0.001, 0.005, 0.01, 0.05, 0.1, 0.5]),
         "lr_ctrl": 0.4
     },
-    "bw_mult_intr": {
+    "bw_mult_PAML": {
         "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [1.0],
@@ -73,7 +73,7 @@ volatile_agent_config = {
         "lr_m": np.array([0.001, 0.005, 0.01, 0.05, 0.1, 0.5]),
         "lr_ctrl": 0.4
     },
-    "fw_intr": {
+    "fw_PAML": {
         "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [0.114],
@@ -81,7 +81,7 @@ volatile_agent_config = {
         "lr_m": np.array([0.001, 0.005, 0.01, 0.05, 0.1, 0.5]),
         "lr_ctrl": 0.4
     },
-    "fw_mult_intr": {
+    "fw_mult_PAML": {
         "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [0.114],

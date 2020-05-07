@@ -32,14 +32,14 @@ configs={
     },
     "stoch_linear_maze": {
         "all": {
-            "agents": ["bw", "bw_intr", "fw", "fw_intr"],
+            "agents": ["bw", "bw_PAML", "fw", "fw_PAML"],
             "planning_depths": [1, 1, 1, 1],
             "replay_capacities": [0, 0, 0, 0]
         }
     },
     "linear_maze": {
         "bw": {
-            "agents": ["bw_intr", "vanilla_intr"],
+            "agents": ["bw_PAML", "vanilla_PAML"],
             "planning_depths": [1, 0],
             "replay_capacities": [0, 0]
         },
@@ -49,32 +49,32 @@ configs={
             "replay_capacities": [0, 0]
         },
         "fw": {
-            "agents": ["fw_intr", "vanilla_intr"],
+            "agents": ["fw_PAML", "vanilla_PAML"],
             "planning_depths": [1, 0],
             "replay_capacities": [0, 0]
         },
         "bw_fw": {
-            "agents": ["bw_intr", "fw_intr", "vanilla_intr"],
+            "agents": ["bw_PAML", "fw_PAML", "vanilla_PAML"],
             "planning_depths": [1, 1, 0],
             "replay_capacities": [0, 0, 0]
         },
         "corr_vs_value_vs_meta": {
-            "agents": ["bw_intr", "bw_vaware", "bw_meta"],
+            "agents": ["bw_PAML", "bw_vaware", "bw_meta"],
             "planning_depths": [1, 1, 1],
             "replay_capacities": [0, 0, 0]
         },
-        "intr_vs_extr": {
-            "agents": ["bw_intr", "bw", "vanilla_intr"],
+        "PAML_vs_MLE": {
+            "agents": ["bw_PAML", "bw", "vanilla_PAML"],
             "planning_depths": [1, 1, 0],
             "replay_capacities": [0, 0, 0]
         },
-        "intr_vs_extr_fw_and_bw": {
-            "agents": ["bw_intr", "bw", "fw_intr", "fw", "vanilla_intr"],
+        "PAML_vs_MLE_fw_and_bw": {
+            "agents": ["bw_PAML", "bw", "fw_PAML", "fw", "vanilla_PAML"],
             "planning_depths": [1, 1, 1, 1, 0],
             "replay_capacities": [0, 0, 0, 0, 0]
         },
         "latent_vs_no_latent": {
-            "agents": ["bw_intr", "latent_bw_intr", "vanilla_intr"],
+            "agents": ["bw_PAML", "latent_bw_PAML", "vanilla_PAML"],
             "planning_depths": [1, 1, 0],
             "replay_capacities": [0, 0, 0]
         },
@@ -89,19 +89,19 @@ configs={
             "replay_capacities": [0, 0, 50]
         },
         "all": {
-            "agents": ["bw", "bw_intr", "fw", "fw_intr"],
+            "agents": ["bw", "bw_PAML", "fw", "fw_PAML"],
             "planning_depths": [1, 1, 1, 1],
             "replay_capacities": [0, 0, 0, 0]
         }
     },
     "random_linear": {
         "latent_vs_no_latent": {
-            "agents": ["bw_intr", "latent_bw_intr", "vanilla_intr"],
+            "agents": ["bw_PAML", "latent_bw_PAML", "vanilla_PAML"],
             "planning_depths": [1, 1, 0],
             "replay_capacities": [0, 0, 0]
         },
         "bw_fw": {
-            "agents": ["bw_intr", "fw_intr", "vanilla_intr"],
+            "agents": ["bw_PAML", "fw_PAML", "vanilla_PAML"],
             "planning_depths": [1, 1, 0],
             "replay_capacities": [0, 0, 0]
         },
@@ -109,8 +109,8 @@ configs={
         #     "agents": ["bw", "mult_bw",
         #                "true_bw", "true_mult_bw",
         #                "fw", "mult_fw",
-        #                "fw_intr", "fw_mult_intr",
-        #                "bw_intr", "bw_mult_intr",
+        #                "fw_PAML", "fw_mult_PAML",
+        #                "bw_PAML", "bw_mult_PAML",
         #                "bw_update"],
         #     "planning_depths": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         #     "replay_capacities": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -119,8 +119,8 @@ configs={
             "agents": ["bw",
                        "true_bw",
                        "fw",
-                       "fw_intr",
-                       "bw_intr"],
+                       "fw_PAML",
+                       "bw_PAML"],
             "planning_depths": [1, 1, 1, 1, 1, ],
             "replay_capacities": [0, 0, 0, 0, 0, 0,]
         },
@@ -128,34 +128,34 @@ configs={
             "agents": ["mb_bw",
                        "mb_true_bw",
                        "mb_fw",
-                       "mb_fw_intr",
-                       "mb_bw_intr"],
+                       "mb_fw_PAML",
+                       "mb_bw_PAML"],
             "planning_depths": [1, 1, 1, 1, 1, ],
             "replay_capacities": [0, 0, 0, 0, 0, ]
         },
         "corr_vs_value_vs_meta": {
-            "agents": ["bw_intr", "bw_vaware", "bw_meta"],
+            "agents": ["bw_PAML", "bw_vaware", "bw_meta"],
             "planning_depths": [1, 1, 1],
             "replay_capacities": [0, 0, 0]
         },
     },
     "boyan": {
         "latent_vs_no_latent": {
-            "agents": ["bw_intr", "latent_bw_intr", "vanilla_intr"],
+            "agents": ["bw_PAML", "latent_bw_PAML", "vanilla_PAML"],
             "planning_depths": [1, 1, 0],
             "replay_capacities": [0, 0, 0]
         },
         "bw_fw": {
-            "agents": ["bw_intr", "fw_intr", "vanilla_intr"],
+            "agents": ["bw_PAML", "fw_PAML", "vanilla_PAML"],
             "planning_depths": [1, 1, 0],
             "replay_capacities": [0, 0, 0]
         },
-        "intr_vs_extr_fw_and_bw": {
-            "agents": ["bw_intr", "bw", "fw_intr", "fw", "vanilla_intr"],
+        "PAML_vs_MLE_fw_and_bw": {
+            "agents": ["bw_PAML", "bw", "fw_PAML", "fw", "vanilla_PAML"],
             "planning_depths": [1, 1, 1, 1, 0],
             "replay_capacities": [0, 0, 0, 0, 0]
         },
-        "intr_vs_extr": {
+        "intr_vs_MLE": {
             "agents": ["bw_intr", "bw"],
             "planning_depths": [1, 1],
             "replay_capacities": [0, 0]
@@ -323,12 +323,12 @@ configs={
             "planning_depths": [1, 1, 0],
             "replay_capacities": [0, 0, 0]
         },
-        "intr_vs_extr_fw_and_bw": {
+        "intr_vs_MLE_fw_and_bw": {
             "agents": ["bw_PAML", "bw", "fw_PAML", "fw", "vanilla_PAML"],
             "planning_depths": [1, 1, 1, 1, 0],
             "replay_capacities": [0, 0, 0, 0, 0]
         },
-        "intr_vs_extr": {
+        "intr_vs_MLE": {
             "agents": ["bw_PAML", "bw"],
             "planning_depths": [1, 1],
             "replay_capacities": [0, 0]
