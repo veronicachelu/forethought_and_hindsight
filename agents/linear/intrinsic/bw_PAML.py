@@ -78,14 +78,14 @@ class LpBwIntr(LpIntrinsicVanilla):
                                                         v_t_target)
             model_update = model_vjp_fun(model_td_error[None, ...])[0] # pullback model_td_error
 
-            corr_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_update, lax.stop_gradient(real_update)))
+            update_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_update, lax.stop_gradient(real_update)))
             # r_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_r_tmn_2_t, real_r_tmn_2_t))
             l1_reg = jnp.linalg.norm(o_params, 1)
             l2_reg = jnp.linalg.norm(o_params, 2)
-            total_loss = corr_loss + self._alpha_reg1 * l1_reg + \
+            total_loss = update_loss + self._alpha_reg1 * l1_reg + \
                          self._alpha_reg2 * l2_reg
 
-            return total_loss, {"corr_loss": corr_loss,
+            return total_loss, {"loss_update": update_loss,
                                 "reg1": l1_reg,
                                 "reg2": l2_reg
                                 }

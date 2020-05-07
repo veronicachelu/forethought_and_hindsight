@@ -69,6 +69,10 @@ def main(argv):
                          "max_len": FLAGS.max_len,
                          "log_period": FLAGS.log_period}
     aux_agent_configs["mb"] = True if agent["agent"].split("_")[0] == "mb" else False
+    if agent["agent"].split("_")[0] == "mb":
+        aux_agent_configs["pivot"] = agent["agent"].split("_")[1]
+    else:
+        aux_agent_configs["pivot"] = agent["agent"].split("_")[0]
     run_agent(FLAGS.env, agent, logs, aux_agent_configs, ignore_existent=False)
 
 

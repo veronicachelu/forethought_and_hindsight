@@ -18,6 +18,15 @@ from agents.linear.intrinsic.lp_intrinsic_vanilla import LpIntrinsicVanilla
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
+def td_learning(
+    v_tm1,
+    r_t,
+    discount_t,
+    v_t):
+
+  target_tm1 = r_t + discount_t * lax.stop_gradient(v_t)
+  return target_tm1 - v_tm1
+
 class LpFwIntr(LpIntrinsicVanilla):
     def __init__(
             self,
@@ -41,7 +50,8 @@ class LpFwIntr(LpIntrinsicVanilla):
             h_t = self._h_network(h_params, o_t) if self._latent else o_t
 
             # #compute fwd + bwd pass
-            real_v_tmn = self._v_network(v_params, h_tmn)
+            real_v_tmn, vjp_fun = jax.vjp(self._v_network, v_params, h_tmn)
+            real_v_tmn = jnp.squeeze(real_v_tmn, axis=-1)
             real_v_t_target = jnp.squeeze(self._v_network(v_params, h_t), axis=-1)
 
             real_r_tmn_2_t = 0
@@ -52,30 +62,40 @@ class LpFwIntr(LpIntrinsicVanilla):
             for i, t in enumerate(transitions):
                 real_d_tmn_2_t += t[3]
 
-            real_td_target = real_r_tmn_2_t + real_d_tmn_2_t * \
-                                              jnp.array([self._discount ** self._n]) * \
-                                              real_v_t_target
+            # real_td_target = real_r_tmn_2_t + real_d_tmn_2_t * \
+            #                                   jnp.array([self._discount ** self._n]) * \
+            #                                   real_v_t_target
+
+            real_td_error = jax.vmap(td_learning)(real_v_tmn, real_r_tmn_2_t,
+                                                  real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
+                                                  real_v_t_target)
+            real_update = vjp_fun(real_td_error[..., None])[0]
 
             model_t = self._o_network(o_params, h_tmn)
-            model_v_t_target = jnp.squeeze(self._v_network(v_params, model_t), axis=-1)
+            model_v_t_target, model_vjp_fun = jax.vjp(self._v_network, v_params, model_t)
+            model_v_t_target = jnp.squeeze(model_v_t_target, axis=-1)
 
             model_r_input = jnp.concatenate([h_tmn, model_t], axis=-1)
             model_r_tmn_2_t = self._r_network(r_params, model_r_input)
 
-            model_td_target = model_r_tmn_2_t + real_d_tmn_2_t *\
-                              jnp.array([self._discount ** self._n]) * \
-                                                model_v_t_target
-            target_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_td_target,
-                                                                 lax.stop_gradient(real_td_target)))
-
+            # model_td_target = model_r_tmn_2_t + real_d_tmn_2_t *\
+            #                   jnp.array([self._discount ** self._n]) * \
+            #                                     model_v_t_target
+            model_td_error = jax.vmap(td_learning)(real_v_tmn, model_r_tmn_2_t,
+                                                   real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
+                                                   model_v_t_target)
+            # target_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_td_target,
+            #                                                      lax.stop_gradient(real_td_target)))
+            model_update = model_vjp_fun(model_td_error[None, ...])[0]
+            update_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_update, lax.stop_gradient(real_update)))
             r_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_r_tmn_2_t, real_r_tmn_2_t))
             l1_reg = jnp.linalg.norm(o_params, 1)
             l2_reg = jnp.linalg.norm(o_params, 2)
-            total_loss = target_loss + r_loss + self._alpha_reg1 * l1_reg + \
+            total_loss = update_loss + r_loss + self._alpha_reg1 * l1_reg + \
                          self._alpha_reg2 * l2_reg
 
-            return total_loss, {"target_loss": target_loss,
-                                "r_loss": r_loss,
+            return total_loss, {"loss_update": update_loss,
+                                # "r_loss": r_loss,
                                  "reg1": l1_reg,
                                  "reg2": l2_reg
                                 }
@@ -171,9 +191,11 @@ class LpFwIntr(LpIntrinsicVanilla):
             self._o_parameters_norm = np.linalg.norm(self._o_parameters, 1)
             self._r_parameters_norm = np.linalg.norm(self._r_parameters[0], 1)
             losses_and_grads = {"losses": {
-                "loss_target": losses["target_loss"],
-                "loss_r": losses["r_loss"],
                 "loss_total": total_loss,
+                # "loss_target": losses["target_loss"],
+                # "loss_update": losses["loss_update"],
+                # "loss_r": losses["r_loss"],
+                # "loss_total": total_loss,
                 "grad_norm_o": self._o_parameters_norm,
                 "grad_norm_r": self._r_parameters_norm,
             },

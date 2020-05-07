@@ -126,9 +126,6 @@ class TpBwTrajMLE(TpVanilla):
             timestep: dm_env.TimeStep,
             prev_timestep=None
     ):
-        # o_t = np.array(timestep.observation)
-        # d_t = np.array(timestep.discount)
-
         def in_queue(el):
             for qel in traj:
                 if qel[0] == el:
