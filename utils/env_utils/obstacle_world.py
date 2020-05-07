@@ -326,6 +326,7 @@ if __name__ == "__main__":
         "ranges": [[0.0, 0.0], [1.0, 1.0]],
         "num_tiles": [20, 20],
         "num_tilings": 1}
+    plot_grid(env, logs=str(os.environ['LOGS']), env_type="continous")
     mdp_solver = MdpSolver(env, nS, nA, discount, feature_coder=feature_coder)
     v = mdp_solver.get_optimal_v()
     # v = env.reshape_v(v)

@@ -15,13 +15,13 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class TpBwTraj(TpVanilla):
+class TpBwTrajMLE(TpVanilla):
     def __init__(
             self,
             **kwargs
     ):
 
-        super(TpBwTraj, self).__init__(**kwargs)
+        super(TpBwTrajMLE, self).__init__(**kwargs)
         self._sequence = []
         self._should_reset_sequence = False
 
@@ -37,9 +37,18 @@ class TpBwTraj(TpVanilla):
             o_t = transitions[-1][-1]
 
             o_tmn = o_params[o_t]
-            o_target = np.eye(np.prod(self._input_dim))[o_tmn_target] - o_tmn
-            o_error = o_target - o_tmn
-            o_loss = np.mean(o_error ** 2)
+            o_target = np.eye(np.prod(self._input_dim))[o_tmn_target]
+
+            o_loss = 100 * self._ce(self._log_softmax(o_tmn), o_target)
+
+            o_tmn_probs = self._softmax(o_tmn)
+            o_tmn_probs[o_tmn_target] -= 1
+            o_tmn_probs /= len(o_tmn_probs)
+            o_error = - 100 * o_tmn_probs
+
+            # o_target = np.eye(np.prod(self._input_dim))[o_tmn_target] - o_tmn
+            # o_error = o_target - o_tmn
+            # o_loss = np.mean(o_error ** 2)
 
             r_tmn = r_params[o_tmn_target, o_t]
 
@@ -57,12 +66,14 @@ class TpBwTraj(TpVanilla):
         self._model_opt_update = lambda gradients, params:\
             [param + self._lr_model * grad for grad, param in zip(gradients, params)]
 
-        def v_planning_loss(v_params, r_params, o, prev_o_tmn, d_t):
-            v_tmn = v_params[prev_o_tmn]
-            r_tmn = r_params[prev_o_tmn, o]
+        def v_planning_loss(v_params, r_params, o_t, o_tmn, d_t):
+            v_tmn = v_params[o_tmn]
+            r_tmn = r_params[o_tmn, o_t]
             td_error = (r_tmn + d_t * (self._discount ** self._n) *
-                        v_params[o] - v_tmn)
+                        v_params[o_t] - v_tmn)
+
             loss = td_error ** 2
+
             return loss, td_error
 
         self._v_planning_loss_grad = v_planning_loss
@@ -118,25 +129,33 @@ class TpBwTraj(TpVanilla):
         # o_t = np.array(timestep.observation)
         # d_t = np.array(timestep.discount)
 
+        def in_queue(el):
+            for qel in traj:
+                if qel[0] == el:
+                    return True
+            else:
+                return False
         traj = deque()
-        traj.append((timestep.observation, timestep.discount))
+        traj.append((timestep.observation, timestep.discount, 0))
         sum_of_losses = 0
         while len(traj) > 0:
-            o_t, d_t = traj.pop()
-            for k in range(self._planning_iter):
-                o_tmn = self._o_network[o_t]
-                divisior = np.sum(o_tmn, axis=-1, keepdims=True)
-                o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0, axis=-1))
-                for prev_o_tmn in range(np.prod(self._input_dim)):
-                    if o_tmn[prev_o_tmn] != 0:
-                        loss, gradient = self._v_planning_loss_grad(self._v_network,
-                                                                       self._r_network,
-                                                                       o_t, prev_o_tmn, d_t)
-                        sum_of_losses += loss
-                        self._v_network[prev_o_tmn] = self._v_planning_opt_update(o_tmn[prev_o_tmn] * gradient,
-                                                                                  self._v_network[prev_o_tmn])
-                        if (prev_o_tmn, 1) not in traj and prev_o_tmn != o_t:
-                            traj.append((prev_o_tmn, 1))
+            o_t, d_t, recur_level = traj.pop()
+            o_tmn = self._o_network[o_t]
+            divisior = np.sum(o_tmn, axis=-1, keepdims=False)
+            recur_level += 1
+            if divisior == 0 or recur_level > 4:
+                continue
+            o_tmn = self._softmax(o_tmn)
+            for prev_o_tmn in range(np.prod(self._input_dim)):
+                if o_tmn[prev_o_tmn] != 0:
+                    loss, gradient = self._v_planning_loss_grad(self._v_network,
+                                                                   self._r_network,
+                                                                   o_t, prev_o_tmn, d_t)
+                    sum_of_losses += loss
+                    self._v_network[prev_o_tmn] = self._v_planning_opt_update(o_tmn[prev_o_tmn] * gradient,
+                                                                              self._v_network[prev_o_tmn])
+                    if not in_queue(prev_o_tmn) and prev_o_tmn != o_t:
+                        traj.append((prev_o_tmn, 1, recur_level))
 
         losses_and_grads = {"losses": {"loss_v_planning": np.array(sum_of_losses)},
                                     }
@@ -206,8 +225,12 @@ class TpBwTraj(TpVanilla):
                 self.writer.flush()
 
     def update_hyper_params(self, episode, total_episodes):
-        if episode >= total_episodes:
-            return
-        self._lr_planning = self._initial_lr_planning * ((total_episodes - episode) / total_episodes)
-        self._lr_model = self._initial_lr_planning * ((total_episodes - episode) / total_episodes)
+        warmup_episodes = 0
+        flat_period = 0
+        decay_period = total_episodes - warmup_episodes - flat_period
+        if episode > warmup_episodes:
+            steps_left = total_episodes - episode - flat_period
+            if steps_left <= 0:
+                return
+            self._lr_planning = self._initial_lr_planning * (steps_left / decay_period)
 

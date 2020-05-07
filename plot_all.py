@@ -22,11 +22,11 @@ flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_string('env', "split", 'where to save results')
 flags.DEFINE_bool('tabular', True, 'where to save results')
 flags.DEFINE_bool('mle', True, 'where to save results')
-flags.DEFINE_bool('mb', False, 'where to save results')
+flags.DEFINE_bool('mb', True, 'where to save results')
 flags.DEFINE_float('lr', 0.1, 'where to save results')
 # flags.DEFINE_string('env', "random_linear", 'where to save results')
-flags.DEFINE_float('ymin', None, 'plot up to')
-flags.DEFINE_float('ymax', None, 'plot up to')
+flags.DEFINE_float('ymin', 0.0, 'plot up to')
+flags.DEFINE_float('ymax', 1.0, 'plot up to')
 flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 # flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
 # flags.DEFINE_integer('num_runs', 100, '')
@@ -35,21 +35,34 @@ FLAGS = flags.FLAGS
 FONTSIZE = 17
 LINEWIDTH = 3.5
 
-# dashed = {"bw_fw": "bw", "fw_pri": "fw_rnd", "bw_fw_MG": "bw_fw_PWMA"}
 
-dashed = {"bw_intr": "bw",
+mle_dashed = {
+          "true_bw_recur": "bw_recur_MLE",
+          "true_bw": "bw_MLE",
+          "true_fw": "fw_MLE",
+          }
+mb_dashed = {
+          "mb_true_bw": "mb_bw",
+          "mb_true_fw": "mb_fw",
+          "mb_true_bw_recur": "mb_bw_recur",
+          }
+mb_mle_dashed = {
+          "mb_true_bw": "mb_bw_MLE",
+          "mb_true_fw": "mb_fw_MLE",
+          "mb_true_bw_recur": "mb_bw_recur_MLE",
+}
+
+dashed = {"bw_PAML": "bw",
           "fw_PAML": "fw",
-          "bw_PAML_mle": "bw",
-          "fw_PAML_mle": "fw",
-          "mb_true_bw": "bw",
+          "bw_PAML_MLE": "bw",
+          "fw_PAML_MLE": "fw",
+          "true_bw_recur": "bw_recur",
           "true_bw": "bw",
           "true_fw": "fw",
-          "mb_true_bw_recur": "bw_recur",
-          "true_bw_recur": "bw_recur",
-          "mb_true_fw": "fw"}
+          }
 
-dotted = ["true_bw", "true_fw", "mb_true_fw", "mb_true_bw",
-          "true_bw_recur", "mb_true_bw_recur"]
+# dotted = ["true_bw", "true_fw", "mb_true_fw", "mb_true_bw",
+#           "true_bw_recur", "mb_true_bw_recur"]
 
 def main(argv):
     del argv  # Unused.
@@ -67,48 +80,49 @@ def main(argv):
         name = "mb_" + name
     if FLAGS.mle:
         name = name + "_mle"
+
+    internal_dashed = dashed
+    if FLAGS.mle and FLAGS.mb:
+        internal_dashed = mb_mle_dashed
+    elif FLAGS.mle:
+        internal_dashed = mle_dashed
+    elif FLAGS.mb:
+        internal_dashed = mb_dashed
+
     comparison_config = configs.comparison_configs.configs[FLAGS.env][name]
 
     unique_color_configs = [c for c in comparison_config["agents"]
-                            if c not in dashed.keys()]
+                            if c not in internal_dashed.keys()]
     n = len(unique_color_configs)
 
-    # cmap_color = plt.cm.rainbow(np.linspace(0.0, 1.0, n)[::-1])
-    # hexcolor = map(lambda rgb: '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
-    #                tuple(color[:, 0:-1]))
-    # color = hexcolor  # plt.cm.viridis(np.linspace(0, 1, n))
-    # mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
-    # colors = ['#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)) for rgb in
-    #                tuple(cmap_color[:, 0:-1])]
     colors = ["C{}".format(c) for c in range(n)]
     alg_to_color = {alg: color for alg, color in zip(unique_color_configs, colors)}
+
+    persistent_agent_config = configs.agent_config.config["vanilla"]
+    plot_for_agent("vanilla", env_config, persistent_agent_config,
+                   volatile_agent_config, 0, 0, logs, "gray", "-")
+
     for i, agent in enumerate(comparison_config["agents"]):
-        if agent not in dashed:
+        if agent not in internal_dashed:
             color = alg_to_color[agent]
             linestyle = "-"
         else:
-            if FLAGS.mle:
-                color = alg_to_color[dashed[agent] + "_mle"]
-            elif FLAGS.mb:
-                if "mb_" + dashed[agent] in alg_to_color.keys():
-                    color = alg_to_color["mb_" + dashed[agent]]
-                else:
-                    color = alg_to_color[dashed[agent]]
-            else:
-                color = alg_to_color[dashed[agent]]
+            # if FLAGS.mle and not agent.endswith("mle"):
+            #     color = alg_to_color[dashed[agent] + "_mle"]
+            # elif FLAGS.mb and not agent.startswith("mb"):
+            #     if "mb_" + dashed[agent] in alg_to_color.keys():
+            #         color = alg_to_color["mb_" + dashed[agent]]
+            #     else:
+            #         color = alg_to_color[dashed[agent]]
+            # else:
+            color = alg_to_color[internal_dashed[agent]]
             linestyle = "--"
-            if agent not in dotted:
-                linestyle = ":"
 
         planning_depth = comparison_config["planning_depths"][i]
         replay_capacity = comparison_config["replay_capacities"][i]
         persistent_agent_config = configs.agent_config.config[agent]
         plot_for_agent(agent, env_config, persistent_agent_config,
                        volatile_agent_config, planning_depth, replay_capacity, logs, color, linestyle)
-
-    persistent_agent_config = configs.agent_config.config["vanilla"]
-    plot_for_agent("vanilla", env_config, persistent_agent_config,
-                   volatile_agent_config, 0, 0, logs, "gray", "-")
 
 
     if FLAGS.cumulative_rmsve:
@@ -210,7 +224,7 @@ def plot_tensorflow_log(space, color, linestyle):
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
     if space["crt_config"]["agent"] == "vanilla":
-        plt.plot(x, mean_y_over_seeds, label="vanilla", c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
+        plt.plot(x, mean_y_over_seeds, label="model-free", c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
                          color="gray", alpha=0.07)
     else:

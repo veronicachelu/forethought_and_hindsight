@@ -149,42 +149,6 @@ def get_control_env(nrng, seed, space, aux_agent_configs):
 
     return env, nS, nA, input_dim
 
-# def get_control_agent(env, seed, nrng, nA, input_dim, space):
-#     rng = jrandom.PRNGKey(seed=seed)
-#     rng_q, rng_model, rng_agent = jrandom.split(rng, 3)
-#     rng_sequence = hk.PRNGSequence(rng_agent)
-#     network = get_network(
-#         pg=space["agent_config"]["pg"],
-#         num_hidden_layers=space["agent_config"]["num_hidden_layers"],
-#         num_units=space["agent_config"]["num_units"],
-#         nA=nA,
-#         input_dim=input_dim,
-#         rng=rng_model,
-#         rng_target=rng_q,
-#         feature_coder=space["env_config"]["feature_coder"],
-#         latent=space["agent_config"]["latent"],
-#         model_family="q",
-#         model_class=space["env_config"]["model_class"],
-#         target_networks=space["agent_config"]["target_networks"])
-#
-#     agent = VanillaQ(run_mode='q',
-#                      action_spec=env.action_spec(),
-#                      network=network,
-#                      batch_size=1,
-#                      discount=0.99,
-#                      lr=space["crt_config"]["lr"],
-#                      exploration_decay_period=space["env_config"]["num_episodes"],
-#                      nrng=nrng,
-#                      seed=seed,
-#                      logs=space["logs"],
-#                      log_period=space["log_period"],
-#                      latent=space["agent_config"]["latent"],
-#                      feature_coder=space["env_config"]["feature_coder"],
-#                      target_networks=space["agent_config"]["target_networks"]
-#                      )
-#
-#     return agent
-
 def get_control_agent(env, seed, nrng, nA, input_dim, space, aux_agent_configs):
     rng = jrandom.PRNGKey(seed=seed)
     rng_q, rng_model, rng_agent = jrandom.split(rng, 3)
@@ -299,6 +263,7 @@ def run_control_experiment(seed, space, aux_agent_configs):
     return env, agent
 
 def load_env_and_volatile_configs(env):
+    ## VERY BAD WILL REFACTOR AT SOME POINT ....#####
     if env == "repeat":
         env_config = configs.repeat_config.env_config
         volatile_agent_config = configs.repeat_config.volatile_agent_config

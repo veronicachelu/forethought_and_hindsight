@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 from dm_env import specs
 from jax import numpy as jnp
-
+from collections import deque
 from agents.tabular.tp_vanilla import TpVanilla
 from utils.replay import Replay
 
@@ -15,13 +15,13 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class TpTrueBwMLE(TpVanilla):
+class TpTrueBwTraj(TpVanilla):
     def __init__(
             self,
             **kwargs
     ):
 
-        super(TpTrueBwMLE, self).__init__(**kwargs)
+        super(TpTrueBwTraj, self).__init__(**kwargs)
         self._sequence = []
         self._should_reset_sequence = False
 
@@ -53,24 +53,38 @@ class TpTrueBwMLE(TpVanilla):
         if timestep.discount is None:
             return
 
-        o_t = np.array(timestep.observation)
-        d_t = np.array(timestep.discount)
-        losses = 0
-        o_tmn = self._o_network[o_t]
-        # o_tmn = self._softmax(o_tmn)
-        # divisior = np.sum(o_tmn, axis=-1, keepdims=True)
-        # o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0, axis=-1))
-        for prev_o_tmn in range(np.prod(self._input_dim)):
-            loss, gradient = self._v_planning_loss_grad(self._v_network,
-                                                           self._r_network,
-                                                           o_t, prev_o_tmn, d_t)
-            losses += loss
-            self._v_network[prev_o_tmn] = self._v_planning_opt_update(
-                o_tmn[prev_o_tmn] * gradient,
-                self._v_network[prev_o_tmn])
+        self.planning_update_bfs(timestep, prev_timestep)
 
-        losses_and_grads = {"losses": {"loss_v_planning": np.array(loss)},
-                            }
+    def planning_update_bfs(
+            self,
+            timestep: dm_env.TimeStep,
+            prev_timestep=None
+    ):
+        # o_t = np.array(timestep.observation)
+        # d_t = np.array(timestep.discount)
+
+        traj = deque()
+        traj.append((timestep.observation, timestep.discount))
+        sum_of_losses = 0
+        while len(traj) > 0:
+            o_t, d_t = traj.pop()
+            for k in range(self._planning_iter):
+                o_tmn = self._o_network[o_t]
+                # divisior = np.sum(o_tmn, axis=-1, keepdims=True)
+                # o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0, axis=-1))
+                for prev_o_tmn in range(np.prod(self._input_dim)):
+                    if o_tmn[prev_o_tmn] != 0:
+                        loss, gradient = self._v_planning_loss_grad(self._v_network,
+                                                                       self._r_network,
+                                                                       o_t, prev_o_tmn, d_t)
+                        sum_of_losses += loss
+                        self._v_network[prev_o_tmn] = self._v_planning_opt_update(o_tmn[prev_o_tmn] * gradient,
+                                                                                  self._v_network[prev_o_tmn])
+                        if (prev_o_tmn, 1) not in traj and prev_o_tmn != o_t:
+                            traj.append((prev_o_tmn, 1))
+
+        losses_and_grads = {"losses": {"loss_v_planning": np.array(sum_of_losses)},
+                                    }
         self._log_summaries(losses_and_grads, "value_planning")
 
     def model_based_train(self):

@@ -10,7 +10,7 @@ import utils
 from run_utils import *
 from utils import *
 
-flags.DEFINE_string('agent', 'bw_traj_mle', 'what agent to run')
+flags.DEFINE_string('agent', 'mb_p_true_bw_recur', 'what agent to run')
 flags.DEFINE_string('env', 'split', 'env')
 # flags.DEFINE_string('env', 'split', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
@@ -67,6 +67,9 @@ def main(argv):
                          "max_len": FLAGS.max_len,
                          "log_period": FLAGS.log_period}
     aux_agent_configs["mb"] = True if agent["agent"].split("_")[0] == "mb" else False
+    aux_agent_configs["pivot"] = "current" if agent["agent"].split("_")[0] == "mb" and \
+                                              agent["agent"].split("_")[1] == "c" else\
+                                 "previous"
     run_agent(FLAGS.env, agent, logs, aux_agent_configs)
 
 
