@@ -193,7 +193,7 @@ config = {
         "task_type": "prediction",
         "control_agent": "q",
         "pg": False,
-        "run_mode": "p_bw_extr",
+        "run_mode": "p_bw",
         "planning_iter": 1,
         "latent": False,
         "num_hidden_layers": 0,
