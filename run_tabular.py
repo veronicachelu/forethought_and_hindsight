@@ -10,7 +10,7 @@ import utils
 from run_utils import *
 from utils import *
 
-flags.DEFINE_string('agent', 'c_bw_recur_MLE', 'what agent to run')
+flags.DEFINE_string('agent', 'p_bw_PAML', 'what agent to run')
 flags.DEFINE_string('env', 'split', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')

@@ -561,9 +561,9 @@ config = {
         "num_hidden_layers": 0,
         "num_units": 0,
         "model_family": "PAML",
-        # "target_networks": True,
         "target_networks": False,
-        "class": {"linear": "LpBwPAML"},
+        "class": {"linear": "LpBwPAML",
+                  "tabular": "TpBwPAML"},
     },
     "c_bw_PAML": {
         "task_type": "prediction",
