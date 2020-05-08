@@ -95,11 +95,11 @@ def main(argv):
 
     env_config, volatile_agent_config = load_env_and_volatile_configs(FLAGS.env)
 
-    name = "all"
+    name = FLAGS.pivoting + "_" +"all"
     if FLAGS.mb:
-        name = "mb_" + FLAGS.pivoting + "_" + name
+        name = "mb_" + name
     if FLAGS.mle:
-        name = FLAGS.pivoting + "_" + name + "_mle"
+        name = name + "_mle"
 
     internal_dashed = dashed
     if FLAGS.mle and FLAGS.mb:
@@ -164,11 +164,11 @@ def main(argv):
     if not os.path.exists(plots):
         os.makedirs(plots)
 
-    name = "all"
+    name = FLAGS.pivoting + "_" +"all"
     if FLAGS.mb:
-        name = "mb_" + FLAGS.pivoting + "_" + name
+        name = "mb_" + name
     if FLAGS.mle:
-        name = FLAGS.pivoting + "_" + name + "_mle"
+        name = name + "_mle"
 
     plt.grid()
     plt.tight_layout()
