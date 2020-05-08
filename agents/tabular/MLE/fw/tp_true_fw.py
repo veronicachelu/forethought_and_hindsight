@@ -42,7 +42,7 @@ class TpTrueFw(TpVanilla):
             # o_t = np.divide(o_t, divisior, out=np.zeros_like(o_t), where=np.all(divisior != 0))
             for next_o_t in range(np.prod(self._input_dim)):
                 target_per_next_o = o_t[next_o_t] * \
-                (r_tmn[next_o_t] + (self._discount ** self._n) *\
+                (r_tmn[next_o_t] + d_tmn * (self._discount ** self._n) *\
                       v_params[next_o_t])
                 target += target_per_next_o
             td_error = (target - v_tmn)
@@ -63,14 +63,15 @@ class TpTrueFw(TpVanilla):
     def planning_update(
             self,
             timestep: dm_env.TimeStep,
-            prev_timestep=None
+            prev_timestep=None,
+            next_timestep=None,
     ):
         if timestep.last():
             return
         # if timestep.discount is None:
         #     return
         o_t = np.array([timestep.observation])
-        d_t = np.array(timestep.discount)
+        d_t = np.array(next_timestep.discount)
         loss, gradient = self._v_planning_loss_grad(self._v_network,
                                                     self._fw_o_network,
                                                     self._r_network,

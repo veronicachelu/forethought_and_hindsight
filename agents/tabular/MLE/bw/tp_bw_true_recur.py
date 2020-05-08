@@ -60,28 +60,32 @@ class TpTrueBwRecur(TpVanilla):
             timestep: dm_env.TimeStep,
             prev_timestep=None
     ):
-        # o_t = np.array(timestep.observation)
-        # d_t = np.array(timestep.discount)
-
+        def in_queue(el):
+            for qel in traj:
+                if qel[0] == el:
+                    return True
+            else:
+                return False
         traj = deque()
-        traj.append((timestep.observation, timestep.discount))
+        traj.append((timestep.observation, timestep.discount, 0))
         sum_of_losses = 0
         while len(traj) > 0:
-            o_t, d_t = traj.pop()
-            for k in range(self._planning_iter):
-                o_tmn = self._o_network[o_t]
-                # divisior = np.sum(o_tmn, axis=-1, keepdims=True)
-                # o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0, axis=-1))
-                for prev_o_tmn in range(np.prod(self._input_dim)):
-                    if o_tmn[prev_o_tmn] != 0:
-                        loss, gradient = self._v_planning_loss_grad(self._v_network,
-                                                                       self._r_network,
-                                                                       o_t, prev_o_tmn, d_t)
-                        sum_of_losses += loss
-                        self._v_network[prev_o_tmn] = self._v_planning_opt_update(o_tmn[prev_o_tmn] * gradient,
-                                                                                  self._v_network[prev_o_tmn])
-                        if (prev_o_tmn, 1) not in traj and prev_o_tmn != o_t:
-                            traj.append((prev_o_tmn, 1))
+            o_t, d_t, recur_level = traj.pop()
+            o_tmn = self._o_network[o_t]
+            divisior = np.sum(o_tmn, axis=-1, keepdims=False)
+            recur_level += 1
+            if divisior == 0 or recur_level > 2:
+                continue
+            for prev_o_tmn in range(np.prod(self._input_dim)):
+                if o_tmn[prev_o_tmn] != 0:
+                    loss, gradient = self._v_planning_loss_grad(self._v_network,
+                                                                   self._r_network,
+                                                                   o_t, prev_o_tmn, d_t)
+                    sum_of_losses += loss
+                    self._v_network[prev_o_tmn] = self._v_planning_opt_update(o_tmn[prev_o_tmn] * gradient,
+                                                                              self._v_network[prev_o_tmn])
+                    if not in_queue(prev_o_tmn) and prev_o_tmn != o_t:
+                        traj.append((prev_o_tmn, 1, recur_level))
 
         losses_and_grads = {"losses": {"loss_v_planning": np.array(sum_of_losses)},
                                     }

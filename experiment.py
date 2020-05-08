@@ -50,7 +50,7 @@ def run_episodic(agent: Agent,
                     if aux_agent_configs["pivot"] == "c":
                         agent.planning_update(new_timestep)
                     else:
-                        agent.planning_update(timestep)
+                        agent.planning_update(timestep, next_timestep=new_timestep)
 
                 agent.total_steps += 1
                 t += 1

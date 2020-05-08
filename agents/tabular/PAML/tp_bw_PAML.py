@@ -30,25 +30,34 @@ class TpBwPAML(TpVanilla):
         self._r_network = self._network["model"]["net"][2]
         self._d_network = self._network["model"]["net"][3]
 
-        # def cov(o_params, r_params, X_i):
+        def covariance(v_params, o_params, r_params, X_i):
+            P = self._softmax(o_params[X_i])
+            x_shape = np.prod(self._input_dim)
+            exp_Delta = np.zeros((x_shape,x_shape))
+            exp_phi_prime = np.zeros((x_shape,x_shape))
+            exp_Delta_phi_prime = np.zeros((x_shape,x_shape))
+            for x_prime in range(x_shape):
+                td_error = (r_params[x_prime, X_i] + (self._discount ** self._n) *
+                        v_params[X_i] - v_params[x_prime])
+                Delta = td_error * np.eye(x_shape)[x_prime]
+                exp_Delta += P[x_prime] * Delta
+                exp_phi_prime += P[x_prime] * np.transpose(np.eye(x_shape)[x_prime])
+                exp_Delta_phi_prime += P[x_prime] *\
+                    np.matmul(Delta, np.transpose(np.eye(x_shape)[x_prime]))
 
+            cov = exp_Delta_phi_prime - np.matmul(exp_Delta, exp_phi_prime)
 
-        def model_loss(o_params, r_params, transitions):
+            return cov
+
+        self._cov = covariance
+
+        def model_loss(v_params, o_params, r_params, transitions):
             o_tmn_target = transitions[0][0]
             o_t = transitions[-1][-1]
-
-            o_tmn = o_params[o_t]
-            o_target = np.eye(np.prod(self._input_dim))[o_tmn_target]
-
-            o_loss = 100 * self._ce(self._log_softmax(o_tmn), o_target)
-
-            o_tmn_probs = self._softmax(o_tmn)
-            o_tmn_probs[o_tmn_target] -= 1
-            o_tmn_probs /= len(o_tmn_probs)
-            o_error = - 100 * o_tmn_probs
+            x_shape = np.prod(self._input_dim)
+            P = self._softmax(o_params[o_t])
 
             r_tmn = r_params[o_tmn_target, o_t]
-
             r_tmn_target = 0
             for i, t in enumerate(transitions):
                 r_tmn_target += (self._discount ** i) * t[2]
@@ -56,6 +65,19 @@ class TpBwPAML(TpVanilla):
             r_error = r_tmn_target - r_tmn
             r_loss = np.mean(r_error ** 2)
 
+            exp_model_Delta = np.zeros((x_shape))
+            for o_tmn in range(x_shape):
+                td_error = r_params[o_tmn, o_t] + (self._discount ** self._n) *\
+                        v_params[o_t] - v_params[o_tmn]
+                model_Delta = td_error * np.eye(x_shape)[o_t]
+                exp_model_Delta += P[o_tmn] *  model_Delta
+
+            real_td_error = r_tmn_target + (self._discount ** self._n) *\
+                        v_params[o_t] - v_params[o_tmn_target]
+            real_Delta = real_td_error * np.eye(x_shape)[o_tmn_target]
+            cov = self._cov(v_params, o_params, r_params, o_t)
+            o_error = -np.matmul((exp_model_Delta - real_Delta), cov)
+            o_loss = np.mean((exp_model_Delta - real_Delta) ** 2)
             total_error = o_loss + r_loss
             return (total_error, o_loss, r_loss), (o_error, r_error)
 
@@ -86,7 +108,7 @@ class TpBwPAML(TpVanilla):
         if len(self._sequence) >= self._n:
             o_tmn = self._sequence[0][0]
             o_t = self._sequence[-1][-1]
-            losses, gradients = self._model_loss_grad(self._o_network, self._r_network, self._sequence)
+            losses, gradients = self._model_loss_grad(self._v_network, self._o_network, self._r_network, self._sequence)
             self._o_network[o_t], self._r_network[o_tmn, o_t] = \
                 self._model_opt_update(gradients, [self._o_network[o_t],
                                                self._r_network[o_tmn, o_t]])
