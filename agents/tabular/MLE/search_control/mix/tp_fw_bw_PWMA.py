@@ -8,7 +8,7 @@ import tensorflow as tf
 from dm_env import specs
 from jax import numpy as jnp
 
-from agents.tabular.tp_vanilla import TpVanilla
+from agents.tabular.MLE.tp_vanilla import TpVanilla
 from utils.replay import Replay
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
