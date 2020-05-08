@@ -72,7 +72,7 @@ class LpFwPAML(LpVanillaPAML):
             real_update = vjp_fun(real_td_error[..., None])[0]
 
             model_t = self._o_network(o_params, h_tmn)
-            model_v_t_target, model_vjp_fun = jax.vjp(self._v_network, v_params, model_t)
+            model_v_t_target = jnp.squeeze(self._v_network(v_params, h_tmn), axis=-1)
             model_v_t_target = jnp.squeeze(model_v_t_target, axis=-1)
 
             model_r_input = jnp.concatenate([h_tmn, model_t], axis=-1)
@@ -86,7 +86,7 @@ class LpFwPAML(LpVanillaPAML):
                                                    model_v_t_target)
             # target_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_td_target,
             #                                                      lax.stop_gradient(real_td_target)))
-            model_update = model_vjp_fun(model_td_error[None, ...])[0]
+            model_update = vjp_fun(model_td_error[None, ...])[0]
             update_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_update, lax.stop_gradient(real_update)))
             r_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_r_tmn_2_t, real_r_tmn_2_t))
             l1_reg = jnp.linalg.norm(o_params, 1)
