@@ -73,7 +73,6 @@ class LpFwPAML(LpVanillaPAML):
 
             model_t = self._o_network(o_params, h_tmn)
             model_v_t_target = jnp.squeeze(self._v_network(v_params, h_tmn), axis=-1)
-            model_v_t_target = jnp.squeeze(model_v_t_target, axis=-1)
 
             model_r_input = jnp.concatenate([h_tmn, model_t], axis=-1)
             model_r_tmn_2_t = self._r_network(r_params, model_r_input)
