@@ -35,3 +35,5 @@ others probablly but haven't kept task
 * MB=True only for pure model-based learning
 * PIVOTING: has to follow the format set in config/comparison_configs.py, e.g. "bw_p_fw_p", this is appended to "_all" and than takes the agents set in comparison configs at that key to plot them
 * you can also see plots in tensorboad live, but this plotting makes an average over seeds and plots them nicely
+
+* There is also hyperparamer tuning, which is why the super added complexity in configs and stuff, but that is potentially less interesting to add here
