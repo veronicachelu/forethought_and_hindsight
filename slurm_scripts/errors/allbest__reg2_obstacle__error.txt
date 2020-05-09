@@ -1,0 +1,20 @@
+[=== Module cuda/10.0 loaded ===]
+[=== Module cuda/10.0/cudnn/7.6 loaded ===]
+2020-05-05 22:40:11.076297: W external/org_tensorflow/tensorflow/compiler/xla/service/hlo_pass_fix.h:49] Unexpectedly high number of iterations in HLO passes, exiting fixed point loop.
+2020-05-05 22:40:11.988613: W external/org_tensorflow/tensorflow/compiler/xla/service/hlo_pass_fix.h:49] Unexpectedly high number of iterations in HLO passes, exiting fixed point loop.
+2020-05-05 22:40:42.107607: F tensorflow/stream_executor/cuda/cuda_driver.cc:175] Check failed: err == cudaSuccess || err == cudaErrorInvalidValue Unexpected CUDA error: out of memory
+Fatal Python error: Aborted
+
+Current thread 0x00007efe76e27740 (most recent call first):
+  File "/network/home/cheluver/miniconda3/envs/new/lib/python3.6/site-packages/tensorflow_core/python/ops/gen_math_ops.py", line 2199 in cast
+  File "/network/home/cheluver/miniconda3/envs/new/lib/python3.6/site-packages/tensorflow_core/python/ops/math_ops.py", line 704 in cast
+  File "/network/home/cheluver/miniconda3/envs/new/lib/python3.6/site-packages/tensorflow_core/python/util/dispatch.py", line 180 in wrapper
+  File "/network/home/cheluver/miniconda3/envs/new/lib/python3.6/site-packages/tensorboard/plugins/scalar/summary_v2.py", line 63 in scalar
+  File "/network/home/cheluver/jax_models/experiment.py", line 137 in run_episodic
+  File "/network/home/cheluver/jax_models/run_utils.py", line 61 in run_objective
+  File "/network/home/cheluver/jax_models/run_utils.py", line 46 in run_agent
+  File "run_all_best.py", line 67 in main
+  File "/network/home/cheluver/miniconda3/envs/new/lib/python3.6/site-packages/absl/app.py", line 250 in _run_main
+  File "/network/home/cheluver/miniconda3/envs/new/lib/python3.6/site-packages/absl/app.py", line 299 in run
+  File "run_all_best.py", line 70 in <module>
+/var/spool/slurmd/job426163/slurm_script: line 12: 21282 Aborted                 (core dumped) python run_all_best.py --env=reg2_obstacle

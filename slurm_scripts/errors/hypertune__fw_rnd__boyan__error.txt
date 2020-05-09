@@ -1,0 +1,8 @@
+[=== Module cuda/10.0 loaded ===]
+[=== Module cuda/10.0/cudnn/7.6 loaded ===]
+2020-04-27 07:26:05.035301: E external/org_tensorflow/tensorflow/stream_executor/cuda/cuda_driver.cc:313] failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+2020-04-27 07:26:06.552189: E tensorflow/stream_executor/cuda/cuda_driver.cc:318] failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+/network/home/cheluver/miniconda3/envs/new/lib/python3.6/site-packages/jax/lib/xla_bridge.py:122: UserWarning: No GPU/TPU found, falling back to CPU.
+  warnings.warn('No GPU/TPU found, falling back to CPU.')
+/network/home/cheluver/miniconda3/envs/new/lib/python3.6/site-packages/jax/nn/initializers.py:44: RuntimeWarning: invalid value encountered in double_scalars
+  receptive_field_size = onp.prod(shape) / shape[in_axis] / shape[out_axis]

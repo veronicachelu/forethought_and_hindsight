@@ -1,0 +1,70 @@
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                           : Mon Apr 27 12:29:22 2020
+Driver Version                      : 430.34
+CUDA Version                        : 10.1
+
+Attached GPUs                       : 1
+GPU 00000000:09:00.0
+    Accounting Mode                 : Enabled
+    Accounting Mode Buffer Size     : 4000
+    Accounted Processes             : None
+
+Mon Apr 27 12:29:22 2020       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 430.34       Driver Version: 430.34       CUDA Version: 10.1     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  GeForce GTX TIT...  Off  | 00000000:09:00.0 Off |                  N/A |
+| 22%   37C    P8    16W / 250W |      0MiB / 12212MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                           : Tue Apr 28 13:40:38 2020
+Driver Version                      : 430.34
+CUDA Version                        : 10.1
+
+Attached GPUs                       : 1
+GPU 00000000:09:00.0
+    Accounting Mode                 : Enabled
+    Accounting Mode Buffer Size     : 4000
+    Accounted Processes
+        Process ID                  : 14063
+            GPU Utilization         : 1 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 12051 MiB
+            Time                    : 22084915 ms
+            Is Running              : 0
+
+Tue Apr 28 13:40:38 2020       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 430.34       Driver Version: 430.34       CUDA Version: 10.1     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  TITAN X (Pascal)    Off  | 00000000:09:00.0 Off |                  N/A |
+| 34%   60C    P0    75W / 250W |      0MiB / 12196MiB |     20%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+

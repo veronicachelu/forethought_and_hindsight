@@ -1,0 +1,130 @@
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                           : Tue Apr 28 07:26:48 2020
+Driver Version                      : 430.34
+CUDA Version                        : 10.1
+
+Attached GPUs                       : 1
+GPU 00000000:02:00.0
+    Accounting Mode                 : Enabled
+    Accounting Mode Buffer Size     : 4000
+    Accounted Processes             : None
+
+Tue Apr 28 07:26:48 2020       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 430.34       Driver Version: 430.34       CUDA Version: 10.1     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  Quadro K6000        Off  | 00000000:02:00.0 Off |                  Off |
+| 26%   34C    P8    32W / 225W |      0MiB / 12205MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                           : Tue Apr 28 07:51:48 2020
+Driver Version                      : 430.34
+CUDA Version                        : 10.1
+
+Attached GPUs                       : 1
+GPU 00000000:02:00.0
+    Accounting Mode                 : Enabled
+    Accounting Mode Buffer Size     : 4000
+    Accounted Processes
+        Process ID                  : 14265
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 119 ms
+            Is Running              : 0
+        Process ID                  : 14596
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 136 ms
+            Is Running              : 0
+        Process ID                  : 14802
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 132 ms
+            Is Running              : 0
+        Process ID                  : 15036
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 135 ms
+            Is Running              : 0
+        Process ID                  : 15242
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 135 ms
+            Is Running              : 0
+        Process ID                  : 15430
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 120 ms
+            Is Running              : 0
+        Process ID                  : 15636
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 119 ms
+            Is Running              : 0
+        Process ID                  : 15827
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 124 ms
+            Is Running              : 0
+        Process ID                  : 16043
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 125 ms
+            Is Running              : 0
+        Process ID                  : 16241
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 138 ms
+            Is Running              : 0
+        Process ID                  : 14116
+            GPU Utilization         : 2 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 12030 MiB
+            Time                    : 1143992 ms
+            Is Running              : 0
+
+Tue Apr 28 07:51:48 2020       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 430.34       Driver Version: 430.34       CUDA Version: 10.1     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  Quadro K6000        Off  | 00000000:02:00.0 Off |                  Off |
+| 29%   50C    P0    73W / 225W |      0MiB / 12205MiB |      7%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+

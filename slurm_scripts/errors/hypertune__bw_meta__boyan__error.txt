@@ -1,0 +1,5 @@
+[=== Module cuda/10.0 loaded ===]
+[=== Module cuda/10.0/cudnn/7.6 loaded ===]
+2020-04-27 07:59:11.376584: E external/org_tensorflow/tensorflow/stream_executor/cuda/cuda_driver.cc:313] failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+2020-04-27 07:59:13.517250: E tensorflow/stream_executor/cuda/cuda_driver.cc:318] failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+slurmstepd: error: *** JOB 420734 ON eos11 CANCELLED AT 2020-04-27T12:25:21 ***

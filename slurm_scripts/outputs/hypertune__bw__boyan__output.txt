@@ -1,0 +1,892 @@
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                           : Fri Apr 24 22:29:33 2020
+Driver Version                      : 430.34
+CUDA Version                        : 10.1
+
+Attached GPUs                       : 1
+GPU 00000000:03:00.0
+    Accounting Mode                 : Enabled
+    Accounting Mode Buffer Size     : 4000
+    Accounted Processes
+        Process ID                  : 28733
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 142 ms
+            Is Running              : 0
+        Process ID                  : 28991
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 154 ms
+            Is Running              : 0
+        Process ID                  : 29225
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 181 ms
+            Is Running              : 0
+        Process ID                  : 29474
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 140 ms
+            Is Running              : 0
+        Process ID                  : 29709
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 133 ms
+            Is Running              : 0
+        Process ID                  : 29953
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 135 ms
+            Is Running              : 0
+        Process ID                  : 30258
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 145 ms
+            Is Running              : 0
+        Process ID                  : 30510
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 146 ms
+            Is Running              : 0
+        Process ID                  : 30742
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 128 ms
+            Is Running              : 0
+        Process ID                  : 30984
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 163 ms
+            Is Running              : 0
+        Process ID                  : 31305
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 128 ms
+            Is Running              : 0
+        Process ID                  : 31601
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 128 ms
+            Is Running              : 0
+        Process ID                  : 31835
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 134 ms
+            Is Running              : 0
+        Process ID                  : 32070
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 140 ms
+            Is Running              : 0
+        Process ID                  : 32317
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 127 ms
+            Is Running              : 0
+        Process ID                  : 32560
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 128 ms
+            Is Running              : 0
+        Process ID                  : 454
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 158 ms
+            Is Running              : 0
+        Process ID                  : 694
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 178 ms
+            Is Running              : 0
+        Process ID                  : 1032
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 163 ms
+            Is Running              : 0
+        Process ID                  : 1336
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 135 ms
+            Is Running              : 0
+        Process ID                  : 1582
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 139 ms
+            Is Running              : 0
+        Process ID                  : 1835
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 180 ms
+            Is Running              : 0
+        Process ID                  : 2077
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 189 ms
+            Is Running              : 0
+        Process ID                  : 2355
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 157 ms
+            Is Running              : 0
+        Process ID                  : 2606
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 128 ms
+            Is Running              : 0
+        Process ID                  : 2869
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 128 ms
+            Is Running              : 0
+        Process ID                  : 3191
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 128 ms
+            Is Running              : 0
+        Process ID                  : 3443
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 143 ms
+            Is Running              : 0
+        Process ID                  : 3825
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 128 ms
+            Is Running              : 0
+        Process ID                  : 4072
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 128 ms
+            Is Running              : 0
+        Process ID                  : 4362
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 148 ms
+            Is Running              : 0
+        Process ID                  : 4626
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 128 ms
+            Is Running              : 0
+        Process ID                  : 4861
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 138 ms
+            Is Running              : 0
+        Process ID                  : 5098
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 129 ms
+            Is Running              : 0
+        Process ID                  : 5343
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 144 ms
+            Is Running              : 0
+        Process ID                  : 5600
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 142 ms
+            Is Running              : 0
+        Process ID                  : 5835
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 145 ms
+            Is Running              : 0
+        Process ID                  : 6079
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 63 MiB
+            Time                    : 141 ms
+            Is Running              : 0
+        Process ID                  : 32718
+            GPU Utilization         : 2 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 12031 MiB
+            Time                    : 0 ms
+            Is Running              : 1
+
+Fri Apr 24 22:29:33 2020       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 430.34       Driver Version: 430.34       CUDA Version: 10.1     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  Quadro K6000        On   | 00000000:03:00.0 Off |                  Off |
+| 35%   57C    P8    19W / 225W |  12044MiB / 12206MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|    0     32718      C   python                                     12031MiB |
++-----------------------------------------------------------------------------+
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                           : Fri Apr 24 22:32:36 2020
+Driver Version                      : 430.34
+CUDA Version                        : 10.1
+
+Attached GPUs                       : 1
+GPU 00000000:03:00.0
+    Accounting Mode                 : Enabled
+    Accounting Mode Buffer Size     : 4000
+    Accounted Processes             : None
+
+Fri Apr 24 22:32:36 2020       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 430.34       Driver Version: 430.34       CUDA Version: 10.1     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  Quadro K6000        On   | 00000000:03:00.0 Off |                  Off |
+| 33%   56C    P8    19W / 225W |      0MiB / 12206MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                           : Sat Apr 25 12:18:10 2020
+Driver Version                      : 430.34
+CUDA Version                        : 10.1
+
+Attached GPUs                       : 1
+GPU 00000000:01:00.0
+    Accounting Mode                 : Enabled
+    Accounting Mode Buffer Size     : 4000
+    Accounted Processes             : None
+
+Sat Apr 25 12:18:10 2020       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 430.34       Driver Version: 430.34       CUDA Version: 10.1     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  GeForce GTX TIT...  Off  | 00000000:01:00.0 Off |                  N/A |
+| 25%   63C    P8    30W / 250W |      0MiB / 12211MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                           : Sat Apr 25 13:44:28 2020
+Driver Version                      : 430.34
+CUDA Version                        : 10.1
+
+Attached GPUs                       : 1
+GPU 00000000:02:00.0
+    Accounting Mode                 : Enabled
+    Accounting Mode Buffer Size     : 4000
+    Accounted Processes
+        Process ID                  : 11918
+            GPU Utilization         : 2 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 12066 MiB
+            Time                    : 4817743 ms
+            Is Running              : 0
+
+Sat Apr 25 13:44:28 2020       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 430.34       Driver Version: 430.34       CUDA Version: 10.1     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  GeForce GTX TIT...  Off  | 00000000:02:00.0 Off |                  N/A |
+| 27%   68C    P0    98W / 250W |      0MiB / 12212MiB |    100%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                           : Sat Apr 25 13:58:40 2020
+Driver Version                      : 430.34
+CUDA Version                        : 10.1
+
+Attached GPUs                       : 1
+GPU 00000000:02:00.0
+    Accounting Mode                 : Enabled
+    Accounting Mode Buffer Size     : 4000
+    Accounted Processes
+        Process ID                  : 21367
+            GPU Utilization         : 2 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 12065 MiB
+            Time                    : 83889 ms
+            Is Running              : 0
+
+Sat Apr 25 13:58:40 2020       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 430.34       Driver Version: 430.34       CUDA Version: 10.1     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  GeForce GTX TIT...  Off  | 00000000:02:00.0 Off |                  N/A |
+| 22%   57C    P0    91W / 250W |      0MiB / 12212MiB |     72%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                           : Sat Apr 25 23:09:52 2020
+Driver Version                      : 418.116.00
+CUDA Version                        : 10.1
+
+Attached GPUs                       : 1
+GPU 00000000:8A:00.0
+    Accounting Mode                 : Enabled
+    Accounting Mode Buffer Size     : 4000
+    Accounted Processes
+        Process ID                  : 25327
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 29253 MiB
+            Time                    : 2010 ms
+            Is Running              : 0
+
+Sat Apr 25 23:09:52 2020       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 418.116.00   Driver Version: 418.116.00   CUDA Version: 10.1     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  Tesla V100-SXM2...  On   | 00000000:8A:00.0 Off |                    0 |
+| N/A   31C    P0    51W / 163W |      0MiB / 32480MiB |    100%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                           : Sun Apr 26 09:29:08 2020
+Driver Version                      : 430.34
+CUDA Version                        : 10.1
+
+Attached GPUs                       : 1
+GPU 00000000:02:00.0
+    Accounting Mode                 : Enabled
+    Accounting Mode Buffer Size     : 4000
+    Accounted Processes
+        Process ID                  : 5665
+            GPU Utilization         : 2 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 12066 MiB
+            Time                    : 7075015 ms
+            Is Running              : 0
+
+Sun Apr 26 09:29:08 2020       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 430.34       Driver Version: 430.34       CUDA Version: 10.1     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  GeForce GTX TIT...  Off  | 00000000:02:00.0 Off |                  N/A |
+| 27%   69C    P0    99W / 250W |      0MiB / 12212MiB |    100%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                           : Sun Apr 26 14:15:25 2020
+Driver Version                      : 440.31
+CUDA Version                        : 10.2
+
+Attached GPUs                       : 1
+GPU 00000000:06:00.0
+    Accounting Mode                 : Enabled
+    Accounting Mode Buffer Size     : 4000
+    Accounted Processes
+        Process ID                  : 22544
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 188 ms
+            Is Running              : 0
+        Process ID                  : 22859
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 198 ms
+            Is Running              : 0
+        Process ID                  : 23212
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 189 ms
+            Is Running              : 0
+        Process ID                  : 23568
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 192 ms
+            Is Running              : 0
+        Process ID                  : 24071
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 192 ms
+            Is Running              : 0
+        Process ID                  : 24401
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 189 ms
+            Is Running              : 0
+        Process ID                  : 24724
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 182 ms
+            Is Running              : 0
+        Process ID                  : 25070
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 198 ms
+            Is Running              : 0
+        Process ID                  : 25379
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 186 ms
+            Is Running              : 0
+        Process ID                  : 25690
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 191 ms
+            Is Running              : 0
+        Process ID                  : 26016
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 184 ms
+            Is Running              : 0
+        Process ID                  : 26370
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 201 ms
+            Is Running              : 0
+        Process ID                  : 26753
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 177 ms
+            Is Running              : 0
+        Process ID                  : 27067
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 184 ms
+            Is Running              : 0
+        Process ID                  : 27366
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 203 ms
+            Is Running              : 0
+        Process ID                  : 27692
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 190 ms
+            Is Running              : 0
+        Process ID                  : 28014
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 188 ms
+            Is Running              : 0
+        Process ID                  : 28362
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 187 ms
+            Is Running              : 0
+        Process ID                  : 28714
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 199 ms
+            Is Running              : 0
+        Process ID                  : 29028
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 189 ms
+            Is Running              : 0
+        Process ID                  : 29344
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 189 ms
+            Is Running              : 0
+        Process ID                  : 29660
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 193 ms
+            Is Running              : 0
+        Process ID                  : 30013
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 193 ms
+            Is Running              : 0
+        Process ID                  : 30350
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 193 ms
+            Is Running              : 0
+        Process ID                  : 30662
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 190 ms
+            Is Running              : 0
+        Process ID                  : 31020
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 188 ms
+            Is Running              : 0
+        Process ID                  : 31344
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 192 ms
+            Is Running              : 0
+        Process ID                  : 31690
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 191 ms
+            Is Running              : 0
+        Process ID                  : 32000
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 183 ms
+            Is Running              : 0
+        Process ID                  : 32314
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 184 ms
+            Is Running              : 0
+        Process ID                  : 32641
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 195 ms
+            Is Running              : 0
+        Process ID                  : 509
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 207 ms
+            Is Running              : 0
+        Process ID                  : 891
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 185 ms
+            Is Running              : 0
+        Process ID                  : 1228
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 189 ms
+            Is Running              : 0
+        Process ID                  : 1547
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 206 ms
+            Is Running              : 0
+        Process ID                  : 1875
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 192 ms
+            Is Running              : 0
+        Process ID                  : 2193
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 193 ms
+            Is Running              : 0
+        Process ID                  : 2570
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 225 ms
+            Is Running              : 0
+        Process ID                  : 2898
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 186 ms
+            Is Running              : 0
+        Process ID                  : 3370
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 186 ms
+            Is Running              : 0
+        Process ID                  : 3697
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 184 ms
+            Is Running              : 0
+        Process ID                  : 4013
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 182 ms
+            Is Running              : 0
+        Process ID                  : 4382
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 194 ms
+            Is Running              : 0
+        Process ID                  : 4696
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 189 ms
+            Is Running              : 0
+        Process ID                  : 5004
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 182 ms
+            Is Running              : 0
+        Process ID                  : 5328
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 195 ms
+            Is Running              : 0
+        Process ID                  : 5648
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 191 ms
+            Is Running              : 0
+        Process ID                  : 5990
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 183 ms
+            Is Running              : 0
+        Process ID                  : 6302
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 182 ms
+            Is Running              : 0
+        Process ID                  : 6611
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 203 ms
+            Is Running              : 0
+        Process ID                  : 6942
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 231 ms
+            Is Running              : 0
+        Process ID                  : 7248
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 191 ms
+            Is Running              : 0
+        Process ID                  : 7598
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 193 ms
+            Is Running              : 0
+        Process ID                  : 7937
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 208 ms
+            Is Running              : 0
+        Process ID                  : 8250
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 199 ms
+            Is Running              : 0
+        Process ID                  : 8577
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 192 ms
+            Is Running              : 0
+        Process ID                  : 8898
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 199 ms
+            Is Running              : 0
+        Process ID                  : 9238
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 195 ms
+            Is Running              : 0
+        Process ID                  : 9549
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 186 ms
+            Is Running              : 0
+        Process ID                  : 9857
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 193 ms
+            Is Running              : 0
+        Process ID                  : 10180
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 97 MiB
+            Time                    : 194 ms
+            Is Running              : 0
+        Process ID                  : 22199
+            GPU Utilization         : 2 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 12063 MiB
+            Time                    : 7300171 ms
+            Is Running              : 0
+        Process ID                  : 23376
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 0 MiB
+            Time                    : 0 ms
+            Is Running              : 1
+
+Sun Apr 26 14:15:25 2020       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 440.31       Driver Version: 440.31       CUDA Version: 10.2     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  GeForce GTX TIT...  Off  | 00000000:06:00.0 Off |                  N/A |
+| 41%   82C    P0    98W / 250W |      1MiB / 12212MiB |    100%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+

@@ -487,15 +487,15 @@ configs={
     },
     "reg2_obstacle": {
         "bw_p_fw_p_all": {
-            "agents": ["p_bw", "p_true_bw", "p_fw", "p_fw_PAML", "p_bw_PAML"
+            "agents": ["p_bw", "p_fw", "p_fw_PAML", "p_bw_PAML"
                        ],
             "planning_depths": [1, 1, 1, 1, 1, 1],
             "replay_capacities": [0, 0, 0, 0, 0, 0]
         },
-        "mb_bw_p_fw_p_all": {
-            "agents": ["mb_p_bw", "mb_p_true_bw", "mb_p_fw",
-                       "mb_p_fw_PAML", "mb_p_bw_PAML"
-                       ],
+        "mb_bw_c_fw_p_all": {
+            "agents": ["mb_c_bw", "mb_p_fw",
+                      "mb_p_fw_PAML", "mb_c_bw_PAML"
+                      ],
             "planning_depths": [1, 1, 1, 1, 1, 1],
             "replay_capacities": [0, 0, 0, 0, 0, 0]
         },

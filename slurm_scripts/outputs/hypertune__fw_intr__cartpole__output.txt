@@ -1,0 +1,1284 @@
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                           : Sat Apr 25 22:57:49 2020
+Driver Version                      : 430.14
+CUDA Version                        : 10.2
+
+Attached GPUs                       : 1
+GPU 00000000:0A:00.0
+    Accounting Mode                 : Enabled
+    Accounting Mode Buffer Size     : 4000
+    Accounted Processes
+        Process ID                  : 46520
+            GPU Utilization         : 0 %
+            Memory Utilization      : 0 %
+            Max memory usage        : 14565 MiB
+            Time                    : 2103 ms
+            Is Running              : 0
+
+Sat Apr 25 22:57:49 2020       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 430.14       Driver Version: 430.14       CUDA Version: 10.2     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  Tesla V100-SXM2...  On   | 00000000:0A:00.0 Off |                    0 |
+| N/A   31C    P0    65W / 300W |      0MiB / 16160MiB |     78%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                           : Sat Apr 25 23:09:56 2020
+Driver Version                      : 430.34
+CUDA Version                        : 10.1
+
+Attached GPUs                       : 1
+GPU 00000000:03:00.0
+    Accounting Mode                 : Enabled
+    Accounting Mode Buffer Size     : 4000
+    Accounted Processes
+        Process ID                  : 5801
+            GPU Utilization         : 10 %
+            Memory Utilization      : 1 %
+            Max memory usage        : 14565 MiB
+            Time                    : 3547 ms
+            Is Running              : 0
+
+Sat Apr 25 23:09:56 2020       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 430.34       Driver Version: 430.34       CUDA Version: 10.1     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  Tesla V100-PCIE...  Off  | 00000000:03:00.0 Off |                    0 |
+| N/A   25C    P0    39W / 250W |      0MiB / 16160MiB |      6%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1304: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_0/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1133: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_1/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1037: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_2/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1170: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_3/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1120: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_4/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1205: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_5/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1068: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_6/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1221: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_7/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1327: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_8/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1117: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_9/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1299: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_10/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1073: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_11/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1095: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_12/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1159: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_13/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1248: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_14/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1196: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_15/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1112: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_16/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1195: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_17/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1164: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_18/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+(None, None)
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Restored from /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+Saved checkpoint for episode 100, total_steps 1108: /network/tmp1/cheluver/jax/hyper/cartpole/q/checkpoints/seed_19/checkpoint.npy
+
+======== GPU REPORT ========
+Unable to determine the device handle for GPU 0000:06:00.0: GPU is lost.  Reboot the system to recover this GPU
+
+
+Unable to determine the device handle for GPU 0000:06:00.0: GPU is lost.  Reboot the system to recover this GPU
+
+
