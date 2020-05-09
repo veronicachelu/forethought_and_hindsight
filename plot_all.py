@@ -49,7 +49,7 @@ mle_dashed = {
           }
 mb_dashed = {
           "mb_c_true_bw": "mb_c_bw",
-          "mb_p_true_bw": "mb_c_bw",
+          "mb_p_true_bw": "mb_p_bw",
           "mb_p_true_fw": "mb_p_fw",
           "mb_c_true_fw": "mb_c_fw",
           "mb_p_true_bw_recur": "mb_p_bw_recur",
