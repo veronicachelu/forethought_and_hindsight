@@ -19,20 +19,20 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_string('env', "split", 'where to save results')
+flags.DEFINE_string('env', "bipartite", 'where to save results')
 flags.DEFINE_bool('tabular', True, 'where to save results')
 flags.DEFINE_bool('mle', True, 'where to save results')
-flags.DEFINE_bool('mb', False, 'where to save results')
-flags.DEFINE_string('pivoting', "bw_p_fw_p", 'where to save results')
+flags.DEFINE_bool('mb', True, 'where to save results')
+flags.DEFINE_string('pivoting', "bw_c_fw_p", 'where to save results')
 flags.DEFINE_float('lr', 0.1, 'where to save results')
 # flags.DEFINE_string('env', "random_linear", 'where to save results')
 flags.DEFINE_float('ymin', None, 'plot up to')
-# flags.DEFINE_float('ymin', 0.0, 'plot up to')
+# flags.DEFINE_float('ymin', 0.65, 'plot up to')
 flags.DEFINE_float('ymax', None, 'plot up to')
-# flags.DEFINE_float('ymax', 1.0, 'plot up to')
+# flags.DEFINE_float('ymax', 1.75, 'plot up to')
 flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 # flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
-# flags.DEFINE_integer('num_runs', 100, '')
+# flags.DEFINE_integer('ˀnum_runs', 100, '')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
 FONTSIZE = 17
@@ -238,8 +238,8 @@ def plot_tensorflow_log(space, color, linestyle):
         y = [tf.make_ndarray(m[2]) for m in msve]
         all_y_over_seeds.append(np.array(y))
 
-    those_that_are_not_99 = [i for i, a in enumerate(all_y_over_seeds) if len(a) != 199]
-    print(those_that_are_not_99)
+    # those_that_are_not_99 = [i for i, a in enumerate(all_y_over_seeds) if len(a) != 199]
+    # print(those_that_are_not_99)
     #print(len(all_y_over_seeds))
     # all_y_over_seeds = [a[:99] for a in all_y_over_seeds]
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)

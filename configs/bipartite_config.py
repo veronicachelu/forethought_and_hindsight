@@ -1,15 +1,15 @@
 import numpy as np
 env_config = {
-    "class": "Split",
+    "class": "Bipartite",
     "non_gridworld": True,
     "model_class": "tabular",
     "env_type": "discrete",
     "obs_type": "tabular",
     "mdp_filename": None,
     "policy_type": "greedy",
-    "env_size": 10,
-    "num_episodes": 200,
-    "num_runs": 1,
+    "env_size": 100,
+    "num_episodes": 400,
+    "num_runs": 100,
     "stochastic": False,
     "feature_coder": None,
     "nA": 1

@@ -30,27 +30,6 @@ class TpBwPAML(TpVanilla):
         self._r_network = self._network["model"]["net"][2]
         self._d_network = self._network["model"]["net"][3]
 
-        def covariance(v_params, o_params, r_params, X_i):
-            P = self._softmax(o_params[X_i])
-            x_shape = np.prod(self._input_dim)
-            exp_Delta = np.zeros((x_shape,x_shape))
-            exp_phi_prime = np.zeros((x_shape,x_shape))
-            exp_Delta_phi_prime = np.zeros((x_shape,x_shape))
-            for x_prime in range(x_shape):
-                td_error = (r_params[x_prime, X_i] + (self._discount ** self._n) *
-                        v_params[X_i] - v_params[x_prime])
-                Delta = td_error * np.eye(x_shape)[x_prime]
-                exp_Delta += P[x_prime] * Delta
-                exp_phi_prime += P[x_prime] * np.transpose(np.eye(x_shape)[x_prime])
-                exp_Delta_phi_prime += P[x_prime] *\
-                    np.matmul(Delta, np.transpose(np.eye(x_shape)[x_prime]))
-
-            cov = exp_Delta_phi_prime - np.matmul(exp_Delta, exp_phi_prime)
-
-            return cov
-
-        self._cov = covariance
-
         def model_loss(v_params, o_params, r_params, transitions):
             o_tmn_target = transitions[0][0]
             o_t = transitions[-1][-1]
@@ -65,20 +44,19 @@ class TpBwPAML(TpVanilla):
             r_error = r_tmn_target - r_tmn
             r_loss = np.mean(r_error ** 2)
 
-            exp_model_Delta = np.zeros((x_shape))
-            for o_tmn in range(x_shape):
-                td_error = r_params[o_tmn, o_t] + (self._discount ** self._n) *\
-                        v_params[o_t] - v_params[o_tmn]
-                model_Delta = td_error * np.eye(x_shape)[o_t]
-                exp_model_Delta += P[o_tmn] *  model_Delta
-
+            td_errors = np.array(r_params[np.arange(x_shape), o_t] + (self._discount ** self._n) * \
+                                 v_params[o_t] - v_params[np.arange(x_shape)])
+            model_Delta = P * td_errors
             real_td_error = r_tmn_target + (self._discount ** self._n) *\
                         v_params[o_t] - v_params[o_tmn_target]
-            real_Delta = real_td_error * np.eye(x_shape)[o_tmn_target]
-            cov = self._cov(v_params, o_params, r_params, o_t)
-            o_error = -np.matmul((exp_model_Delta - real_Delta), cov)
-            o_loss = np.mean((exp_model_Delta - real_Delta) ** 2)
+            real_Delta = np.eye(x_shape)[o_tmn_target] * real_td_error
+
+            cov = np.outer(td_errors, P) - np.outer(P * td_errors, P)
+
+            o_error = 100 * np.matmul((real_Delta - model_Delta), cov)
+            o_loss = 100 * np.mean((real_Delta - model_Delta) ** 2)
             total_error = o_loss + r_loss
+
             return (total_error, o_loss, r_loss), (o_error, r_error)
 
         self._model_loss_grad = model_loss

@@ -23,7 +23,7 @@ def run_agent(env, agent, logs, aux_agent_configs, ignore_existent=True):
                    "lr": float(agent["lr"]),
                    "lr_m": float(agent["lr_m"]),
                    "lr_ctrl": float(agent["lr_ctrl"]),
-                   "lr_p": float(agent["lr_m"])}
+                   "lr_p": float(agent["lr_p"])}
 
     # for seed in tqdm(range(0, env_config["num_runs"])):
     for seed in range(0, env_config["num_runs"]):

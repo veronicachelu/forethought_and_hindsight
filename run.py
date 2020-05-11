@@ -10,7 +10,7 @@ import utils
 from run_utils import *
 from utils import *
 
-flags.DEFINE_string('agent', 'p_fw_PAML', 'what agent to run')
+flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
 flags.DEFINE_string('env', 'obstacle', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
@@ -18,7 +18,7 @@ flags.DEFINE_integer('max_len', 100000, 'Maximum number of time steps an episode
 flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('planning_iter', 1, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
-flags.DEFINE_integer('planning_depth', 1, 'Planning depth')
+flags.DEFINE_integer('planning_depth', 0, 'Planning depth')
 flags.DEFINE_integer('replay_capacity', 0, 'Replay capacity')
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')

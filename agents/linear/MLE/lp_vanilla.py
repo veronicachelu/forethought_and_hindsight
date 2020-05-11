@@ -69,9 +69,8 @@ class LpVanilla(Agent):
         self._latent = latent
         self._run_mode = "{}_{}_{}".format(self._run_mode, self._n, self._replay_capacity)
 
-
-        self._exploration_decay_period = exploration_decay_period
         self._nrng = nrng
+        self._exploration_decay_period = exploration_decay_period
 
         self._replay = Replay(capacity=replay_capacity, nrng=self._nrng)
         self._min_replay_size = min_replay_size
@@ -87,7 +86,7 @@ class LpVanilla(Agent):
         self._max_len = max_len
         self._input_dim = input_dim
         self._log_period = log_period
-        self._nrng = nrng
+
         self._network = network
 
         if feature_coder is not None:

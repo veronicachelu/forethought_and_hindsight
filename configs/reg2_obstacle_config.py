@@ -12,7 +12,7 @@ env_config = {
         "noise": True,
         "noise_dim": 8,
         "alpha_reg1": 0.0,
-        "alpha_reg2": 1.0
+        "alpha_reg2": 0.0
     },
     "env_type": "continuous",
     "obs_type": "position",
@@ -21,7 +21,7 @@ env_config = {
     "env_size": None,
     "num_episodes": 200,
     "control_num_episodes": 200,
-    "num_runs": 20,
+    "num_runs": 1,
     "stochastic": True,
     "nA": 4
 }

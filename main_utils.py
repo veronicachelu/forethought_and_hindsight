@@ -270,6 +270,9 @@ def load_env_and_volatile_configs(env):
     elif env == "split":
         env_config = configs.split_config.env_config
         volatile_agent_config = configs.split_config.volatile_agent_config
+    elif env == "bipartite":
+        env_config = configs.bipartite_config.env_config
+        volatile_agent_config = configs.bipartite_config.volatile_agent_config
     elif env == "loop":
         env_config = configs.loop_config.env_config
         volatile_agent_config = configs.loop_config.volatile_agent_config

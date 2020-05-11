@@ -20,3 +20,4 @@ import configs.noise_obstacle_config as noise_obstacle_config
 import configs.reg1_16_obstacle_config as reg1_16_obstacle_config
 import configs.reg2_obstacle_config as reg2_obstacle_config
 import configs.cartpole_config as cartpole_config
+import configs.bipartite_config as bipartite_config

@@ -70,8 +70,8 @@ def run_episodic(agent: Agent,
 
                 if new_timestep.last() or (aux_agent_configs["max_len"] is not None and \
                                                    t == aux_agent_configs["max_len"]):
-                    if aux_agent_configs["pivot"] == "p":
-                        agent.planning_update(new_timestep)
+                    # if aux_agent_configs["pivot"] == "p":
+                    #     agent.planning_update(new_timestep)
                     break
 
                 prev_timestep = timestep

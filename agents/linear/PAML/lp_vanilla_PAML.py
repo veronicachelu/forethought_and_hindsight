@@ -75,9 +75,9 @@ class LpVanillaPAML(Agent):
         self._replay_capacity = replay_capacity
         self._latent = latent
         self._run_mode = "{}_{}_{}".format(self._run_mode, self._n, self._replay_capacity)
+        self._nrng = nrng
 
         self._exploration_decay_period = exploration_decay_period
-        self._nrng = nrng
 
         self._replay = Replay(capacity=replay_capacity, nrng=self._nrng)
         self._min_replay_size = min_replay_size
@@ -95,7 +95,7 @@ class LpVanillaPAML(Agent):
         self._log_period = log_period
         self._target_networks = target_networks
 
-        self._nrng = nrng
+
 
         if feature_coder is not None:
             self._feature_mapper = FeatureMapper(feature_coder)
@@ -176,8 +176,10 @@ class LpVanillaPAML(Agent):
         self._v_forward = jax.jit(self._v_network)
         self._h_forward = jax.jit(self._h_network)
 
+        self._step_schedule = optimizers.polynomial_decay(self._lr,
+                                            self._exploration_decay_period, 0, 0.9)
         # Make an Adam optimizer.
-        v_opt_init, v_opt_update, v_get_params = optimizers.adam(step_size=self._lr)
+        v_opt_init, v_opt_update, v_get_params = optimizers.adam(step_size=self._step_schedule)
         self._v_opt_update = jax.jit(v_opt_update)
         value_params = [self._v_parameters, self._h_parameters] if self._latent else self._v_parameters
         self._v_opt_state = v_opt_init(value_params)
@@ -382,10 +384,9 @@ class LpVanillaPAML(Agent):
         pass
 
     def _log_summaries(self, losses_and_grads, summary_name):
-        # return
         if self._logs is not None:
             losses = losses_and_grads["losses"]
-            # gradients = losses_and_grads["gradients"]
+            gradients = losses_and_grads["gradients"]
             if self._max_len == -1:
                 ep = self.total_steps
             else:

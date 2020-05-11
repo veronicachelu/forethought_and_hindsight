@@ -11,7 +11,7 @@ from run_utils import *
 from utils import *
 
 flags.DEFINE_string('agent', 'mb_p_true_fw', 'what agent to run')
-flags.DEFINE_string('env', 'split', 'env')
+flags.DEFINE_string('env', 'bipartite', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', 100000, 'Maximum number of time steps an episode may last (default: 100).')
@@ -23,11 +23,11 @@ flags.DEFINE_integer('replay_capacity', 0, 'Replay capacity')
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')
 flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
-flags.DEFINE_float('discount', .99, 'discounting on the agent side')
+flags.DEFINE_float('discount', .9, 'discounting on the agent side')
 flags.DEFINE_integer('min_replay_size', 1, 'min replay size before training.')
-flags.DEFINE_float('lr', 0.1, 'learning rate for q optimizer')
+flags.DEFINE_float('lr', 1.0, 'learning rate for q optimizer')
 flags.DEFINE_float('lr_ctrl', 0.4, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_p', 0.1, 'learning rate for q optimizer')
+flags.DEFINE_float('lr_p', 1.0, 'learning rate for q optimizer')
 flags.DEFINE_float('lr_m',  0.1, 'learning rate for model optimizer')
 
 FLAGS = flags.FLAGS
@@ -47,7 +47,7 @@ def main(argv):
         "replay_capacity": FLAGS.replay_capacity,
         "lr": FLAGS.lr,
         "lr_m": FLAGS.lr_m,
-        "lr_p": FLAGS.lr_m,
+        "lr_p": FLAGS.lr_p,
         "lr_ctrl": FLAGS.lr_ctrl,
     }
     aux_agent_configs = {"batch_size": FLAGS.batch_size,
