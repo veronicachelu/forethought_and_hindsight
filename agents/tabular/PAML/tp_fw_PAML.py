@@ -15,13 +15,13 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class TpBwMLE(TpVanilla):
+class TpFwPAML(TpVanilla):
     def __init__(
             self,
             **kwargs
     ):
 
-        super(TpBwMLE, self).__init__(**kwargs)
+        super(TpFwPAML, self).__init__(**kwargs)
         self._sequence = []
         self._should_reset_sequence = False
 
@@ -29,26 +29,17 @@ class TpBwMLE(TpVanilla):
         self._fw_o_network = self._network["model"]["net"][1]
         self._r_network = self._network["model"]["net"][2]
 
-        def model_loss(o_params, r_params, transitions):
-            o_tmn_target = transitions[0][0]
-            o_t = transitions[-1][-1]
+        # Internalize the networks.
+        self._true_v_network = self._network["true_value"]["net"]
+        self._true_v_parameters = self._network["true_value"]["params"]
 
-            o_tmn = o_params[o_t]
-            o_target = np.eye(np.prod(self._input_dim))[o_tmn_target]
+        def model_loss(v_params, fw_o_params, r_params, transitions):
+            o_tmn = transitions[0][0]
+            o_t_target = transitions[-1][-1]
+            x_shape = np.prod(self._input_dim)
+            P = self._softmax(fw_o_params[o_tmn])
 
-            o_loss = self._ce(self._log_softmax(o_tmn), o_target)
-
-            o_tmn_probs = self._softmax(o_tmn)
-            o_tmn_probs[o_tmn_target] -= 1
-            o_tmn_probs /= len(o_tmn_probs)
-            o_error = - o_tmn_probs
-
-            # o_target = np.eye(np.prod(self._input_dim))[o_tmn_target] - o_tmn
-            # o_error = o_target - o_tmn
-            # o_loss = np.mean(o_error ** 2)
-
-            r_tmn = r_params[o_tmn_target, o_t]
-
+            r_tmn = r_params[o_tmn, o_t_target]
             r_tmn_target = 0
             for i, t in enumerate(transitions):
                 r_tmn_target += (self._discount ** i) * t[2]
@@ -56,19 +47,40 @@ class TpBwMLE(TpVanilla):
             r_error = r_tmn_target - r_tmn
             r_loss = np.mean(r_error ** 2)
 
+            td_errors = np.array(r_params[o_tmn, np.arange(x_shape)] +
+                                 (self._discount ** self._n) * \
+                                 v_params[np.arange(x_shape)] - v_params[o_tmn])
+            model_Delta = P * np.eye(x_shape)[o_tmn] * td_errors
+            real_td_error = r_tmn_target + (self._discount ** self._n) *\
+                        v_params[np.arange(x_shape)] - v_params[o_tmn]
+            real_Delta = np.eye(x_shape)[o_tmn] * real_td_error
+
+            cov = np.outer(td_errors, P * np.eye(x_shape)[o_tmn]) - \
+                  np.outer(P * np.eye(x_shape)[o_tmn] * td_errors, P)
+
+            o_error = np.matmul((real_Delta - model_Delta), cov)
+            o_loss = np.mean((real_Delta - model_Delta) ** 2)
             total_error = o_loss + r_loss
+
             return (total_error, o_loss, r_loss), (o_error, r_error)
 
         self._model_loss_grad = model_loss
         self._model_opt_update = lambda gradients, params:\
             [param + self._lr_model * grad for grad, param in zip(gradients, params)]
 
-        def v_planning_loss(v_params, r_params, o_t, o_tmn, d_t):
-            v_tmn = v_params[o_tmn]
-            r_tmn = r_params[o_tmn, o_t]
-            td_error = (r_tmn + d_t * (self._discount ** self._n) *
-                        v_params[o_t] - v_tmn)
+        def v_planning_loss(v_params, fw_o_params, r_params, o_tmn, d_tmn):
+            o_tmn = o_tmn[0]
+            o_t = fw_o_params[o_tmn]
+            o_t = self._softmax(o_t)
 
+            r_tmn = r_params[o_tmn]
+            v_tmn = v_params[o_tmn]
+            target = 0
+            for next_o_t in range(np.prod(self._input_dim)):
+                target += o_t[next_o_t] * \
+                                    (r_tmn[next_o_t] + (self._discount ** self._n) * \
+                                     v_params[next_o_t])
+            td_error = (target - v_tmn)
             loss = td_error ** 2
 
             return loss, td_error
@@ -86,25 +98,22 @@ class TpBwMLE(TpVanilla):
         if len(self._sequence) >= self._n:
             o_tmn = self._sequence[0][0]
             o_t = self._sequence[-1][-1]
-            losses, gradients = self._model_loss_grad(self._o_network, self._r_network, self._sequence)
-
-            self._o_network[o_t], self._r_network[o_tmn, o_t] = \
-                self._model_opt_update(gradients, [self._o_network[o_t],
-                                                   self._r_network[o_tmn, o_t]])
-            total_loss, o_loss, r_loss = losses
-            o_grad, r_grad = gradients
-            o_grad = np.linalg.norm(np.asarray(o_grad), ord=2)
-            o_norm = np.max(np.linalg.norm(np.asarray(self._o_network), ord=2, axis=-1))
+            losses, gradients = self._model_loss_grad(self._v_network,
+                                                      self._fw_o_network, self._r_network, self._sequence)
+            self._fw_o_network[o_t], self._r_network[o_tmn, o_t] = \
+                self._model_opt_update(gradients, [self._fw_o_network[o_t],
+                                               self._r_network[o_tmn, o_t]])
+            total_loss, fw_o_loss, r_loss = losses
+            fw_o_grad, r_grad = gradients
+            fw_o_grad = np.linalg.norm(np.asarray(fw_o_grad), ord=2)
             losses_and_grads = {"losses": {
                 "loss": total_loss,
-                "o_loss": o_loss,
+                "fw_o_loss": fw_o_loss,
                 "r_loss": r_loss,
-                "o_grad": o_grad,
-                "o_norm": o_norm,
+                "o_grad": fw_o_grad,
                 "r_grad": r_grad,
             },
             }
-            # print("max_param_norm {}".format(o_norm))
             self._log_summaries(losses_and_grads, "model")
             self._sequence = self._sequence[1:]
 
@@ -117,22 +126,18 @@ class TpBwMLE(TpVanilla):
             timestep: dm_env.TimeStep,
             prev_timestep=None
     ):
-        if timestep.discount is None:
+        if timestep.last():
             return
 
-        o_t = np.array(timestep.observation)
+        o_t = np.array([timestep.observation])
         d_t = np.array(timestep.discount)
-        losses = 0
-        o_tmn = self._o_network[o_t]
-        o_tmn = self._softmax(o_tmn)
-        for prev_o_tmn in range(np.prod(self._input_dim)):
-            loss, gradient = self._v_planning_loss_grad(self._v_network,
-                                                           self._r_network,
-                                                           o_t, prev_o_tmn, d_t)
-            losses += loss
-            self._v_network[prev_o_tmn] = self._v_planning_opt_update(
-                o_tmn[prev_o_tmn] * gradient,
-                self._v_network[prev_o_tmn])
+        loss, gradient = self._v_planning_loss_grad(self._v_network,
+                                                    self._fw_o_network,
+                                                       self._r_network,
+                                                       o_t, d_t)
+        self._v_network[o_t] = self._v_planning_opt_update(
+            gradient,
+            self._v_network[o_t])
 
         losses_and_grads = {"losses": {"loss_v_planning": np.array(loss)},
                             }

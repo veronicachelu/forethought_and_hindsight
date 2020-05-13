@@ -59,6 +59,7 @@ class TpVanilla(Agent):
         self._planning_period = planning_period
         self._n = planning_depth
         self._replay_capacity = replay_capacity
+        self._max_norm = 0.01
         # self._double_input_reward_model = double_input_reward_model
         self._run_mode = "{}_{}_{}".format(self._run_mode, self._n, self._replay_capacity)
 
@@ -97,6 +98,7 @@ class TpVanilla(Agent):
         self._softmax = softmax
         self._log_softmax = log_softmax
         self._ce = cross_entropy
+        self._nrng = nrng
 
         if self._logs is not None:
             self._checkpoint_dir = os.path.join(self._logs,
@@ -105,8 +107,6 @@ class TpVanilla(Agent):
                 os.makedirs(self._checkpoint_dir)
 
             self._checkpoint_filename = "checkpoint.npy"
-
-            self._nrng = nrng
 
             self.writer = tf.summary.create_file_writer(
                 os.path.join(self._logs, '{}/summaries/seed_{}'.format(self._run_mode, seed)))

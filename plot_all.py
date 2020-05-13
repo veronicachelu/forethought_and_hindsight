@@ -20,10 +20,15 @@ plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_string('env', "bipartite_1_100", 'where to save results')
+# flags.DEFINE_string('env', "bipartite", 'where to save results')
 flags.DEFINE_bool('tabular', True, 'where to save results')
 flags.DEFINE_bool('mle', True, 'where to save results')
 flags.DEFINE_bool('mb', True, 'where to save results')
+# flags.DEFINE_bool('paml', True, 'where to save results')
+flags.DEFINE_bool('paml', False, 'where to save results')
+# flags.DEFINE_string('pivoting', "bw_c_fw_p", 'where to save results')
 flags.DEFINE_string('pivoting', "bw_c_fw_p", 'where to save results')
+# flags.DEFINE_string('pivoting', "MLE_PAML", 'where to save results')
 flags.DEFINE_float('lr', 0.1, 'where to save results')
 # flags.DEFINE_string('env', "random_linear", 'where to save results')
 flags.DEFINE_float('ymin', None, 'plot up to')
@@ -36,8 +41,27 @@ flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
 FONTSIZE = 17
-LINEWIDTH = 3.5
+LINEWIDTH = 2
 
+mle_paml_dashed = {
+    "p_fw_PAML": "p_fw_MLE",
+    "p_bw_PAML": "p_bw_MLE",
+          # "p_fw_proj_PAML": "p_fw_PAML",
+          # "p_bw_proj_PAML": "p_bw_PAML",
+          # "p_bw_proj_MLE": "p_bw_MLE",
+          # "p_fw_proj_MLE": "p_fw_MLE",
+}
+
+mle_paml_dotted = {
+    "p_fw_proj_PAML": "p_fw_proj_MLE",
+    "p_bw_proj_PAML": "p_bw_proj_MLE"
+}
+
+mle_paml_dash_dotted = {}
+# mle_paml_dash_dotted = {
+#     "p_bw_proj_MLE": "p_bw_MLE",
+#     "p_fw_proj_MLE": "p_fw_MLE"
+# }
 
 mle_dashed = {
           "p_true_bw_recur": "p_bw_recur_MLE",
@@ -46,6 +70,10 @@ mle_dashed = {
           "c_true_bw": "c_bw_MLE",
           "p_true_fw": "p_fw_MLE",
           "c_true_fw": "c_fw_MLE",
+          # "p_bw_PAML": "p_bw_MLE",
+          # "c_bw_PAML": "c_bw_MLE",
+          # "p_fw_PAML": "p_fw_MLE",
+          # "c_fw_PAML": "c_fw_MLE",
           }
 mb_dashed = {
           "mb_c_true_bw": "mb_c_bw",
@@ -103,8 +131,14 @@ def main(argv):
         name = name + "_mle"
 
     internal_dashed = dashed
+    internal_dotted = {}
+    internal_dash_dotted = {}
     if FLAGS.mle and FLAGS.mb:
         internal_dashed = mb_mle_dashed
+    elif FLAGS.mle and FLAGS.paml:
+        internal_dashed = mle_paml_dashed
+        internal_dotted = mle_paml_dotted
+        internal_dash_dotted = mle_paml_dash_dotted
     elif FLAGS.mle:
         internal_dashed = mle_dashed
     elif FLAGS.mb:
@@ -124,26 +158,30 @@ def main(argv):
                    volatile_agent_config, 0, 0, logs, "gray", "-")
 
     for i, agent in enumerate(comparison_config["agents"]):
-        if agent not in internal_dashed:
+        if agent not in internal_dashed.keys() and\
+                        agent not in internal_dotted.keys() and \
+                        agent not in internal_dash_dotted.keys():
             color = alg_to_color[agent]
             linestyle = "-"
-        else:
-            # if FLAGS.mle and not agent.endswith("mle"):
-            #     color = alg_to_color[dashed[agent] + "_mle"]
-            # elif FLAGS.mb and not agent.startswith("mb"):
-            #     if "mb_" + dashed[agent] in alg_to_color.keys():
-            #         color = alg_to_color["mb_" + dashed[agent]]
-            #     else:
-            #         color = alg_to_color[dashed[agent]]
-            # else:
+        elif agent in internal_dashed.keys():
             color = alg_to_color[internal_dashed[agent]]
             linestyle = "--"
+        elif agent in internal_dotted.keys():
+            color = alg_to_color[internal_dotted[agent]]
+            linestyle = "."
+        elif agent in internal_dash_dotted.keys():
+            color = alg_to_color[internal_dash_dotted[agent]]
+            linestyle = "-."
 
         planning_depth = comparison_config["planning_depths"][i]
+        max_norm = None
+        if FLAGS.paml and "max_norms" in comparison_config.keys():
+            max_norm = comparison_config["max_norms"][i]
         replay_capacity = comparison_config["replay_capacities"][i]
         persistent_agent_config = configs.agent_config.config[agent]
         plot_for_agent(agent, env_config, persistent_agent_config,
-                       volatile_agent_config, planning_depth, replay_capacity, logs, color, linestyle)
+                       volatile_agent_config, planning_depth,
+                       replay_capacity, logs, color, linestyle, max_norm)
 
 
     if FLAGS.cumulative_rmsve:
@@ -180,15 +218,20 @@ def main(argv):
                                                 "RMSVE")))
 
 def plot_for_agent(agent, env_config, persistent_agent_config,
-                   volatile_agent_config, planning_depth, replay_capacity, logs, color, linestyle):
+                   volatile_agent_config, planning_depth, replay_capacity, logs, color, linestyle, max_norm=None):
     print(agent)
     # if not FLAGS.tabular:
-    log_folder_agent = os.path.join(logs, "{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth, replay_capacity))
+    if max_norm is None or max_norm == 0:
+        log_folder_agent = os.path.join(logs, "{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth, replay_capacity))
+    else:
+        log_folder_agent = os.path.join(logs, "{}_{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth,
+                                                                replay_capacity, max_norm))
     # else:
     #     log_folder_agent = os.path.join(logs, "{}_{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth,
     #                                                             replay_capacity, FLAGS.lr))
     volatile_config = {"agent": agent,
                        "planning_depth": planning_depth,
+                       "max_norm": max_norm,
                        "replay_capacity": replay_capacity,
                        "logs": log_folder_agent}
     space = {
@@ -250,7 +293,10 @@ def plot_tensorflow_log(space, color, linestyle):
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
                          color="gray", alpha=0.07)
     else:
-        plt.plot(x, mean_y_over_seeds, label=space["crt_config"]["agent"],
+        label = space["crt_config"]["agent"]
+        if FLAGS.paml and space["crt_config"]["max_norm"] is not None:
+            label += "_{}".format(space["crt_config"]["max_norm"])
+        plt.plot(x, mean_y_over_seeds, label=label,
                  alpha=1, linewidth=LINEWIDTH, color=color,
                  linestyle=linestyle)
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,

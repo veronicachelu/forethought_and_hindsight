@@ -47,7 +47,9 @@ class TpBwPAML(TpVanilla):
             r_error = r_tmn_target - r_tmn
             r_loss = np.mean(r_error ** 2)
 
-            td_errors = np.array(r_params[np.arange(x_shape), o_t] + (self._discount ** self._n) * \
+            # r_params[np.arange(x_shape), o_t]
+            td_errors = np.array(np.tile(np.array(r_tmn_target), (x_shape,)) +
+                                 (self._discount ** self._n) * \
                                  v_params[o_t] - v_params[np.arange(x_shape)])
             model_Delta = P * td_errors
             real_td_error = r_tmn_target + (self._discount ** self._n) *\
@@ -57,6 +59,7 @@ class TpBwPAML(TpVanilla):
             cov = np.outer(td_errors, P) - np.outer(P * td_errors, P)
 
             o_error = np.matmul((real_Delta - model_Delta), cov)
+            o_error /= len(o_error)
             o_loss = np.mean((real_Delta - model_Delta) ** 2)
             total_error = o_loss + r_loss
 
@@ -90,6 +93,7 @@ class TpBwPAML(TpVanilla):
             o_tmn = self._sequence[0][0]
             o_t = self._sequence[-1][-1]
             losses, gradients = self._model_loss_grad(self._v_network, self._o_network, self._r_network, self._sequence)
+
             self._o_network[o_t], self._r_network[o_tmn, o_t] = \
                 self._model_opt_update(gradients, [self._o_network[o_t],
                                                self._r_network[o_tmn, o_t]])
@@ -114,7 +118,7 @@ class TpBwPAML(TpVanilla):
     def planning_update(
             self,
             timestep: dm_env.TimeStep,
-            prev_timestep=None
+            prev_timestep=None,
     ):
         if timestep.discount is None:
             return
@@ -125,7 +129,7 @@ class TpBwPAML(TpVanilla):
         o_tmn = self._o_network[o_t]
         o_tmn = self._softmax(o_tmn)
         for prev_o_tmn in range(np.prod(self._input_dim)):
-            loss, gradient = self._v_planning_loss_grad(self._true_v_network,
+            loss, gradient = self._v_planning_loss_grad(self._v_network,
                                                            self._r_network,
                                                            o_t, prev_o_tmn, d_t)
             losses += loss

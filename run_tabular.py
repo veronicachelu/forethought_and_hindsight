@@ -10,15 +10,15 @@ import utils
 from run_utils import *
 from utils import *
 
-flags.DEFINE_string('agent', 'mb_c_bw_PAML', 'what agent to run')
-flags.DEFINE_string('env', 'bipartite', 'env')
+flags.DEFINE_string('agent', 'mb_c_true_bw', 'what agent to run')
+flags.DEFINE_string('env', 'bipartite_1_100', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', 100000, 'Maximum number of time steps an episode may last (default: 100).')
 flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('planning_iter', 1, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
-flags.DEFINE_integer('planning_depth', 0, 'Planning depth')
+flags.DEFINE_integer('planning_depth', 1, 'Planning depth')
 flags.DEFINE_integer('replay_capacity', 0, 'Replay capacity')
 flags.DEFINE_integer('model_learning_period', 1,
                      'Number of steps timesteps of real experience to cache before updating the model')
@@ -28,7 +28,7 @@ flags.DEFINE_integer('min_replay_size', 1, 'min replay size before training.')
 flags.DEFINE_float('lr', 1.0, 'learning rate for q optimizer')
 flags.DEFINE_float('lr_ctrl', 0.4, 'learning rate for q optimizer')
 flags.DEFINE_float('lr_p', 1.0, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_m',  1.0, 'learning rate for model optimizer')
+flags.DEFINE_float('lr_m', 1.0, 'learning rate for model optimizer')
 
 FLAGS = flags.FLAGS
 

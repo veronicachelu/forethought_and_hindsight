@@ -52,7 +52,10 @@ def run_objective(space, aux_agent_configs):
 
     if space["agent_config"]["model_family"] == "true" and \
                     space["env_config"]["model_class"] == "tabular":
-        agent._o_network, agent._fw_o_network, agent._r_network, agent_true_v_network = mdp_solver.get_true_model()
+        agent._o_network, agent._fw_o_network, agent._r_network, _ = mdp_solver.get_true_model()
+    elif space["agent_config"]["model_family"] == "PAML" and \
+        space["env_config"]["model_class"] == "tabular":
+        _, _, _, agent._true_v_network = mdp_solver.get_true_model()
     total_rmsve, final_rmsve, start_rmsve, avg_steps, values, errors = experiment.run_episodic(
         agent=agent,
         space=space,

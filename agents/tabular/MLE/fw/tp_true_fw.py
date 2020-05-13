@@ -28,7 +28,6 @@ class TpTrueFw(TpVanilla):
         self._o_network = self._network["model"]["net"][0]
         self._fw_o_network = self._network["model"]["net"][1]
         self._r_network = self._network["model"]["net"][2]
-        self._d_network = self._network["model"]["net"][3]
 
         def v_planning_loss(v_params, fw_o_params, r_params, o_tmn, d_tmn):
             o_tmn = o_tmn[0]

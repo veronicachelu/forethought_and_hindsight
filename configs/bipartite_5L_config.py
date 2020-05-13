@@ -7,9 +7,9 @@ env_config = {
     "obs_type": "tabular",
     "mdp_filename": None,
     "policy_type": "greedy",
-    "env_size": (5, 5, 5),
-    "num_episodes": 400,
-    "num_runs": 100,
+    "env_size": (5, 5, 5, 5, 5),
+    "num_episodes": 1000,
+    "num_runs": 10,
     "stochastic": False,
     "feature_coder": None,
     "nA": 1
