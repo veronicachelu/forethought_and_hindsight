@@ -9,4 +9,6 @@ from utils.env_utils.obstacle_world import *
 from utils.env_utils.gym_wrapper import *
 from utils.env_utils.split import *
 from utils.env_utils.bipartite import *
+from utils.env_utils.world3d import *
+from utils.env_utils.fanin import *
 

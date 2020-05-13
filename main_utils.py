@@ -270,9 +270,27 @@ def load_env_and_volatile_configs(env):
     elif env == "split":
         env_config = configs.split_config.env_config
         volatile_agent_config = configs.split_config.volatile_agent_config
+    elif env == "world3d":
+        env_config = configs.world3d_config.env_config
+        volatile_agent_config = configs.world3d_config.volatile_agent_config
     elif env == "bipartite":
         env_config = configs.bipartite_config.env_config
         volatile_agent_config = configs.bipartite_config.volatile_agent_config
+    elif env == "bipartite_10_1":
+        env_config = configs.bipartite_10_1_config.env_config
+        volatile_agent_config = configs.bipartite_10_1_config.volatile_agent_config
+    elif env == "bipartite_100_1":
+        env_config = configs.bipartite_100_1_config.env_config
+        volatile_agent_config = configs.bipartite_100_1_config.volatile_agent_config
+    elif env == "bipartite_1_10":
+        env_config = configs.bipartite_1_10_config.env_config
+        volatile_agent_config = configs.bipartite_1_10_config.volatile_agent_config
+    elif env == "bipartite_1_100":
+        env_config = configs.bipartite_1_100_config.env_config
+        volatile_agent_config = configs.bipartite_1_100_config.volatile_agent_config
+    elif env == "fanin":
+        env_config = configs.fanin_config.env_config
+        volatile_agent_config = configs.fanin_config.volatile_agent_config
     elif env == "loop":
         env_config = configs.loop_config.env_config
         volatile_agent_config = configs.loop_config.volatile_agent_config

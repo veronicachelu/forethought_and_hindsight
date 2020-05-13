@@ -24,6 +24,8 @@ class TpTrueBw(TpVanilla):
         super(TpTrueBw, self).__init__(**kwargs)
         self._sequence = []
         self._should_reset_sequence = False
+        self._episode_end = False
+        self._updates = np.zeros_like(self._v_network)
 
         def v_planning_loss(v_params, r_params, o, o_tmn, d_t):
             v_tmn = v_params[o_tmn]
@@ -62,10 +64,16 @@ class TpTrueBw(TpVanilla):
                                                            self._r_network,
                                                            o_t, prev_o_tmn, d_t)
             losses += loss
+            # self._updates[prev_o_tmn] += o_tmn[prev_o_tmn] * gradient
             self._v_network[prev_o_tmn] = self._v_planning_opt_update(
                 o_tmn[prev_o_tmn] * gradient,
                 self._v_network[prev_o_tmn])
 
+        # if timestep.last():
+        #     self._v_network = self._v_planning_opt_update(
+        #         self._updates,
+        #         self._v_network)
+        #     self._updates = np.zeros_like(self._v_network)
         losses_and_grads = {"losses": {"loss_v_planning": np.array(loss)},
                             }
         self._log_summaries(losses_and_grads, "value_planning")
@@ -103,7 +111,7 @@ class TpTrueBw(TpVanilla):
             }
             np.save(checkpoint, to_save)
             print("Saved checkpoint for episode {}, total_steps {}: {}".format(self.episode,
-                                                                               self.total_steps,
+                                                                             self.total_steps,
                                                                                checkpoint))
 
     def save_transition(
@@ -112,7 +120,7 @@ class TpTrueBw(TpVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-       pass
+        pass
 
     def _log_summaries(self, losses_and_grads, summary_name):
         if self._logs is not None:
@@ -128,5 +136,5 @@ class TpTrueBw(TpVanilla):
                 self.writer.flush()
 
     def update_hyper_params(self, episode, total_episodes):
+        self._lr = self._initial_lr * ((total_episodes - episode) / total_episodes)
         self._lr_planning = self._initial_lr_planning * ((total_episodes - episode) / total_episodes)
-

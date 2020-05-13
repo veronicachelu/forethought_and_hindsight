@@ -15,37 +15,41 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class TpTrueFwMLE(TpVanilla):
+class TpTrueBwFw(TpVanilla):
     def __init__(
             self,
             **kwargs
     ):
 
-        super(TpTrueFwMLE, self).__init__(**kwargs)
+        super(TpTrueBwFw, self).__init__(**kwargs)
         self._sequence = []
         self._should_reset_sequence = False
 
-        self._o_network = self._network["model"]["net"][0]
-        self._fw_o_network = self._network["model"]["net"][1]
-        self._r_network = self._network["model"]["net"][2]
-        self._d_network = self._network["model"]["net"][3]
 
-        def v_planning_loss(v_params, fw_o_params, r_params, o_tmn, d_tmn):
-            o_tmn = o_tmn[0]
-            o_t = fw_o_params[o_tmn]
-            r_tmn = r_params[o_tmn]
+        def v_planning_loss(v_params, bw_o_params, fw_o_params, r_params, o_t, o_tmn, d_t):
             v_tmn = v_params[o_tmn]
+            r_tmn = r_params[o_tmn, o_t]
 
+            # target_correction = 0
+            # for potential_o_t in range(np.prod(self._input_dim)):
+            #     if potential_o_t != o_t:
+            #         target_correction += self._softmax(bw_o_params[potential_o_t])[o_tmn] * \
+            #         (r_params[o_tmn, potential_o_t] + (self._discount ** self._n) * v_params[potential_o_t])
+            #
+            # td_error = self._softmax(bw_o_params[o_t])[o_tmn] * (r_tmn + d_t * (self._discount ** self._n) *
+            #             v_params[o_t]) + target_correction - v_tmn
+
+            td_error = self._softmax(bw_o_params[o_t])[o_tmn] * (r_tmn + d_t * (self._discount ** self._n) *
+                             v_params[o_t] - v_tmn)
             target = 0
-            # o_t = self._softmax(o_t)
-            # divisior = np.sum(o_t, axis=-1, keepdims=True)
-            # o_t = np.divide(o_t, divisior, out=np.zeros_like(o_t), where=np.all(divisior != 0))
-            for next_o_t in range(np.prod(self._input_dim)):
-                target_per_next_o = o_t[next_o_t] * \
-                (r_tmn[next_o_t] + (self._discount ** self._n) *\
-                      v_params[next_o_t])
-                target += target_per_next_o
-            td_error = (target - v_tmn)
+            for potential_o_t in range(np.prod(self._input_dim)):
+                if potential_o_t != o_t:
+                    target += self._softmax(fw_o_params[o_tmn])[potential_o_t] * \
+                                         (r_params[o_tmn, potential_o_t] + (self._discount ** self._n) * v_params[
+                                             potential_o_t] - v_tmn)
+
+            # td_error += self._softmax(bw_o_params[o_t])[o_tmn] * (target - v_tmn)
+
             loss = td_error ** 2
 
             return loss, td_error
@@ -65,20 +69,25 @@ class TpTrueFwMLE(TpVanilla):
             timestep: dm_env.TimeStep,
             prev_timestep=None
     ):
-        if timestep.last():
+        if timestep.discount is None:
             return
-        # if timestep.discount is None:
-        #     return
-        o_t = np.array([timestep.observation])
-        d_t = np.array(timestep.discount)
-        loss, gradient = self._v_planning_loss_grad(self._v_network,
-                                                    self._fw_o_network,
-                                                    self._r_network,
-                                                    o_t, d_t)
-        self._v_network[o_t] = self._v_planning_opt_update(gradient,
-                                                         self._v_network[o_t])
 
-        losses_and_grads = {"losses": {"loss_q_planning": np.array(loss)},
+        o_t = np.array(timestep.observation)
+        d_t = np.array(timestep.discount)
+        losses = 0
+
+        for prev_o_tmn in range(np.prod(self._input_dim)):
+            loss, gradient = self._v_planning_loss_grad(self._v_network,
+                                                        self._o_network,
+                                                        self._fw_o_network,
+                                                           self._r_network,
+                                                           o_t, prev_o_tmn, d_t)
+            losses += loss
+            self._v_network[prev_o_tmn] = self._v_planning_opt_update(
+                gradient,
+                self._v_network[prev_o_tmn])
+
+        losses_and_grads = {"losses": {"loss_v_planning": np.array(loss)},
                             }
         self._log_summaries(losses_and_grads, "value_planning")
 
@@ -86,8 +95,8 @@ class TpTrueFwMLE(TpVanilla):
         return True
 
     def model_free_train(self):
-        return True
         # return False
+        return True
 
     def load_model(self):
         if self._logs is not None:
@@ -115,7 +124,7 @@ class TpTrueFwMLE(TpVanilla):
             }
             np.save(checkpoint, to_save)
             print("Saved checkpoint for episode {}, total_steps {}: {}".format(self.episode,
-                                                                             self.total_steps,
+                                                                               self.total_steps,
                                                                                checkpoint))
 
     def save_transition(
@@ -140,14 +149,6 @@ class TpTrueFwMLE(TpVanilla):
                 self.writer.flush()
 
     def update_hyper_params(self, episode, total_episodes):
-        warmup_episodes = 0
-        flat_period = 0
-        decay_period = total_episodes - warmup_episodes - flat_period
-        if episode > warmup_episodes:
-            steps_left = total_episodes - episode - flat_period
-            if steps_left <= 0:
-                return
-
-            self._lr_planning = self._initial_lr_planning * (steps_left / decay_period)
-
-
+        self._lr = self._initial_lr * ((total_episodes - episode) / total_episodes)
+        self._lr_model = self._initial_lr_model * ((total_episodes - episode) / total_episodes)
+        self._lr_planning = self._initial_lr_planning * ((total_episodes - episode) / total_episodes)

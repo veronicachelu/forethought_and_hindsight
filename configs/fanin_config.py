@@ -1,20 +1,19 @@
 import numpy as np
 env_config = {
-    "class": "Bipartite",
+    "class": "Fanin",
     "non_gridworld": True,
     "model_class": "tabular",
     "env_type": "discrete",
     "obs_type": "tabular",
     "mdp_filename": None,
     "policy_type": "greedy",
-    "env_size": (5, 5),
+    "env_size": 6,
     "num_episodes": 400,
     "num_runs": 100,
     "stochastic": False,
     "feature_coder": None,
     "nA": 1
 }
-
 volatile_agent_config = {
     "vanilla": {
         "planning_depth": [0],

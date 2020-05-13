@@ -100,7 +100,7 @@ class TpVanilla(Agent):
 
         if self._logs is not None:
             self._checkpoint_dir = os.path.join(self._logs,
-                                            '{}_{}/checkpoints/seed_{}'.format(self._run_mode, self._lr_model, self._seed))
+                                            '{}/checkpoints/seed_{}'.format(self._run_mode, self._seed))
             if not os.path.exists(self._checkpoint_dir):
                 os.makedirs(self._checkpoint_dir)
 
@@ -109,9 +109,9 @@ class TpVanilla(Agent):
             self._nrng = nrng
 
             self.writer = tf.summary.create_file_writer(
-                os.path.join(self._logs, '{}_{}/summaries/seed_{}'.format(self._run_mode, self._lr_model, seed)))
+                os.path.join(self._logs, '{}/summaries/seed_{}'.format(self._run_mode, seed)))
 
-            self._images_dir = os.path.join(self._logs, '{}_{}/images/seed_{}'.format(self._run_mode, self._lr_model, seed))
+            self._images_dir = os.path.join(self._logs, '{}/images/seed_{}'.format(self._run_mode, seed))
             if not os.path.exists(self._images_dir):
                 os.makedirs(self._images_dir)
 

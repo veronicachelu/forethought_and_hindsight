@@ -37,7 +37,7 @@ class TpFwMLE(TpVanilla):
             # forward
             model_o_t = fw_o_params[o_tmn_target]
             o_target = np.eye(np.prod(self._input_dim))[o_t]
-            fw_o_loss = 100 * self._ce(self._log_softmax(model_o_t), o_target)
+            fw_o_loss = self._ce(self._log_softmax(model_o_t), o_target)
             # fw_o_target = np.eye(np.prod(self._input_dim))[o_t] - model_o_t
             # fw_o_error = fw_o_target - model_o_t
             # fw_o_loss = np.mean(fw_o_error ** 2)
@@ -45,7 +45,7 @@ class TpFwMLE(TpVanilla):
             o_tmn_probs = self._softmax(model_o_t)
             o_tmn_probs[o_t] -= 1
             o_tmn_probs /= len(o_tmn_probs)
-            fw_o_error = - 100 * o_tmn_probs
+            fw_o_error = - o_tmn_probs
 
             r_tmn = r_params[o_tmn_target][o_t]
             r_tmn_target = 0
@@ -137,7 +137,7 @@ class TpFwMLE(TpVanilla):
         self._v_network[o_t] = self._v_planning_opt_update(gradient,
                                                          self._v_network[o_t])
 
-        losses_and_grads = {"losses": {"loss_q_planning": np.array(loss)},
+        losses_and_grads = {"losses": {"loss_v_planning": np.array(loss)},
                             }
         self._log_summaries(losses_and_grads, "value_planning")
 
@@ -205,4 +205,6 @@ class TpFwMLE(TpVanilla):
                 self.writer.flush()
 
     def update_hyper_params(self, episode, total_episodes):
+        self._lr = self._initial_lr * ((total_episodes - episode) / total_episodes)
+        self._lr_model = self._initial_lr_model * ((total_episodes - episode) / total_episodes)
         self._lr_planning = self._initial_lr_planning * ((total_episodes - episode) / total_episodes)

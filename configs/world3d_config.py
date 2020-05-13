@@ -1,18 +1,20 @@
 import numpy as np
 env_config = {
-    "class": "Bipartite",
+    "class": "World3d",
     "non_gridworld": True,
     "model_class": "tabular",
     "env_type": "discrete",
     "obs_type": "tabular",
     "mdp_filename": None,
     "policy_type": "greedy",
-    "env_size": (5, 5),
-    "num_episodes": 400,
-    "num_runs": 100,
+    "env_size": 1000,
+    "num_episodes": 1,
+    "num_runs": 10,
     "stochastic": False,
     "feature_coder": None,
-    "nA": 1
+    "max_len":  100000,
+    "log_every_steps": 100,
+    "nA": 6
 }
 
 volatile_agent_config = {

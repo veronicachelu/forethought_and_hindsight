@@ -21,3 +21,9 @@ import configs.reg1_16_obstacle_config as reg1_16_obstacle_config
 import configs.reg2_obstacle_config as reg2_obstacle_config
 import configs.cartpole_config as cartpole_config
 import configs.bipartite_config as bipartite_config
+import configs.bipartite_10_1_config as bipartite_10_1_config
+import configs.bipartite_1_10_config as bipartite_1_10_config
+import configs.bipartite_100_1_config as bipartite_100_1_config
+import configs.bipartite_1_100_config as bipartite_1_100_config
+import configs.fanin_config as fanin_config
+import configs.world3d_config as world3d_config

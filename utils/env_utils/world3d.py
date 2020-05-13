@@ -5,26 +5,45 @@ from dm_env import specs
 from utils.mdp_solvers.solve_chain import ChainSolver
 
 
-class Bipartite(dm_env.Environment):
-    def __init__(self, rng=None, obs_type="tabular", nS = (5,5)):
+class World3d(dm_env.Environment):
+    def __init__(self, rng=None, obs_type="tabular", nS = 1000):
         self._P = None
+        self._P_absrobing = None
         self._R = None
         self._stochastic = False
-        self._nS = np.sum(nS)
-        self._start_states = np.arange(nS[0])
-        self._end_states = np.arange(nS[0], self._nS)
-        self._rewards = np.full(self._nS, 0)
-        self._positive_reward_state = self._nS - 1
-        self._rewards[self._end_states] = -100
-        self._rewards[self._positive_reward_state] = 100
-
-        self._nA = 1
         self._rng = rng
-        self._slip_prob = 0
+        self._nS = nS
+        self._nA = 6
+        self._per_dim_states = 10
         self._obs_type = obs_type
+        self._start_states = np.arange(nS)
+        self._rewarded_states = self._rng.choice(self._start_states,
+                                          p=[1/len(self._start_states) for _ in self._start_states],
+                                         size=50, replace=False)
+        self._rewards = np.zeros((self._nS))
+        self._rewards[self._rewarded_states] = self._rng.normal(loc=0.0,
+                              scale=1.0, size=(50))
+
         self._pi = np.full((self._nS, self._nA), 1 / self._nA)
 
         self._reset_next_step = True
+
+        self._dir_to_vect = [
+            # up
+            np.array((-1, 0, 0)),
+            # down
+            np.array((1, 0, 0)),
+            # fw
+            np.array((0, -1, 0)),
+            # right
+            np.array((0, 0, 1)),
+            # back
+            np.array((0, 1, 0)),
+            # left
+            np.array((0, 0, -1)),
+        ]
+
+        self._fill_P_R()
 
     def reset(self):
         """Returns the first `TimeStep` of a new episode."""
@@ -34,22 +53,15 @@ class Bipartite(dm_env.Environment):
         return dm_env.restart(self._observation())
 
     def _get_next_state(self, state, action):
-        if state in self._end_states:
-            next_state = self._rng.choice(self._start_states,
-                                          p=[1/len(self._start_states) for _ in self._start_states])
-        else:
-            next_state = self._rng.choice(self._end_states,
-                             p=[1 / len(self._end_states) for _ in self._end_states])
+        next_state = self._rng.choice(np.arange(self._nS),
+                                      p=self._P[action][state])
 
         return next_state
 
     def _get_next_reward(self, next_state):
-        reward = self._rewards[next_state]
-        return reward
+         return self._rewards[next_state]
 
     def _is_terminal(self):
-        if self._state in self._end_states:
-            return True
         return False
 
     def step(self, action):
@@ -80,6 +92,14 @@ class Bipartite(dm_env.Environment):
         if self._obs_type == "tabular":
             return self._state
 
+    def _get_state_index(self, coords):
+        idx = np.ravel_multi_index(coords, (self._per_dim_states, self._per_dim_states, self._per_dim_states))
+        return idx
+
+    def _get_state_coords(self, idx):
+        coords = np.unravel_index(idx, (self._per_dim_states, self._per_dim_states, self._per_dim_states))
+        return coords
+
     def _fill_P_R(self):
         self._P = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
         self._P_absorbing = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
@@ -87,18 +107,15 @@ class Bipartite(dm_env.Environment):
 
         for s in range(self._nS):
             for k in range(self._nA):
-                if not (s in self._end_states):
-                    for fwd_s in self._end_states:
-                        self._P[k][s][fwd_s] = 1/len(self._end_states)
-                        self._P_absorbing[k][s][fwd_s] = 1/len(self._end_states)
-                        self._R[k][s][fwd_s] = self._get_next_reward(fwd_s)
-                else:
-                    for start_state in self._start_states:
-                        self._P[k][s][start_state] = 1/len(self._start_states)
-                    self._P_absorbing[k][s][s] = 1
+                s_coords = self._get_state_coords(s)
+                fwd_s = (s_coords + self._dir_to_vect[k]) % self._per_dim_states
+                next_s = self._get_state_index(fwd_s)
+                self._P[k][s][next_s] = 1
+                self._P_absorbing[k][s][next_s] = 1
+                self._R[k][s][next_s] = self._get_next_reward(next_s)
 
     def _get_dynamics(self):
-        if self._P == None or self._R == None or self._P_absrobing == None:
+        if self._P is None or self._R is None or self._P_absrobing is None:
             self._fill_P_R()
 
         return self._P, self._P_absorbing, self._R
@@ -118,16 +135,16 @@ class Bipartite(dm_env.Environment):
 
 if __name__ == "__main__":
     nrng = np.random.RandomState(0)
-    nS = 10
+    nS = 1000
     nA = 1
-    discount = 0.9
-    env = Bipartite(rng=nrng, obs_type="tabular",
+    discount = 0.95
+    env = World3d(rng=nrng, obs_type="tabular",
                  nS=nS)
     mdp_solver = ChainSolver(env, nS, nA, discount)
-    policy = mdp_solver.get_optimal_policy()
+    # policy = mdp_solver.get_optimal_policy()
     v = mdp_solver.get_optimal_v()
     v = env.reshape_v(v)
     # plot_v(env, v, logs, env_type=FLAGS.env_type)
     # plot_policy(env, env.reshape_pi(policy), logs, env_type=FLAGS.env_type)
-    eta_pi = mdp_solver.get_eta_pi(policy)
+    eta_pi = mdp_solver.get_eta_pi(mdp_solver._pi)
     # plot_eta_pi(env, env.reshape_v(eta_pi)

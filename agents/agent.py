@@ -4,8 +4,8 @@ import dm_env
 class Agent(abc.ABC):
     """An agent consists of a policy and an update rule."""
     def __init__(self):
-        self.episode = 1
-        self.total_steps = 1
+        self.episode = 0
+        self.total_steps = 0
         self.writer = None
 
     def policy(self,

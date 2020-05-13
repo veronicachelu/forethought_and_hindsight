@@ -19,7 +19,7 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_string('env', "bipartite", 'where to save results')
+flags.DEFINE_string('env', "bipartite_1_100", 'where to save results')
 flags.DEFINE_bool('tabular', True, 'where to save results')
 flags.DEFINE_bool('mle', True, 'where to save results')
 flags.DEFINE_bool('mb', True, 'where to save results')
@@ -58,6 +58,7 @@ mb_dashed = {
 mb_mle_dashed = {
           "mb_p_true_bw": "mb_p_bw_MLE",
           "mb_c_true_bw": "mb_c_bw_MLE",
+          "mb_c_true_bwfw": "mb_c_bwfw_MLE",
           "mb_p_true_fw": "mb_p_fw_MLE",
           "mb_c_true_fw": "mb_c_fw_MLE",
           "mb_p_true_bw_recur": "mb_p_bw_recur_MLE",
@@ -181,11 +182,11 @@ def main(argv):
 def plot_for_agent(agent, env_config, persistent_agent_config,
                    volatile_agent_config, planning_depth, replay_capacity, logs, color, linestyle):
     print(agent)
-    if not FLAGS.tabular:
-        log_folder_agent = os.path.join(logs, "{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth, replay_capacity))
-    else:
-        log_folder_agent = os.path.join(logs, "{}_{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth,
-                                                                replay_capacity, FLAGS.lr))
+    # if not FLAGS.tabular:
+    log_folder_agent = os.path.join(logs, "{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth, replay_capacity))
+    # else:
+    #     log_folder_agent = os.path.join(logs, "{}_{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth,
+    #                                                             replay_capacity, FLAGS.lr))
     volatile_config = {"agent": agent,
                        "planning_depth": planning_depth,
                        "replay_capacity": replay_capacity,

@@ -5,19 +5,17 @@ from dm_env import specs
 from utils.mdp_solvers.solve_chain import ChainSolver
 
 
-class Bipartite(dm_env.Environment):
-    def __init__(self, rng=None, obs_type="tabular", nS = (5,5)):
+class Fanin(dm_env.Environment):
+    def __init__(self, rng=None, obs_type="tabular", nS = 6):
         self._P = None
         self._R = None
         self._stochastic = False
-        self._nS = np.sum(nS)
-        self._start_states = np.arange(nS[0])
-        self._end_states = np.arange(nS[0], self._nS)
+        self._nS = nS
+        self._start_states = np.arange(nS - 1)
         self._rewards = np.full(self._nS, 0)
         self._positive_reward_state = self._nS - 1
-        self._rewards[self._end_states] = -100
         self._rewards[self._positive_reward_state] = 100
-
+        self._end_states = np.arange(nS - 1, self._nS)
         self._nA = 1
         self._rng = rng
         self._slip_prob = 0
@@ -121,7 +119,7 @@ if __name__ == "__main__":
     nS = 10
     nA = 1
     discount = 0.9
-    env = Bipartite(rng=nrng, obs_type="tabular",
+    env = Fanin(rng=nrng, obs_type="tabular",
                  nS=nS)
     mdp_solver = ChainSolver(env, nS, nA, discount)
     policy = mdp_solver.get_optimal_policy()

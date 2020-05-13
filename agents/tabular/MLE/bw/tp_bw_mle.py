@@ -28,7 +28,6 @@ class TpBwMLE(TpVanilla):
         self._o_network = self._network["model"]["net"][0]
         self._fw_o_network = self._network["model"]["net"][1]
         self._r_network = self._network["model"]["net"][2]
-        self._d_network = self._network["model"]["net"][3]
 
         def model_loss(o_params, r_params, transitions):
             o_tmn_target = transitions[0][0]
@@ -37,12 +36,12 @@ class TpBwMLE(TpVanilla):
             o_tmn = o_params[o_t]
             o_target = np.eye(np.prod(self._input_dim))[o_tmn_target]
 
-            o_loss = 100 * self._ce(self._log_softmax(o_tmn), o_target)
+            o_loss = self._ce(self._log_softmax(o_tmn), o_target)
 
             o_tmn_probs = self._softmax(o_tmn)
             o_tmn_probs[o_tmn_target] -= 1
             o_tmn_probs /= len(o_tmn_probs)
-            o_error = - 100 * o_tmn_probs
+            o_error = - o_tmn_probs
 
             # o_target = np.eye(np.prod(self._input_dim))[o_tmn_target] - o_tmn
             # o_error = o_target - o_tmn
@@ -122,8 +121,6 @@ class TpBwMLE(TpVanilla):
         losses = 0
         o_tmn = self._o_network[o_t]
         o_tmn = self._softmax(o_tmn)
-        # divisior = np.sum(o_tmn, axis=-1, keepdims=True)
-        # o_tmn = np.divide(o_tmn, divisior, out=np.zeros_like(o_tmn), where=np.all(divisior != 0, axis=-1))
         for prev_o_tmn in range(np.prod(self._input_dim)):
             loss, gradient = self._v_planning_loss_grad(self._v_network,
                                                            self._r_network,
@@ -201,12 +198,6 @@ class TpBwMLE(TpVanilla):
                 self.writer.flush()
 
     def update_hyper_params(self, episode, total_episodes):
-        warmup_episodes = 0
-        flat_period = 0
-        decay_period = total_episodes - warmup_episodes - flat_period
-        if episode > warmup_episodes:
-            steps_left = total_episodes - episode - flat_period
-            if steps_left <= 0:
-                return
-            self._lr_planning = self._initial_lr_planning * (steps_left / decay_period)
-
+        self._lr = self._initial_lr * ((total_episodes - episode) / total_episodes)
+        self._lr_model = self._initial_lr_model * ((total_episodes - episode) / total_episodes)
+        self._lr_planning = self._initial_lr_planning * ((total_episodes - episode) / total_episodes)

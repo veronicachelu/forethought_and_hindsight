@@ -90,12 +90,13 @@ def get_tabular_network(num_hidden_layers: int,
     network["value"] = {"net": np.zeros(shape=input_dim),
                         "params": None
                         }
+    network["true_value"] = {"net": np.zeros(shape=input_dim),
+                        "params": None
+                        }
     network["model"] = {"net": [np.zeros(shape=input_dim + (np.prod(input_dim),)),
                                 np.zeros(shape=input_dim + (np.prod(input_dim),)),
-                                np.zeros(shape=input_dim + (np.prod(input_dim),)), \
-                                # np.zeros(shape=input_dim + (2,))],\
-                                np.zeros(shape=input_dim)], \
-                        "params": None
+                                np.zeros(shape=input_dim + (np.prod(input_dim),))], \
+                       "params": None
                         }
     return network
 
@@ -243,6 +244,7 @@ def get_PAML_network(num_hidden_layers: int,
 
     h_network, h_network_params = get_h_net(rng_h, num_units, num_hidden_layers, input_size)
     v_network, v_network_params = get_value_net(rng_v, input_size)
+    mb_v_network, mb_v_network_params = get_value_net(rng_h, input_size)
     o_network, o_network_params = get_o_net(rng_o, input_size, num_units)
     fw_o_network, fw_o_network_params = get_o_net(rng_fw_o, input_size, num_units)
     r_network, r_network_params = get_r_net(rng_r, input_size)

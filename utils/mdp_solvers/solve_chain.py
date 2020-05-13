@@ -5,6 +5,8 @@ class ChainSolver:
     def __init__(self, env,
                  nS, nA, discount):
         self._p, self._p_absorbing, self._r = env._get_dynamics()
+        if isinstance(nS, tuple):
+            nS = np.sum(nS)
         self._nS = nS
         self._nA = nA
         self._env = env
@@ -92,10 +94,11 @@ class ChainSolver:
 
     def get_true_model(self):
         if self._true_model is None:
+            v = self.get_optimal_v()
             ppi = np.einsum('kij, ik->ij', self._p_absorbing, self._pi)
             eta_pi = self.get_eta_pi(self._pi)
             stationary = np.diag(eta_pi)
             bw_model = np.matmul(np.matmul(np.linalg.inv(stationary), ppi.transpose()), stationary)
-            self._true_model = (bw_model, ppi, np.mean(self._r, axis=0))
+            self._true_model = (bw_model, ppi, np.mean(self._r, axis=0), v)
 
         return self._true_model
