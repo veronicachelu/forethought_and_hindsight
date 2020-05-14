@@ -3,7 +3,7 @@ import numpy as np
 from dm_env import specs
 
 from utils.mdp_solvers.solve_chain import ChainSolver
-
+import itertools
 
 class Bipartite(dm_env.Environment):
     def __init__(self, rng=None, obs_type="tabular", nS = (5,5,5,5,5)):
@@ -28,11 +28,13 @@ class Bipartite(dm_env.Environment):
                 before += nS[l]
         self._rewards = np.full((self._nS, self._nS), 0, dtype=np.float)
         if len(nS) > 2:
-            self._rewards[self._mid_layers[-1], self._end_states] =\
-                self._rng.normal(loc=0, scale=1.0, size=(len(self._mid_layers[-1]), len(self._end_states)))
+            for state in self._mid_layers[-1]:
+                self._rewards[state, self._end_states] = \
+                    self._rng.normal(loc=10, scale=10.0, size=len(self._end_states))
         else:
-            self._rewards[self._start_states, self._end_states] = \
-                self._rng.normal(loc=0, scale=1.0, size=(len(self._start_states), len(self._end_states)))
+            for start_state in self._start_states:
+                self._rewards[start_state, self._end_states] = \
+                    self._rng.normal(loc=10, scale=10.0, size=len(self._end_states))
         self._starting_distribution = self._rng.uniform(size=len(self._start_states))
         self._starting_distribution /= np.sum(self._starting_distribution)
         self._fill_P_R()

@@ -43,7 +43,7 @@ class TpFwMLE(TpVanilla):
 
             o_tmn_probs = self._softmax(model_o_t)
             o_tmn_probs[o_t] -= 1
-            o_tmn_probs /= len(o_tmn_probs)
+            # o_tmn_probs /= len(o_tmn_probs)
             fw_o_error = - o_tmn_probs
 
             r_tmn = r_params[o_tmn_target][o_t]

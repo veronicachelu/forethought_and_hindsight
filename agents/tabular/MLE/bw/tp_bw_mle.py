@@ -40,7 +40,7 @@ class TpBwMLE(TpVanilla):
 
             o_tmn_probs = self._softmax(o_tmn)
             o_tmn_probs[o_tmn_target] -= 1
-            o_tmn_probs /= len(o_tmn_probs)
+            # o_tmn_probs /= len(o_tmn_probs)
             o_error = - o_tmn_probs
 
             # o_target = np.eye(np.prod(self._input_dim))[o_tmn_target] - o_tmn

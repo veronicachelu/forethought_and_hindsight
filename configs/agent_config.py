@@ -413,8 +413,8 @@ config = {
         "num_units": 0,
         "model_family": "random",
         "target_networks": False,
-        "class": {"linear": "LpTrueBw",
-                  "tabular": "TpTrueBw"},
+        "class": {"linear": "LpRandomBw",
+                  "tabular": "TpRandomBw"},
     },
     "mb_c_true_bwfw": {
         "task_type": "prediction",

@@ -30,25 +30,14 @@ class TpTrueBwFw(TpVanilla):
             v_tmn = v_params[o_tmn]
             r_tmn = r_params[o_tmn, o_t]
 
-            # target_correction = 0
-            # for potential_o_t in range(np.prod(self._input_dim)):
-            #     if potential_o_t != o_t:
-            #         target_correction += self._softmax(bw_o_params[potential_o_t])[o_tmn] * \
-            #         (r_params[o_tmn, potential_o_t] + (self._discount ** self._n) * v_params[potential_o_t])
-            #
-            # td_error = self._softmax(bw_o_params[o_t])[o_tmn] * (r_tmn + d_t * (self._discount ** self._n) *
-            #             v_params[o_t]) + target_correction - v_tmn
-
-            td_error = self._softmax(bw_o_params[o_t])[o_tmn] * (r_tmn + d_t * (self._discount ** self._n) *
+            td_error = bw_o_params[o_t, o_tmn] * (r_tmn + d_t * (self._discount ** self._n) *
                              v_params[o_t] - v_tmn)
             target = 0
             for potential_o_t in range(np.prod(self._input_dim)):
                 if potential_o_t != o_t:
-                    target += self._softmax(fw_o_params[o_tmn])[potential_o_t] * \
+                    target += fw_o_params[o_tmn, potential_o_t] * \
                                          (r_params[o_tmn, potential_o_t] + (self._discount ** self._n) * v_params[
                                              potential_o_t] - v_tmn)
-
-            # td_error += self._softmax(bw_o_params[o_t])[o_tmn] * (target - v_tmn)
 
             loss = td_error ** 2
 

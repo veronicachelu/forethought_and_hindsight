@@ -10,7 +10,7 @@ import utils
 from utils import *
 
 
-def run_agent(env, agent, logs, aux_agent_configs, ignore_existent=True):
+def run_agent(env, agent, logs, aux_agent_configs, ignore_existent=False):
     persistent_agent_config = configs.agent_config.config[agent["agent"]]
     agent_run_mode = "{}_{}_{}".format(persistent_agent_config["run_mode"], agent["planning_depth"],
                                        agent["replay_capacity"])
@@ -38,7 +38,7 @@ def run_agent(env, agent, logs, aux_agent_configs, ignore_existent=True):
             "agent_config": persistent_agent_config,
             "crt_config": seed_config}
 
-        if not ignore_existent:
+        if ignore_existent:
             agent_logs_seed = os.path.join(agent_logs, 'seed_{}'.format(seed))
             if os.path.exists(agent_logs_seed) and \
                             len(os.listdir(agent_logs_seed)) > 0:

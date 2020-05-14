@@ -15,64 +15,27 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class TpBwPAML(TpVanilla):
+class TpRandomBw(TpVanilla):
     def __init__(
             self,
             **kwargs
     ):
 
-        super(TpBwPAML, self).__init__(**kwargs)
-        self._sequence = []
-        self._should_reset_sequence = False
-
+        super(TpRandomBw, self).__init__(**kwargs)
         self._o_network = self._network["model"]["net"][0]
         self._fw_o_network = self._network["model"]["net"][1]
         self._r_network = self._network["model"]["net"][2]
 
-        # Internalize the networks.
-        self._true_v_network = self._network["true_value"]["net"]
-        self._true_v_parameters = self._network["true_value"]["params"]
+        self._sequence = []
+        self._should_reset_sequence = False
+        self._episode_end = False
+        self._updates = np.zeros_like(self._v_network)
 
-        def model_loss(v_params, o_params, r_params, transitions):
-            o_tmn_target = transitions[0][0]
-            o_t = transitions[-1][-1]
-            x_shape = np.prod(self._input_dim)
-            P = self._softmax(o_params[o_t])
-
-            r_tmn = r_params[o_tmn_target, o_t]
-            r_tmn_target = 0
-            for i, t in enumerate(transitions):
-                r_tmn_target += (self._discount ** i) * t[2]
-
-            r_error = r_tmn_target - r_tmn
-            r_loss = np.mean(r_error ** 2)
-
-            td_errors = np.array(r_params[np.arange(x_shape), o_t] +
-                                 (self._discount ** self._n) * \
-                                 v_params[o_t] - v_params[np.arange(x_shape)])
-            model_Delta = P * td_errors
-            real_td_error = r_tmn_target + (self._discount ** self._n) *\
-                        v_params[o_t] - v_params[o_tmn_target]
-            real_Delta = np.eye(x_shape)[o_tmn_target] * real_td_error
-
-            cov = np.outer(td_errors, P) - np.outer(P * td_errors, P)
-
-            o_error = np.matmul((real_Delta - model_Delta), cov)
-            # o_error /= len(o_error)
-            o_loss = np.mean((real_Delta - model_Delta) ** 2)
-            total_error = o_loss + r_loss
-
-            return (total_error, o_loss, r_loss), (o_error, r_error)
-
-        self._model_loss_grad = model_loss
-        self._model_opt_update = lambda gradients, params:\
-            [param + self._lr_model * grad for grad, param in zip(gradients, params)]
-
-        def v_planning_loss(v_params, r_params, o_t, o_tmn, d_t):
+        def v_planning_loss(v_params, r_params, o, o_tmn, d_t):
             v_tmn = v_params[o_tmn]
-            r_tmn = r_params[o_tmn, o_t]
+            r_tmn = r_params[o_tmn, o]
             td_error = (r_tmn + d_t * (self._discount ** self._n) *
-                        v_params[o_t] - v_tmn)
+                        v_params[o] - v_tmn)
 
             loss = td_error ** 2
 
@@ -86,38 +49,12 @@ class TpBwPAML(TpVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        if self._n == 0:
-            return
-        if len(self._sequence) >= self._n:
-            o_tmn = self._sequence[0][0]
-            o_t = self._sequence[-1][-1]
-            losses, gradients = self._model_loss_grad(self._v_network, self._o_network, self._r_network, self._sequence)
-
-            self._o_network[o_t], self._r_network[o_tmn, o_t] = \
-                self._model_opt_update(gradients, [self._o_network[o_t],
-                                               self._r_network[o_tmn, o_t]])
-            total_loss, o_loss, r_loss = losses
-            o_grad, r_grad = gradients
-            o_grad = np.linalg.norm(np.asarray(o_grad), ord=2)
-            losses_and_grads = {"losses": {
-                "loss": total_loss,
-                "o_loss": o_loss,
-                "r_loss": r_loss,
-                "o_grad": o_grad,
-                "r_grad": r_grad,
-            },
-            }
-            self._log_summaries(losses_and_grads, "model")
-            self._sequence = self._sequence[1:]
-
-        if self._should_reset_sequence:
-            self._sequence = []
-            self._should_reset_sequence = False
+        pass
 
     def planning_update(
             self,
             timestep: dm_env.TimeStep,
-            prev_timestep=None,
+            prev_timestep=None
     ):
         if timestep.discount is None:
             return
@@ -125,17 +62,22 @@ class TpBwPAML(TpVanilla):
         o_t = np.array(timestep.observation)
         d_t = np.array(timestep.discount)
         losses = 0
-        o_tmn = self._o_network[o_t]
-        o_tmn = self._softmax(o_tmn)
+        o_tmn = self._softmax(self._o_network[o_t])
         for prev_o_tmn in range(np.prod(self._input_dim)):
             loss, gradient = self._v_planning_loss_grad(self._v_network,
                                                            self._r_network,
                                                            o_t, prev_o_tmn, d_t)
             losses += loss
+            # self._updates[prev_o_tmn] += o_tmn[prev_o_tmn] * gradient
             self._v_network[prev_o_tmn] = self._v_planning_opt_update(
                 o_tmn[prev_o_tmn] * gradient,
                 self._v_network[prev_o_tmn])
 
+        # if timestep.last():
+        #     self._v_network = self._v_planning_opt_update(
+        #         self._updates,
+        #         self._v_network)
+        #     self._updates = np.zeros_like(self._v_network)
         losses_and_grads = {"losses": {"loss_v_planning": np.array(loss)},
                             }
         self._log_summaries(losses_and_grads, "value_planning")
@@ -144,8 +86,8 @@ class TpBwPAML(TpVanilla):
         return True
 
     def model_free_train(self):
-        # return False
         return True
+        # return False
 
     def load_model(self):
         if self._logs is not None:
@@ -173,7 +115,7 @@ class TpBwPAML(TpVanilla):
             }
             np.save(checkpoint, to_save)
             print("Saved checkpoint for episode {}, total_steps {}: {}".format(self.episode,
-                                                                               self.total_steps,
+                                                                             self.total_steps,
                                                                                checkpoint))
 
     def save_transition(
@@ -182,13 +124,7 @@ class TpBwPAML(TpVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        self._sequence.append([timestep.observation,
-                               action,
-                               new_timestep.reward,
-                               new_timestep.discount,
-                               new_timestep.observation])
-        if new_timestep.discount == 0:
-            self._should_reset_sequence = True
+        pass
 
     def _log_summaries(self, losses_and_grads, summary_name):
         if self._logs is not None:
@@ -205,5 +141,4 @@ class TpBwPAML(TpVanilla):
 
     def update_hyper_params(self, episode, total_episodes):
         self._lr = self._initial_lr * ((total_episodes - episode) / total_episodes)
-        self._lr_model = self._initial_lr_model * ((total_episodes - episode) / total_episodes)
         self._lr_planning = self._initial_lr_planning * ((total_episodes - episode) / total_episodes)
