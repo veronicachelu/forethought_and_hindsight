@@ -19,7 +19,7 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
-flags.DEFINE_string('env', "bipartite_10_1", 'where to save results')
+flags.DEFINE_string('env', "bipartite_100_1", 'where to save results')
 # flags.DEFINE_string('env', "bipartite", 'where to save results')
 flags.DEFINE_bool('tabular', True, 'where to save results')
 flags.DEFINE_bool('mle', True, 'where to save results')
@@ -288,6 +288,9 @@ def plot_tensorflow_log(space, color, linestyle):
     # print(those_that_are_not_99)
     #print(len(all_y_over_seeds))
     # all_y_over_seeds = [a[:99] for a in all_y_over_seeds]
+    first_seed_size = len(all_y_over_seeds[0])
+    the_incomplete = [i for i, a in enumerate(all_y_over_seeds) if len(a) != first_seed_size]
+    print(the_incomplete)
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
     if space["crt_config"]["agent"] == "vanilla":
