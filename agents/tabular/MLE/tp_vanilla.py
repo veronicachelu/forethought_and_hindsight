@@ -59,7 +59,7 @@ class TpVanilla(Agent):
         self._planning_period = planning_period
         self._n = planning_depth
         self._replay_capacity = replay_capacity
-        self._max_norm = 0.01
+        self._max_norm = 0.05
         # self._double_input_reward_model = double_input_reward_model
         self._run_mode = "{}_{}_{}".format(self._run_mode, self._n, self._replay_capacity)
 

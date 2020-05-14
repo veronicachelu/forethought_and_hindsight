@@ -8,8 +8,8 @@ env_config = {
     "mdp_filename": None,
     "policy_type": "greedy",
     "env_size": (5, 500),
-    "num_episodes": 400,
-    "num_runs": 100,
+    "num_episodes": 2000,
+    "num_runs": 20,
     "stochastic": False,
     "feature_coder": None,
     "nA": 1

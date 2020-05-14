@@ -95,7 +95,7 @@ class ChainSolver:
     def get_true_model(self):
         if self._true_model is None:
             v = self.get_optimal_v()
-            ppi = np.einsum('kij, ik->ij', self._p_absorbing, self._pi)
+            ppi = np.einsum('kij, ik->ij', self._p, self._pi)
             eta_pi = self.get_eta_pi(self._pi)
             stationary = np.diag(eta_pi)
             bw_model = np.matmul(np.matmul(np.linalg.inv(stationary), ppi.transpose()), stationary)

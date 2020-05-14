@@ -22,6 +22,10 @@ class TpTrueBw(TpVanilla):
     ):
 
         super(TpTrueBw, self).__init__(**kwargs)
+        self._o_network = self._network["model"]["net"][0]
+        self._fw_o_network = self._network["model"]["net"][1]
+        self._r_network = self._network["model"]["net"][2]
+
         self._sequence = []
         self._should_reset_sequence = False
         self._episode_end = False
@@ -58,7 +62,7 @@ class TpTrueBw(TpVanilla):
         o_t = np.array(timestep.observation)
         d_t = np.array(timestep.discount)
         losses = 0
-        o_tmn = self._o_network[o_t]
+        o_tmn = self._softmax(self._o_network[o_t])
         for prev_o_tmn in range(np.prod(self._input_dim)):
             loss, gradient = self._v_planning_loss_grad(self._v_network,
                                                            self._r_network,

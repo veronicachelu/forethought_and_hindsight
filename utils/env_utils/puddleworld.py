@@ -16,8 +16,8 @@ class Actions():
     left = 3
 
 
-class ObstacleWorld(dm_env.Environment):
-    def __init__(self, path=None, stochastic=False, random_restarts=False,
+class PuddleWorld(dm_env.Environment):
+    def __init__(self, path=None, stochastic=False,
                  rng=None, env_size=None, obs_type=None):
         self._str_MDP = ''
         self._height = -1
@@ -32,10 +32,7 @@ class ObstacleWorld(dm_env.Environment):
         self._read_file(path)
         self._parse_string()
         self._stochastic = stochastic
-        self._random_restarts = random_restarts
         self._p = 0.1
-        self._cPos[0] = self._sPos[0]
-        self._cPos[1] = self._sPos[1]
         self._nA = 4
         self._rng = rng
         self._reset_next_step = True
@@ -45,16 +42,19 @@ class ObstacleWorld(dm_env.Environment):
 
         self._obs_type = obs_type
 
-        self._h = int(self._height // self._step_size)
-        self._w = int(self._width // self._step_size)
+        self._h = int(self._height / self._step_size)
+        self._w = int(self._width / self._step_size)
 
         self._mdp = np.zeros((self._h, self._w))
 
-        self._sX = int(self._sPos[0]//self._step_size)
-        self._sY = int(self._sPos[1]//self._step_size)
-        self._g = [(int(self._gPos[0]//self._step_size),
-                    int(self._gPos[1]//self._step_size)
+        self._g = [(int(self._gPos[0]/self._step_size),
+                    int(self._gPos[1]/self._step_size)
                     )]
+
+        self._starting_positions = []
+        for s in list(zip(np.arange(self._h) * self._step_size, np.arange(self._w) * self._step_size)):
+            if not self._is_puddle(s):
+                self._starting_positions.append(s)
 
     def _read_file(self, path):
         file = open(path, 'r')
@@ -78,6 +78,7 @@ class ObstacleWorld(dm_env.Environment):
         self._fudge = float(data[7].split(' ')[2])
         self._reward = float(data[7].split(' ')[3])
         self._reward_noise = float(data[7].split(' ')[4])
+        self._puddle_penalty = float(data[7].split(' ')[5])
 
         self._obstacles = []
         for obstacle in np.arange(9, len(data)):
@@ -87,7 +88,7 @@ class ObstacleWorld(dm_env.Environment):
             yfO = float(data[obstacle].split(' ')[3])
             self._obstacles.append((xsO, xfO, ysO, yfO))
 
-    def _is_obstacle(self, pos):
+    def _is_puddle(self, pos):
         isit = False
         for obstacle in self._obstacles:
             if pos[0] >= obstacle[0] and pos[0] < obstacle[1] and \
@@ -98,38 +99,49 @@ class ObstacleWorld(dm_env.Environment):
     def reset(self):
         """Returns the first `TimeStep` of a new episode."""
         self._reset_next_step = False
+
         if self._random_restarts:
-            valid = False
-            while not valid:
-                self._sPos[0] = self._rng.randint(self._height)
-                self._sPos[1] = self._rng.randint(self._width)
-                if (not self._is_obstacle(self._sPos)) and \
-                        (not np.linalg.norm(self._sPos - self._gPos) < self._fudge):
-                    valid = True
-        self._cPos[0] = self._sPos[0]
-        self._cPos[1] = self._sPos[1]
+            self._cPos = self._rng.choice(self._starting_positions,
+                             p=[1/len(self._starting_positions) for _ in self._starting_positions])
         return dm_env.restart(self._observation())
 
     def _take_action(self, action):
         potential_pos = np.copy(self._cPos)
-        if action == Actions.up:
-            potential_pos[0] -= self._step_size
-        elif action == Actions.right:
-            potential_pos[1] += self._step_size
-        elif action == Actions.down:
-            potential_pos[0] += self._step_size
-        elif action == Actions.left:
-            potential_pos[1] -= self._step_size
+
+        DIR_TO_VEC = [
+            # up
+            np.array((-1, 0)),
+            # right
+            np.array((0, 1)),
+            # down
+            np.array((1, 0)),
+            # left
+            np.array((0, -1)),
+        ]
 
         if self._stochastic:
-            potential_pos += self._rng.normal(loc=self._mean_step_size,
+            random_move = self._rng.choice(range(2), p=[0.9, 0.1])
+            if random_move:
+                action = self._rng.choice(range(self._nA),
+                                          p=[1/self._nA for _ in range(self._nA)])
+
+        step_size = DIR_TO_VEC[action] * self._step_size
+        if self._stochastic:
+            step_size += self._rng.normal(loc=self._mean_step_size,
                                          scale=self._var_step_size, size=(2,))
+
+        potential_pos += step_size
         potential_pos = potential_pos.clip([0, 0], [self._height, self._width])
 
+        reward = 0
         if not self._is_obstacle(potential_pos):
             self._cPos = np.copy(potential_pos)
+        else:
+            reward = self._puddle_penalty
 
-        return self._reward if self._is_terminal() else 0.0
+        if self._is_terminal():
+            reward = self._reward
+        return  reward
 
     def step(self, action):
         """Updates the environment according to the action."""
@@ -162,9 +174,9 @@ class ObstacleWorld(dm_env.Environment):
         if self._obs_type == "position":
             return specs.BoundedArray(shape=(2,), dtype=np.int32,
                                       name="state", minimum=0, maximum=1)
-        elif self._obs_type == "tile":
-            return specs.BoundedArray(shape=(self._bins,), dtype=np.int32,
-                                      name="state", minimum=0, maximum=1)
+        # elif self._obs_type == "tile":
+        #     return specs.BoundedArray(shape=(self._bins,), dtype=np.int32,
+        #                               name="state", minimum=0, maximum=1)
 
     def action_spec(self):
         return specs.DiscreteArray(
@@ -206,6 +218,13 @@ class ObstacleWorld(dm_env.Environment):
             for j in range(self._ww):
                 self._index_matrix[i][j] = int(np.ravel_multi_index((i, j), (self._hh, self._ww)))
 
+
+
+        if self._stochastic:
+            random_move_prob = 0.1
+        else:
+            random_move_prob = 0
+
         DIR_TO_VEC = [
             # up
             np.array((-1, 0)),
@@ -216,35 +235,47 @@ class ObstacleWorld(dm_env.Environment):
             # left
             np.array((0, -1)),
         ]
+
         for i in range(self._hh):
             for j in range(self._ww):
                 for k in range(self._nA):
-                    fwd_pos = np.array([i, j]) + DIR_TO_VEC[k]
-                    fwd_i, fwd_j = fwd_pos
-                    if self._mdp_tilings[i][j] != -1:
-                        if not ((i, j) in self._g_tilings):
-                            if fwd_i >= 0 and fwd_i < self._h and \
-                                            fwd_j >= 0 and fwd_j < self._w and self._mdp[fwd_i][fwd_j] != -1:
-                                self._P[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = 1
-                                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = 1
-                                self._R[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = \
-                                    self._reward if (fwd_i, fwd_j) in self._g_tilings else 0
-                                self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 0
-                                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 0
-                                self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
-                                    self._reward if (i, j) in self._g_tilings else 0
-                            else:
-                                self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
-                                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
-                                self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
-                                    self._reward if (i, j) in self._g_tilings else 0
-                        else:
-                            self._P[k][self._index_matrix[i][j]][
-                                self._index_matrix[self._sX_tilings][self._sY_tilings]] = 1
-                            self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
-                            self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 0
-                            # \
-                            #     self._reward if (i, j) in self._g_tilings else 0
+                    action_exec_prob = 1 - random_move_prob + random_move_prob/self._nA
+                    dir_move = DIR_TO_VEC[k]
+                    self.fill_action_prob(i, j, k, action_exec_prob, dir_move)
+                    for other_k in range(self._nA):
+                        if other_k != k:
+                            action_exec_prob = random_move_prob / self._nA
+                            dir_move = DIR_TO_VEC[other_k]
+                            self.fill_action_prob(i, j, k, action_exec_prob, dir_move)
+
+    def fill_action_prob(self, i, j, k, action_exec_prob, dir_move):
+        fwd_pos = np.array([i, j]) + dir_move
+        fwd_i, fwd_j = fwd_pos
+        if self._mdp_tilings[i][j] != -1:
+            if not ((i, j) in self._g_tilings):
+                if fwd_i >= 0 and fwd_i < self._h and \
+                                fwd_j >= 0 and fwd_j < self._w and self._mdp[fwd_i][fwd_j] != -1:
+                    self._P[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] += \
+                        action_exec_prob
+                    self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] += \
+                        action_exec_prob
+                    if (fwd_i, fwd_j) in self._g_tilings:
+                        self._R[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = \
+                            self._reward
+                        # self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
+                        #     self._reward
+                else:
+                    self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] += \
+                        action_exec_prob
+                    self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] += \
+                        action_exec_prob
+                    if (i, j) in self._g_tilings:
+                        self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
+                            self._reward
+            else:
+                self._P[k][self._index_matrix[i][j]][
+                    self._index_matrix[self._sX_tilings][self._sY_tilings]] += action_exec_prob
+                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] += action_exec_prob
 
     def _get_dynamics(self, feature_coder=None):
         if self._P == None or self._R == None or self._P_absorbing == None:
@@ -283,21 +314,18 @@ if __name__ == "__main__":
     nrng = np.random.RandomState(0)
     nS = None
     nA = 2
-    discount = 0.95
+    discount = 0.99
     mdp_filename = "../../continuous_mdps/obstacle.mdp"
-    env = ObstacleWorld(path=mdp_filename, stochastic=False,
-                        random_restarts=False,
+    env = PuddleWorld(path=mdp_filename, stochastic=True,
                         rng=nrng, env_size=None)
     nS = env._nS
     nA = 4
-    # feature_coder = {
-    #     "type": "tile",
-    #     "ranges": [[0.0, 0.0], [1.0, 1.0]],
-    #     "num_tiles": [5, 5],
-    #     "num_tilings": 1}
     feature_coder = {
-        "type": "rbf"
-    }
+        "type": "tile",
+        "ranges": [[0.0, 0.0], [1.0, 1.0]],
+        "num_tiles": [20, 20],
+        "num_tilings": 1}
+    plot_grid(env, logs=str(os.environ['LOGS']), env_type="continous")
     mdp_solver = MdpSolver(env, nS, nA, discount, feature_coder=feature_coder)
     v = mdp_solver.get_optimal_v()
     # v = env.reshape_v(v)
@@ -307,7 +335,7 @@ if __name__ == "__main__":
     # mdp_solver = MdpSolver(env, nS, nA, discount)
     # # policy = mdp_solver.get_optimal_policy()
     # v = mdp_solver.get_optimal_v()
-    # v = env.reshape_v(v)
+    v = env.reshape_v(v)
     plot_v(env, v, str(os.environ['LOGS']), env_type="continuous")
     plot_policy(env, env.reshape_pi(pi), str((os.environ['LOGS'])),
                 env_type="continuous")

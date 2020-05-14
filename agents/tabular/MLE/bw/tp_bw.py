@@ -28,7 +28,6 @@ class TpBw(TpVanilla):
         self._o_network = self._network["model"]["net"][0]
         self._fw_o_network = self._network["model"]["net"][1]
         self._r_network = self._network["model"]["net"][2]
-        self._d_network = self._network["model"]["net"][3]
 
         def model_loss(o_params, r_params, transitions):
             o_tmn_target = transitions[0][0]

@@ -10,14 +10,24 @@ import utils
 from run_utils import *
 from utils import *
 
-flags.DEFINE_string('agent', 'mb_c_true_bw', 'what agent to run')
-flags.DEFINE_string('env', 'bipartite_1_100', 'env')
+flags.DEFINE_string('agent', 'mb_c_bw_PAML', 'what agent to run')
+# flags.DEFINE_string('agent', 'mb_c_true_bw', 'what agent to run')
+# flags.DEFINE_string('agent', 'mb_c_random_bw', 'what agent to run')
+# flags.DEFINE_string('agent', 'mb_p_true_fw', 'what agent to run')
+# flags.DEFINE_string('agent', 'mb_c_bw_MLE', 'what agent to run')
+# flags.DEFINE_string('agent', 'mb_p_fw_MLE', 'what agent to run')
+# flags.DEFINE_string('agent', 'p_fw_MLE', 'what agent to run')
+# flags.DEFINE_string('agent', 'c_bw_MLE', 'what agent to run')
+# flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
+flags.DEFINE_string('env', 'bipartite_1', 'env')
+# flags.DEFINE_string('env', 'bipartite_5L', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', 100000, 'Maximum number of time steps an episode may last (default: 100).')
 flags.DEFINE_integer('num_hidden_layers', 0, 'number of hidden layers')
 flags.DEFINE_integer('planning_iter', 1, 'Number of minibatches of model-based backups to run for planning')
 flags.DEFINE_integer('planning_period', 1, 'Number of timesteps of real experience to see before running planning')
+# flags.DEFINE_integer('planning_depth', 0, 'Planning depth')
 flags.DEFINE_integer('planning_depth', 1, 'Planning depth')
 flags.DEFINE_integer('replay_capacity', 0, 'Replay capacity')
 flags.DEFINE_integer('model_learning_period', 1,
@@ -62,7 +72,7 @@ def main(argv):
         aux_agent_configs["pivot"] = agent["agent"].split("_")[1]
     else:
         aux_agent_configs["pivot"] = agent["agent"].split("_")[0]
-    run_agent(FLAGS.env, agent, logs, aux_agent_configs)
+    run_agent(FLAGS.env, agent, logs, aux_agent_configs, ignore_existent=True)
 
 
 if __name__ == '__main__':

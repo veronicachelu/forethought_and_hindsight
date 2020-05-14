@@ -1,15 +1,15 @@
 import numpy as np
 env_config = {
-    "class": "Fanin",
+    "class": "Bipartite",
     "non_gridworld": True,
     "model_class": "tabular",
     "env_type": "discrete",
     "obs_type": "tabular",
     "mdp_filename": None,
     "policy_type": "greedy",
-    "env_size": 6,
-    "num_episodes": 400,
-    "num_runs": 100,
+    "env_size": (5, 1),
+    "num_episodes": 200,
+    "num_runs": 20,
     "stochastic": False,
     "feature_coder": None,
     "nA": 1
