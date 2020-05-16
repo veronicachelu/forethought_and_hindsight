@@ -8,7 +8,9 @@ import itertools
 class Bipartite(dm_env.Environment):
     def __init__(self, rng=None, obs_type="tabular", nS = (5,5,5,5,5)):
         self._P = None
+        self._P_absorbing = None
         self._R = None
+        self._d = None
         self._stochastic = False
         self._nS = np.sum(nS)
         self._nL = len(nS)
@@ -92,6 +94,10 @@ class Bipartite(dm_env.Environment):
         self._P = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
         self._P_absorbing = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
         self._R = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
+        self._d = np.zeros((self._nS), dtype=np.float)
+
+        for i, s in enumerate(self._start_states):
+            self._d[s] = self._starting_distribution[i]
 
         for s in range(self._nS):
             for k in range(self._nA):
@@ -136,7 +142,7 @@ class Bipartite(dm_env.Environment):
         if self._P is None or self._R is None or self._P_absorbing is None:
             self._fill_P_R()
 
-        return self._P, self._P_absorbing, self._R
+        return self._P, self._P_absorbing, self._R, self._d
 
     def reshape_v(self, v):
         return np.reshape(v, (self._nS))

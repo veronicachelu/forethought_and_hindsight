@@ -130,7 +130,8 @@ class LpVanilla(Agent):
         self._v_parameters = network["value"]["params"]
 
         # This function computes dL/dTheta
-        self._v_loss_grad = jax.jit(jax.value_and_grad(v_loss))
+        # self._v_loss_grad = jax.jit(jax.value_and_grad(v_loss))
+        self._v_loss_grad = jax.value_and_grad(v_loss)
         self._v_forward = jax.jit(self._v_network)
 
         self._step_schedule = optimizers.polynomial_decay(self._lr,
@@ -141,57 +142,21 @@ class LpVanilla(Agent):
         self._v_opt_state = v_opt_init(self._v_parameters)
         self._v_get_params = v_get_params
 
-        def euclidean_proj_simplex(v, s=1):
-            assert s > 0, "Radius s must be strictly positive (%d <= 0)" % s
-            n, = v.shape  # will raise ValueError if v is not 1-D
-            # check if we are already on the simplex
-            if v.sum() == s and jnp.alltrue(v >= 0):
-                # best projection: itself!
-                return v
-            # get the array of cumulative sums of a sorted (decreasing) copy of v
-            u = jnp.sort(v)[::-1]
-            cssv = jnp.cumsum(u)
-            # get the number of > 0 components of the optimal solution
-            rho = jnp.nonzero(u * jnp.arange(1, n + 1) > (cssv - s))[0][-1]
-            # compute the Lagrange multiplier associated to the simplex constraint
-            theta = float(cssv[rho] - s) / rho
-            # compute the projection by thresholding v using theta
-            w = jnp.clip((v - theta), a_min=0)
-            return w
-
-        def euclidean_proj_l1ball(v, s=1):
-            assert s > 0, "Radius s must be strictly positive (%d <= 0)" % s
-            v_shape = v.shape
-            flat_v = v.reshape(-1)
-            n, = flat_v.shape  # will raise ValueError if v is not 1-D
-            # compute the vector of absolute values
-            u = jnp.abs(flat_v)
-            # check if v is already a solution
-            if u.sum() <= s:
-                # L1-norm is <= s
-                return v
-            # v is not already a solution: optimum lies on the boundary (norm == s)
-            # project *u* on the simplex
-            w = euclidean_proj_simplex(u, s=s)
-            # compute the solution to the original problem on v
-            w *= jnp.sign(flat_v)
-
-            reshaped_w = jnp.reshape(w, v_shape)
-            return reshaped_w
-
-        self._euclidean_proj_l1ball = euclidean_proj_l1ball
 
     def _get_features(self, o):
+        # features = self._get_sparse_features(o)
+        # return features
         if self._feature_mapper is not None:
             return self._feature_mapper.get_features(o, self._nrng)
         else:
             return o
 
     def _get_sparse_features(self, o):
-        if self._sparse_feature_mapper is not None:
-            return self._sparse_feature_mapper.get_features(o)
-        else:
-            return o
+        return [np.eye(100)[np.ravel_multi_index(oo, (10, 10))] for oo in o]
+        # if self._sparse_feature_mapper is not None:
+        #     return self._sparse_feature_mapper.get_features(o)
+        # else:
+        #     return o
 
     def policy(self,
                timestep: dm_env.TimeStep,
@@ -207,6 +172,9 @@ class LpVanilla(Agent):
         elif self._policy_type == "continuous_greedy":
             features = self._get_sparse_features(timestep.observation[None, ...])
             return self._pi(np.argmax(features[0]), self._nrng)
+        elif self._policy_type == "continuous_random":
+            features = self._get_sparse_features(timestep.observation[None, ...])
+            return self._nrng.choice(np.arange(4), p=[1/4 for _ in range(4)])
 
     def value_update(
             self,

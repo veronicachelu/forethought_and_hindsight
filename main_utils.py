@@ -75,14 +75,18 @@ def get_continuous_gridworld_env(nrng, space, aux_agent_configs):
                     obs_type=space["env_config"]["obs_type"],
                     env_size=space["env_config"]["env_size"]
                     )
-    mdp_solver = MdpSolver(env, nS=None, nA=space["env_config"]["nA"],
+    mdp_solver = MdpSolver(env, nS=env._nS, nA=space["env_config"]["nA"],
                            discount=aux_agent_configs["discount"],
-                           feature_coder=space["env_config"]["feature_coder"])
+                           feature_coder=space["env_config"]["feature_coder"]
+                           if "feature_coder" in space["env_config"].keys() else None)
     if space["env_config"]["policy_type"] in ["greedy", "continuous_greedy"]:
         pi = mdp_solver.get_optimal_policy()
         policy = lambda x, nrng: np.argmax(pi[x])
+    elif space["env_config"]["policy_type"] in ["continuous_random"]:
+        policy =  lambda nrng: nrng.choice(range(env._nA), p=env._nA * [1 / env._nA])
     nS = mdp_solver._nS
-    if space["env_config"]["feature_coder"]["type"] == "rbf":
+    if "feature_coder" in space["env_config"].keys() and\
+                    space["env_config"]["feature_coder"]["type"] == "rbf":
         nS = np.prod(space["env_config"]["feature_coder"]["num_centers"])
         if "noise" in space["env_config"]["feature_coder"].keys() and space["env_config"]["feature_coder"]["noise"]:
             nS += space["env_config"]["feature_coder"]["noise_dim"]
@@ -177,6 +181,11 @@ def get_control_agent(env, seed, nrng, nA, input_dim, space, aux_agent_configs):
     agent_class = getattr(control_agents,
                           control_space["agent_config"]["class"][control_space["env_config"]["model_class"]])
 
+    if aux_agent_configs["max_len"] is not None and aux_agent_configs["max_len"] != -1:
+        exploration_decay_period = control_space["env_config"]["num_episodes"]
+    else:
+        exploration_decay_period = control_space["env_config"]["total_steps"]
+
     agent = agent_class(
         run_mode=control_space["agent_config"]["run_mode"],
         action_spec=env.action_spec(),
@@ -185,7 +194,7 @@ def get_control_agent(env, seed, nrng, nA, input_dim, space, aux_agent_configs):
         discount=aux_agent_configs["discount"],
         max_len=aux_agent_configs["max_len"],
         lr=control_space["crt_config"]["lr_ctrl"],
-        exploration_decay_period=control_space["env_config"]["num_episodes"],
+        exploration_decay_period=exploration_decay_period,
         seed=seed,
         rng_seq=rng_sequence,
         nrng=nrng,
@@ -209,7 +218,8 @@ def get_agent(env, seed, nrng, nA, input_dim, policy, space, aux_agent_configs):
         input_dim=input_dim,
         rng=rng_model,
         rng_target=rng_q,
-        feature_coder=space["env_config"]["feature_coder"],
+        feature_coder=space["env_config"]["feature_coder"]
+        if "feature_coder" in space["env_config"].keys() else None,
         latent=space["agent_config"]["latent"],
         model_family=space["agent_config"]["model_family"],
         model_class=space["env_config"]["model_class"],

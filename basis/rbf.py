@@ -6,7 +6,7 @@ import itertools
 class RBF(object):
 
     def __init__(self, low, high, num_centers, offsets):
-        centers = [np.linspace(low[dim], high[dim], num_centers[dim] + 2)[1:-1] + offsets[dim]
+        centers = [np.linspace(low[dim], high[dim], num_centers[dim] + 2, endpoint=False)[1:-1] + offsets[dim]
                          for dim in range(len(num_centers))]
         self._centers = np.array(list(itertools.product(*centers)))
 

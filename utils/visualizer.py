@@ -11,9 +11,14 @@ def plot_grid(env, logs=None, env_type="discrete", vmin=None, vmax=None):
             plot_chain(env, vmin, vmax)
     else:
         if env_type == "continuous":
+            # mdp = env._mdp_tilings
+            sX = sY = None
+            # sX = env._sX_tilings
+            # sY = env._sY_tilings
+            g = env._g_tilings
+        elif env_type == "puddleworld":
+            sX = sY = None
             mdp = env._mdp_tilings
-            sX = env._sX_tilings
-            sY = env._sY_tilings
             g = env._g_tilings
         else:
             mdp = env._mdp
@@ -27,9 +32,11 @@ def plot_grid(env, logs=None, env_type="discrete", vmin=None, vmax=None):
         plt.xticks([])
         plt.yticks([])
         # plt.title("Environment")
-        plt.text(
-            sY, sX,
-            r"$\mathbf{S}$", ha='center', va='center')
+
+        if sX is not None and sY is not None:
+            plt.text(
+                sY, sX,
+                r"$\mathbf{S}$", ha='center', va='center')
         for i, j in g:
             plt.text(
                 j, i,
@@ -82,11 +89,11 @@ def plot_v(env, values, logs=None, colormap='Blues',
            policy=None,
            ):#vmin=-1, vmax=10):
     plt.clf()
-    vmin = 0 #np.minimum(np.min(values), 0)
-    vmax = 1.0 #np.max(values)
-    plot_grid(env, env_type=env_type, vmin=vmin, vmax=vmax)
-    if policy is not None:
-        plot_policy(env, policy, env_type=env_type)
+    vmin = np.min(values)
+    vmax = np.max(values)
+    # plot_grid(env, env_type=env_type, vmin=vmin, vmax=vmax)
+    # if policy is not None:
+    #     plot_policy(env, policy, env_type=env_type)
     # if true_v is not None:
     #     vmin = np.min(true_v)
     #     vmax = np.max(true_v)
@@ -109,10 +116,10 @@ def plot_error(env, values, logs=None, colormap='Greys',
     plt.clf()
     vmin = np.min(values)
     vmax = np.max(values)
-    if not non_gridworld:
-        plot_grid(env, env_type=env_type, vmin=vmin, vmax=vmax)
-    if policy is not None:
-        plot_policy(env, policy, env_type=env_type)
+    # if not non_gridworld:
+    #     plot_grid(env, env_type=env_type, vmin=vmin, vmax=vmax)
+    # if policy is not None:
+    #     plot_policy(env, policy, env_type=env_type)
     # if true_v is not None:
     #     vmin = np.min(true_v)
     #     vmax = np.max(true_v)
@@ -125,11 +132,11 @@ def plot_error(env, values, logs=None, colormap='Greys',
         plt.yticks([])
         plt.xticks([])
         plt.colorbar(ticks=[vmin, vmax])
-    normalized_eta_pi = (eta_pi - np.min(eta_pi))/(np.max(eta_pi) - np.min(eta_pi))
-    for i in range(values.shape[0]):
-        for j in range(values.shape[1]):
-            t = plt.annotate(r"$\cdot$", xy=(j, i), ha='center', va='center')
-            t.set_alpha(normalized_eta_pi[i][j])
+    # normalized_eta_pi = (eta_pi - np.min(eta_pi))/(np.max(eta_pi) - np.min(eta_pi))
+    # for i in range(values.shape[0]):
+    #     for j in range(values.shape[1]):
+    #         t = plt.annotate(r"$\cdot$", xy=(j, i), ha='center', va='center')
+    #         t.set_alpha(normalized_eta_pi[i][j])
 
     if logs is not None:
         plt.savefig(os.path.join(logs, filename))
@@ -144,10 +151,10 @@ def plot_eta_pi(env, values, logs=None, colormap='Greys',
     plt.clf()
     vmin = np.min(values)
     vmax = np.max(values)
-    plot_grid(env, env_type=env_type, vmin=vmin, vmax=vmax)
+    # plot_grid(env, env_type=env_type, vmin=vmin, vmax=vmax)
 
-    if policy is not None:
-        plot_policy(env, policy, env_type=env_type)
+    # if policy is not None:
+    #     plot_policy(env, policy, env_type=env_type)
 
     values = values[None, ...] if len(values.shape) == 1 else values
     plt.imshow(values, interpolation="nearest",

@@ -25,6 +25,8 @@ def get_network(num_hidden_layers: int,
                 ):
     if feature_coder is not None:
         input_dim, output_dim = get_input_dim(input_dim, feature_coder, model_family)
+    elif model_class != "tabular":
+        output_dim = input_dim = np.prod(input_dim)
     if model_family == "ac":
         return get_pg_network(num_hidden_layers, num_units, nA,
                             rng, input_dim, latent)

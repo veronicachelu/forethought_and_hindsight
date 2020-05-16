@@ -5,8 +5,8 @@ env_config = {
     "model_class": "linear",
     "feature_coder": {
         "type": "rbf",
-        "ranges": [[0.0, 0.0], [1.0, 1.0]],
-        "num_tiles": [20, 20],
+        "ranges": [[0.0, 0.0], [10.0, 10.0]],
+        "num_tiles": [10, 10],
         "num_centers": [4, 4],
         "num_tilings": 1,
         "noise": False,
@@ -14,14 +14,15 @@ env_config = {
     },
     "env_type": "continuous",
     "obs_type": "position",
-    "policy_type": "continuous_greedy",
+    "policy_type": "continuous_random",
     "mdp_filename": "./continuous_mdps/obstacle.mdp",
     "env_size": None,
     "num_episodes": 200,
+    # "total_steps": 10000,
     "control_num_episodes": 300,
-    "num_runs": 1,
-    "stochastic": True,
-    "nA": 4
+    "num_runs": 5,
+    "stochastic": False,
+    "nA": 1
 }
 
 volatile_agent_config = {

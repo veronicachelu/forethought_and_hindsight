@@ -30,8 +30,8 @@ def run_agent(env, agent, logs, aux_agent_configs, ignore_existent=False):
         seed_config["seed"] = seed
         space = {
             "logs": logs,
-            "plot_errors": False,
-            "plot_values": False,
+            "plot_errors": True,
+            "plot_values": True,
             "plot_curves": True,
             "log_period": aux_agent_configs["log_period"],
             "env_config": env_config,
@@ -59,6 +59,15 @@ def run_objective(space, aux_agent_configs):
     elif space["agent_config"]["model_family"] == "PAML" and \
         space["env_config"]["model_class"] == "tabular":
         _, _, _, agent._true_v_network = mdp_solver.get_true_model()
+    # if space["env_config"]["policy_type"] == "continuous_random":
+    # total_rmsve, final_rmsve, start_rmsve, avg_steps, values, errors = experiment.run_infinite(
+    #     agent=agent,
+    #     space=space,
+    #     aux_agent_configs=aux_agent_configs,
+    #     mdp_solver=mdp_solver,
+    #     environment=env,
+    # )
+    # else:
     total_rmsve, final_rmsve, start_rmsve, avg_steps, values, errors = experiment.run_episodic(
         agent=agent,
         space=space,

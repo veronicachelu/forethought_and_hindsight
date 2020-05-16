@@ -16,8 +16,8 @@ class Actions():
     left = 3
 
 
-class PuddleWorld(dm_env.Environment):
-    def __init__(self, path=None, stochastic=False,
+class ObstacleWorld(dm_env.Environment):
+    def __init__(self, path=None, stochastic=False, random_restarts=False,
                  rng=None, env_size=None, obs_type=None):
         self._str_MDP = ''
         self._height = -1
@@ -32,7 +32,10 @@ class PuddleWorld(dm_env.Environment):
         self._read_file(path)
         self._parse_string()
         self._stochastic = stochastic
+        self._random_restarts = random_restarts
         self._p = 0.1
+        self._cPos[0] = self._sPos[0]
+        self._cPos[1] = self._sPos[1]
         self._nA = 4
         self._rng = rng
         self._reset_next_step = True
@@ -40,27 +43,18 @@ class PuddleWorld(dm_env.Environment):
         self._P = None
         self._R = None
 
-
         self._obs_type = obs_type
 
         self._h = int(self._height / self._step_size)
         self._w = int(self._width / self._step_size)
 
-        self._pi = np.full((self._h * self._w, self._nA), 1 / self._nA)
-
         self._mdp = np.zeros((self._h, self._w))
 
+        self._sX = int(self._sPos[0]/self._step_size)
+        self._sY = int(self._sPos[1]/self._step_size)
         self._g = [(int(self._gPos[0]/self._step_size),
                     int(self._gPos[1]/self._step_size)
                     )]
-
-        self._starting_positions = []
-        self._starting_position_indices = []
-        for s, s_i in zip(list(zip(np.arange(self._h) * self._step_size, np.arange(self._w) * self._step_size)),
-                          list(zip(np.arange(self._h), np.arange(self._w)))):
-            if not self._is_puddle(s)[0]:
-                self._starting_positions.append(s)
-                self._starting_position_indices.append(s_i)
 
     def _read_file(self, path):
         file = open(path, 'r')
@@ -76,50 +70,44 @@ class PuddleWorld(dm_env.Environment):
         self._mean_step_size = float(data[3].split(' ')[1])
         self._var_step_size = float(data[3].split(' ')[2])
 
-        self._gPos[0] = float(data[5].split(' ')[0])
-        self._gPos[1] = float(data[5].split(' ')[1])
-        self._fudge = float(data[5].split(' ')[2])
-        self._reward = float(data[5].split(' ')[3])
-        self._reward_noise = float(data[5].split(' ')[4])
-        self._puddle_penalty = float(data[5].split(' ')[5])
+        self._sPos[0] = float(data[5].split(' ')[0])
+        self._sPos[1] = float(data[5].split(' ')[1])
 
-        self._puddles = []
-        for puddle in np.arange(7, len(data)):
-            xsO = float(data[puddle].split(' ')[0])
-            xfO = float(data[puddle].split(' ')[1])
-            ysO = float(data[puddle].split(' ')[2])
-            yfO = float(data[puddle].split(' ')[3])
-            self._puddles.append((xsO, xfO, ysO, yfO))
+        self._gPos[0] = float(data[7].split(' ')[0])
+        self._gPos[1] = float(data[7].split(' ')[1])
+        self._fudge = float(data[7].split(' ')[2])
+        self._reward = float(data[7].split(' ')[3])
+        self._reward_noise = float(data[7].split(' ')[4])
 
-    def _is_puddle(self, pos):
+        self._obstacles = []
+        for obstacle in np.arange(9, len(data)):
+            xsO = float(data[obstacle].split(' ')[0])
+            xfO = float(data[obstacle].split(' ')[1])
+            ysO = float(data[obstacle].split(' ')[2])
+            yfO = float(data[obstacle].split(' ')[3])
+            self._obstacles.append((xsO, xfO, ysO, yfO))
+
+    def _is_obstacle(self, pos):
         isit = False
-        reward = 0.0 # -1.
-
-        for puddle in self._puddles:
-            xs, xf, ys, yf = puddle
-            cen = xs + (xf - xs) / 2, ys + (yf / ys) / 2
-            wid = (xf - xs) / 2, ys + (yf / ys)
-            reward -= 2. * self._gaussian1d(pos[0], cen[0], wid[0]) * \
-                      self._gaussian1d(pos[1], cen[1], wid[1])
-
-            if pos[0] >= puddle[0] and pos[0] < puddle[1] and \
-                pos[1] >= puddle[1] and pos[1] < puddle[2]:
+        for obstacle in self._obstacles:
+            if pos[0] >= obstacle[0] and pos[0] < obstacle[1] and \
+                pos[1] >= obstacle[1] and pos[1] < obstacle[2]:
                 isit = True
-
-        return isit, reward
-
-    def _gaussian1d(self, p, mu, sig):
-        return np.exp(-((p - mu) ** 2) / (2. * sig ** 2)) / (sig * np.sqrt(2. * np.pi))
+        return isit
 
     def reset(self):
         """Returns the first `TimeStep` of a new episode."""
         self._reset_next_step = False
-
-        # if self._random_restarts:
-        s_i = self._rng.choice(np.arange(len(self._starting_positions)),
-                         p=[1/len(self._starting_positions) for _ in self._starting_positions])
-
-        self._cPos = np.array(self._starting_positions[s_i], dtype=np.float64)
+        if self._random_restarts:
+            valid = False
+            while not valid:
+                self._sPos[0] = self._rng.randint(self._height)
+                self._sPos[1] = self._rng.randint(self._width)
+                if (not self._is_obstacle(self._sPos)) and \
+                        (not np.linalg.norm(self._sPos - self._gPos) < self._fudge):
+                    valid = True
+        self._cPos[0] = self._sPos[0]
+        self._cPos[1] = self._sPos[1]
         return dm_env.restart(self._observation())
 
     def _take_action(self, action):
@@ -150,13 +138,10 @@ class PuddleWorld(dm_env.Environment):
         potential_pos += step_size
         potential_pos = potential_pos.clip([0, 0], [self._height, self._width])
 
-        isit, reward = self._is_puddle(potential_pos)
-        # if not isit:
-        self._cPos = np.copy(potential_pos)
+        if not self._is_obstacle(potential_pos):
+            self._cPos = np.copy(potential_pos)
 
-        if self._is_terminal():
-            reward = self._reward
-        return reward
+        return self._reward if self._is_terminal() else 0.0
 
     def step(self, action):
         """Updates the environment according to the action."""
@@ -209,8 +194,8 @@ class PuddleWorld(dm_env.Environment):
                                                 bins=(feature_coder["num_tiles"][0], feature_coder["num_tiles"][0]),
                                                 offsets=(0.0, 0.0))]
 
-            for puddles in self._puddles:
-                xsO, xfO, ysO, yfO = puddles
+            for obstacle in self._obstacles:
+                xsO, xfO, ysO, yfO = obstacle
                 for i in range(int(xsO // self._step_size),
                                int(xfO // self._step_size)):
                     for j in range(int(ysO // self._step_size),
@@ -219,6 +204,8 @@ class PuddleWorld(dm_env.Environment):
                         encoded_obs = tile_encode((i * self._step_size, j * self._step_size), self._tilings)[0]
                         self._mdp_tilings[encoded_obs[0]][encoded_obs[1]] = -1
 
+            self._sX_tilings, self._sY_tilings = tile_encode(self._sPos, self._tilings)[0]
+            self._sX_tilings = self._sX_tilings
             self._g_tilings = [tile_encode(self._gPos, self._tilings)[0]]
             self._g_tilings = [(self._g_tilings[0][0], self._g_tilings[0][1])]
 
@@ -230,6 +217,7 @@ class PuddleWorld(dm_env.Environment):
         for i in range(self._hh):
             for j in range(self._ww):
                 self._index_matrix[i][j] = int(np.ravel_multi_index((i, j), (self._hh, self._ww)))
+
 
 
         if self._stochastic:
@@ -266,7 +254,7 @@ class PuddleWorld(dm_env.Environment):
         if self._mdp_tilings[i][j] != -1:
             if not ((i, j) in self._g_tilings):
                 if fwd_i >= 0 and fwd_i < self._h and \
-                                fwd_j >= 0 and fwd_j < self._w:# and self._mdp[fwd_i][fwd_j] != -1:
+                                fwd_j >= 0 and fwd_j < self._w and self._mdp[fwd_i][fwd_j] != -1:
                     self._P[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] += \
                         action_exec_prob
                     self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] += \
@@ -274,10 +262,7 @@ class PuddleWorld(dm_env.Environment):
                     if (fwd_i, fwd_j) in self._g_tilings:
                         self._R[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = \
                             self._reward
-                    if self._is_puddle((fwd_i, fwd_j))[0]:
-                        self._R[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = \
-                            self._is_puddle((fwd_i, fwd_j))[1]
-                            # self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
+                        # self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
                         #     self._reward
                 else:
                     self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] += \
@@ -288,13 +273,12 @@ class PuddleWorld(dm_env.Environment):
                         self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
                             self._reward
             else:
-                for starting_state in self._starting_position_indices:
-                    self._P[k][self._index_matrix[i][j]][
-                        self._index_matrix[starting_state[0]][starting_state[1]]] += action_exec_prob
-                    self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] += action_exec_prob
+                self._P[k][self._index_matrix[i][j]][
+                    self._index_matrix[self._sX_tilings][self._sY_tilings]] += action_exec_prob
+                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] += action_exec_prob
 
     def _get_dynamics(self, feature_coder=None):
-        if self._P is None or self._R is None or self._P_absorbing is None:
+        if self._P == None or self._R == None or self._P_absorbing == None:
             self._fill_P_R(feature_coder)
 
         return self._P, self._P_absorbing, self._R
@@ -331,8 +315,9 @@ if __name__ == "__main__":
     nS = None
     nA = 2
     discount = 0.99
-    mdp_filename = "../../continuous_mdps/puddleworld.mdp"
-    env = PuddleWorld(path=mdp_filename, stochastic=True,
+    mdp_filename = "../../continuous_mdps/obstacle.mdp"
+    env = ObstacleWorld(path=mdp_filename, stochastic=True,
+                        random_restarts=False,
                         rng=nrng, env_size=None)
     nS = env._nS
     nA = 4
@@ -341,20 +326,19 @@ if __name__ == "__main__":
         "ranges": [[0.0, 0.0], [1.0, 1.0]],
         "num_tiles": [20, 20],
         "num_tilings": 1}
-    env._fill_P_R(feature_coder)
-    plot_grid(env, logs=str(os.environ['LOGS']), env_type="puddleworld")
+    plot_grid(env, logs=str(os.environ['LOGS']), env_type="continous")
     mdp_solver = MdpSolver(env, nS, nA, discount, feature_coder=feature_coder)
     v = mdp_solver.get_optimal_v()
     # v = env.reshape_v(v)
-    # pi = mdp_solver.get_optimal_policy()
-    # policy = lambda x, nrng: nrng.choice(np.range(nA), p=[1/nA for _ in range(nA)])#.argmax(pi[x])
+    pi = mdp_solver.get_optimal_policy()
+    policy = lambda x, nrng: np.argmax(pi[x])
 
     # mdp_solver = MdpSolver(env, nS, nA, discount)
     # # policy = mdp_solver.get_optimal_policy()
     # v = mdp_solver.get_optimal_v()
     v = env.reshape_v(v)
-    plot_v(env, v, str(os.environ['LOGS']), env_type="puddleworld")
-    plot_policy(env, env.reshape_pi(env._pi), str((os.environ['LOGS'])),
-                env_type="puddleworld")
+    plot_v(env, v, str(os.environ['LOGS']), env_type="continuous")
+    plot_policy(env, env.reshape_pi(pi), str((os.environ['LOGS'])),
+                env_type="continuous")
     # eta_pi = mdp_solver.get_eta_pi(policy)
     # plot_eta_pi(env, env.reshape_v(eta_pi)
