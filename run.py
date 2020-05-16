@@ -20,7 +20,7 @@ from utils import *
 # flags.DEFINE_string('agent', 'c_bwfw', 'what agent to run')
 
 
-# flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
+flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
 
 
 # flags.DEFINE_string('agent', 'p_fw', 'what agent to run')
