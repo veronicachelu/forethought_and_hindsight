@@ -130,8 +130,8 @@ class LpVanilla(Agent):
         self._v_parameters = network["value"]["params"]
 
         # This function computes dL/dTheta
-        # self._v_loss_grad = jax.jit(jax.value_and_grad(v_loss))
-        self._v_loss_grad = jax.value_and_grad(v_loss)
+        self._v_loss_grad = jax.jit(jax.value_and_grad(v_loss))
+        # self._v_loss_grad = jax.value_and_grad(v_loss)
         self._v_forward = jax.jit(self._v_network)
 
         self._step_schedule = optimizers.polynomial_decay(self._lr,
@@ -144,8 +144,6 @@ class LpVanilla(Agent):
 
 
     def _get_features(self, o):
-        # features = self._get_sparse_features(o)
-        # return features
         if self._feature_mapper is not None:
             return self._feature_mapper.get_features(o, self._nrng)
         else:

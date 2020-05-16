@@ -68,13 +68,12 @@ class MdpSolver:
 
         self._solve_mdp()
 
-
     def get_eta_pi(self, pi):
         if self._eta_pi is None:
             ppi = np.einsum('kij, ik->ij', self._p, pi)
             A = np.eye(self._nS) - ppi
             A = np.vstack((A.T, np.ones(self._nS)))
-            b = np.matrix(list((1 - self._discount) * self._d) + [1]).T
+            b = np.matrix([0] * self._nS + [1]).T
             eta_pi = np.linalg.lstsq(A, b)[0]
             self._eta_pi = np.array(eta_pi.T)[0]
 

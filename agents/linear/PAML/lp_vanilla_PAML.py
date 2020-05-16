@@ -139,32 +139,6 @@ class LpVanillaPAML(Agent):
         self._v_parameters = network["value"]["params"]
 
         self._network = network
-
-        # self._v_step_schedule = optimizers.polynomial_decay(self._lr, self._exploration_decay_period, 0, 1)
-
-        # if self._target_networks:
-        #     self._target_v_network = network["target_value"]["net"]
-        #     self._target_v_parameters = network["target_value"]["params"]
-        #
-        #     self._target_h_network = network["target_model"]["net"][0]
-        #     self._target_o_network = network["target_model"]["net"][1]
-        #     self._target_fw_o_network = network["target_model"]["net"][2]
-        #     self._target_r_network = network["target_model"]["net"][3]
-        #
-        #     self._target_h_parameters = network["target_model"]["params"][0]
-        #     self._target_o_parameters = network["target_model"]["params"][1]
-        #     self._target_fw_o_parameters = network["target_model"]["params"][2]
-        #     self._target_r_parameters = network["target_model"]["params"][3]
-        #
-        #     # self._planning_v_network = self._v_network #network["planning_value"]["net"]
-        #     # self._planning_v_parameters = self._v_parameters #network["planning_value"]["params"]
-        #     # Make an Adam optimizer.
-        #     # pv_opt_init, pv_opt_update, pv_get_params = optimizers.adam(step_size=self._lr)
-        #     # self._pv_opt_update = jax.jit(pv_opt_update)
-        #     # self._pv_opt_init = pv_opt_init
-        #     # self._pv_opt_state = pv_opt_init(self._planning_v_parameters)
-        #     # self._pv_get_params = pv_get_params
-
         self._h_network = network["model"]["net"][0]
         self._h_parameters = network["model"]["params"][0]
 
@@ -185,46 +159,6 @@ class LpVanillaPAML(Agent):
         self._v_opt_state = v_opt_init(value_params)
         self._v_get_params = v_get_params
 
-        def euclidean_proj_simplex(v, s=1):
-            assert s > 0, "Radius s must be strictly positive (%d <= 0)" % s
-            n, = v.shape  # will raise ValueError if v is not 1-D
-            # check if we are already on the simplex
-            if v.sum() == s and jnp.alltrue(v >= 0):
-                # best projection: itself!
-                return v
-            # get the array of cumulative sums of a sorted (decreasing) copy of v
-            u = jnp.sort(v)[::-1]
-            cssv = jnp.cumsum(u)
-            # get the number of > 0 components of the optimal solution
-            rho = jnp.nonzero(u * jnp.arange(1, n + 1) > (cssv - s))[0][-1]
-            # compute the Lagrange multiplier associated to the simplex constraint
-            theta = float(cssv[rho] - s) / rho
-            # compute the projection by thresholding v using theta
-            w = jnp.clip((v - theta), a_min=0)
-            return w
-
-        def euclidean_proj_l1ball(v, s=1):
-            assert s > 0, "Radius s must be strictly positive (%d <= 0)" % s
-            v_shape = v.shape
-            flat_v = v.reshape(-1)
-            n, = flat_v.shape  # will raise ValueError if v is not 1-D
-            # compute the vector of absolute values
-            u = jnp.abs(flat_v)
-            # check if v is already a solution
-            if u.sum() <= s:
-                # L1-norm is <= s
-                return v
-            # v is not already a solution: optimum lies on the boundary (norm == s)
-            # project *u* on the simplex
-            w = euclidean_proj_simplex(u, s=s)
-            # compute the solution to the original problem on v
-            w *= jnp.sign(flat_v)
-
-            reshaped_w = jnp.reshape(w, v_shape)
-            return reshaped_w
-
-        self._euclidean_proj_l1ball = euclidean_proj_l1ball
-
     def _get_features(self, o):
         if self._feature_mapper is not None:
             return self._feature_mapper.get_features(o, self._nrng)
@@ -232,10 +166,11 @@ class LpVanillaPAML(Agent):
             return o
 
     def _get_sparse_features(self, o):
-        if self._sparse_feature_mapper is not None:
-            return self._sparse_feature_mapper.get_features(o)
-        else:
-            return o
+        return [np.eye(100)[np.ravel_multi_index(oo, (10, 10))] for oo in o]
+        # if self._sparse_feature_mapper is not None:
+        #     return self._sparse_feature_mapper.get_features(o)
+        # else:
+        #     return o
 
     def policy(self,
                timestep: dm_env.TimeStep,
@@ -251,6 +186,9 @@ class LpVanillaPAML(Agent):
         elif self._policy_type == "continuous_greedy":
             features = self._get_sparse_features(timestep.observation[None, ...])
             return self._pi(np.argmax(features[0]), self._nrng)
+        elif self._policy_type == "continuous_random":
+            features = self._get_sparse_features(timestep.observation[None, ...])
+            return self._nrng.choice(np.arange(4), p=[1/4 for _ in range(4)])
 
     def value_update(
             self,

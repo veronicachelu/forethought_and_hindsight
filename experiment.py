@@ -81,8 +81,8 @@ def run_episodic(agent: Agent,
                     # space["env_config"]["policy_type"] == "continuous_greedy"):
             hat_v = agent._v_network if space["env_config"]["model_class"] == "tabular" \
                 else agent.get_values_for_all_states(environment.get_all_states())
-            hat_error = np.abs(environment._true_v - hat_v)
-            rmsve = get_rmsve(environment, mdp_solver, hat_v, environment._true_v, weighted=weighted)
+            # hat_error = np.abs(mdp_solver.get_optimal_v() - hat_v)
+            rmsve = get_rmsve(environment, mdp_solver, hat_v, mdp_solver.get_optimal_v(), weighted=weighted)
             # else:
             #     rmsve /= t
 
@@ -99,9 +99,10 @@ def run_episodic(agent: Agent,
                     # (space["env_config"]["env_type"] == "continuous" and
                     # space["env_config"]["policy_type"] == "continuous_greedy" and \
                     #  not space["env_config"]["stochastic"])):
+                error = environment.reshape_v(np.abs((mdp_solver.get_optimal_v() -
+                               hat_v)) * (environment._d * len(environment._starting_positions)))
                 plot_error(env=environment,
-                           values=(environment.reshape_v(mdp_solver.get_optimal_v()) - environment.reshape_v(
-                               hat_v)) ** 2,
+                           values=error,
                            logs=agent._images_dir,
                            env_type=space["env_config"]["env_type"],
                            # eta_pi=environment.reshape_v(mdp_solver.get_eta_pi(environment._pi)),
@@ -122,12 +123,20 @@ def run_episodic(agent: Agent,
                     # (space["env_config"]["env_type"] == "continuous" and
                     # space["env_config"]["policy_type"] == "continuous_greedy" and \
                     #  not space["env_config"]["stochastic"])):
+                _hat_v_ = environment.reshape_v(hat_v * (environment._d * len(environment._starting_positions)))
+                _true_v = environment.reshape_v(mdp_solver.get_optimal_v() * environment._d * len(environment._starting_positions))
                 plot_v(env=environment,
-                       values=environment.reshape_v(hat_v),
+                       values=_hat_v_,
                        logs=agent._images_dir,
-                       true_v=environment.reshape_v(mdp_solver.get_optimal_v()),
+                       true_v=_true_v,
                        env_type=space["env_config"]["env_type"],
                        filename="v_{}.png".format(agent.episode))
+                plot_v(env=environment,
+                       values=_true_v,
+                       logs=agent._images_dir,
+                       true_v=_true_v,
+                       env_type=space["env_config"]["env_type"],
+                       filename="true_v_{}.png".format(agent.episode))
 
             if space["plot_curves"] and agent.episode % space["log_period"] == 0:
                 # agent.save_model()
@@ -146,7 +155,7 @@ def run_episodic(agent: Agent,
 
         rmsve_start = 0
         return round(total_rmsve, 2), round(rmsve, 2), round(rmsve_start, 2), \
-               np.mean(ep_steps, dtype=int), hat_v, hat_error
+               np.mean(ep_steps, dtype=int), hat_v, hat_v
 
 
 # def run_infinite(agent: Agent,
@@ -249,7 +258,7 @@ def run_episodic(agent: Agent,
 def get_rmsve(env, mdp_solver, hat_v, v, weighted=False):
     if weighted:
         # eta_pi = mdp_solver.get_eta_pi(mdp_solver._pi)
-        rmsve = np.sqrt(np.sum(env._d * (v - hat_v) ** 2))
+        rmsve = np.sqrt(np.sum(env._d * ((v - hat_v) ** 2)))
     else:
         rmsve = np.sqrt(np.sum(np.power(v - hat_v, 2)) / env._nS)
     return rmsve

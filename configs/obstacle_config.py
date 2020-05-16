@@ -17,12 +17,12 @@ env_config = {
     "policy_type": "continuous_random",
     "mdp_filename": "./continuous_mdps/obstacle.mdp",
     "env_size": None,
-    "num_episodes": 200,
+    "num_episodes": 50,
     # "total_steps": 10000,
     "control_num_episodes": 300,
     "num_runs": 5,
     "stochastic": False,
-    "nA": 1
+    "nA": 4
 }
 
 volatile_agent_config = {

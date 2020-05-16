@@ -29,7 +29,7 @@ class LpBw(LpVanilla):
         self._should_reset_sequence = False
 
         def model_loss(o_params,
-                       r_online_params,
+                       r_params,
                        transitions):
             o_tmn_target = transitions[0][0]
             o_t = transitions[-1][-1]
@@ -38,7 +38,7 @@ class LpBw(LpVanilla):
             o_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_o_tmn, o_tmn_target))
 
             r_input = jnp.concatenate([model_o_tmn, o_t], axis=-1)
-            model_r_tmn = self._r_network(r_online_params, lax.stop_gradient(r_input))
+            model_r_tmn = self._r_network(r_params, lax.stop_gradient(r_input))
             r_t_target = 0
             for i, t in enumerate(transitions):
                 r_t_target += (self._discount ** i) * t[2]

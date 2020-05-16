@@ -188,10 +188,6 @@ class ObstacleWorld(dm_env.Environment):
     def _fill_d(self):
         self._d = np.zeros((self._nS), dtype=np.float)
 
-        for i in range(self._height):
-            for j in range(self._width):
-                pos = np.array([i, j])
-
         for sPos in self._starting_positions:
             self._d[self._pos_to_idx(sPos)] = 1 / len(
                 self._starting_positions)
@@ -270,7 +266,7 @@ if __name__ == "__main__":
     nrng = np.random.RandomState(0)
     nS = None
     nA = 4
-    discount = 0.99
+    discount = 0.9
     mdp_filename = "../../continuous_mdps/obstacle.mdp"
     env = ObstacleWorld(path=mdp_filename, stochastic=False,
                         rng=nrng, env_size=None)
@@ -292,10 +288,11 @@ if __name__ == "__main__":
     # plot_policy(env, env.reshape_pi(env._pi), str((os.environ['LOGS'])),
     #             env_type="continuous")
     pi = np.full((env._nS, env._nA), 1 / env._nA)
-    eta_pi = mdp_solver.get_eta_pi(pi)
+    # eta_pi = mdp_solver.get_eta_pi(pi)
+
     plot_error(env, v, str(os.environ['LOGS']), env_type="continuous",
-               eta_pi=eta_pi,
+               eta_pi=env._d,
                filename="v_eta.png")
 
 
-    plot_eta_pi(env, env.reshape_v(eta_pi))
+    # plot_eta_pi(env, env.reshape_v(eta_pi))

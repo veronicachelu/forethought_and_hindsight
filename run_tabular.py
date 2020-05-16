@@ -11,7 +11,7 @@ from run_utils import *
 from utils import *
 
 # flags.DEFINE_string('agent', 'mb_c_bw_PAML', 'what agent to run')
-# flags.DEFINE_string('agent', 'mb_c_true_bw', 'what agent to run')
+flags.DEFINE_string('agent', 'mb_c_true_bw', 'what agent to run')
 # flags.DEFINE_string('agent', 'mb_c_true_bwfw', 'what agent to run')
 # flags.DEFINE_string('agent', 'mb_c_random_bw', 'what agent to run')
 # flags.DEFINE_string('agent', 'mb_p_true_fw', 'what agent to run')
@@ -20,9 +20,10 @@ from utils import *
 # flags.DEFINE_string('agent', 'mb_p_fw_MLE', 'what agent to run')
 # flags.DEFINE_string('agent', 'p_fw_MLE', 'what agent to run')
 # flags.DEFINE_string('agent', 'c_bwfw_MLE', 'what agent to run')
-flags.DEFINE_string('agent', 'c_bw_MLE', 'what agent to run')
+# flags.DEFINE_string('agent', 'c_bw_MLE', 'what agent to run')
 # flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
-flags.DEFINE_string('env', 'bipartite', 'env')
+# flags.DEFINE_string('env', 'bipartite', 'env')
+flags.DEFINE_string('env', 'fanin', 'env')
 # flags.DEFINE_string('env', 'bipartite_5L', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
