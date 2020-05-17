@@ -100,17 +100,22 @@ dashed = {
           "c_bw_PAML": "c_bw",
           "p_fw_PAML": "p_fw",
           "c_fw_PAML": "c_fw",
-          "p_bw_PAML_MLE": "p_bw",
-          "c_bw_PAML_MLE": "c_bw",
-          "p_fw_PAML_MLE": "p_fw",
-          "c_fw_PAML_MLE": "c_fw",
-          "p_true_bw_recur": "p_bw_recur",
-          "c_true_bw_recur": "c_bw_recur",
+
+          # "p_bw_PAML_MLE": "p_bw",
+          # "c_bw_PAML_MLE": "c_bw",
+          # "p_fw_PAML_MLE": "p_fw",
+          # "c_fw_PAML_MLE": "c_fw",
+          # "p_true_bw_recur": "p_bw_recur",
+          # "c_true_bw_recur": "c_bw_recur",
+
+          }
+
+dotted = {
           "p_true_bw": "p_bw",
           "c_true_bw": "c_bw",
           "p_true_fw": "p_fw",
           "c_true_fw": "c_fw",
-          }
+}
 
 # dotted = ["true_bw", "true_fw", "mb_true_fw", "mb_true_bw",
 #           "true_bw_recur", "mb_true_bw_recur"]
@@ -133,7 +138,7 @@ def main(argv):
         name = name + "_mle"
 
     internal_dashed = dashed
-    internal_dotted = {}
+    internal_dotted = dotted
     internal_dash_dotted = {}
     if FLAGS.mle and FLAGS.mb:
         internal_dashed = mb_mle_dashed
