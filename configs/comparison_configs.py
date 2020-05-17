@@ -458,7 +458,7 @@ configs={
             "planning_depths": [1, 1, 1, 1, 1, 1],
             "replay_capacities": [0, 0, 0, 0, 0, 0]
         },
-        "bw_c_bc_p_all": {
+        "bw_c_bw_p_all": {
             "agents": ["p_bw",
                        "c_bw"
                        "p_true_bw",
