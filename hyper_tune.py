@@ -5,7 +5,7 @@ from copy import deepcopy
 import configs
 from main_utils import *
 
-flags.DEFINE_string('agent', 'c_bw_PAML', 'what agent to run')
+flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
 flags.DEFINE_string('env', 'obstacle', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
@@ -219,8 +219,8 @@ def get_best_over_final(final_hyperparam_file, best_config, best_attributes, obj
                     ok = False
                     break
             if ok == True:
-                if float(row[objective2key[objective]]) * \
-                    float(row[objective2key[objective] + "_std"]) < rmsve_over_std:
+                if float(row[objective2key[objective]]) + \
+                    2 * float(row[objective2key[objective] + "_std"]) < rmsve_over_std:
                     best_config = row
                     rmsve_over_std = float(row[objective2key[objective]]) * \
                                      float(row[objective2key[objective] + "_std"])
