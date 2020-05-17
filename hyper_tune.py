@@ -222,7 +222,7 @@ def get_best_over_final(final_hyperparam_file, best_config, best_attributes, obj
                 if float(row[objective2key[objective]]) + \
                     float(row[objective2key[objective] + "_std"]) < rmsve_over_std:
                     best_config = row
-                    rmsve_over_std = float(row[objective2key[objective]]) * \
+                    rmsve_over_std = float(row[objective2key[objective]]) + \
                                      float(row[objective2key[objective] + "_std"])
         return best_config
 
