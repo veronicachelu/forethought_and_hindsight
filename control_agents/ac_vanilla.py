@@ -33,6 +33,7 @@ class ACVanilla(Agent):
             log_period: int,
             nrng,
             rng_seq,
+            max_len,
             exploration_decay_period: int,
             seed: int = None,
             latent=False,
@@ -94,8 +95,8 @@ class ACVanilla(Agent):
             h_t = lax.stop_gradient(self._h_network(h_params, o_t)) if self._latent else o_t
             h_tm1 = lax.stop_gradient(self._h_network(h_params, o_tm1)) if self._latent else o_tm1
 
-            v_tm1 = self._v_network(v_params, h_tm1)
-            v_t = self._v_network(v_params, h_t)
+            v_tm1 = jnp.squeeze(self._v_network(v_params, h_tm1), axis=-1)
+            v_t = jnp.squeeze(self._v_network(v_params, h_t), axis=-1)
             td_error = jax.vmap(rlax.td_learning)(v_tm1, r_t, d_t * discount, v_t)
             critic_loss = jnp.mean(td_error ** 2)
 
@@ -273,10 +274,14 @@ class ACVanilla(Agent):
                                       gradients[k], step=ep)
                 self.writer.flush()
 
+    # def get_values_for_all_states(self, all_states):
+    #     features = self._get_features(all_states) if self._feature_mapper is not None else all_states
+    #     latents = self._h_forward(self._h_parameters, np.array(features)) if self._latent else features
+    #     return np.array(self._v_forward(self._v_parameters, np.asarray(latents, np.float)), np.float)
+
     def get_values_for_all_states(self, all_states):
         features = self._get_features(all_states) if self._feature_mapper is not None else all_states
-        latents = self._h_forward(self._h_parameters, np.array(features)) if self._latent else features
-        return np.array(self._v_forward(self._v_parameters, np.asarray(latents, np.float)), np.float)
+        return np.array(np.squeeze(self._v_forward(self._v_parameters, np.array(features)), axis=-1), np.float)
 
     def update_hyper_params(self, episode, total_episodes):
         steps_left = self._exploration_decay_period - episode

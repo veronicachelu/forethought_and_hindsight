@@ -389,21 +389,22 @@ def get_pg_network(num_hidden_layers: int,
                   num_units: int,
                   nA: int,
                   rng: List,
-                  input_dim: Tuple,
+                  input_size: Tuple,
+                  output_size: Tuple,
                   target_networks=False,
                   latent=False,
                           ):
-    input_size = np.prod(input_dim)
-    num_units = num_units if latent else input_size
+    # input_size = np.prod(input_dim)
+    num_units = num_units if latent else output_size
     network = {}
     rng_v, rng_h, rng_o, rng_fw_o, rng_r, rng_pi = jrandom.split(rng, 6)
 
     h_network, h_network_params = get_h_net(rng_h, num_units, num_hidden_layers, input_size)
-    pi_network, pi_network_params = get_pi_net(rng_pi, num_units, nA)
-    v_network, v_network_params = get_value_net(rng_v, num_units, bias=True)
-    o_network, o_network_params = get_o_net(rng_o, num_units)
-    fw_o_network, fw_o_network_params = get_o_net(rng_o, num_units)
-    r_network, r_network_params = get_r_net(rng_r, num_units)
+    pi_network, pi_network_params = get_pi_net(rng_pi, input_size, nA)
+    v_network, v_network_params = get_value_net(rng_v, input_size, bias=True)
+    o_network, o_network_params = get_o_net(rng_o, input_size, num_units)
+    fw_o_network, fw_o_network_params = get_o_net(rng_o, input_size, num_units)
+    r_network, r_network_params = get_r_net(rng_r, input_size)
 
     network["value"] = {"net": v_network,
                         "params": v_network_params}

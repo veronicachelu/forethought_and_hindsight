@@ -39,7 +39,7 @@ volatile_agent_config = {
         "replay_capacity": [0],
         "lr": [1.0],
         "lr_p": [1.0],
-        "lr_m": np.array([0.001, 0.005, 0.01]),
+        "lr_m": np.array([0.001, 0.005, 0.01, 0.05]),
         "lr_ctrl": 0.4
     },
     "p_bw_PAML": {
@@ -47,7 +47,7 @@ volatile_agent_config = {
         "replay_capacity": [0],
         "lr": [1.0],
         "lr_p": [1.0],
-        "lr_m": np.array([0.001, 0.005, 0.01]),
+        "lr_m": np.array([0.001, 0.005, 0.01, 0.05]),
         "lr_ctrl": 0.4
     },
     "p_fw_PAML": {
