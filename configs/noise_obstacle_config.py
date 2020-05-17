@@ -16,11 +16,12 @@ env_config = {
     },
     "env_type": "continuous",
     "obs_type": "position",
-    "policy_type": "continuous_greedy",
+    "policy_type": "continuous_random",
     "mdp_filename": "./continuous_mdps/obstacle.mdp",
     "env_size": None,
     "num_episodes": 50,
-    "control_num_episodes": 200,
+    # "total_steps": 10000,
+    "control_num_episodes": 500,
     "num_runs": 5,
     "stochastic": False,
     "nA": 4
@@ -30,99 +31,127 @@ volatile_agent_config = {
     "vanilla": {
         "planning_depth": [0],
         "replay_capacity": [0],
-        "lr": np.array([0.001, 0.005, 0.01]),
+        "lr": np.array([0.001, 0.005, 0.01, 0.05, 0.01]),
         "lr_p": [0],
         "lr_m": [0],
         "lr_ctrl": 0.4
     },
-    "bw_PAML": {
+    "c_bw_PAML": {
         "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [1.0],
         "lr_p": [1.0],
-        "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
+        "lr_m": np.array([0.001, 0.005, 0.01]),
         "lr_ctrl": 0.4
     },
-    "bw_update": {
+    "p_bw_PAML": {
         "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [1.0],
         "lr_p": [1.0],
-        "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
+        "lr_m": np.array([0.001, 0.005, 0.01]),
         "lr_ctrl": 0.4
     },
-    "bw_mult_PAML": {
-        "planning_depth": [1],
-        "replay_capacity": [0],
-        "lr": [1.0],
-        "lr_p": [1.0],
-        "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
-        "lr_ctrl": 0.4
-    },
-    "fw": {
+    "p_fw_PAML": {
         "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [0.114],
         "lr_p": [0.114],
-        "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
+        "lr_m": np.array([0.001, 0.005, 0.01]),
         "lr_ctrl": 0.4
     },
-    "mult_fw": {
+    "p_fw": {
         "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [0.114],
         "lr_p": [0.114],
-        "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
+        "lr_m": np.array([0.001, 0.005, 0.01]),
         "lr_ctrl": 0.4
     },
-    "fw_PAML": {
-        "planning_depth": [1],
-        "replay_capacity": [0],
-        "lr": [0.114],
-        "lr_p": [0.114],
-        "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
-        "lr_ctrl": 0.4
-    },
-    "fw_mult_PAML": {
-        "planning_depth": [1],
-        "replay_capacity": [0],
-        "lr": [0.114],
-        "lr_p": [0.114],
-        "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
-        "lr_ctrl": 0.4
-    },
-    "bw": {
+    "c_bw": {
         "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [0.01],
         "lr_p": [0.01],
-        "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
+        "lr_m": np.array([0.001, 0.005, 0.01]),
         "lr_ctrl": 0.4
     },
-    "mult_bw": {
+    "p_bw": {
         "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [0.01],
         "lr_p": [0.01],
-        "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
+        "lr_m": np.array([0.001, 0.005, 0.01]),
         "lr_ctrl": 0.4
     },
-    "true_bw": {
+    "c_true_bw": {
         "planning_depth": [1],
         "replay_capacity": [0],
         "lr": [0.01],
         "lr_p": [0.01],
-        "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
+        "lr_m": np.array([0.001, 0.005, 0.01]),
         "lr_ctrl": 0.4
     },
-    "true_mult_bw": {
+    "p_true_bw": {
         "planning_depth": [1],
         "replay_capacity": [0],
-        "lr": [0.114],
-        "lr_p": [0.114],
-         "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
+        "lr": [0.01],
+        "lr_p": [0.01],
+        "lr_m": np.array([0.001, 0.005, 0.01]),
         "lr_ctrl": 0.4
     },
+    # "bw_update": {
+    #     "planning_depth": [1],
+    #     "replay_capacity": [0],
+    #     "lr": [1.0],
+    #     "lr_p": [1.0],
+    #     "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
+    #     "lr_ctrl": 0.4
+    # },
+    # "bw_mult_PAML": {
+    #     "planning_depth": [1],
+    #     "replay_capacity": [0],
+    #     "lr": [1.0],
+    #     "lr_p": [1.0],
+    #     "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
+    #     "lr_ctrl": 0.4
+    # },
+
+    # "mult_fw": {
+    #     "planning_depth": [1],
+    #     "replay_capacity": [0],
+    #     "lr": [0.114],
+    #     "lr_p": [0.114],
+    #     "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
+    #     "lr_ctrl": 0.4
+    # },
+
+    # "fw_mult_PAML": {
+    #     "planning_depth": [1],
+    #     "replay_capacity": [0],
+    #     "lr": [0.114],
+    #     "lr_p": [0.114],
+    #     "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
+    #     "lr_ctrl": 0.4
+    # },
+
+    # "mult_bw": {
+    #     "planning_depth": [1],
+    #     "replay_capacity": [0],
+    #     "lr": [0.01],
+    #     "lr_p": [0.01],
+    #     "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
+    #     "lr_ctrl": 0.4
+    # },
+
+    # "true_mult_bw": {
+    #     "planning_depth": [1],
+    #     "replay_capacity": [0],
+    #     "lr": [0.114],
+    #     "lr_p": [0.114],
+    #      "lr_m": np.array([0.0001, 0.0005, 0.001, 0.005, 0.01]),
+    #     "lr_ctrl": 0.4
+    # },
     # "ac_vanilla": {
     #     "planning_depth": [0],
     #     "replay_capacity": [0],
