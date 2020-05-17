@@ -59,7 +59,7 @@ class ACVanilla(Agent):
         self._epsilon = 0.1
         self._sequence = []
         self._should_reset_sequence = False
-        self._update_every = 20
+        self._update_every = 5
 
         if feature_coder is not None:
             self._feature_mapper = FeatureMapper(feature_coder)
@@ -112,7 +112,7 @@ class ACVanilla(Agent):
 
             entropy_loss = -self._epsilon * entropy
 
-            total_loss = actor_loss + critic_loss #+ entropy_loss
+            total_loss = actor_loss + 10 * critic_loss + entropy_loss
             return total_loss,\
                    {"critic": critic_loss,
                     "actor": actor_loss,
@@ -172,6 +172,7 @@ class ACVanilla(Agent):
         else:
             key = next(self._rng_seq)
             action = jax.random.categorical(key, pi_logits).squeeze()
+            # print(np.argmax(pi_logits, axis=-1))
         return int(action)
 
     def value_update(

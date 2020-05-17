@@ -84,7 +84,7 @@ def main(argv):
         aux_agent_configs["pivot"] = agent["agent"].split("_")[1]
     else:
         aux_agent_configs["pivot"] = agent["agent"].split("_")[0]
-    run_agent(FLAGS.env, agent, logs, aux_agent_configs, ignore_existent=False)
+    run_agent(FLAGS.env, agent, logs, aux_agent_configs, ignore_existent=True)
 
 
 if __name__ == '__main__':
