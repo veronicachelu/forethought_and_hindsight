@@ -5,13 +5,13 @@ env_config = {
     "model_class": "linear",
     "feature_coder": {
         "type": "rbf",
-        "ranges": [[0.0, 0.0], [1.0, 1.0]],
-        "num_tiles": [20, 20],
+        "ranges": [[0.0, 0.0], [10.0, 10.0]],
+        "num_tiles": [10, 10],
         "num_centers": [4, 4],
         "num_tilings": 1,
         "noise": True,
         "noise_dim": 8,
-        "alpha_reg1": 1.0,
+        "alpha_reg1": 0.0,
         "alpha_reg2": 0.0
     },
     "env_type": "continuous",
@@ -19,10 +19,10 @@ env_config = {
     "policy_type": "continuous_greedy",
     "mdp_filename": "./continuous_mdps/obstacle.mdp",
     "env_size": None,
-    "num_episodes": 200,
+    "num_episodes": 50,
     "control_num_episodes": 200,
-    "num_runs": 50,
-    "stochastic": True,
+    "num_runs": 5,
+    "stochastic": False,
     "nA": 4
 }
 

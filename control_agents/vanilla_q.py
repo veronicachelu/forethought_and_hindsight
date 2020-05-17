@@ -106,7 +106,7 @@ class VanillaQ(Agent):
 
     def _get_features(self, o):
         if self._feature_mapper is not None:
-            return self._feature_mapper.get_features(o)
+            return self._feature_mapper.get_features(o, self._nrng)
         else:
             return o
 

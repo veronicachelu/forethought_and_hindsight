@@ -266,7 +266,7 @@ if __name__ == "__main__":
     nrng = np.random.RandomState(0)
     nS = None
     nA = 4
-    discount = 0.9
+    discount = 0.99
     mdp_filename = "../../continuous_mdps/obstacle.mdp"
     env = ObstacleWorld(path=mdp_filename, stochastic=False,
                         rng=nrng, env_size=None)

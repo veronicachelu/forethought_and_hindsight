@@ -797,6 +797,20 @@ config = {
         "class": {"linear": "LpFwPAML"},
     },
 
+    "q": {
+            "task_type": "control",
+            "pg": False,
+            "run_mode": "q",
+            "planning_depth": 0,
+            "planning_iter": 1,
+            "latent": False,
+            "num_hidden_layers": 0,
+            "num_units": 0,
+            "model_family": "q",
+            "target_networks": False,
+            "class": {"linear": "VanillaQ",
+                      "tabular": ""}
+        },
 }
 
 ##### STUFF WHICH I've used at some point, and works but not anymore ###
@@ -869,20 +883,7 @@ config = {
     #     "class": {"linear": "LpFwPri",
     #               "tabular": "TpFwPri"},
     # },
-# "q": {
-#         "task_type": "control",
-#         "pg": False,
-#         "run_mode": "q",
-#         "planning_depth": 0,
-#         "planning_iter": 1,
-#         "latent": False,
-#         "num_hidden_layers": 0,
-#         "num_units": 0,
-#         "model_family": "q",
-#         "target_networks": False,
-#         "class": {"linear": "VanillaQ",
-#                   "tabular": ""}
-#     },
+
 # "true_mult_bw": {
 #     "task_type": "prediction",
 #     "control_agent": "q",

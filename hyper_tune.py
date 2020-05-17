@@ -5,7 +5,7 @@ from copy import deepcopy
 import configs
 from main_utils import *
 
-flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
+flags.DEFINE_string('agent', 'c_bw_PAML', 'what agent to run')
 flags.DEFINE_string('env', 'obstacle', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
@@ -54,7 +54,6 @@ def run_for_agent(agent, lr_vanilla=None):
 
     persistent_agent_config = configs.agent_config.config[agent]
     env_config, volatile_agent_config = load_env_and_volatile_configs(FLAGS.env)
-
 
     interm_fieldnames = list(volatile_agent_config[agent].keys())
     interm_fieldnames.extend(["seed", "steps", 'rmsve_aoc', 'rmsve_min', 'rmsve_start'])
@@ -112,8 +111,8 @@ def run_for_agent(agent, lr_vanilla=None):
                                         seed_config, attributes):
                 space = {
                     "logs": env_hyperparam_folder,
-                    "plot_errors": True,
-                    "plot_values": True,
+                    "plot_errors": False,
+                    "plot_values": False,
                     "plot_curves": True,
                     "log_period": FLAGS.log_period,
                     "env_config": env_config,
@@ -248,8 +247,16 @@ def run_objective(space):
                          "planning_period": FLAGS.planning_period,
                          "max_len": FLAGS.max_len,
                          "log_period": FLAGS.log_period}
+
     seed = space["crt_config"]["seed"]
     env, agent, mdp_solver = run_experiment(seed, space, aux_agent_configs)
+
+    aux_agent_configs["mb"] = True if space["agent_config"]["run_mode"].split("_")[0] == "mb" else False
+    if space["agent_config"]["run_mode"].split("_")[0] == "mb":
+        aux_agent_configs["pivot"] = space["agent_config"]["run_mode"].split("_")[1]
+    else:
+        aux_agent_configs["pivot"] = space["agent_config"]["run_mode"].split("_")[0]
+
     total_rmsve, final_rmsve, start_rmsve, avg_steps, values, errors = experiment.run_episodic(
         agent=agent,
         space=space,
