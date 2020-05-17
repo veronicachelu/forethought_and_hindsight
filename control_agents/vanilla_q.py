@@ -52,7 +52,8 @@ class VanillaQ(Agent):
         self._run_mode = "{}".format(self._run_mode)
         self._max_len = max_len
         self._final_epsilon = 0.1
-        self._epsilon = 1.0
+        self._initial_epsilon = 0.1
+        self._epsilon = 0.1
         self._exploration_decay_period = exploration_decay_period
         self._nrng = nrng
         self._lr = lr
@@ -287,8 +288,8 @@ class VanillaQ(Agent):
           A float, the current epsilon value computed according to the schedule.
         """
         steps_left = total_episodes + 0 - episode
-        bonus = (1.0 - self._final_epsilon) * steps_left / total_episodes
-        bonus = np.clip(bonus, 0., 1. - self._final_epsilon)
+        bonus = (self._initial_epsilon - self._final_epsilon) * steps_left / total_episodes
+        bonus = np.clip(bonus, 0., self._initial_epsilon - self._final_epsilon)
         self._epsilon = self._final_epsilon + bonus
         if self._logs is not None:
             # if self._max_len == -1:

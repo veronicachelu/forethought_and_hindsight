@@ -20,7 +20,7 @@ env_config = {
     "num_episodes": 50,
     # "total_steps": 10000,
     "control_num_episodes": 300,
-    "num_runs": 5,
+    "num_runs": 1,
     "stochastic": False,
     "nA": 4
 }

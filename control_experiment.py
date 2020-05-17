@@ -18,7 +18,7 @@ def run_episodic(agent: Agent,
             # Run an episode.
             ep_reward = 0
             timestep = environment.reset()
-            agent.update_hyper_params(agent.total_steps, 60000)
+            agent.update_hyper_params(agent.episode, num_episodes)
             for t in range(max_len):
                 action = agent.policy(timestep)
                 new_timestep = environment.step(action)
@@ -45,11 +45,21 @@ def run_episodic(agent: Agent,
             ep_steps.append(t)
             ep_rewards.append(ep_reward)
 
+            hat_v = agent.get_values_for_all_states(environment.get_all_states())
+            _hat_v_ = environment.reshape_v(np.mean(hat_v, -1) * (environment._d * len(environment._starting_positions)))
+            plot_v(env=environment,
+                   values=_hat_v_,
+                   logs=agent._images_dir,
+                   filename="v_{}.png".format(agent.episode))
+
             tf.summary.scalar("train/reward", np.mean(ep_reward), step=agent.episode)
             tf.summary.scalar("train/avg_reward", np.mean(ep_rewards), step=agent.episode)
             tf.summary.scalar("train/avg_steps", np.mean(ep_steps), step=agent.episode)
             tf.summary.scalar("train/steps", np.mean(t), step=agent.episode)
             agent.writer.flush()
+
+            if agent.episode % 10 == 0:
+                test_agent(agent, environment, 5, 1000)
 
     agent.save_model()
 
@@ -85,5 +95,9 @@ def test_agent(agent, environment, num_episodes, max_len):
 
         ep_steps.append(t)
         ep_rewards.append(ep_reward)
+
+    tf.summary.scalar("test/avg_reward", np.mean(ep_rewards), step=agent.episode)
+    tf.summary.scalar("test/avg_steps", np.mean(ep_steps), step=agent.episode)
+    agent.writer.flush()
 
     return np.mean(ep_steps), np.mean(ep_rewards)
