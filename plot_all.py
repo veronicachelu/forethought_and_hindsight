@@ -175,7 +175,7 @@ def main(argv):
             linestyle = "--"
         elif agent in internal_dotted.keys():
             color = alg_to_color[internal_dotted[agent]]
-            linestyle = "."
+            linestyle = ":"
         elif agent in internal_dash_dotted.keys():
             color = alg_to_color[internal_dash_dotted[agent]]
             linestyle = "-."
