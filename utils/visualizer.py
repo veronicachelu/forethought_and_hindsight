@@ -244,15 +244,22 @@ def plot_greedy_policy(grid, q):
             action_name = action_names[greedy_actions[i, j]]
             plt.text(j, i, action_name, ha='center', va='center')
 
-def plot_pi(env, pi, logs=None, filename=None):
-    plt.figure(figsize=(3, 3))
-    ax = plt.gca()
-    ax.grid(0)
-    plt.xticks([])
-    plt.yticks([])
+def plot_pi(env, pi, values, logs=None, filename=None):
+    vmin = np.min(values)
+    vmax = np.max(values)
+    # if not non_gridworld:
+    #     plot_grid(env, env_type=env_type, vmin=vmin, vmax=vmax)
+    # if policy is not None:
+    #     plot_policy(env, policy, env_type=env_type)
+    # if true_v is not None:
+    #     vmin = np.min(true_v)
+    #     vmax = np.max(true_v)
+    # else:
+    # values *= eta_pi
+    values = values[None, ...] if len(values.shape) == 1 else values
+    plt.imshow(values, interpolation="nearest",
+               cmap='Greys')
 
-    if logs is not None:
-        plt.savefig(os.path.join(logs, "environment.png"))
     # plt.title('Policy Visualization')
     action_names = [r"$\uparrow$", r"$\rightarrow$", r"$\downarrow$", r"$\leftarrow$"]
     for i in range(pi.shape[0]):

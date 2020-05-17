@@ -55,6 +55,7 @@ def run_episodic(agent: Agent,
                    filename="v_{}.png".format(agent.episode))
             plot_pi(env=environment,
                     pi=_hat_pi_,
+                    values=_hat_v_,
                    logs=agent._images_dir,
                    filename="pi_{}.png".format(agent.episode))
 

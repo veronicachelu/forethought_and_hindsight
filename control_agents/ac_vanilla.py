@@ -59,7 +59,7 @@ class ACVanilla(Agent):
         self._epsilon = 0.1
         self._sequence = []
         self._should_reset_sequence = False
-        self._update_every = 10
+        self._update_every = 20
 
         if feature_coder is not None:
             self._feature_mapper = FeatureMapper(feature_coder)
@@ -287,15 +287,14 @@ class ACVanilla(Agent):
     #     latents = self._h_forward(self._h_parameters, np.array(features)) if self._latent else features
     #     return np.array(self._v_forward(self._v_parameters, np.asarray(latents, np.float)), np.float)
 
-    def get_values_for_all_states(self, all_states):
+    def get_policy_for_all_states(self, all_states):
         features = self._get_features(all_states) if self._feature_mapper is not None else all_states
         pi_logits = self._pi_forward(self._pi_parameters, features)
-        if eval:
-            actions = np.argmax(pi_logits, axis=-1)
+        actions = np.argmax(pi_logits, axis=-1)
 
         return np.array(actions)
 
-    def get_policy_for_all_states(self, all_states):
+    def get_values_for_all_states(self, all_states):
         features = self._get_features(all_states) if self._feature_mapper is not None else all_states
         return np.array(np.squeeze(self._v_forward(self._v_parameters, np.array(features)), axis=-1), np.float)
     # def update_hyper_params(self, episode, total_episodes):
