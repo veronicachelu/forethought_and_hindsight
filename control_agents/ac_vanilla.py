@@ -53,10 +53,13 @@ class ACVanilla(Agent):
         self._exploration_decay_period = exploration_decay_period
         self._nrng = nrng
         self._rng_seq = rng_seq
-        self._epsilon = 1.0
+        # self._epsilon = 1.0
+        self._final_epsilon = 0.0
+        self._initial_epsilon = 0.
+        self._epsilon = 0.1
         self._sequence = []
         self._should_reset_sequence = False
-        self._update_every = 20
+        self._update_every = 50
 
         if feature_coder is not None:
             self._feature_mapper = FeatureMapper(feature_coder)
@@ -105,15 +108,16 @@ class ACVanilla(Agent):
                                                    jnp.ones_like(td_error))
 
             entropy_error = distributions.softmax().entropy(pi_tm1)
-            entropy = - jnp.mean(entropy_error)
+            entropy = jnp.mean(entropy_error)
 
-            # entropy_loss = - self._epsilon * entropy
+            entropy_loss = -self._epsilon * entropy
 
-            total_loss = 0.1 * actor_loss + critic_loss #+ entropy_loss
+            total_loss = actor_loss + critic_loss + entropy_loss
             return total_loss,\
                    {"critic": critic_loss,
                     "actor": actor_loss,
-                    "entropy": entropy
+                    "entropy": entropy,
+                    "entropy_loss": entropy
                     }
 
         # Internalize the networks.
@@ -186,7 +190,8 @@ class ACVanilla(Agent):
             losses_and_grads = {"losses": {
                                         "total_loss": np.array(total_loss),
                                         "critic_loss": np.array(losses["critic"]),
-                                        "entropy_loss": np.array(losses["entropy"]),
+                                        "entropy": np.array(losses["entropy"]),
+                                        "entropy_loss": np.array(losses["entropy_loss"]),
                                         "actor_loss": np.array(losses["actor"])
                                 },
                                 "gradients": {
@@ -283,9 +288,24 @@ class ACVanilla(Agent):
         features = self._get_features(all_states) if self._feature_mapper is not None else all_states
         return np.array(np.squeeze(self._v_forward(self._v_parameters, np.array(features)), axis=-1), np.float)
 
-    def update_hyper_params(self, episode, total_episodes):
-        steps_left = self._exploration_decay_period - episode
-        bonus = (1.0 - self._epsilon) * steps_left / self._exploration_decay_period
-        bonus = np.clip(bonus, 0., 1. - self._epsilon)
-        self._epsilon = self._epsilon + bonus
+    # def update_hyper_params(self, episode, total_episodes):
+    #     steps_left = self._exploration_decay_period - episode
+    #     bonus = (1.0 - self._epsilon) * steps_left / self._exploration_decay_period
+    #     bonus = np.clip(bonus, 0., 1. - self._epsilon)
+    #     self._epsilon = self._epsilon + bonus
 
+    def update_hyper_params(self, episode, total_episodes):
+        # decay_period, step, warmup_steps, epsilon):
+        steps_left = total_episodes + 0 - episode
+        bonus = (self._initial_epsilon - self._final_epsilon) * steps_left / total_episodes
+        bonus = np.clip(bonus, 0., self._initial_epsilon - self._final_epsilon)
+        self._epsilon = self._final_epsilon + bonus
+        if self._logs is not None:
+            # if self._max_len == -1:
+            ep = self.total_steps
+            # else:
+            #     ep = self.episode
+            if ep % self._log_period == 0:
+                tf.summary.scalar("train/epsilon",
+                                  self._epsilon, step=ep)
+                self.writer.flush()
