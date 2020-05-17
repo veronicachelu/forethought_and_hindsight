@@ -243,3 +243,21 @@ def plot_greedy_policy(grid, q):
         for j in range(10):
             action_name = action_names[greedy_actions[i, j]]
             plt.text(j, i, action_name, ha='center', va='center')
+
+def plot_pi(env, pi, logs=None, filename=None):
+    plt.figure(figsize=(3, 3))
+    ax = plt.gca()
+    ax.grid(0)
+    plt.xticks([])
+    plt.yticks([])
+
+    if logs is not None:
+        plt.savefig(os.path.join(logs, "environment.png"))
+    # plt.title('Policy Visualization')
+    action_names = [r"$\uparrow$", r"$\rightarrow$", r"$\downarrow$", r"$\leftarrow$"]
+    for i in range(pi.shape[0]):
+        for j in range(pi.shape[1]):
+            action_name = action_names[int(pi[i][j])]
+            plt.text(j, i, action_name, ha='center', va='center')
+    if logs is not None:
+        plt.savefig(os.path.join(logs, filename))

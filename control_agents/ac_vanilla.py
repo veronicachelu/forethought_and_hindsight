@@ -59,7 +59,7 @@ class ACVanilla(Agent):
         self._epsilon = 0.1
         self._sequence = []
         self._should_reset_sequence = False
-        self._update_every = 20
+        self._update_every = 10
 
         if feature_coder is not None:
             self._feature_mapper = FeatureMapper(feature_coder)
@@ -112,7 +112,7 @@ class ACVanilla(Agent):
 
             entropy_loss = -self._epsilon * entropy
 
-            total_loss = 0.5 * actor_loss + critic_loss #+ entropy_loss
+            total_loss = actor_loss + critic_loss #+ entropy_loss
             return total_loss,\
                    {"critic": critic_loss,
                     "actor": actor_loss,
@@ -165,10 +165,13 @@ class ACVanilla(Agent):
                timestep: dm_env.TimeStep,
                eval: bool = False
                ) -> int:
-        key = next(self._rng_seq)
         features = self._get_features(timestep.observation[None, ...])
         pi_logits = self._pi_forward(self._pi_parameters, features)
-        action = jax.random.categorical(key, pi_logits).squeeze()
+        if eval:
+            action = np.argmax(pi_logits, axis=-1)
+        else:
+            key = next(self._rng_seq)
+            action = jax.random.categorical(key, pi_logits).squeeze()
         return int(action)
 
     def value_update(
@@ -286,8 +289,15 @@ class ACVanilla(Agent):
 
     def get_values_for_all_states(self, all_states):
         features = self._get_features(all_states) if self._feature_mapper is not None else all_states
-        return np.array(np.squeeze(self._v_forward(self._v_parameters, np.array(features)), axis=-1), np.float)
+        pi_logits = self._pi_forward(self._pi_parameters, features)
+        if eval:
+            actions = np.argmax(pi_logits, axis=-1)
 
+        return np.array(actions)
+
+    def get_policy_for_all_states(self, all_states):
+        features = self._get_features(all_states) if self._feature_mapper is not None else all_states
+        return np.array(np.squeeze(self._v_forward(self._v_parameters, np.array(features)), axis=-1), np.float)
     # def update_hyper_params(self, episode, total_episodes):
     #     steps_left = self._exploration_decay_period - episode
     #     bonus = (1.0 - self._epsilon) * steps_left / self._exploration_decay_period

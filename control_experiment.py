@@ -46,11 +46,17 @@ def run_episodic(agent: Agent,
             ep_rewards.append(ep_reward)
 
             hat_v = agent.get_values_for_all_states(environment.get_all_states())
+            hat_pi = agent.get_policy_for_all_states(environment.get_all_states())
+            _hat_pi_ = hat_pi.reshape((10, 10))
             _hat_v_ = environment.reshape_v(hat_v * (environment._d * len(environment._starting_positions)))
             plot_v(env=environment,
                    values=_hat_v_,
                    logs=agent._images_dir,
                    filename="v_{}.png".format(agent.episode))
+            plot_pi(env=environment,
+                    pi=_hat_pi_,
+                   logs=agent._images_dir,
+                   filename="pi_{}.png".format(agent.episode))
 
             tf.summary.scalar("train/reward", np.mean(ep_reward), step=agent.episode)
             tf.summary.scalar("train/avg_reward", np.mean(ep_rewards), step=agent.episode)
