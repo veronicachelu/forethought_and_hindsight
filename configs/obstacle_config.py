@@ -19,7 +19,7 @@ env_config = {
     "env_size": None,
     "num_episodes": 50,
     # "total_steps": 10000,
-    "control_num_episodes": 500,
+    "control_num_episodes": 1000,
     "num_runs": 5,
     "stochastic": False,
     "nA": 4
@@ -87,7 +87,7 @@ volatile_agent_config = {
         "replay_capacity": [0],
         "lr": [0.01],
         "lr_p": [0.01],
-        "lr_m": np.array([0.001, 0.005, 0.01]),
+        "lr_m": np.array([0.001, 0.005, 0.01, 0.05]),
         "lr_ctrl": 0.4
     },
     "p_true_bw": {

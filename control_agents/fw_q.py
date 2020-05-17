@@ -17,71 +17,20 @@ import tensorflow as tf
 import rlax
 from basis.feature_mapper import FeatureMapper
 
+from control_agents.vanilla_q import VanillaQ
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class VanillaQ(Agent):
+class FwQ(VanillaQ):
     def __init__(
             self,
-            run_mode: str,
-            action_spec: specs.DiscreteArray,
-            network,
-            batch_size: int,
-            discount: float,
-            lr: float,
-            log_period: int,
-            nrng,
-            rng_seq,
-            max_len,
-            exploration_decay_period: int,
-            seed: int = None,
-            latent=False,
-            target_networks=False,
-            feature_coder=None,
-            logs: str = "logs",
+            **kwargs
     ):
-        super().__init__()
+        super(FwQ, self).__init__(**kwargs)
 
-        self._run_mode = run_mode
-        self._nA = action_spec.num_values
-        self._discount = discount
-        self._batch_size = batch_size
-        self._latent = latent
-        # self._double_input_reward_model = double_input_reward_model
-        self._run_mode = "{}".format(self._run_mode)
-        self._max_len = max_len
-        self._final_epsilon = 0.0
-        self._initial_epsilon = 0.
-        self._epsilon = 0.1
-        self._exploration_decay_period = exploration_decay_period
-        self._nrng = nrng
-        self._lr = lr
-        self._warmup_steps = 0
-        self._logs = logs
-        self._seed = seed
-        self._log_period = log_period
-        self._replay = Replay(capacity=1000, nrng=self._nrng)
-
-        if feature_coder is not None:
-            self._feature_mapper = FeatureMapper(feature_coder)
-        else:
-            self._feature_mapper = None
-
-        if self._logs is not None:
-            self._checkpoint_dir = os.path.join(self._logs,
-                                            '{}/checkpoints/seed_{}'.format(self._run_mode, self._seed))
-            if not os.path.exists(self._checkpoint_dir):
-                os.makedirs(self._checkpoint_dir)
-
-            self._checkpoint_filename = "checkpoint.npy"
-
-            self.writer = tf.summary.create_file_writer(
-                os.path.join(self._logs, '{}/summaries/seed_{}'.format(self._run_mode, seed)))
-
-            self._images_dir = os.path.join(self._logs, '{}/images/seed_{}'.format(self._run_mode, seed))
-            if not os.path.exists(self._images_dir):
-                os.makedirs(self._images_dir)
+        self._sequence = []
+        self._should_reset_sequence = False
 
         def q_loss(q_params, transitions):
             o_tm1, a_tm1, r_t, d_t, o_t = transitions
@@ -91,7 +40,6 @@ class VanillaQ(Agent):
             td_error = batch_q_learning(q_tm1, a_tm1, r_t, discount * d_t, q_t)
             return jnp.mean(td_error ** 2)
 
-        self._network = network
         # Internalize the networks.
         self._q_network = network["qvalue"]["net"]
         self._q_parameters = network["qvalue"]["params"]

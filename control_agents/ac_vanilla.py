@@ -108,7 +108,7 @@ class ACVanilla(Agent):
 
             # entropy_loss = - self._epsilon * entropy
 
-            total_loss = actor_loss + critic_loss #+ entropy_loss
+            total_loss = 0.1 * actor_loss + critic_loss #+ entropy_loss
             return total_loss,\
                    {"critic": critic_loss,
                     "actor": actor_loss,
@@ -146,11 +146,13 @@ class ACVanilla(Agent):
         self._ac_opt_state = ac_opt_init([self._v_parameters,
                                           self._pi_parameters,
                                           self._h_parameters])
+
+
         self._ac_get_params = ac_get_params
 
     def _get_features(self, o):
         if self._feature_mapper is not None:
-            return self._feature_mapper.get_features(o)
+            return self._feature_mapper.get_features(o, self._nrng)
         else:
             return o
 
