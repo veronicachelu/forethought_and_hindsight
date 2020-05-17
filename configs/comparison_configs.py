@@ -460,7 +460,7 @@ configs={
         },
         "bw_c_bw_p_all": {
             "agents": ["p_bw",
-                       "c_bw"
+                       "c_bw",
                        "p_true_bw",
                        "c_true_bw",
                        "p_bw_PAML",
