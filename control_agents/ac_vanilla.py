@@ -49,17 +49,17 @@ class ACVanilla(Agent):
         self._batch_size = batch_size
         self._latent = latent
         self._run_mode = "{}".format(self._run_mode)
-
+        self._max_len = max_len
         self._exploration_decay_period = exploration_decay_period
         self._nrng = nrng
         self._rng_seq = rng_seq
         # self._epsilon = 1.0
         self._final_epsilon = 0.0
-        self._initial_epsilon = 0.
+        self._initial_epsilon = 0.1
         self._epsilon = 0.1
         self._sequence = []
         self._should_reset_sequence = False
-        self._update_every = 50
+        self._update_every = 20
 
         if feature_coder is not None:
             self._feature_mapper = FeatureMapper(feature_coder)
@@ -112,12 +112,12 @@ class ACVanilla(Agent):
 
             entropy_loss = -self._epsilon * entropy
 
-            total_loss = actor_loss + critic_loss + entropy_loss
+            total_loss = 0.5 * actor_loss + critic_loss #+ entropy_loss
             return total_loss,\
                    {"critic": critic_loss,
                     "actor": actor_loss,
                     "entropy": entropy,
-                    "entropy_loss": entropy
+                    "entropy_loss": entropy_loss
                     }
 
         # Internalize the networks.
@@ -266,10 +266,10 @@ class ACVanilla(Agent):
         if self._logs is not None:
             losses = losses_and_grads["losses"]
             gradients = losses_and_grads["gradients"]
-            # if self._max_len == -1:
-            ep = self.total_steps
-            # else:
-            #     ep = self.episode
+            if self._max_len == -1:
+                ep = self.total_steps
+            else:
+                ep = self.episode
             if ep % self._log_period == 0:
                 for k, v in losses.items():
                     tf.summary.scalar("train/losses/{}/{}".format(summary_name, k),

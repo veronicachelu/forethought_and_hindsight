@@ -46,7 +46,7 @@ def run_episodic(agent: Agent,
             ep_rewards.append(ep_reward)
 
             hat_v = agent.get_values_for_all_states(environment.get_all_states())
-            _hat_v_ = environment.reshape_v(np.mean(hat_v, -1) * (environment._d * len(environment._starting_positions)))
+            _hat_v_ = environment.reshape_v(hat_v * (environment._d * len(environment._starting_positions)))
             plot_v(env=environment,
                    values=_hat_v_,
                    logs=agent._images_dir,

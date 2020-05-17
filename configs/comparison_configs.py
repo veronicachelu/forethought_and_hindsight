@@ -491,8 +491,8 @@ configs={
         "mb_bw_c_fw_p_all": {
             "agents": ["mb_c_bw",
                        "mb_c_true_bw",
-                       "mb_c_fw",
-                       "mb_c_fw_PAML",
+                       "mb_p_fw",
+                       "mb_p_fw_PAML",
                        "mb_c_bw_PAML"
                        ],
             "planning_depths": [1, 1, 1, 1, 1, 1],
