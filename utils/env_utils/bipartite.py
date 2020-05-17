@@ -171,4 +171,8 @@ if __name__ == "__main__":
     # plot_v(env, v, logs, env_type=FLAGS.env_type)
     # plot_policy(env, env.reshape_pi(policy), logs, env_type=FLAGS.env_type)
     eta_pi = mdp_solver.get_eta_pi(env._pi)
+    # print(eta_pi)
+    # eta_pi = mdp_solver.get_empirical_eta_pi(env._pi)
+    empirical_eta_pi = mdp_solver.get_empirical_eta_pi(env._pi, eta_pi)
+    # print(empirical_eta_pi)
     # plot_eta_pi(env, env.reshape_v(eta_pi)

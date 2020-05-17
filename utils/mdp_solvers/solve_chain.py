@@ -80,6 +80,21 @@ class ChainSolver:
 
         return self._eta_pi
 
+    def get_empirical_eta_pi(self, pi, eta_pi):
+        eta = np.zeros(6)
+        for i in range(1000000):
+            x = self._env.reset()
+            eta[x.observation] += 1
+
+            while True:
+                x = self._env.step(0)
+                eta[x.observation] += 1
+
+                if x.last():
+                    break
+            print("True {}".format(eta_pi))
+            print("Empirical {}".format(eta / np.sum(eta)))
+
     def get_optimal_policy(self):
         if self._pi is None or self._assigned_pi is False:
             self._policy_iteration()
