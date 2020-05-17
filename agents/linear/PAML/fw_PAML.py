@@ -90,7 +90,7 @@ class LpFwPAML(LpVanillaPAML):
             r_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_r_tmn_2_t, real_r_tmn_2_t))
             l1_reg = jnp.linalg.norm(o_params, 1)
             l2_reg = jnp.linalg.norm(o_params, 2)
-            total_loss = update_loss + r_loss + self._alpha_reg1 * l1_reg + \
+            total_loss = update_loss + self._alpha_reg1 * l1_reg + \
                          self._alpha_reg2 * l2_reg
 
             return total_loss, {"loss_update": update_loss,
