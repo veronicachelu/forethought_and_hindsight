@@ -78,8 +78,8 @@ class LpTrueBw(LpVanilla):
             return total_loss, {"cross_loss(A)": a_loss,
                                "expected_loss(b)": b_loss,
                                "r_loss(w_r)": r_loss,
-                                "reg1": l1_reg,
-                                "reg2": l2_reg
+                                # "reg1": l1_reg,
+                                # "reg2": l2_reg
                                # "distance_from_wrong_cross": distance_from_wrong_cross
                                }
 
