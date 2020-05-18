@@ -28,8 +28,6 @@ class LpTrueBw(LpVanilla):
         self._sequence = []
         self._should_reset_sequence = False
 
-
-
         self._b_network = self._network["model"]["net"][0]
         self._a_network = self._network["model"]["net"][1]
         self._c_network = self._network["model"]["net"][2]
