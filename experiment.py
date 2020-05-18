@@ -197,6 +197,7 @@ def run_gain(agent: Agent,
                         rmsve_after = get_rmsve(environment, mdp_solver, hat_v, mdp_solver.get_optimal_v(),
                                                  weighted=weighted)
                         td_gain = rmsve_before - rmsve_after
+                        agent._td_gain[np.ravel_multi_index(timestep.observation, (10, 10))] += td_gain
 
                     rewards += new_timestep.reward
 
@@ -204,7 +205,7 @@ def run_gain(agent: Agent,
                         # if aux_agent_configs["pivot"] == "c":
                         #     agent.planning_update(new_timestep)
                         # else:
-                        agent.planning_update(timestep, environment, mdp_solver, space)
+                        agent.planning_update(timestep, rmsve_before, environment, mdp_solver, space)
 
                     agent.total_steps += 1
                     t += 1
@@ -257,9 +258,11 @@ def run_gain(agent: Agent,
 
                     bw_gain = environment.reshape_v(agent._bw_gain * (environment._d * len(environment._starting_positions)))
                     fw_gain = environment.reshape_v(agent._fw_gain * (environment._d * len(environment._starting_positions)))
+                    v_gain = environment.reshape_v(agent._td_gain * (environment._d * len(environment._starting_positions)))
 
                     bw_gain = (bw_gain - np.min(bw_gain)) / (np.max(bw_gain) - np.min(bw_gain))
-                    fw_gain = (bw_gain - np.min(fw_gain)) / (np.max(bw_gain) - np.min(bw_gain))
+                    fw_gain = (fw_gain - np.min(fw_gain)) / (np.max(fw_gain) - np.min(fw_gain))
+                    v_gain = (v_gain - np.min(v_gain)) / (np.max(v_gain) - np.min(v_gain))
                     plot_v(env=environment,
                            values=bw_gain,
                            logs=agent._images_dir,
@@ -272,6 +275,12 @@ def run_gain(agent: Agent,
                            true_v=_true_v,
                            env_type=space["env_config"]["env_type"],
                            filename="fw_gain_{}.png".format(agent.episode))
+                    plot_v(env=environment,
+                           values=v_gain,
+                           logs=agent._images_dir,
+                           true_v=_true_v,
+                           env_type=space["env_config"]["env_type"],
+                           filename="v_gain_{}.png".format(agent.episode))
 
                 if space["plot_curves"] and agent.episode % space["log_period"] == 0:
                     tf.summary.scalar("train/rmsve", rmsve, step=agent.episode)

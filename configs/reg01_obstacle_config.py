@@ -11,7 +11,7 @@ env_config = {
         "num_tilings": 1,
         "noise": True,
         "noise_dim": 8,
-        "alpha_reg1": 0.1,
+        "alpha_reg1": 0.0,
         "alpha_reg2": 0.0
     },
     "env_type": "continuous",

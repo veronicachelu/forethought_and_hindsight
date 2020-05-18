@@ -30,6 +30,7 @@ class LpBwFw(LpVanilla):
         self._should_reset_sequence = False
 
         self._bw_gain = np.zeros((100))
+        self._td_gain = np.zeros((100))
         self._fw_gain = np.zeros((100))
 
         def model_loss(bw_o_params,
@@ -163,6 +164,7 @@ class LpBwFw(LpVanilla):
     def planning_update(
             self,
             timestep: dm_env.TimeStep,
+            rmsve,
             environment,
             mdp_solver,
             space
@@ -207,15 +209,15 @@ class LpBwFw(LpVanilla):
             #        env_type=space["env_config"]["env_type"],
             #        filename="true_v_{}_{}.png".format(self.episode, self.total_steps))
 
-            rmsve = np.sqrt(np.sum(environment._d * ((true_v - hat_v) ** 2)))
+            # rmsve = np.sqrt(np.sum(environment._d * ((true_v - hat_v) ** 2)))
             rmsve_bw = np.sqrt(np.sum(environment._d * ((true_v - hat_bw_v) ** 2)))
             rmsve_fw = np.sqrt(np.sum(environment._d * ((true_v - hat_fw_v) ** 2)))
 
             bw_gain = rmsve - rmsve_bw
             fw_gain = rmsve - rmsve_fw
 
-            self._bw_gain[timestep.observation] += bw_gain
-            self._fw_gain[timestep.observation] += fw_gain
+            self._bw_gain[np.ravel_multi_index(timestep.observation, (10, 10))] += bw_gain
+            self._fw_gain[np.ravel_multi_index(timestep.observation, (10, 10))] += fw_gain
 
 
     def bw_planning_update(self,

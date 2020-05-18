@@ -89,8 +89,8 @@ def plot_v(env, values, logs=None, colormap='Blues',
            policy=None,
            ):#vmin=-1, vmax=10):
     plt.clf()
-    vmin = np.min(values)
-    vmax = np.max(values)
+    vmin = 1#np.min(values)
+    vmax = 0#np.max(values)
     # plot_grid(env, env_type=env_type, vmin=vmin, vmax=vmax)
     # if policy is not None:
     #     plot_policy(env, policy, env_type=env_type)

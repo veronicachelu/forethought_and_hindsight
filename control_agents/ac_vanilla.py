@@ -112,7 +112,7 @@ class ACVanilla(Agent):
 
             entropy_loss = -self._epsilon * entropy
 
-            total_loss = actor_loss + 10 * critic_loss + entropy_loss
+            total_loss = actor_loss + 2 * critic_loss + entropy_loss
             return total_loss,\
                    {"critic": critic_loss,
                     "actor": actor_loss,
@@ -168,7 +168,7 @@ class ACVanilla(Agent):
         features = self._get_features(timestep.observation[None, ...])
         pi_logits = self._pi_forward(self._pi_parameters, features)
         if eval:
-            action = np.argmax(pi_logits, axis=-1)
+            action = np.argmax(pi_logits, axis=-1)[0]
         else:
             key = next(self._rng_seq)
             action = jax.random.categorical(key, pi_logits).squeeze()

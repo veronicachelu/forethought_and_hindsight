@@ -100,13 +100,11 @@ class LpVanillaPAML(Agent):
             sparse_feature_coder = deepcopy(feature_coder)
             sparse_feature_coder["type"] = "tile"
             self._sparse_feature_mapper = FeatureMapper(sparse_feature_coder)
-            self._alpha_reg1 = feature_coder["alpha_reg1"] if "alpha_reg1" in feature_coder.keys() else 0.0
-            self._alpha_reg2 = feature_coder["alpha_reg2"] if "alpha_reg2" in feature_coder.keys() else 0.0
+            self._max_norm = feature_coder["max_norm"] if "max_norm" in feature_coder.keys() else None
         else:
             self._feature_mapper = None
             self._sparse_feature_mapper = None
-            self._alpha_reg1 = 0.0
-            self._alpha_reg2 = 0.0
+            self._max_norm = None
 
         def project(params):
             o_norm = np.linalg.norm(np.asarray(params), ord=2)
