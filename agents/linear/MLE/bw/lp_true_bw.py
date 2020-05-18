@@ -141,7 +141,7 @@ class LpTrueBw(LpVanilla):
 
             self._o_parameters_norm =  np.linalg.norm(self._a_parameters[0], 2) +\
                                        np.linalg.norm(self._b_parameters, 2)
-            self._r_parameters_norm = np.linalg.norm(self._r_parameters[0], 2)
+            self._r_parameters_norm = np.linalg.norm(self._c_parameters[0], 2)
 
             losses_and_grads = {"losses": {
                 "loss_total": total_loss,
