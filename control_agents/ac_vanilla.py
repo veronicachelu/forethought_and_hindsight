@@ -59,7 +59,7 @@ class ACVanilla(Agent):
         self._epsilon = 0.1
         self._sequence = []
         self._should_reset_sequence = False
-        self._update_every = 5
+        self._update_every = 1
 
         if feature_coder is not None:
             self._feature_mapper = FeatureMapper(feature_coder)

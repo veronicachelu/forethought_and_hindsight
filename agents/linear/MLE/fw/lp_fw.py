@@ -43,15 +43,16 @@ class LpFw(LpVanilla):
                 r_t_target += (self._discount ** i) * t[2]
 
             r_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_r_tmn, r_t_target))
-            l1_reg = jnp.linalg.norm(o_params, 1)
-            l2_reg = jnp.linalg.norm(o_params, 2)
-            total_loss = fw_o_loss + r_loss + self._alpha_reg1 * l1_reg + \
-                         self._alpha_reg2 * l2_reg
+            # l1_reg = jnp.linalg.norm(o_params, 1)
+            # l2_reg = jnp.linalg.norm(o_params, 2)
+            total_loss = fw_o_loss + r_loss
+                         # self._alpha_reg1 * l1_reg + \
+                         # self._alpha_reg2 * l2_reg
 
             return total_loss, {"fw_o_loss": fw_o_loss,
                                 "r_loss": r_loss,
-                                "reg1": l1_reg,
-                                "reg2": l2_reg
+                                # "reg1": l1_reg,
+                                # "reg2": l2_reg
                                 }
 
         def v_planning_loss(v_params, o_params, r_params, o_tmn):
@@ -106,15 +107,18 @@ class LpFw(LpVanilla):
             self._model_parameters = self._model_get_params(self._model_opt_state)
             self._o_parameters, self._r_parameters = self._model_parameters
 
-            # self._o_parameters = self._euclidean_proj_l1ball(self._o_parameters, 2)
-            self._o_parameters_norm = np.linalg.norm(self._o_parameters, 1)
-            self._r_parameters_norm = np.linalg.norm(self._r_parameters[0], 1)
+            if self._alpha_reg2 != 0:
+                self._o_parameters = self._project(self._o_parameters)
+
+            self._o_parameters_norm = np.linalg.norm(self._o_parameters, 2)
+            self._r_parameters_norm = np.linalg.norm(self._r_parameters[0], 2)
+
 
             losses_and_grads = {"losses": {
                 "loss_total": total_loss,
                 "loss_o": losses["fw_o_loss"],
-                "grad_norm_o": self._o_parameters_norm,
-                "grad_norm_r": self._r_parameters_norm,
+                "L2_norm_o": self._o_parameters_norm,
+                "L2_norm_r": self._r_parameters_norm,
                 "loss_r": losses["r_loss"],
             },
             }

@@ -95,8 +95,6 @@ class LpVanillaPAML(Agent):
         self._log_period = log_period
         self._target_networks = target_networks
 
-
-
         if feature_coder is not None:
             self._feature_mapper = FeatureMapper(feature_coder)
             sparse_feature_coder = deepcopy(feature_coder)
@@ -109,6 +107,15 @@ class LpVanillaPAML(Agent):
             self._sparse_feature_mapper = None
             self._alpha_reg1 = 0.0
             self._alpha_reg2 = 0.0
+
+        def project(params):
+            o_norm = np.linalg.norm(np.asarray(params), ord=2)
+            params = np.divide(params, o_norm, out=np.zeros_like(params), where=o_norm != 0)
+            params *= self._max_norm
+            return params
+
+        self._project = project
+        self._max_norm = 1
 
         if self._logs is not None:
             self._checkpoint_dir = os.path.join(self._logs,

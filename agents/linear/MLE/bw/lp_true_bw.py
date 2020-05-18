@@ -135,15 +135,20 @@ class LpTrueBw(LpVanilla):
             self._model_parameters = self._model_get_params(self._model_opt_state)
             self._a_parameters, self._b_parameters, self._c_parameters = self._model_parameters
 
-            self._o_parameters_norm = np.linalg.norm(self._a_parameters[0], 1) + np.linalg.norm(self._b_parameters, 1)
-            self._r_parameters_norm = np.linalg.norm(self._c_parameters[0], 1)
+            if self._alpha_reg2 != 0:
+                self._a_parameters = self._project(self._a_parameters)
+                self._b_parameters = self._project(self._b_parameters)
+
+            self._o_parameters_norm =  np.linalg.norm(self._a_parameters[0], 2) +\
+                                       np.linalg.norm(self._b_parameters, 2)
+            self._r_parameters_norm = np.linalg.norm(self._r_parameters[0], 2)
 
             losses_and_grads = {"losses": {
                 "loss_total": total_loss,
                 "loss_cross(A)": losses["cross_loss(A)"],
                 "loss_o": losses["expected_loss(b)"],
-                "grad_norm_o": self._o_parameters_norm,
-                "grad_norm_r": self._r_parameters_norm,
+                "L2_norm_o": self._o_parameters_norm,
+                "L2_norm_r": self._r_parameters_norm,
                 "loss_r": losses["r_loss(w_r)"],
                 # "loss_distance_A": losses["distance_from_wrong_cross"],
             },

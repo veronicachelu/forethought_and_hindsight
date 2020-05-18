@@ -124,6 +124,14 @@ class LpVanilla(Agent):
             td_error = jax.vmap(rlax.td_learning)(v_tm1, r_t, d_t * discount, v_t)
             return jnp.mean(td_error ** 2)
 
+        def project(params):
+            o_norm = np.linalg.norm(np.asarray(params), ord=2)
+            params = np.divide(params, o_norm, out=np.zeros_like(params), where=o_norm != 0)
+            params *= self._max_norm
+            return params
+
+        self._project = project
+        self._max_norm = 1
         self._network = network
         # Internalize the networks.
         self._v_network = network["value"]["net"]
