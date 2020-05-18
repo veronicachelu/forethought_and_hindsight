@@ -29,7 +29,7 @@ def get_network(num_hidden_layers: int,
         output_dim = input_dim = np.prod(input_dim)
     if model_family == "ac":
         return get_pg_network(num_hidden_layers, num_units, nA,
-                            rng, input_dim, latent)
+                            rng, input_dim, output_dim, latent)
     if model_class == "tabular":
         return get_tabular_network(num_hidden_layers, num_units, nA,
                             rng, input_dim)
@@ -392,10 +392,8 @@ def get_pg_network(num_hidden_layers: int,
                   rng: List,
                   input_size: Tuple,
                   output_size: Tuple,
-                  target_networks=False,
                   latent=False,
                           ):
-    # input_size = np.prod(input_dim)
     num_units = num_units if latent else output_size
     network = {}
     rng_v, rng_h, rng_o, rng_fw_o, rng_r, rng_pi = jrandom.split(rng, 6)
@@ -403,8 +401,8 @@ def get_pg_network(num_hidden_layers: int,
     h_network, h_network_params = get_h_net(rng_h, num_units, num_hidden_layers, input_size)
     pi_network, pi_network_params = get_pi_net(rng_pi, input_size, nA)
     v_network, v_network_params = get_value_net(rng_v, input_size, bias=True)
-    o_network, o_network_params = get_o_net(rng_o, input_size, num_units)
-    fw_o_network, fw_o_network_params = get_o_net(rng_o, input_size, num_units)
+    o_network, o_network_params = get_o_net(rng_o, input_size, output_size)
+    fw_o_network, fw_o_network_params = get_o_net(rng_o, input_size, output_size)
     r_network, r_network_params = get_r_net(rng_r, input_size)
 
     network["value"] = {"net": v_network,

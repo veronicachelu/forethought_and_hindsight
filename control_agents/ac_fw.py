@@ -50,7 +50,7 @@ class ACFw(ACVanilla):
             for i, t in enumerate(transitions):
                 r_t_target += (self._discount ** i) * t[2]
 
-            r_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_r_tmn, r_t_target))
+            r_loss = jnp.mean(rlax.l2_loss(model_r_tmn, r_t_target))
             total_loss = fw_o_loss + r_loss
 
             return total_loss, {"fw_o_loss": fw_o_loss,
@@ -89,7 +89,8 @@ class ACFw(ACVanilla):
 
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, 0))
 
-        self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [0, 1], has_aux=True))
+        # self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [0, 1], has_aux=True))
+        self._model_loss_grad = jax.value_and_grad(model_loss, [0, 1], has_aux=True)
         self._o_forward = jax.jit(self._o_network)
         self._r_forward = jax.jit(self._r_network)
         self._model_step_schedule = optimizers.polynomial_decay(self._lr_model,
@@ -138,12 +139,8 @@ class ACFw(ACVanilla):
             self._model_parameters = self._model_get_params(self._model_opt_state)
             self._o_parameters, self._r_parameters = self._model_parameters
 
-            if self._max_norm is not None:
-                self._o_parameters = self._project(self._o_parameters)
-
             self._o_parameters_norm = np.linalg.norm(self._o_parameters, 2)
             self._r_parameters_norm = np.linalg.norm(self._r_parameters[0], 2)
-
 
             losses_and_grads = {"losses": {
                 "loss_total": total_loss,
@@ -211,7 +208,7 @@ class ACFw(ACVanilla):
     def _log_summaries(self, losses_and_grads, summary_name):
         if self._logs is not None:
             losses = losses_and_grads["losses"]
-            gradients = losses_and_grads["gradients"]
+            # gradients = losses_and_grads["gradients"]
             if self._max_len == -1:
                 ep = self.total_steps
             else:
@@ -219,10 +216,10 @@ class ACFw(ACVanilla):
             if ep % self._log_period == 0:
                 for k, v in losses.items():
                     tf.summary.scalar("train/losses/{}/{}".format(summary_name, k),
-                                      losses[k], step=ep)
-                for k, v in gradients.items():
-                    tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
-                                      gradients[k], step=ep)
+                                     v, step=ep)
+                # for k, v in gradients.items():
+                #     tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
+                #                       gradients[k], step=ep)
                 self.writer.flush()
 
     # def get_values_for_all_states(self, all_states):
