@@ -14,6 +14,21 @@ config = {
         "class": {"linear": "LpVanilla",
                   "tabular": "TpVanilla"}
     },
+    "bw_fw": {
+        "task_type": "prediction",
+        "control_agent": "q",
+        "pg": False,
+        "run_mode": "bw_fw",
+        "planning_depth": 0,
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "MLE",
+        "target_networks": False,
+        "class": {"linear": "LpBwFw",
+                  "tabular": "TpVanilla"}
+    },
 
     #### BW RECURRENT ###
     "p_bw_recur": {
@@ -661,20 +676,20 @@ config = {
     },
 
     ### BW FW ###
-    "bw_fw": {
-        "task_type": "prediction",
-        "control_agent": "q",
-        "pg": False,
-        "run_mode": "fw_bw",
-        "planning_iter": 1,
-        "latent": False,
-        "num_hidden_layers": 0,
-        "num_units": 0,
-        "model_family": "MLE",
-        "target_networks": False,
-        "class": {"linear": "LpBwFwExp",
-                  "tabular": "TpBwFwDistrib"},
-    },
+    # "bw_fw": {
+    #     "task_type": "prediction",
+    #     "control_agent": "q",
+    #     "pg": False,
+    #     "run_mode": "fw_bw",
+    #     "planning_iter": 1,
+    #     "latent": False,
+    #     "num_hidden_layers": 0,
+    #     "num_units": 0,
+    #     "model_family": "MLE",
+    #     "target_networks": False,
+    #     "class": {"linear": "LpBwFwExp",
+    #               "tabular": "TpBwFwDistrib"},
+    # },
 
     #### BW PAML ###
     "p_bw_PAML": {

@@ -187,13 +187,13 @@ def run_gain(agent: Agent,
                         agent.save_transition(timestep, action, new_timestep)
                         agent.model_update(timestep, action, new_timestep)
 
-                    if agent.model_free_train() and not aux_agent_configs["mb"]:
+                    if agent.model_free_train():
                         hat_v = agent._v_network if space["env_config"]["model_class"] == "tabular" \
-                            else agent.get_values_for_all_states(environment.get_all_states())
+                            else agent.get_values_for_all_states(environment.get_all_states(), agent._v_parameters)
                         rmsve_before = get_rmsve(environment, mdp_solver, hat_v, mdp_solver.get_optimal_v(), weighted=weighted)
                         agent.value_update(timestep, action, new_timestep)
                         hat_v = agent._v_network if space["env_config"]["model_class"] == "tabular" \
-                            else agent.get_values_for_all_states(environment.get_all_states())
+                            else agent.get_values_for_all_states(environment.get_all_states(), agent._v_parameters)
                         rmsve_after = get_rmsve(environment, mdp_solver, hat_v, mdp_solver.get_optimal_v(),
                                                  weighted=weighted)
                         td_gain = rmsve_before - rmsve_after
@@ -204,7 +204,7 @@ def run_gain(agent: Agent,
                         # if aux_agent_configs["pivot"] == "c":
                         #     agent.planning_update(new_timestep)
                         # else:
-                        agent.planning_update(timestep)
+                        agent.planning_update(timestep, environment, mdp_solver, space)
 
                     agent.total_steps += 1
                     t += 1
@@ -217,7 +217,7 @@ def run_gain(agent: Agent,
                     timestep = new_timestep
 
                 hat_v = agent._v_network if space["env_config"]["model_class"] == "tabular" \
-                    else agent.get_values_for_all_states(environment.get_all_states())
+                    else agent.get_values_for_all_states(environment.get_all_states(), agent._v_parameters)
                 rmsve = get_rmsve(environment, mdp_solver, hat_v, mdp_solver.get_optimal_v(), weighted=weighted)
 
                 total_rmsve += rmsve

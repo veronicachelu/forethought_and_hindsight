@@ -147,8 +147,10 @@ class LpBwFw(LpVanilla):
 
             losses_and_grads = {"losses": {
                 "loss_total": total_loss,
-                "loss_o": losses["o_loss"],
-                "loss_r": losses["r_loss"],
+                "loss_fw_o": losses["fw_o_loss"],
+                "loss_bw_o": losses["bw_o_loss"],
+                "loss_bw_r": losses["bw_r_loss"],
+                "loss_fw_r": losses["fw_r_loss"],
             },
             }
             self._log_summaries(losses_and_grads, "model")
@@ -167,51 +169,53 @@ class LpBwFw(LpVanilla):
     ):
         if self._n == 0:
             return
+
         bw_v_parameters = self.bw_planning_update(timestep)
         fw_v_parameters = self.fw_planning_update(timestep)
-        true_v = mdp_solver.get_optimal_v()
-        hat_bw_v = self.get_values_for_all_states(environment.get_all_states(), bw_v_parameters)
-        hat_fw_v = self.get_values_for_all_states(environment.get_all_states(), fw_v_parameters)
-        hat_v = self.get_values_for_all_states(environment.get_all_states(), self._v_parameters)
-        _hat_v_ = environment.reshape_v(hat_v * (environment._d * len(environment._starting_positions)))
-        _hat_bw_v_ = environment.reshape_v(hat_bw_v * (environment._d * len(environment._starting_positions)))
-        _hat_fw_v_ = environment.reshape_v(hat_fw_v * (environment._d * len(environment._starting_positions)))
-        _true_v = environment.reshape_v(
-            true_v * environment._d * len(environment._starting_positions))
-        plot_v(env=environment,
-               values=_hat_v_,
-               logs=self._images_dir,
-               true_v=_true_v,
-               env_type=space["env_config"]["env_type"],
-               filename="v_{}_{}.png".format(self.episode, self.total_steps))
-        plot_v(env=environment,
-               values=_hat_bw_v_,
-               logs=self._images_dir,
-               true_v=_true_v,
-               env_type=space["env_config"]["env_type"],
-               filename="bw_v_{}_{}.png".format(self.episode, self.total_steps))
-        plot_v(env=environment,
-               values=_hat_fw_v_,
-               logs=self._images_dir,
-               true_v=_true_v,
-               env_type=space["env_config"]["env_type"],
-               filename="fw_v_{}_{}.png".format(self.episode, self.total_steps))
-        plot_v(env=environment,
-               values=_true_v,
-               logs=self._images_dir,
-               true_v=_true_v,
-               env_type=space["env_config"]["env_type"],
-               filename="true_v_{}_{}.png".format(self.episode, self.total_steps))
+        if bw_v_parameters is not None and fw_v_parameters is not None:
+            true_v = mdp_solver.get_optimal_v()
+            hat_bw_v = self.get_values_for_all_states(environment.get_all_states(), bw_v_parameters)
+            hat_fw_v = self.get_values_for_all_states(environment.get_all_states(), fw_v_parameters)
+            hat_v = self.get_values_for_all_states(environment.get_all_states(), self._v_parameters)
+            _hat_v_ = environment.reshape_v(hat_v * (environment._d * len(environment._starting_positions)))
+            _hat_bw_v_ = environment.reshape_v(hat_bw_v * (environment._d * len(environment._starting_positions)))
+            _hat_fw_v_ = environment.reshape_v(hat_fw_v * (environment._d * len(environment._starting_positions)))
+            _true_v = environment.reshape_v(
+                true_v * environment._d * len(environment._starting_positions))
+            # plot_v(env=environment,
+            #        values=_hat_v_,
+            #        logs=self._images_dir,
+            #        true_v=_true_v,
+            #        env_type=space["env_config"]["env_type"],
+            #        filename="v_{}_{}.png".format(self.episode, self.total_steps))
+            # plot_v(env=environment,
+            #        values=_hat_bw_v_,
+            #        logs=self._images_dir,
+            #        true_v=_true_v,
+            #        env_type=space["env_config"]["env_type"],
+            #        filename="bw_v_{}_{}.png".format(self.episode, self.total_steps))
+            # plot_v(env=environment,
+            #        values=_hat_fw_v_,
+            #        logs=self._images_dir,
+            #        true_v=_true_v,
+            #        env_type=space["env_config"]["env_type"],
+            #        filename="fw_v_{}_{}.png".format(self.episode, self.total_steps))
+            # plot_v(env=environment,
+            #        values=_true_v,
+            #        logs=self._images_dir,
+            #        true_v=_true_v,
+            #        env_type=space["env_config"]["env_type"],
+            #        filename="true_v_{}_{}.png".format(self.episode, self.total_steps))
 
-        rmsve = np.sqrt(np.sum(environment._d * ((true_v - hat_v) ** 2)))
-        rmsve_bw = np.sqrt(np.sum(environment._d * ((true_v - hat_bw_v) ** 2)))
-        rmsve_fw = np.sqrt(np.sum(environment._d * ((true_v - hat_fw_v) ** 2)))
+            rmsve = np.sqrt(np.sum(environment._d * ((true_v - hat_v) ** 2)))
+            rmsve_bw = np.sqrt(np.sum(environment._d * ((true_v - hat_bw_v) ** 2)))
+            rmsve_fw = np.sqrt(np.sum(environment._d * ((true_v - hat_fw_v) ** 2)))
 
-        bw_gain = rmsve - rmsve_bw
-        fw_gain = rmsve - rmsve_fw
+            bw_gain = rmsve - rmsve_bw
+            fw_gain = rmsve - rmsve_fw
 
-        self._bw_gain[timestep.observation] += bw_gain
-        self._fw_gain[timestep.observation] += fw_gain
+            self._bw_gain[timestep.observation] += bw_gain
+            self._fw_gain[timestep.observation] += fw_gain
 
 
     def bw_planning_update(self,

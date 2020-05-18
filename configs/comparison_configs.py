@@ -461,6 +461,7 @@ configs={
         "bw_c_fw_p_all": {
             "agents": ["c_bw",
                        "c_true_bw",
+                       "c_random_bw",
                        "p_fw",
                        "p_fw_PAML",
                        "c_bw_PAML"
