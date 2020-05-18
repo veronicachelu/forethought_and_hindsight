@@ -125,9 +125,17 @@ class LpVanilla(Agent):
             return jnp.mean(td_error ** 2)
 
         def project(params):
-            o_norm = np.linalg.norm(np.asarray(params), ord=2)
-            params = np.divide(params, o_norm, out=np.zeros_like(params), where=o_norm != 0)
-            params *= self._max_norm
+            if isinstance(params, list):
+                first_params = params[0]
+            else:
+                first_params = params
+            o_norm = np.linalg.norm(np.asarray(first_params), ord=2)
+            first_params = np.divide(first_params, o_norm, out=np.zeros_like(first_params), where=o_norm != 0)
+            first_params *= self._max_norm
+            if isinstance(params, tuple):
+                params[0] = first_params
+            else:
+                params = first_params
             return params
 
         self._project = project

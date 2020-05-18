@@ -163,18 +163,19 @@ def get_MLE_network(num_hidden_layers: int,
 
     # input_size = np.prod(input_dim)
     network = {}
-    rng_v, _, rng_o, rng_fw_o, rng_r = jrandom.split(rng, 5)
+    rng_v, rng_r_fw, rng_o, rng_fw_o, rng_r = jrandom.split(rng, 5)
 
     v_network, v_network_params = get_value_net(rng_v, input_size, bias=False)
     o_network, o_network_params = get_o_net(rng_o, input_size, output_size)
     fw_o_network, fw_o_network_params = get_o_net(rng_fw_o, input_size, output_size)
     r_network, r_network_params = get_r_net(rng_r, input_size)
+    fw_r_network, fw_r_network_params = get_r_net(rng_r_fw, input_size)
 
     network["value"] = {"net": v_network,
                         "params": v_network_params}
-    network["model"] = {"net": [o_network, fw_o_network, r_network],
+    network["model"] = {"net": [o_network, fw_o_network, r_network, fw_r_network],
                         "params": [o_network_params,
-                                   fw_o_network_params, r_network_params]
+                                   fw_o_network_params, r_network_params, fw_r_network_params]
                         }
 
     return network

@@ -21,7 +21,7 @@ from utils import *
 
 
 # flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
-flags.DEFINE_string('agent', 'c_random_bw', 'what agent to run')
+# flags.DEFINE_string('agent', 'c_random_bw', 'what agent to run')
 
 
 # flags.DEFINE_string('agent', 'p_fw', 'what agent to run')
@@ -30,10 +30,10 @@ flags.DEFINE_string('agent', 'c_random_bw', 'what agent to run')
 # flags.DEFINE_string('agent', 'c_bw', 'what agent to run')
 
 # flags.DEFINE_string('agent', 'p_true_bw', 'what agent to run')
-# flags.DEFINE_string('agent', 'c_true_bw', 'what agent to run')
+flags.DEFINE_string('agent', 'c_true_bw', 'what agent to run')
 # flags.DEFINE_string('agent', 'p_bw_PAML', 'what agent to run')
 # flags.DEFINE_string('agent', 'c_bw_PAML', 'what agent to run')
-flags.DEFINE_string('env', 'obstacle', 'env')
+flags.DEFINE_string('env', 'reg2_obstacle', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', 10000000, 'Maximum number of time steps an episode may last (default: 100).')
