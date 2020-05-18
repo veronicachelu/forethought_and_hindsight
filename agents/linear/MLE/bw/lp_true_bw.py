@@ -99,7 +99,7 @@ class LpTrueBw(LpVanilla):
                       - cross_o_tmn
 
             v_model_error = lax.batch_matmul(v_error, v_params[None, ])
-            v_grad = jnp.mean(2 * (vector_r_tmn + v_model_error), axis=0)
+            v_grad = jnp.mean(0.5 * (vector_r_tmn + v_model_error), axis=0)
 
             return -v_grad
 

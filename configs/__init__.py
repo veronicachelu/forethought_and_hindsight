@@ -15,6 +15,7 @@ import configs.random_linear_config as random_linear_config
 import configs.puddle_config as puddle_config
 import configs.obstacle_config as obstacle_config
 import configs.reg1_obstacle_config as reg1_obstacle_config
+import configs.reg0_obstacle_config as reg0_obstacle_config
 import configs.reg01_obstacle_config as reg01_obstacle_config
 import configs.noise_obstacle_config as noise_obstacle_config
 import configs.reg1_16_obstacle_config as reg1_16_obstacle_config
