@@ -30,6 +30,7 @@ class ACVanilla(Agent):
             batch_size: int,
             discount: float,
             lr: float,
+            lr_model: float,
             log_period: int,
             nrng,
             rng_seq,
@@ -53,6 +54,7 @@ class ACVanilla(Agent):
         self._exploration_decay_period = exploration_decay_period
         self._nrng = nrng
         self._rng_seq = rng_seq
+        self._n = 1
         # self._epsilon = 1.0
         self._final_epsilon = 0.0
         self._initial_epsilon = 0.1
@@ -63,10 +65,13 @@ class ACVanilla(Agent):
 
         if feature_coder is not None:
             self._feature_mapper = FeatureMapper(feature_coder)
+            self._max_norm = feature_coder["max_norm"] if "max_norm" in feature_coder.keys() else None
         else:
             self._feature_mapper = None
+            self._max_norm = None
 
         self._lr = lr
+        self._lr_model = lr_model
         self._warmup_steps = 0
         self._logs = logs
         self._seed = seed
@@ -121,6 +126,7 @@ class ACVanilla(Agent):
                     }
 
         # Internalize the networks.
+        self._network = network
         self._v_network = network["value"]["net"]
         self._v_parameters = network["value"]["params"]
 
@@ -138,22 +144,25 @@ class ACVanilla(Agent):
         self._r_parameters = network["model"]["params"][3]
 
         # This function computes dL/dTheta
-        self._ac_loss_grad = (jax.value_and_grad(ac_loss, [0, 1, 2], has_aux=True))
-        # self._ac_loss_grad = jax.jit(jax.value_and_grad(ac_loss, [0, 1, 2], has_aux=True))
+        # self._ac_loss_grad = (jax.value_and_grad(ac_loss, [0, 1, 2], has_aux=True))
+        self._pi_loss_grad = jax.jit(jax.value_and_grad(ac_loss, 1, has_aux=True))
+        self._v_loss_grad = jax.jit(jax.value_and_grad(ac_loss, [0, 2], has_aux=True))
         self._v_forward = jax.jit(self._v_network)
         self._pi_forward = jax.jit(self._pi_network)
 
         # Make an Adam optimizer.
         self._step_schedule = optimizers.polynomial_decay(self._lr,
-                                                                self._exploration_decay_period, 0, 0.9)
-        ac_opt_init, ac_opt_update, ac_get_params = optimizers.adam(step_size=self._step_schedule)
-        self._ac_opt_update = jax.jit(ac_opt_update)
-        self._ac_opt_state = ac_opt_init([self._v_parameters,
-                                          self._pi_parameters,
+                                            self._exploration_decay_period, 0, 0.9)
+        pi_opt_init, pi_opt_update, pi_get_params = optimizers.adam(step_size=self._step_schedule)
+        v_opt_init, v_opt_update, v_get_params = optimizers.adam(step_size=self._step_schedule)
+        self._pi_opt_update = jax.jit(pi_opt_update)
+        self._v_opt_update = jax.jit(v_opt_update)
+        self._pi_opt_state = pi_opt_init(self._pi_parameters)
+        self._v_opt_state = v_opt_init([self._v_parameters,
                                           self._h_parameters])
 
-
-        self._ac_get_params = ac_get_params
+        self._pi_get_params = pi_get_params
+        self._v_get_params = v_get_params
 
     def _get_features(self, o):
         if self._feature_mapper is not None:
@@ -182,14 +191,21 @@ class ACVanilla(Agent):
             new_timestep: dm_env.TimeStep,
     ):
         if len(self._sequence) >= self._update_every:
-            (total_loss, losses), gradients = self._ac_loss_grad(self._v_parameters,
+            (total_loss, losses), pi_gradients = self._pi_loss_grad(self._v_parameters,
                                                  self._pi_parameters,
                                                  self._h_parameters,
                                                 self._sequence)
-            self._ac_opt_state = self._ac_opt_update(self.episode, list(gradients),
-                                                   self._ac_opt_state)
-            ac_parameters = self._ac_get_params(self._ac_opt_state)
-            self._v_parameters, self._pi_parameters, self._h_parameters = ac_parameters
+            _, v_gradients = self._pi_loss_grad(self._v_parameters,
+                                                                 self._pi_parameters,
+                                                                 self._h_parameters,
+                                                                 self._sequence)
+            self._pi_opt_state = self._pi_opt_update(self.episode, pi_gradients,
+                                                   self._pi_opt_state)
+            self._v_opt_state = self._v_opt_update(self.episode, list(v_gradients),
+                                                     self._v_opt_state)
+            self._pi_parameters = self._pi_get_params(self._pi_opt_state)
+            v_parameters = self._v_get_params(self._v_opt_state)
+            self._v_parameters, self._h_parameters = v_parameters
 
             losses_and_grads = {"losses": {
                                         "total_loss": np.array(total_loss),
@@ -201,7 +217,11 @@ class ACVanilla(Agent):
                                 "gradients": {
                                     }}
             self._log_summaries(losses_and_grads, "value")
+            self._sequence = self._sequence[1:]
+
+        if self._should_reset_sequence:
             self._sequence = []
+            self._should_reset_sequence = False
 
     def model_based_train(self):
         return False
@@ -265,6 +285,9 @@ class ACVanilla(Agent):
                        next_features]
 
         self._sequence.append(transitions)
+
+        if new_timestep.discount == 0:
+            self._should_reset_sequence = True
 
     def _log_summaries(self, losses_and_grads, summary_name):
         if self._logs is not None:

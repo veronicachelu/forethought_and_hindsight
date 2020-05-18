@@ -24,6 +24,10 @@ def run_episodic(agent: Agent,
                 new_timestep = environment.step(action)
 
                 agent.save_transition(timestep, action, new_timestep)
+
+                if agent.model_based_train():
+                    agent.model_update(timestep, action, new_timestep)
+
                 agent.value_update(timestep, action, new_timestep)
 
                 ep_reward += new_timestep.reward

@@ -33,7 +33,7 @@ def run_episodic(agent: Agent,
             timestep = environment.reset()
             agent.update_hyper_params(episode, space["env_config"]["num_episodes"])
             while True:
-                copy_env = deepcopy(environment)
+                # copy_env = deepcopy(environment)
                 action = agent.policy(timestep)
                 new_timestep = environment.step(action)
 
