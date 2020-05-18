@@ -69,10 +69,11 @@ class LpTrueBw(LpVanilla):
             # vector_r_t_target = r_t_target
 
             r_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_vector_r_tmn, vector_r_t_target))
-            l1_reg = jnp.linalg.norm(a_params[0], 1) + jnp.linalg.norm(b_params, 1)
-            l2_reg = jnp.linalg.norm(a_params[0], 2) + jnp.linalg.norm(b_params, 2)
-            total_loss = b_loss + r_loss + a_loss + self._alpha_reg1 * l1_reg + \
-                         self._alpha_reg2 * l2_reg
+            # l1_reg = jnp.linalg.norm(a_params[0], 1) + jnp.linalg.norm(b_params, 1)
+            # l2_reg = jnp.linalg.norm(a_params[0], 2) + jnp.linalg.norm(b_params, 2)
+            total_loss = b_loss + r_loss + a_loss
+                         # + self._alpha_reg1 * l1_reg + \
+                         # self._alpha_reg2 * l2_reg
 
             return total_loss, {"cross_loss(A)": a_loss,
                                "expected_loss(b)": b_loss,
