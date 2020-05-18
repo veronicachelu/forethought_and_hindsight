@@ -132,7 +132,7 @@ class LpVanilla(Agent):
             o_norm = np.linalg.norm(np.asarray(first_params), ord=2)
             first_params = np.divide(first_params, o_norm, out=np.zeros_like(first_params), where=o_norm != 0)
             first_params *= self._max_norm
-            if isinstance(params, tuple):
+            if isinstance(params, list):
                 params[0] = first_params
             else:
                 params = first_params

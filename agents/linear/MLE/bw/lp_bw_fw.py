@@ -13,6 +13,7 @@ from jax.experimental import optimizers
 from agents.linear.MLE.lp_vanilla import LpVanilla
 import rlax
 from basis.feature_mapper import FeatureMapper
+from utils.visualizer import *
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
@@ -27,6 +28,9 @@ class LpBwFw(LpVanilla):
 
         self._sequence = []
         self._should_reset_sequence = False
+
+        self._bw_gain = np.zeros((100))
+        self._fw_gain = np.zeros((100))
 
         def model_loss(bw_o_params,
                        fw_o_params,
@@ -77,12 +81,12 @@ class LpBwFw(LpVanilla):
                                                  v_t_target)
             return jnp.mean(td_error ** 2)
 
-        def fw_v_planning_loss(v_params, o_params, r_params, o_tmn):
-            o_t = self._o_forward(o_params, o_tmn)
+        def fw_v_planning_loss(v_params, fw_o_params, fw_r_params, o_tmn):
+            o_t = self._fw_o_forward(fw_o_params, o_tmn)
             v_tmn = jnp.squeeze(self._v_network(v_params, o_tmn), axis=-1)
             r_input = jnp.concatenate([o_tmn, o_t], axis=-1)
 
-            r_tmn = self._r_forward(r_params, r_input)
+            r_tmn = self._fw_r_forward(fw_r_params, r_input)
             v_t_target = jnp.squeeze(self._v_network(v_params, o_t), axis=-1)
 
             td_error = jax.vmap(rlax.td_learning)(v_tmn, r_tmn,
@@ -100,7 +104,8 @@ class LpBwFw(LpVanilla):
         self._bw_r_parameters = self._network["model"]["params"][2]
         self._fw_r_parameters = self._network["model"]["params"][3]
 
-        self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, 0))
+        self._bw_v_planning_loss_grad = jax.jit(jax.value_and_grad(bw_v_planning_loss, 0))
+        self._fw_v_planning_loss_grad = jax.jit(jax.value_and_grad(fw_v_planning_loss, 0))
 
         self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [0, 1, 2, 3], has_aux=True))
         self._bw_o_forward = jax.jit(self._bw_o_network)
@@ -156,13 +161,57 @@ class LpBwFw(LpVanilla):
     def planning_update(
             self,
             timestep: dm_env.TimeStep,
-            prev_timestep=None
+            environment,
+            mdp_solver,
+            space
     ):
         if self._n == 0:
             return
         bw_v_parameters = self.bw_planning_update(timestep)
         fw_v_parameters = self.fw_planning_update(timestep)
+        true_v = mdp_solver.get_optimal_v()
+        hat_bw_v = self.get_values_for_all_states(environment.get_all_states(), bw_v_parameters)
+        hat_fw_v = self.get_values_for_all_states(environment.get_all_states(), fw_v_parameters)
+        hat_v = self.get_values_for_all_states(environment.get_all_states(), self._v_parameters)
+        _hat_v_ = environment.reshape_v(hat_v * (environment._d * len(environment._starting_positions)))
+        _hat_bw_v_ = environment.reshape_v(hat_bw_v * (environment._d * len(environment._starting_positions)))
+        _hat_fw_v_ = environment.reshape_v(hat_fw_v * (environment._d * len(environment._starting_positions)))
+        _true_v = environment.reshape_v(
+            true_v * environment._d * len(environment._starting_positions))
+        plot_v(env=environment,
+               values=_hat_v_,
+               logs=self._images_dir,
+               true_v=_true_v,
+               env_type=space["env_config"]["env_type"],
+               filename="v_{}_{}.png".format(self.episode, self.total_steps))
+        plot_v(env=environment,
+               values=_hat_bw_v_,
+               logs=self._images_dir,
+               true_v=_true_v,
+               env_type=space["env_config"]["env_type"],
+               filename="bw_v_{}_{}.png".format(self.episode, self.total_steps))
+        plot_v(env=environment,
+               values=_hat_fw_v_,
+               logs=self._images_dir,
+               true_v=_true_v,
+               env_type=space["env_config"]["env_type"],
+               filename="fw_v_{}_{}.png".format(self.episode, self.total_steps))
+        plot_v(env=environment,
+               values=_true_v,
+               logs=self._images_dir,
+               true_v=_true_v,
+               env_type=space["env_config"]["env_type"],
+               filename="true_v_{}_{}.png".format(self.episode, self.total_steps))
 
+        rmsve = np.sqrt(np.sum(environment._d * ((true_v - hat_v) ** 2)))
+        rmsve_bw = np.sqrt(np.sum(environment._d * ((true_v - hat_bw_v) ** 2)))
+        rmsve_fw = np.sqrt(np.sum(environment._d * ((true_v - hat_fw_v) ** 2)))
+
+        bw_gain = rmsve - rmsve_bw
+        fw_gain = rmsve - rmsve_fw
+
+        self._bw_gain[timestep.observation] += bw_gain
+        self._fw_gain[timestep.observation] += fw_gain
 
 
     def bw_planning_update(self,
@@ -279,3 +328,7 @@ class LpBwFw(LpVanilla):
                         tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
                                           gradients[k], step=ep)
                 self.writer.flush()
+
+    def get_values_for_all_states(self, all_states, params):
+        features = self._get_features(all_states) if self._feature_mapper is not None else all_states
+        return np.array(np.squeeze(self._v_forward(params, np.array(features)), axis=-1), np.float)
