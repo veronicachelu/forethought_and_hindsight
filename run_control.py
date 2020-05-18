@@ -28,7 +28,7 @@ flags.DEFINE_integer('min_replay_size', 1, 'min replay size before training.')
 # flags.DEFINE_float('lr', 0.4, 'learning rate for q optimizer')
 flags.DEFINE_float('lr_ctrl', 0.005, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr_p', 0.01, 'learning rate for q optimizer')
-# flags.DEFINE_float('lr_m',  0.01, 'learning rate for model optimizer')
+flags.DEFINE_float('lr_m',  0.01, 'learning rate for model optimizer')
 
 FLAGS = flags.FLAGS
 
@@ -47,8 +47,8 @@ def main(argv):
     seed_config = {"planning_depth": FLAGS.planning_depth,
                    "replay_capacity": FLAGS.replay_capacity,
                    # "lr": FLAGS.lr,
-                   "lr_ctrl": FLAGS.lr_ctrl,}
-                   # "lr_m": FLAGS.lr_m,
+                   "lr_ctrl": FLAGS.lr_ctrl,
+                   "lr_m": FLAGS.lr_m,}
                    # "lr_p": FLAGS.lr_m}
 
     for seed in range(0, env_config["num_runs"]):

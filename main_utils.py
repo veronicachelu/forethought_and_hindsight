@@ -194,6 +194,7 @@ def get_control_agent(env, seed, nrng, nA, input_dim, space, aux_agent_configs):
         discount=aux_agent_configs["discount"],
         max_len=aux_agent_configs["max_len"],
         lr=control_space["crt_config"]["lr_ctrl"],
+        lr_model=control_space["crt_config"]["lr_m"],
         exploration_decay_period=exploration_decay_period,
         seed=seed,
         rng_seq=rng_sequence,
