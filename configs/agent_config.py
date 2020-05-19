@@ -897,6 +897,20 @@ config = {
         "target_networks": False,
         "class": {"linear": "ACBw"}
     },
+
+    "ac_true_bw": {
+        "task_type": "control",
+        "pg": True,
+        "run_mode": "ac_true_bw",
+        "planning_depth": 0,
+        "planning_iter": 1,
+        "model_family": "ac_true",
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "target_networks": False,
+        "class": {"linear": "ACTrueBw"}
+    },
 }
 
 ##### STUFF WHICH I've used at some point, and works but not anymore ###

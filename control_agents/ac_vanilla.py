@@ -117,7 +117,7 @@ class ACVanilla(Agent):
 
             entropy_loss = -self._epsilon * entropy
 
-            total_loss = actor_loss + critic_loss + entropy_loss
+            total_loss = actor_loss + 0.5 * critic_loss + entropy_loss
             return total_loss,\
                    {"critic": critic_loss,
                     "actor": actor_loss,

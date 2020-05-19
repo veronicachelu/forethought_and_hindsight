@@ -30,6 +30,9 @@ def get_network(num_hidden_layers: int,
     if model_family == "ac":
         return get_pg_network(num_hidden_layers, num_units, nA,
                             rng, input_dim, output_dim, latent)
+    if model_family == "ac_true":
+        return get_true_pg_network(num_hidden_layers, num_units, nA,
+                                rng, input_dim, output_dim)
     if model_class == "tabular":
         return get_tabular_network(num_hidden_layers, num_units, nA,
                             rng, input_dim)
@@ -400,7 +403,7 @@ def get_pg_network(num_hidden_layers: int,
 
     h_network, h_network_params = get_h_net(rng_h, num_units, num_hidden_layers, input_size)
     pi_network, pi_network_params = get_pi_net(rng_pi, input_size, nA)
-    v_network, v_network_params = get_value_net(rng_v, input_size, bias=True)
+    v_network, v_network_params = get_value_net(rng_v, input_size)#, bias=True)
     o_network, o_network_params = get_o_net(rng_o, input_size, output_size)
     fw_o_network, fw_o_network_params = get_o_net(rng_o, input_size, output_size)
     r_network, r_network_params = get_r_net(rng_r, input_size)
@@ -412,6 +415,37 @@ def get_pg_network(num_hidden_layers: int,
     network["model"] = {"net": [h_network, o_network, fw_o_network, r_network],
                         "params": [h_network_params, o_network_params,
                                    fw_o_network_params, r_network_params]
+                        }
+
+    return network
+
+def get_true_pg_network(num_hidden_layers: int,
+                  num_units: int,
+                  nA: int,
+                  rng: List,
+                  input_size: Tuple,
+                  output_size: Tuple,
+                  latent=False,
+                          ):
+    num_units = num_units if latent else output_size
+    network = {}
+    rng_v, rng_h, rng_b, rng_a, rng_c, rng_pi = jrandom.split(rng, 6)
+
+    h_network, h_network_params = get_h_net(rng_h, num_units, num_hidden_layers, input_size)
+    pi_network, pi_network_params = get_pi_net(rng_pi, input_size, nA)
+    v_network, v_network_params = get_value_net(rng_v, input_size)#, bias=True)
+    c_network, c_network_params = get_c_net(rng_c, input_size)
+    a_network, a_network_params = get_a_net(rng_a, input_size, output_size)
+    b_network, b_network_params = get_b_net(rng_b, input_size, output_size)
+
+    network["value"] = {"net": v_network,
+                        "params": v_network_params}
+    network["pi"] = {"net": pi_network,
+                        "params": pi_network_params}
+    network["model"] = {"net": [h_network, b_network, a_network, c_network],
+                        "params": [h_network_params, b_network_params,
+                                   a_network_params,
+                                   c_network_params]
                         }
 
     return network
