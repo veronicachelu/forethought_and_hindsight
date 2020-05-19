@@ -195,7 +195,7 @@ class ACVanilla(Agent):
                                                  self._pi_parameters,
                                                  self._h_parameters,
                                                 self._sequence)
-            _, v_gradients = self._pi_loss_grad(self._v_parameters,
+            _, v_gradients = self._v_loss_grad(self._v_parameters,
                                                                  self._pi_parameters,
                                                                  self._h_parameters,
                                                                  self._sequence)
