@@ -155,8 +155,8 @@ class ACMB(Agent):
         self._r_parameters = network["model"]["params"][3]
 
         # This function computes dL/dTheta
-        self._ac_loss_grad = (jax.value_and_grad(ac_loss, [0, 1, 2], has_aux=True))
-        # self._ac_loss_grad = jax.jit(jax.value_and_grad(ac_loss, [0, 1, 2], has_aux=True))
+        # self._ac_loss_grad = (jax.value_and_grad(ac_loss, [0, 1, 2], has_aux=True))
+        self._ac_loss_grad = jax.jit(jax.value_and_grad(ac_loss, [0, 1, 2], has_aux=True))
         self._v_forward = jax.jit(self._v_network)
         self._pi_forward = jax.jit(self._pi_network)
 

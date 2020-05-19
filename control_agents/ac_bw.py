@@ -195,14 +195,14 @@ class ACBw(ACVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        features = self._get_features([timestep.observation])[0]
-        next_features = self._get_features([new_timestep.observation])[0]
+        features = self._get_features([timestep.observation])
+        next_features = self._get_features([new_timestep.observation])
 
-        self._sequence.append([features,
+        self._sequence.append([features[0],
                        action,
                        new_timestep.reward,
                        new_timestep.discount,
-                       next_features])
+                       next_features[0]])
 
         self._sequence_model.append([np.array(features),
                        np.array([action]),
@@ -257,10 +257,10 @@ class ACBw(ACVanilla):
         bonus = np.clip(bonus, 0., self._initial_epsilon - self._final_epsilon)
         self._epsilon = self._final_epsilon + bonus
         if self._logs is not None:
-            # if self._max_len == -1:
-            ep = self.total_steps
-            # else:
-            #     ep = self.episode
+            if self._max_len == -1:
+                ep = self.total_steps
+            else:
+                ep = self.episode
             if ep % self._log_period == 0:
                 tf.summary.scalar("train/epsilon",
                                   self._epsilon, step=ep)

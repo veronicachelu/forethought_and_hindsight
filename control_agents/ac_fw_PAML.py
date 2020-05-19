@@ -64,10 +64,6 @@ class ACFwPAML(ACVanilla):
             for i, t in enumerate(transitions):
                 real_d_tmn_2_t += t[3]
 
-            # real_td_target = real_r_tmn_2_t + real_d_tmn_2_t * \
-            #                                   jnp.array([self._discount ** self._n]) * \
-            #                                   real_v_t_target
-
             real_td_error = jax.vmap(td_learning)(real_v_tmn, real_r_tmn_2_t,
                                                   real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
                                                   real_v_t_target)
@@ -79,9 +75,6 @@ class ACFwPAML(ACVanilla):
             model_r_input = jnp.concatenate([h_tmn, model_t], axis=-1)
             model_r_tmn_2_t = self._r_network(r_params, model_r_input)
 
-            # model_td_target = model_r_tmn_2_t + real_d_tmn_2_t *\
-            #                   jnp.array([self._discount ** self._n]) * \
-            #                                     model_v_t_target
             model_td_error = jax.vmap(td_learning)(real_v_tmn, model_r_tmn_2_t,
                                                    real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
                                                    model_v_t_target)
@@ -113,7 +106,7 @@ class ACFwPAML(ACVanilla):
 
             td_error = jax.vmap(rlax.td_learning)(v_tmn, r_t, jnp.array([self._discount ** self._n]),
                                                   v_t_target)
-            return jnp.mean(td_error ** 2)
+            return 0.5 * jnp.mean(td_error ** 2)
 
         # Internalize the networks.
         self._v_network = self._network["value"]["net"]
@@ -171,8 +164,6 @@ class ACFwPAML(ACVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        if timestep.last():
-            return
         if self._n == 0:
             return
         if len(self._sequence) >= self._n:
@@ -181,7 +172,7 @@ class ACFwPAML(ACVanilla):
                                                    self._h_parameters,
                                                    self._o_parameters,
                                                    self._r_parameters,
-                                                   self._sequence)
+                                                   self._sequence_model)
             self._model_opt_state = self._model_opt_update(self.episode, list(gradients),
                                                    self._model_opt_state)
             self._model_parameters = self._model_get_params(self._model_opt_state)
@@ -244,14 +235,14 @@ class ACFwPAML(ACVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        features = self._get_features([timestep.observation])[0]
-        next_features = self._get_features([new_timestep.observation])[0]
+        features = self._get_features([timestep.observation])
+        next_features = self._get_features([new_timestep.observation])
 
-        self._sequence.append([features,
+        self._sequence.append([features[0],
                        action,
                        new_timestep.reward,
                        new_timestep.discount,
-                       next_features])
+                       next_features[0]])
 
         self._sequence_model.append([np.array(features),
                        np.array([action]),

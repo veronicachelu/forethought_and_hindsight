@@ -270,13 +270,13 @@ class ACVanilla(Agent):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        features = self._get_features([timestep.observation])[0]
-        next_features = self._get_features([new_timestep.observation])[0]
-        transitions = [features,
+        features = self._get_features([timestep.observation])
+        next_features = self._get_features([new_timestep.observation])
+        transitions = [features[0],
                        action,
                        new_timestep.reward,
                        new_timestep.discount,
-                       next_features]
+                       next_features[0]]
 
         self._sequence.append(transitions)
 

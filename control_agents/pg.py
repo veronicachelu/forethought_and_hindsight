@@ -110,8 +110,8 @@ class PG(Agent):
         self._h_parameters = network["model"]["params"][0]
 
         # This function computes dL/dTheta
-        self._pg_loss_grad = (jax.value_and_grad(pg_loss, [0, 1], has_aux=True))
-        # self._ac_loss_grad = jax.jit(jax.value_and_grad(ac_loss, [0, 1, 2], has_aux=True))
+        # self._pg_loss_grad = (jax.value_and_grad(pg_loss, [0, 1], has_aux=True))
+        self._ac_loss_grad = jax.jit(jax.value_and_grad(pg_loss, [0, 1], has_aux=True))
         self._pi_forward = jax.jit(self._pi_network)
 
         # Make an Adam optimizer.
@@ -218,13 +218,13 @@ class PG(Agent):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        features = self._get_features([timestep.observation])[0]
-        next_features = self._get_features([new_timestep.observation])[0]
-        transitions = [features,
+        features = self._get_features([timestep.observation])
+        next_features = self._get_features([new_timestep.observation])
+        transitions = [features[0],
                        action,
                        new_timestep.reward,
                        new_timestep.discount,
-                       next_features]
+                       next_features[0]]
 
         self._sequence.append(transitions)
 

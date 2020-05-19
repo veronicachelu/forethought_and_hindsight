@@ -21,51 +21,90 @@ from control_agents.ac_vanilla import ACVanilla
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
+def td_learning(
+    v_tm1,
+    r_t,
+    discount_t,
+    v_t):
 
-class ACBw(ACVanilla):
+  target_tm1 = r_t + discount_t * lax.stop_gradient(v_t)
+  return target_tm1 - v_tm1
+
+class ACBwPAML(ACVanilla):
     def __init__(
             self,
             **kwargs
     ):
-        super(ACBw, self).__init__(**kwargs)
+        super(ACBwPAML, self).__init__(**kwargs)
 
         self._sequence_model = []
         self._should_reset_sequence = False
 
-        def model_loss(o_params,
+        def model_loss(v_params,
+                       h_params,
+                       o_params,
                        r_params,
                        transitions):
             o_tmn_target = transitions[0][0]
             o_t = transitions[-1][-1]
-            model_o_tmn = self._o_network(o_params, o_t)
 
-            o_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_o_tmn, o_tmn_target))
+            h_tmn = self._h_network(h_params, o_tmn_target) if self._latent else o_tmn_target
+            h_t = self._h_network(h_params, o_t) if self._latent else o_t
 
-            r_input = jnp.concatenate([model_o_tmn, o_t], axis=-1)
-            model_r_tmn = self._r_network(r_params, lax.stop_gradient(r_input))
-            r_t_target = 0
+            # #compute fwd + bwd pass
+            real_v_tmn, vjp_fun = jax.vjp(self._v_network, v_params, h_tmn)
+            real_v_tmn = jnp.squeeze(real_v_tmn, axis=-1)
+            real_r_tmn_2_t = 0
             for i, t in enumerate(transitions):
-                r_t_target += (self._discount ** i) * t[2]
+                real_r_tmn_2_t += (self._discount ** i) * t[2]
 
-            r_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_r_tmn, r_t_target))
-            total_loss = o_loss + r_loss
+            real_d_tmn_2_t = 0
+            for i, t in enumerate(transitions):
+                real_d_tmn_2_t += t[3]
 
-            return total_loss, {"bw_o_loss": o_loss,
-                                "r_loss": r_loss,
+            v_t_target = jnp.squeeze(self._v_network(v_params, h_t), axis=-1)
+            real_td_error = jax.vmap(td_learning)(real_v_tmn, real_r_tmn_2_t,
+                                                       real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
+                                                        v_t_target)
+            real_update = vjp_fun(real_td_error[..., None])[0]# pull back real_td_error
+
+            model_tmn = self._o_network(o_params, h_t)
+            model_v_tmn, model_vjp_fun = jax.vjp(self._v_network, v_params, model_tmn)
+            model_v_tmn = jnp.squeeze(model_v_tmn, axis=-1)
+
+            model_r_input = jnp.concatenate([model_tmn, h_t], axis=-1)
+            model_r_tmn_2_t = self._r_network(r_params, model_r_input)
+
+            model_td_error = jax.vmap(td_learning)(model_v_tmn, model_r_tmn_2_t,
+                                                   real_d_tmn_2_t * jnp.array([self._discount ** self._n]),
+                                                        v_t_target)
+            model_update = model_vjp_fun(model_td_error[None, ...])[0] # pullback model_td_error
+
+            update_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_update, lax.stop_gradient(real_update)))
+            r_loss = jnp.sum(jax.vmap(rlax.l2_loss)(model_r_tmn_2_t, real_r_tmn_2_t))
+            # l1_reg = jnp.linalg.norm(o_params, 1)
+            # l2_reg = jnp.linalg.norm(o_params, 2)
+            total_loss = update_loss
+                         # + self._alpha_reg1 * l1_reg + \
+                         # self._alpha_reg2 * l2_reg
+
+            return total_loss, {"loss_update": update_loss,
+                                "loss_r": r_loss,
+                                # "reg1": l1_reg,
+                                # "reg2": l2_reg
                                 }
 
-        def v_planning_loss(v_params, o_params, r_params, o_t, d_t):
-            o_tmn = self._o_forward(o_params, o_t)
-            v_tmn = jnp.squeeze(self._v_network(v_params, lax.stop_gradient(o_tmn)), axis=-1)
-            r_input = jnp.concatenate([o_tmn, o_t], axis=-1)
+        def v_planning_loss(v_params, h_params, o_params, r_params, o_t, d_t):
+            h_t = lax.stop_gradient(self._h_network(h_params, o_t)) if self._latent else o_t
+            model_tmn = lax.stop_gradient(self._o_network(o_params, h_t))
+            v_tmn = jnp.squeeze(self._v_network(v_params, model_tmn), axis=-1)
+            r_input = jnp.concatenate([model_tmn, h_t], axis=-1)
+            r_tmn = self._r_network(r_params, lax.stop_gradient(r_input))
+            v_t_target = jnp.squeeze(self._v_network(v_params, h_t), axis=-1)
 
-            r_tmn = self._r_forward(r_params, r_input)
-            v_t_target = jnp.squeeze(self._v_network(v_params, o_t), axis=-1)
-
-            td_error = jax.vmap(rlax.td_learning)(v_tmn, r_tmn,
-                                                  d_t * jnp.array([self._discount ** self._n]),
-                                                 v_t_target)
-            return jnp.mean(td_error ** 2)
+            td_error = jax.vmap(rlax.td_learning)(v_tmn, r_tmn, d_t * jnp.array([self._discount ** self._n]),
+                                                  v_t_target)
+            return 0.5 * jnp.mean(td_error ** 2)
 
         # Internalize the networks.
         self._v_network = self._network["value"]["net"]
@@ -85,16 +124,16 @@ class ACBw(ACVanilla):
         self._r_parameters = self._network["model"]["params"][3]
 
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, 0))
-
-        self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [0, 1], has_aux=True))
-        # self._model_loss_grad = jax.value_and_grad(model_loss, [0, 1], has_aux=True)
-        self._o_forward = jax.jit(self._o_network)
-        self._r_forward = jax.jit(self._r_network)
         self._model_step_schedule = optimizers.polynomial_decay(self._lr_model,
                                                                 self._exploration_decay_period, 0, 0.9)
+        self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [1, 2, 3], has_aux=True))
+        self._o_forward = jax.jit(self._o_network)
+        self._r_forward = jax.jit(self._r_network)
+
         model_opt_init, model_opt_update, model_get_params = optimizers.adam(step_size=self._model_step_schedule)
         self._model_opt_update = jax.jit(model_opt_update)
-        self._model_opt_state = model_opt_init([self._o_parameters, self._r_parameters])
+        model_params = [self._h_parameters, self._o_parameters, self._r_parameters]
+        self._model_opt_state = model_opt_init(model_params)
         self._model_get_params = model_get_params
 
     def _get_features(self, o):
@@ -125,28 +164,30 @@ class ACBw(ACVanilla):
     ):
         if self._n == 0:
             return
-        if len(self._sequence_model) >= self._n:
-            (total_loss, losses), gradients = self._model_loss_grad(self._o_parameters,
-                                                                    self._r_parameters,
-                                                                    self._sequence_model)
+        if len(self._sequence) >= self._n:
+            (total_loss, losses), gradients = self._model_loss_grad(
+                                                   self._v_parameters,
+                                                   self._h_parameters,
+                                                   self._o_parameters,
+                                                   self._r_parameters,
+                                                   self._sequence_model)
             self._model_opt_state = self._model_opt_update(self.episode, list(gradients),
-                                                           self._model_opt_state)
+                                                   self._model_opt_state)
             self._model_parameters = self._model_get_params(self._model_opt_state)
-            self._o_parameters, self._r_parameters = self._model_parameters
+            self._h_parameters, self._o_parameters, self._r_parameters = self._model_parameters
 
             self._o_parameters_norm = np.linalg.norm(self._o_parameters, 2)
             self._r_parameters_norm = np.linalg.norm(self._r_parameters[0], 2)
 
             losses_and_grads = {"losses": {
                 "loss_total": total_loss,
-                "loss_o": losses["bw_o_loss"],
+                "loss_o": losses["loss_update"],
+                "loss_r": losses["loss_r"],
                 "L2_norm_o": self._o_parameters_norm,
                 "L2_norm_r": self._r_parameters_norm,
-                "loss_r": losses["r_loss"],
             },
             }
             self._log_summaries(losses_and_grads, "model")
-
             self._sequence_model = self._sequence_model[1:]
 
         if self._should_reset_sequence:
@@ -164,21 +205,20 @@ class ACBw(ACVanilla):
             return
         features = self._get_features([timestep.observation])
         o_t = np.array(features)
-        d_t = np.array(timestep.discount)
-
+        d_t = np.array([timestep.discount])
         # plan on batch of transitions
-        loss, gradient = self._v_planning_loss_grad(self._v_parameters,
+
+        loss, gradients = self._v_planning_loss_grad(self._v_parameters,
+                                                    self._h_parameters,
                                                     self._o_parameters,
                                                     self._r_parameters,
                                                     o_t, d_t)
-        self._v_opt_state = self._v_opt_update(self.episode, gradient,
+        self._v_opt_state = self._v_opt_update(self.episode, gradients,
                                                self._v_opt_state)
         self._v_parameters = self._v_get_params(self._v_opt_state)
 
         losses_and_grads = {"losses": {"loss_v_planning": np.array(loss),
-                                       },
-                            "gradients": {"grad_norm_v_planning": np.sum(
-                                np.sum([np.linalg.norm(np.asarray(g), ord=2) for g in gradient]))}}
+                                       },}
         self._log_summaries(losses_and_grads, "value_planning")
 
 
@@ -195,14 +235,14 @@ class ACBw(ACVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        features = self._get_features([timestep.observation])[0]
-        next_features = self._get_features([new_timestep.observation])[0]
+        features = self._get_features([timestep.observation])
+        next_features = self._get_features([new_timestep.observation])
 
-        self._sequence.append([features,
+        self._sequence.append([features[0],
                        action,
                        new_timestep.reward,
                        new_timestep.discount,
-                       next_features])
+                       next_features[0]])
 
         self._sequence_model.append([np.array(features),
                        np.array([action]),

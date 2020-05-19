@@ -36,7 +36,6 @@ class LpBwPAML(LpVanillaPAML):
 
         self._sequence = []
         self._should_reset_sequence = False
-        self._target_update_period = 1
 
         def model_loss(v_params,
                        h_params,

@@ -74,8 +74,8 @@ def run_episodic(agent: Agent,
             tf.summary.scalar("train/steps", np.mean(t), step=agent.episode)
             agent.writer.flush()
 
-            if agent.episode % 10 == 0:
-                test_agent(agent, environment, 10, 1000)
+            # if agent.episode % 10 == 0:
+            #     test_agent(agent, environment, 10, 1000)
 
     # agent.save_model()
 
