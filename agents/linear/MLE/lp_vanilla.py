@@ -143,7 +143,6 @@ class LpVanilla(Agent):
             return params
 
         self._project = project
-        self._max_norm = 0.5
         self._network = network
         # Internalize the networks.
         self._v_network = network["value"]["net"]
