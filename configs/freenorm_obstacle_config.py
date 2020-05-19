@@ -11,7 +11,6 @@ env_config = {
         "num_tilings": 1,
         "noise": True,
         "noise_dim": 8,
-        "max_norm": 1.0
     },
     "env_type": "continuous",
     "obs_type": "position",

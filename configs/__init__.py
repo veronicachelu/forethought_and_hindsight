@@ -14,12 +14,11 @@ import configs.boyan_config as boyan_config
 import configs.random_linear_config as random_linear_config
 import configs.puddle_config as puddle_config
 import configs.obstacle_config as obstacle_config
-import configs.reg1_obstacle_config as reg1_obstacle_config
-import configs.reg0_obstacle_config as reg0_obstacle_config
-import configs.reg01_obstacle_config as reg01_obstacle_config
-import configs.noise_obstacle_config as noise_obstacle_config
-import configs.reg1_16_obstacle_config as reg1_16_obstacle_config
-import configs.reg2_obstacle_config as reg2_obstacle_config
+import configs.norm01_obstacle_config as norm01_obstacle_config
+import configs.norm0_obstacle_config as norm0_obstacle_config
+import configs.norm1_obstacle_config as norm1_obstacle_config
+import configs.freenorm_obstacle_config as freenorm_obstacle_config
+import configs.norm05_obstacle_config as norm05_obstacle_config
 import configs.cartpole_config as cartpole_config
 import configs.bipartite_config as bipartite_config
 import configs.bipartite_10_1_config as bipartite_10_1_config
