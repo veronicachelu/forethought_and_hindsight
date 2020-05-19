@@ -124,7 +124,7 @@ dotted = {
 
 def main(argv):
     del argv  # Unused.
-    best_hyperparam_folder = os.path.join(FLAGS.logs, "best")
+    best_hyperparam_folder = FLAGS.logs
     logs = os.path.join(best_hyperparam_folder, FLAGS.env)
     plots = os.path.join(FLAGS.plots, FLAGS.env)
 
