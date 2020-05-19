@@ -29,17 +29,15 @@ class ACFw(ACVanilla):
     ):
         super(ACFw, self).__init__(**kwargs)
 
+        self._sequence_model = []
+        self._should_reset_sequence = False
+
         def model_loss(o_params,
                        r_params,
                        transitions):
-            a_tm1 = np.array([t[1] for t in transitions])
-            o_tm1 = np.array([t[0] for t in transitions])
-            o_t = np.array([t[-1] for t in transitions])
-            r_t = np.array([t[2] for t in transitions])
-            d_t = np.array([t[3] for t in transitions])
+            o_tmn_target = transitions[0][0]
+            o_t = transitions[-1][-1]
 
-            o_tmn_target = o_tm1[0]
-            o_t = o_t[-1]
             model_o_t = self._o_network(o_params, o_tmn_target)
 
             fw_o_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_o_t, o_t))
@@ -50,7 +48,7 @@ class ACFw(ACVanilla):
             for i, t in enumerate(transitions):
                 r_t_target += (self._discount ** i) * t[2]
 
-            r_loss = jnp.mean(rlax.l2_loss(model_r_tmn, r_t_target))
+            r_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_r_tmn, r_t_target))
             total_loss = fw_o_loss + r_loss
 
             return total_loss, {"fw_o_loss": fw_o_loss,
@@ -89,8 +87,8 @@ class ACFw(ACVanilla):
 
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, 0))
 
-        # self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [0, 1], has_aux=True))
-        self._model_loss_grad = jax.value_and_grad(model_loss, [0, 1], has_aux=True)
+        self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [0, 1], has_aux=True))
+        # self._model_loss_grad = jax.value_and_grad(model_loss, [0, 1], has_aux=True)
         self._o_forward = jax.jit(self._o_network)
         self._r_forward = jax.jit(self._r_network)
         self._model_step_schedule = optimizers.polynomial_decay(self._lr_model,
@@ -130,10 +128,10 @@ class ACFw(ACVanilla):
             return
         if self._n == 0:
             return
-        if len(self._sequence) >= self._n:
+        if len(self._sequence_model) >= self._n:
             (total_loss, losses), gradients = self._model_loss_grad(self._o_parameters,
                                                                     self._r_parameters,
-                                                                    self._sequence)
+                                                                    self._sequence_model)
             self._model_opt_state = self._model_opt_update(self.episode, list(gradients),
                                                            self._model_opt_state)
             self._model_parameters = self._model_get_params(self._model_opt_state)
@@ -151,7 +149,12 @@ class ACFw(ACVanilla):
             },
             }
             self._log_summaries(losses_and_grads, "model")
-            self._sequence = self._sequence[1:]
+
+            self._sequence_model = self._sequence_model[1:]
+
+        if self._should_reset_sequence:
+            self._sequence_model = []
+            self._should_reset_sequence = False
 
     def planning_update(
             self,
@@ -205,6 +208,17 @@ class ACFw(ACVanilla):
 
         self._sequence.append(transitions)
 
+        transitions = [np.array(features),
+                       np.array([action]),
+                       np.array([new_timestep.reward]),
+                       np.array([new_timestep.discount]),
+                       np.array(next_features)]
+
+        self._sequence_model.append(transitions)
+
+        if new_timestep.discount == 0:
+            self._should_reset_sequence = True
+
     def _log_summaries(self, losses_and_grads, summary_name):
         if self._logs is not None:
             losses = losses_and_grads["losses"]
@@ -215,8 +229,7 @@ class ACFw(ACVanilla):
                 ep = self.episode
             if ep % self._log_period == 0:
                 for k, v in losses.items():
-                    tf.summary.scalar("train/losses/{}/{}".format(summary_name, k),
-                                     v, step=ep)
+                    tf.summary.scalar("train/losses/{}/{}".format(summary_name, k), np.array(v), step=ep)
                 # for k, v in gradients.items():
                 #     tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
                 #                       gradients[k], step=ep)

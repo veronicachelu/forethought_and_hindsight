@@ -217,11 +217,7 @@ class ACVanilla(Agent):
                                 "gradients": {
                                     }}
             self._log_summaries(losses_and_grads, "value")
-            self._sequence = self._sequence[1:]
-
-        if self._should_reset_sequence:
             self._sequence = []
-            self._should_reset_sequence = False
 
     def model_based_train(self):
         return False
@@ -285,9 +281,6 @@ class ACVanilla(Agent):
                        next_features]
 
         self._sequence.append(transitions)
-
-        if new_timestep.discount == 0:
-            self._should_reset_sequence = True
 
     def _log_summaries(self, losses_and_grads, summary_name):
         if self._logs is not None:
