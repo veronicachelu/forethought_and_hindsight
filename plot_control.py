@@ -37,8 +37,6 @@ flags.DEFINE_float('ymin', None, 'plot up to')
 # flags.DEFINE_float('ymin', 0.65, 'plot up to')
 flags.DEFINE_float('ymax', None, 'plot up to')
 # flags.DEFINE_float('ymax', 1.75, 'plot up to')
-flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
-# flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
 # flags.DEFINE_integer('ˀnum_runs', 100, '')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
@@ -188,20 +186,15 @@ def main(argv):
         plot_for_agent(agent, env_config, persistent_agent_config,
                        volatile_agent_config, logs, color, linestyle)
 
-
-    if FLAGS.cumulative_rmsve:
-        yaxis = 'Cumulative RMSVE'
-        xaxis = "Timesteps"
-    else:
-        yaxis = 'RMSVE'
-        xaxis = "Episodes"
+    yaxis = 'Steps/Episode'
+    xaxis = "Episodes"
 
     # Set the y limits
     if FLAGS.ymin is not None and FLAGS.ymax is not None:
         plt.ylim(FLAGS.ymin, FLAGS.ymax)
     plt.ylabel(yaxis, fontsize=FONTSIZE)
     plt.xlabel(xaxis, fontsize=FONTSIZE)
-    plt.legend(loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
+    plt.legend(loc='upper right',
                frameon=True,
                prop={'size': FONTSIZE},
                bbox_to_anchor=(1.1, 1.1))
@@ -218,9 +211,7 @@ def main(argv):
     plt.tight_layout()
     plt.savefig(os.path.join(plots,
                              "{}_{}.png".format(name,
-                                                "CumRMSVE" if
-                                                FLAGS.cumulative_rmsve else
-                                                "RMSVE")))
+                                                "steps")))
 
 def plot_for_agent(agent, env_config, persistent_agent_config,
                    volatile_agent_config, logs, color, linestyle):
@@ -266,10 +257,7 @@ def plot_tensorflow_log(space, color, linestyle):
 
         # Show all tags in the log file
         # print(event_acc.Tags())
-        if FLAGS.cumulative_rmsve:
-            tag = 'train/total_rmsve'
-        else:
-            tag = 'train/rmsve'
+        tag = 'train/steps'
         if not tag in event_acc.Tags()["tensors"]:
             print("no tags")
             continue
