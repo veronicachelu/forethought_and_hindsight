@@ -32,8 +32,9 @@ def run_episodic(agent: Agent,
 
                 ep_reward += new_timestep.reward
 
-                # if agent.model_based_train():
-                #     agent.planning_update(timestep)
+                if agent.model_based_train():
+                    agent.planning_update(timestep)
+
                 tf.summary.scalar("train/ep_steps", t, step=agent.total_steps)
 
                 if new_timestep.last():

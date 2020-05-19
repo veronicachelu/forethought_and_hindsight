@@ -200,21 +200,18 @@ class ACFw(ACVanilla):
     ):
         features = self._get_features([timestep.observation])[0]
         next_features = self._get_features([new_timestep.observation])[0]
-        transitions = [features,
-                       action,
-                       new_timestep.reward,
-                       new_timestep.discount,
-                       next_features]
 
-        self._sequence.append(transitions)
-
-        transitions = [np.array(features),
+        self._sequence.append([np.array(features),
                        np.array([action]),
                        np.array([new_timestep.reward]),
                        np.array([new_timestep.discount]),
-                       np.array(next_features)]
+                       np.array(next_features)])
 
-        self._sequence_model.append(transitions)
+        self._sequence_model.append([np.array(features),
+                       np.array([action]),
+                       np.array([new_timestep.reward]),
+                       np.array([new_timestep.discount]),
+                       np.array(next_features)])
 
         if new_timestep.discount == 0:
             self._should_reset_sequence = True
