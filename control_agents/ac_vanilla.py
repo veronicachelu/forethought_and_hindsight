@@ -146,7 +146,7 @@ class ACVanilla(Agent):
         # This function computes dL/dTheta
         # self._ac_loss_grad = (jax.value_and_grad(ac_loss, [0, 1, 2], has_aux=True))
         self._pi_loss_grad = jax.jit(jax.value_and_grad(ac_loss, 1, has_aux=True))
-        self._v_loss_grad = jax.jit(jax.value_and_grad(ac_loss, [0, 2], has_aux=True))
+        self._v_loss_grad = jax.jit(jax.value_and_grad(ac_loss, 0, has_aux=True))
         self._v_forward = jax.jit(self._v_network)
         self._pi_forward = jax.jit(self._pi_network)
 
@@ -158,8 +158,7 @@ class ACVanilla(Agent):
         self._pi_opt_update = jax.jit(pi_opt_update)
         self._v_opt_update = jax.jit(v_opt_update)
         self._pi_opt_state = pi_opt_init(self._pi_parameters)
-        self._v_opt_state = v_opt_init([self._v_parameters,
-                                          self._h_parameters])
+        self._v_opt_state = v_opt_init(self._v_parameters)
 
         self._pi_get_params = pi_get_params
         self._v_get_params = v_get_params
@@ -196,16 +195,15 @@ class ACVanilla(Agent):
                                                  self._h_parameters,
                                                 self._sequence)
             _, v_gradients = self._v_loss_grad(self._v_parameters,
-                                                                 self._pi_parameters,
-                                                                 self._h_parameters,
-                                                                 self._sequence)
+                                                 self._pi_parameters,
+                                                 self._h_parameters,
+                                                 self._sequence)
             self._pi_opt_state = self._pi_opt_update(self.episode, pi_gradients,
                                                    self._pi_opt_state)
-            self._v_opt_state = self._v_opt_update(self.episode, list(v_gradients),
+            self._v_opt_state = self._v_opt_update(self.episode, v_gradients,
                                                      self._v_opt_state)
             self._pi_parameters = self._pi_get_params(self._pi_opt_state)
-            v_parameters = self._v_get_params(self._v_opt_state)
-            self._v_parameters, self._h_parameters = v_parameters
+            self._v_parameters = self._v_get_params(self._v_opt_state)
 
             losses_and_grads = {"losses": {
                                         "total_loss": np.array(total_loss),
