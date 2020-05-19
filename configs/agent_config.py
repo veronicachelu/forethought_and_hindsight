@@ -883,6 +883,20 @@ config = {
         "target_networks": False,
         "class": {"linear": "ACFw"}
     },
+
+    "ac_bw": {
+        "task_type": "control",
+        "pg": True,
+        "run_mode": "ac_bw",
+        "planning_depth": 0,
+        "planning_iter": 1,
+        "model_family": "ac",
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "target_networks": False,
+        "class": {"linear": "ACBw"}
+    },
 }
 
 ##### STUFF WHICH I've used at some point, and works but not anymore ###

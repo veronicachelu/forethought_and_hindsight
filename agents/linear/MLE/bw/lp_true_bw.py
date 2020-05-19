@@ -85,8 +85,6 @@ class LpTrueBw(LpVanilla):
                             d_t):
             cross_o_tmn = self._a_forward(a_params, o_t)
             expected_o_tmn = self._b_forward(b_params, o_t)
-            # wrong_cross_o_tmn = lax.batch_matmul(expected_o_tmn[..., None],
-            #                                jnp.transpose(expected_o_tmn[..., None], axes=[0, 2, 1]))
 
             vector_r_tmn = self._c_network(c_params,
                                            (cross_o_tmn, expected_o_tmn, o_t))[..., None]

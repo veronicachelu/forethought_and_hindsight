@@ -44,16 +44,10 @@ class LpBw(LpVanilla):
                 r_t_target += (self._discount ** i) * t[2]
 
             r_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_r_tmn, r_t_target))
-            # l1_reg = jnp.linalg.norm(o_params, 1)
-            # l2_reg = jnp.linalg.norm(o_params, 2)
             total_loss = o_loss + r_loss
-                         #+ self._alpha_reg1 * l1_reg + \
-                         #self._alpha_reg2 * l2_reg
 
             return total_loss, {"o_loss": o_loss,
                                "r_loss": r_loss,
-                                # "reg1": l1_reg,
-                                # "reg2": l2_reg
                                }
 
         def v_planning_loss(v_params, o_params, r_params, o_t, d_t):

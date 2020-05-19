@@ -10,7 +10,7 @@ def run_episodic(agent: Agent,
         max_len: int,
         ):
     cumulative_reward = 0
-    agent.load_model()
+    # agent.load_model()
     ep_steps = []
     ep_rewards = []
     with agent.writer.as_default():
@@ -33,7 +33,8 @@ def run_episodic(agent: Agent,
                 ep_reward += new_timestep.reward
 
                 if agent.model_based_train():
-                    agent.planning_update(timestep)
+                    agent.planning_update(new_timestep)
+                    # agent.planning_update(timestep)
 
                 tf.summary.scalar("train/ep_steps", t, step=agent.total_steps)
 
@@ -71,9 +72,9 @@ def run_episodic(agent: Agent,
             agent.writer.flush()
 
             if agent.episode % 10 == 0:
-                test_agent(agent, environment, 5, 1000)
+                test_agent(agent, environment, 10, 1000)
 
-    agent.save_model()
+    # agent.save_model()
 
     avg_steps = np.mean(ep_steps) if len(ep_steps) > 0 else None
     avg_reward = np.mean(ep_rewards) if len(ep_rewards) > 0 else None
@@ -87,17 +88,12 @@ def test_agent(agent, environment, num_episodes, max_len):
     for _ in np.arange(start=0, stop=num_episodes):
         # Run an episode.
         rewards = 0
-        ep_reward = 0
         timestep = environment.reset()
         for t in range(max_len):
-            if not agent:
-                action = environment.action_spec().generate_value()
-            else:
-                action = agent.policy(timestep, eval=True)
+            action = agent.policy(timestep, eval=True)
             new_timestep = environment.step(action)
 
             rewards += new_timestep.reward
-            ep_reward += new_timestep.reward
             if new_timestep.last():
                 break
 
@@ -106,10 +102,9 @@ def test_agent(agent, environment, num_episodes, max_len):
         cumulative_reward += rewards
 
         ep_steps.append(t)
-        ep_rewards.append(ep_reward)
+        ep_rewards.append(rewards)
 
     tf.summary.scalar("test/avg_reward", np.mean(ep_rewards), step=agent.episode)
     tf.summary.scalar("test/avg_steps", np.mean(ep_steps), step=agent.episode)
     agent.writer.flush()
 
-    return np.mean(ep_steps), np.mean(ep_rewards)
