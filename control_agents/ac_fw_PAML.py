@@ -1,19 +1,22 @@
+from typing import Any, Callable, Sequence
 import os
-from typing import Any
-from typing import Callable, Sequence
-
+from utils.replay import Replay
+from typing import Callable, List, Mapping, Sequence, Text, Tuple, Union
 import dm_env
+from dm_env import specs
+from rlax._src import distributions
 import jax
-import numpy as np
-import tensorflow as tf
 from jax import lax
 from jax import numpy as jnp
+from jax import random
 from jax.experimental import optimizers
-import rlax
 from jax.experimental import stax
-import itertools
-
-from agents.linear.PAML.lp_vanilla_PAML import LpVanillaPAML
+import numpy as np
+from agents.agent import Agent
+import tensorflow as tf
+import rlax
+from basis.feature_mapper import FeatureMapper
+from control_agents.ac_vanilla import ACVanilla
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
@@ -27,14 +30,14 @@ def td_learning(
   target_tm1 = r_t + discount_t * lax.stop_gradient(v_t)
   return target_tm1 - v_tm1
 
-class LpFwPAML(LpVanillaPAML):
+class ACFwPAML(ACVanilla):
     def __init__(
             self,
             **kwargs
     ):
-        super(LpFwPAML, self).__init__(**kwargs)
+        super(ACFwPAML, self).__init__(**kwargs)
 
-        self._sequence = []
+        self._sequence_model = []
         self._should_reset_sequence = False
 
         def model_loss(v_params,
@@ -112,12 +115,21 @@ class LpFwPAML(LpVanillaPAML):
                                                   v_t_target)
             return jnp.mean(td_error ** 2)
 
+        # Internalize the networks.
+        self._v_network = self._network["value"]["net"]
+        self._v_parameters = self._network["value"]["params"]
+
+        self._pi_network = self._network["pi"]["net"]
+        self._pi_parameters = self._network["pi"]["params"]
+
+        self._h_network = self._network["model"]["net"][0]
         self._o_network = self._network["model"]["net"][1]
-        # self._fw_o_network = self._network["model"]["net"][2]
+        # self._fw_o_network = network["model"]["net"][2]
         self._r_network = self._network["model"]["net"][3]
 
+        self._h_parameters = self._network["model"]["params"][0]
         self._o_parameters = self._network["model"]["params"][1]
-        # self._fw_o_parameters = self._network["model"]["params"][2]
+        # self._fw_o_parameters = network["model"]["params"][2]
         self._r_parameters = self._network["model"]["params"][3]
 
         self._v_planning_loss_grad = jax.jit(jax.value_and_grad(v_planning_loss, 0))
@@ -133,36 +145,25 @@ class LpFwPAML(LpVanillaPAML):
         self._model_opt_state = model_opt_init(model_params)
         self._model_get_params = model_get_params
 
-    # def value_update(
-    #         self,
-    #         timestep: dm_env.TimeStep,
-    #         action: int,
-    #         new_timestep: dm_env.TimeStep,
-    # ):
-    #     super(LpFwPAML, self).value_update(timestep, action, new_timestep)
-    #     features = self._get_features([timestep.observation])
-    #     next_features = self._get_features([new_timestep.observation])
-    #     transitions = [np.array(features),
-    #                    np.array([action]),
-    #                    np.array([new_timestep.reward]),
-    #                    np.array([new_timestep.discount]),
-    #                    np.array(next_features)]
-    #
-    #     loss, gradients = self._v_loss_grad(self._planning_v_parameters,
-    #                                                 self._h_parameters,
-    #                                                 transitions)
-    #     if self._latent:
-    #         gradients = list(gradients)
-    #     self._pv_opt_state = self._pv_opt_update(self.episode, gradients,
-    #                                            self._pv_opt_state)
-    #     self._planning_v_parameters = self._pv_get_params(self._pv_opt_state)
-    #
-    #     losses_and_grads = {"losses": {"loss_pv": np.array(loss)}, }
-    #     # "gradients": {"grad_norm_v":
-    #     #                   np.sum(np.sum([np.linalg.norm(np.asarray(g), ord=2)
-    #     #                                  for g in gradient]))}}
-    #     self._log_summaries(losses_and_grads, "value")
-    #
+    def _get_features(self, o):
+        if self._feature_mapper is not None:
+            return self._feature_mapper.get_features(o, self._nrng)
+        else:
+            return o
+
+    def policy(self,
+               timestep: dm_env.TimeStep,
+               eval: bool = False
+               ) -> int:
+        features = self._get_features(timestep.observation[None, ...])
+        pi_logits = self._pi_forward(self._pi_parameters, features)
+        if eval:
+            action = np.argmax(pi_logits, axis=-1)[0]
+        else:
+            key = next(self._rng_seq)
+            action = jax.random.categorical(key, pi_logits).squeeze()
+            # print(np.argmax(pi_logits, axis=-1))
+        return int(action)
 
     def model_update(
             self,
@@ -170,8 +171,8 @@ class LpFwPAML(LpVanillaPAML):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        # if timestep.last():
-        #     return
+        if timestep.last():
+            return
         if self._n == 0:
             return
         if len(self._sequence) >= self._n:
@@ -186,31 +187,22 @@ class LpFwPAML(LpVanillaPAML):
             self._model_parameters = self._model_get_params(self._model_opt_state)
             self._h_parameters, self._o_parameters, self._r_parameters = self._model_parameters
 
-            if self._max_norm is not None:
-                self._o_parameters = self._project(self._o_parameters)
-
             self._o_parameters_norm = np.linalg.norm(self._o_parameters, 2)
             self._r_parameters_norm = np.linalg.norm(self._r_parameters[0], 2)
 
             losses_and_grads = {"losses": {
                 "loss_total": total_loss,
-                # "loss_target": losses["target_loss"],
-                # "loss_update": losses["loss_update"],
                 "loss_r": losses["r_loss"],
-                # "loss_total": total_loss,
                 "L2_norm_o": self._o_parameters_norm,
                 "L2_norm_r": self._r_parameters_norm,
             },
             }
             self._log_summaries(losses_and_grads, "model")
-            self._sequence = self._sequence[1:]
+            self._sequence_model = self._sequence_model[1:]
 
         if self._should_reset_sequence:
-            self._sequence = []
+            self._sequence_model = []
             self._should_reset_sequence = False
-
-        # self._update_v_targets()
-        # self._update_model_targets()
 
     def planning_update(
             self,
@@ -226,41 +218,18 @@ class LpFwPAML(LpVanillaPAML):
         # plan on batch of transitions
 
         loss, gradients = self._v_planning_loss_grad(self._v_parameters,
-                                                    self._h_parameters,
-                                                    self._o_parameters,
-                                                    self._r_parameters,
-                                                    o_t)
+                                                     self._h_parameters,
+                                                     self._o_parameters,
+                                                     self._r_parameters,
+                                                     o_t)
         self._v_opt_state = self._v_opt_update(self.episode, gradients,
                                                self._v_opt_state)
         self._v_parameters = self._v_get_params(self._v_opt_state)
 
         losses_and_grads = {"losses": {"loss_v_planning": np.array(loss),
-                                       },}
-                            # "gradients": {"grad_norm_v_planning": np.sum(
-                            #     np.sum([np.linalg.norm(np.asarray(g), ord=2) for g in gradient]))}}
+                                       }, }
         self._log_summaries(losses_and_grads, "value_planning")
 
-        # self._update_v_targets()
-
-    def _update_model_targets(self):
-        # Periodically update the target network parameters.
-        self._target_h_parameters, self._target_o_parameters,\
-        self._target_r_parameters  = lax.cond(
-            pred=jnp.mod(self.episode, self._target_update_period) == 0,
-            true_operand=None,
-            true_fun=lambda _: (self._h_parameters, self._o_parameters, self._r_parameters),
-            false_operand=None,
-            false_fun=lambda _: (self._target_h_parameters, self._target_o_parameters, self._target_r_parameters)
-        )
-
-    def _update_v_targets(self):
-        # Periodically update the target network parameters.
-        self._target_v_parameters = lax.cond(
-            pred=jnp.mod(self.total_steps, self._target_update_period) == 0,
-            true_operand=None,
-            true_fun=lambda _: self._v_parameters,
-            false_operand=None,
-            false_fun=lambda _: self._target_v_parameters)
 
     def model_based_train(self):
         return True
@@ -268,34 +237,6 @@ class LpFwPAML(LpVanillaPAML):
     def model_free_train(self):
         return True
 
-    def load_model(self):
-        return
-        checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
-        if os.path.exists(checkpoint):
-            to_load = np.load(checkpoint, allow_piuckle=True)[()]
-            self.episode = to_load["episode"]
-            self.total_steps = to_load["total_steps"]
-            self._v_parameters = to_load["v_parameters"]
-            self._o_parameters = to_load["o_parameters"]
-            self._r_parameters = to_load["r_parameters"]
-            print("Restored from {}".format(checkpoint))
-        else:
-            print("Initializing from scratch.")
-
-    def save_model(self):
-        return
-        checkpoint = os.path.join(self._checkpoint_dir, self._checkpoint_filename)
-        to_save = {
-            "episode": self.episode,
-            "total_steps": self.total_steps,
-            "v_parameters": self._v_parameters,
-            "o_parameters": self._o_parameters,
-            "r_parameters": self._r_parameters,
-        }
-        np.save(checkpoint, to_save)
-        print("Saved checkpoint for episode {}, total_steps {}: {}".format(self.episode,
-                                                                           self.total_steps,
-                                                                           checkpoint))
 
     def save_transition(
             self,
@@ -303,34 +244,73 @@ class LpFwPAML(LpVanillaPAML):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        features = self._get_features([timestep.observation])
-        next_features = self._get_features([new_timestep.observation])
-        transitions = [np.array(features),
+        features = self._get_features([timestep.observation])[0]
+        next_features = self._get_features([new_timestep.observation])[0]
+
+        self._sequence.append([features,
+                       action,
+                       new_timestep.reward,
+                       new_timestep.discount,
+                       next_features])
+
+        self._sequence_model.append([np.array(features),
                        np.array([action]),
                        np.array([new_timestep.reward]),
                        np.array([new_timestep.discount]),
-                       np.array(next_features)]
+                       np.array(next_features)])
 
-        self._sequence.append(transitions)
         if new_timestep.discount == 0:
             self._should_reset_sequence = True
 
     def _log_summaries(self, losses_and_grads, summary_name):
         if self._logs is not None:
             losses = losses_and_grads["losses"]
-            if "gradients" in losses_and_grads.keys():
-                gradients = losses_and_grads["gradients"]
+            # gradients = losses_and_grads["gradients"]
             if self._max_len == -1:
                 ep = self.total_steps
             else:
                 ep = self.episode
             if ep % self._log_period == 0:
                 for k, v in losses.items():
-                    tf.summary.scalar("train/losses/{}/{}".format(summary_name, k),
-                                      np.array(v), step=ep)
-                if "gradients" in losses_and_grads.keys():
-                    for k, v in gradients.items():
-                        tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
-                                          gradients[k], step=ep)
+                    tf.summary.scalar("train/losses/{}/{}".format(summary_name, k), np.array(v), step=ep)
+                # for k, v in gradients.items():
+                #     tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
+                #                       gradients[k], step=ep)
                 self.writer.flush()
 
+    # def get_values_for_all_states(self, all_states):
+    #     features = self._get_features(all_states) if self._feature_mapper is not None else all_states
+    #     latents = self._h_forward(self._h_parameters, np.array(features)) if self._latent else features
+    #     return np.array(self._v_forward(self._v_parameters, np.asarray(latents, np.float)), np.float)
+
+    def get_policy_for_all_states(self, all_states):
+        features = self._get_features(all_states) if self._feature_mapper is not None else all_states
+        pi_logits = self._pi_forward(self._pi_parameters, features)
+        actions = np.argmax(pi_logits, axis=-1)
+
+        return np.array(actions)
+
+    def get_values_for_all_states(self, all_states):
+        features = self._get_features(all_states) if self._feature_mapper is not None else all_states
+        return np.array(np.squeeze(self._v_forward(self._v_parameters, np.array(features)), axis=-1), np.float)
+    # def update_hyper_params(self, episode, total_episodes):
+    #     steps_left = self._exploration_decay_period - episode
+    #     bonus = (1.0 - self._epsilon) * steps_left / self._exploration_decay_period
+    #     bonus = np.clip(bonus, 0., 1. - self._epsilon)
+    #     self._epsilon = self._epsilon + bonus
+
+    def update_hyper_params(self, episode, total_episodes):
+        # decay_period, step, warmup_steps, epsilon):
+        steps_left = total_episodes + 0 - episode
+        bonus = (self._initial_epsilon - self._final_epsilon) * steps_left / total_episodes
+        bonus = np.clip(bonus, 0., self._initial_epsilon - self._final_epsilon)
+        self._epsilon = self._final_epsilon + bonus
+        if self._logs is not None:
+            # if self._max_len == -1:
+            ep = self.total_steps
+            # else:
+            #     ep = self.episode
+            if ep % self._log_period == 0:
+                tf.summary.scalar("train/epsilon",
+                                  self._epsilon, step=ep)
+                self.writer.flush()

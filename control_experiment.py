@@ -8,6 +8,7 @@ def run_episodic(agent: Agent,
         environment: dm_env.Environment,
         num_episodes: int,
         max_len: int,
+        aux_agent_configs
         ):
     cumulative_reward = 0
     # agent.load_model()
@@ -33,8 +34,10 @@ def run_episodic(agent: Agent,
                 ep_reward += new_timestep.reward
 
                 if agent.model_based_train():
-                    agent.planning_update(new_timestep)
-                    # agent.planning_update(timestep)
+                    if aux_agent_configs["pivot"] == "c":
+                        agent.planning_update(new_timestep)
+                    else:
+                        agent.planning_update(timestep)
 
                 tf.summary.scalar("train/ep_steps", t, step=agent.total_steps)
 

@@ -870,10 +870,10 @@ config = {
         "class": {"linear": "ACVanilla"}
     },
 
-    "ac_fw": {
+    "p_ac_fw": {
         "task_type": "control",
         "pg": True,
-        "run_mode": "ac_fw",
+        "run_mode": "p_ac_fw",
         "planning_depth": 0,
         "planning_iter": 1,
         "model_family": "ac",
@@ -884,10 +884,10 @@ config = {
         "class": {"linear": "ACFw"}
     },
 
-    "ac_bw": {
+    "c_ac_bw": {
         "task_type": "control",
         "pg": True,
-        "run_mode": "ac_bw",
+        "run_mode": "c_ac_bw",
         "planning_depth": 0,
         "planning_iter": 1,
         "model_family": "ac",
@@ -898,10 +898,10 @@ config = {
         "class": {"linear": "ACBw"}
     },
 
-    "ac_true_bw": {
+    "c_ac_true_bw": {
         "task_type": "control",
         "pg": True,
-        "run_mode": "ac_true_bw",
+        "run_mode": "c_ac_true_bw",
         "planning_depth": 0,
         "planning_iter": 1,
         "model_family": "ac_true",
@@ -910,6 +910,34 @@ config = {
         "num_units": 0,
         "target_networks": False,
         "class": {"linear": "ACTrueBw"}
+    },
+
+    "p_ac_fw_PAML": {
+        "task_type": "control",
+        "pg": True,
+        "run_mode": "p_ac_fw_PAML",
+        "planning_depth": 0,
+        "planning_iter": 1,
+        "model_family": "ac_paml",
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "target_networks": False,
+        "class": {"linear": "ACFwPAML"}
+    },
+
+    "c_ac_bw_PAML": {
+        "task_type": "control",
+        "pg": True,
+        "run_mode": "c_ac_bw_PAML",
+        "planning_depth": 0,
+        "planning_iter": 1,
+        "model_family": "ac_paml",
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "target_networks": False,
+        "class": {"linear": "ACBwPAML"}
     },
 }
 

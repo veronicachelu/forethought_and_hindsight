@@ -10,7 +10,7 @@ import network
 import utils
 from utils import *
 
-flags.DEFINE_string('agent', 'ac_true_bw', 'what agent to run')
+flags.DEFINE_string('agent', 'ac_fw_PAML', 'what agent to run')
 flags.DEFINE_string('env', 'obstacle', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
@@ -45,12 +45,15 @@ def main(argv):
     persistent_agent_config = configs.agent_config.config[FLAGS.agent]
     env_config, _ = load_env_and_volatile_configs(FLAGS.env)
 
-    seed_config = {"planning_depth": FLAGS.planning_depth,
+    seed_config = {
+                    "agent": FLAGS.agent,
+                    "planning_depth": FLAGS.planning_depth,
                    "replay_capacity": FLAGS.replay_capacity,
                    # "lr": FLAGS.lr,
                    "lr_ctrl": FLAGS.lr_ctrl,
                    "lr_m": FLAGS.lr_m,}
                    # "lr_p": FLAGS.lr_m}
+
 
     for seed in range(0, env_config["num_runs"]):
     # for seed in tqdm(range(0, env_config["num_runs"])):
@@ -76,6 +79,11 @@ def run_objective(space):
                          "planning_period": FLAGS.planning_period,
                          "max_len": FLAGS.max_len,
                          "log_period": FLAGS.log_period}
+    if space["crt_config"]["agent"].split("_")[0] == "mb":
+        aux_agent_configs["pivot"] = space["crt_config"]["agent"].split("_")[1]
+    else:
+        aux_agent_configs["pivot"] = space["crt_config"]["agent"].split("_")[0]
+
     seed = space["crt_config"]["seed"]
     env, agent = run_control_experiment(seed, space, aux_agent_configs)
 
@@ -83,7 +91,8 @@ def run_objective(space):
         agent=agent,
         environment=env,
         num_episodes=space["env_config"]["control_num_episodes"],
-        max_len=FLAGS.max_len
+        max_len=FLAGS.max_len,
+        aux_agent_configs=aux_agent_configs
     )
     print(reward, steps)
 
