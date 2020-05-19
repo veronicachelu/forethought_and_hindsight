@@ -448,7 +448,7 @@ configs={
         }
     },
     "obstacle": {
-        "control": {
+        "control_all": {
             "agents": ["ac_vanilla",
                        "p_ac_fw",
                        "c_ac_bw",
