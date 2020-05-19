@@ -448,6 +448,17 @@ configs={
         }
     },
     "obstacle": {
+        "control": {
+            "agents": ["ac_vanilla",
+                       "p_ac_fw",
+                       "c_ac_bw",
+                       "c_ac_true_bw",
+                       "p_ac_fw_PAML",
+                       "c_ac_bw_PAML",
+                       ],
+            "planning_depths": [1, 1, 1, 1, 1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 0, 0, 0, 0, 0]
+        },
         "bw_p_fw_p_all": {
             "agents": ["p_bw",
                        "p_true_bw",
