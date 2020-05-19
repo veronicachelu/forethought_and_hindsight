@@ -66,7 +66,7 @@ class ACFw(ACVanilla):
             td_error = jax.vmap(rlax.td_learning)(v_tmn, r_tmn,
                                                   jnp.array([self._discount ** self._n]),
                                                   v_t_target)
-            return jnp.mean(td_error ** 2)
+            return 0.5 * jnp.mean(td_error ** 2)
 
         # Internalize the networks.
         self._v_network = self._network["value"]["net"]

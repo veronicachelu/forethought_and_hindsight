@@ -85,7 +85,7 @@ class ACTrueBw(ACVanilla):
             v_model_error = lax.batch_matmul(v_error, v_params[None, ...])
             v_grad = jnp.mean(0.5 * (vector_r_tmn + v_model_error), axis=0)
 
-            return -v_grad
+            return -0.5 * v_grad
 
         # Internalize the networks.
         self._v_network = self._network["value"]["net"]
