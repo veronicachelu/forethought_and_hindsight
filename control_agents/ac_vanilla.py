@@ -95,11 +95,11 @@ class ACVanilla(Agent):
                 os.makedirs(self._images_dir)
 
         def ac_loss(v_params, pi_params, h_params, transitions):
-            a_tm1 = [t[1] for t in transitions]
-            o_tm1 = [t[0] for t in transitions]
-            o_t = [t[-1] for t in transitions]
-            r_t = [t[2] for t in transitions]
-            d_t = [t[3] for t in transitions]
+            a_tm1 = jnp.array([t[1] for t in transitions])
+            o_tm1 = jnp.array([t[0] for t in transitions])
+            o_t = jnp.array([t[-1] for t in transitions])
+            r_t = jnp.array([t[2] for t in transitions])
+            d_t = jnp.array([t[3] for t in transitions])
             h_t = lax.stop_gradient(self._h_network(h_params, o_t)) if self._latent else o_t
             h_tm1 = lax.stop_gradient(self._h_network(h_params, o_tm1)) if self._latent else o_tm1
 

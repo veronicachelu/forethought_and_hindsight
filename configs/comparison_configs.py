@@ -673,11 +673,11 @@ configs={
         "bw_c_fw_p_all": {
             "agents": ["c_bw",
                        "c_true_bw",
-                       "p_true_bw",
+                       "p_random_bw",
                        "p_fw",
                        "p_fw_PAML",
                        "c_bw_PAML",
-                        "p_bw_random_PAML"
+                       "c_bw_random_PAML"
                        ],
              "planning_depths": [1, 1, 1, 1, 1, 1, 1, 1],
             "replay_capacities": [0, 0, 0, 0, 0, 0, 0, 0]

@@ -201,11 +201,11 @@ class ACFw(ACVanilla):
         features = self._get_features([timestep.observation])[0]
         next_features = self._get_features([new_timestep.observation])[0]
 
-        self._sequence.append([np.array(features),
-                       np.array([action]),
-                       np.array([new_timestep.reward]),
-                       np.array([new_timestep.discount]),
-                       np.array(next_features)])
+        self._sequence.append([features,
+                       action,
+                       new_timestep.reward,
+                       new_timestep.discount,
+                       next_features])
 
         self._sequence_model.append([np.array(features),
                        np.array([action]),
