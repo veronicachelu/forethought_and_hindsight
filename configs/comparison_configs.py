@@ -676,7 +676,7 @@ configs={
                        "p_true_bw",
                        "p_fw",
                        "p_fw_PAML",
-                       "c_bw_PAML"
+                       "c_bw_PAML",
                         "p_bw_random_PAML"
                        ],
              "planning_depths": [1, 1, 1, 1, 1, 1, 1, 1],
