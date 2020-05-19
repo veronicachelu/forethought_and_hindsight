@@ -348,20 +348,20 @@ def load_env_and_volatile_configs(env):
         env_config = configs.obstacle_config.env_config
         volatile_agent_config = configs.obstacle_config.volatile_agent_config
     elif env == "norm01_obstacle":
-        env_config = configs.norm01_obstacle.env_config
-        volatile_agent_config = configs.norm01_obstacle.volatile_agent_config
+        env_config = configs.norm01_obstacle_config.env_config
+        volatile_agent_config = configs.norm01_obstacle_config.volatile_agent_config
     elif env == "norm0_obstacle":
-        env_config = configs.norm0_obstacle.env_config
-        volatile_agent_config = configs.norm0_obstacle.volatile_agent_config
+        env_config = configs.norm0_obstacle_config.env_config
+        volatile_agent_config = configs.norm0_obstacle_config.volatile_agent_config
     elif env == "norm1_obstacle":
-        env_config = configs.norm1_obstacle.env_config
-        volatile_agent_config = configs.norm1_obstacle.volatile_agent_config
+        env_config = configs.norm1_obstacle_config.env_config
+        volatile_agent_config = configs.norm1_obstacle_config.volatile_agent_config
     elif env == "freenorm_obstacle":
-        env_config = configs.freenorm_obstacle.env_config
-        volatile_agent_config = configs.freenorm_obstacle.volatile_agent_config
+        env_config = configs.freenorm_obstacle_config.env_config
+        volatile_agent_config = configs.freenorm_obstacle_config.volatile_agent_config
     elif env == "norm05_obstacle":
-        env_config = configs.norm05_obstacle.env_config
-        volatile_agent_config = configs.norm05_obstacle.volatile_agent_config
+        env_config = configs.norm05_obstacle_config.env_config
+        volatile_agent_config = configs.norm05_obstacle_config.volatile_agent_config
     elif env == "cartpole":
         env_config = configs.cartpole_config.env_config
         volatile_agent_config = configs.cartpole_config.volatile_agent_config
