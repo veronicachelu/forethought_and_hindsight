@@ -449,7 +449,7 @@ configs={
     },
     "obstacle": {
         "control_all": {
-            "agents": ["ac_vanilla",
+            "agents": [
                        "p_ac_fw",
                        "c_ac_bw",
                        "c_ac_true_bw",

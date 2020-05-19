@@ -277,6 +277,9 @@ def plot_tensorflow_log(space, color, linestyle):
     print(the_incomplete)
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
+    x = x[:50]
+    mean_y_over_seeds = mean_y_over_seeds[:50]
+    std_y_over_seeds = std_y_over_seeds[:50]
     if space["crt_config"]["agent"] == "ac_vanilla":
         plt.plot(x, mean_y_over_seeds, label="model-free", c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
