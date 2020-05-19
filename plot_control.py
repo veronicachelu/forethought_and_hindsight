@@ -166,7 +166,7 @@ def main(argv):
 
     persistent_agent_config = configs.agent_config.config["ac_vanilla"]
     plot_for_agent("ac_vanilla", env_config, persistent_agent_config,
-                   volatile_agent_config, 0, 0, logs, "gray", "-")
+                   volatile_agent_config, logs, "gray", "-")
 
     for i, agent in enumerate(comparison_config["agents"]):
         if agent not in internal_dashed.keys() and\
@@ -184,15 +184,9 @@ def main(argv):
             color = alg_to_color[internal_dash_dotted[agent]]
             linestyle = "-."
 
-        planning_depth = comparison_config["planning_depths"][i]
-        max_norm = None
-        if FLAGS.paml and "max_norms" in comparison_config.keys():
-            max_norm = comparison_config["max_norms"][i]
-        replay_capacity = comparison_config["replay_capacities"][i]
         persistent_agent_config = configs.agent_config.config[agent]
         plot_for_agent(agent, env_config, persistent_agent_config,
-                       volatile_agent_config, planning_depth,
-                       replay_capacity, logs, color, linestyle, max_norm)
+                       volatile_agent_config, logs, color, linestyle)
 
 
     if FLAGS.cumulative_rmsve:
@@ -229,21 +223,14 @@ def main(argv):
                                                 "RMSVE")))
 
 def plot_for_agent(agent, env_config, persistent_agent_config,
-                   volatile_agent_config, planning_depth, replay_capacity, logs, color, linestyle, max_norm=None):
+                   volatile_agent_config, logs, color, linestyle):
     print(agent)
     # if not FLAGS.tabular:
-    if max_norm is None or max_norm == 0:
-        log_folder_agent = os.path.join(logs, "{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth, replay_capacity))
-    else:
-        log_folder_agent = os.path.join(logs, "{}_{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth,
-                                                                replay_capacity, max_norm))
+    log_folder_agent = os.path.join(logs, "{}".format(persistent_agent_config["run_mode"]))
     # else:
     #     log_folder_agent = os.path.join(logs, "{}_{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth,
     #                                                             replay_capacity, FLAGS.lr))
     volatile_config = {"agent": agent,
-                       "planning_depth": planning_depth,
-                       "max_norm": max_norm,
-                       "replay_capacity": replay_capacity,
                        "logs": log_folder_agent}
     space = {
     "env_config": env_config,
@@ -317,17 +304,6 @@ def plot_tensorflow_log(space, color, linestyle):
                          alpha=0.07, color=color,
                          linestyle=linestyle)
 
-def format_name(agent, planning_perf, replay_capacity):
-    if not(planning_perf == 0):
-        if not (replay_capacity == 0):
-            return "{}_{}_{}".format(agent, planning_perf, replay_capacity)
-        else:
-            return "{}_{}".format(agent, planning_perf)
-    else:
-        if not (replay_capacity == 0):
-            return "{}_{}".format(agent, replay_capacity)
-        else:
-            return "{}".format(agent)
 
 if __name__ == '__main__':
     app.run(main)
