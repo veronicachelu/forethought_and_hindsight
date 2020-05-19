@@ -113,7 +113,6 @@ class LpVanillaPAML(Agent):
             return params
 
         self._project = project
-        self._max_norm = 0.5
 
         if self._logs is not None:
             self._checkpoint_dir = os.path.join(self._logs,

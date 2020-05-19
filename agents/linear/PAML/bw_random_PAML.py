@@ -142,8 +142,8 @@ class LpBwRandomPAML(LpVanillaPAML):
             self._model_parameters = self._model_get_params(self._model_opt_state)
             self._h_parameters, self._r_parameters = self._model_parameters
 
-            if self._max_norm is not None:
-                self._o_parameters = self._project(self._o_parameters)
+            # if self._max_norm is not None:
+            #     self._o_parameters = self._project(self._o_parameters)
 
             self._o_parameters_norm = np.linalg.norm(self._o_parameters, 2)
             self._r_parameters_norm = np.linalg.norm(self._r_parameters[0], 2)
