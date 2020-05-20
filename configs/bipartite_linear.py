@@ -9,7 +9,7 @@ env_config = {
     "policy_type": "multinomial",
     "env_size": (100, 50, 10, 5),
     "num_episodes": 10000,
-    "num_runs": 5,
+    "num_runs": 1,
     "stochastic": False,
     "feature_coder": None,
     "nA": 1
