@@ -99,8 +99,10 @@ def run_episodic(agent: Agent,
                     # (space["env_config"]["env_type"] == "continuous" and
                     # space["env_config"]["policy_type"] == "continuous_greedy" and \
                     #  not space["env_config"]["stochastic"])):
+                distr = np.zeros_like(environment._d)
+                distr[environment._d > 0] = 1
                 error = environment.reshape_v(np.abs((mdp_solver.get_optimal_v() -
-                               hat_v)) * (environment._d * len(environment._starting_positions)))
+                               hat_v)) * distr)
                 plot_error(env=environment,
                            values=error,
                            logs=agent._images_dir,
@@ -123,8 +125,8 @@ def run_episodic(agent: Agent,
                     # (space["env_config"]["env_type"] == "continuous" and
                     # space["env_config"]["policy_type"] == "continuous_greedy" and \
                     #  not space["env_config"]["stochastic"])):
-                _hat_v_ = environment.reshape_v(hat_v * (environment._d * len(environment._starting_positions)))
-                _true_v = environment.reshape_v(mdp_solver.get_optimal_v() * environment._d * len(environment._starting_positions))
+                _hat_v_ = environment.reshape_v(hat_v * distr)
+                _true_v = environment.reshape_v(mdp_solver.get_optimal_v())
                 plot_v(env=environment,
                        values=_hat_v_,
                        logs=agent._images_dir,
@@ -399,8 +401,10 @@ def run_gain(agent: Agent,
 
 def get_rmsve(env, mdp_solver, hat_v, v, weighted=False):
     if weighted:
+        distr = np.zeros_like(env._d)
+        distr[env._d > 0] = 1
         # eta_pi = mdp_solver.get_eta_pi(mdp_solver._pi)
-        rmsve = np.sqrt(np.sum(env._d * ((v - hat_v) ** 2)))
+        rmsve = np.sqrt(np.sum(distr * ((v - hat_v) ** 2)))
     else:
         rmsve = np.sqrt(np.sum(np.power(v - hat_v, 2)) / env._nS)
     return rmsve
