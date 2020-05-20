@@ -164,6 +164,7 @@ class LpBwFw(LpVanilla):
     def planning_update(
             self,
             timestep: dm_env.TimeStep,
+            next_timestep: dm_env.TimeStep,
             rmsve,
             environment,
             mdp_solver,
@@ -172,18 +173,20 @@ class LpBwFw(LpVanilla):
         if self._n == 0:
             return
 
-        bw_v_parameters = self.bw_planning_update(timestep)
+        bw_v_parameters = self.bw_planning_update(next_timestep)
         fw_v_parameters = self.fw_planning_update(timestep)
         if bw_v_parameters is not None and fw_v_parameters is not None:
+            distr = np.zeros_like(environment._d)
+            distr[environment._d > 0] = 1
             true_v = mdp_solver.get_optimal_v()
             hat_bw_v = self.get_values_for_all_states(environment.get_all_states(), bw_v_parameters)
             hat_fw_v = self.get_values_for_all_states(environment.get_all_states(), fw_v_parameters)
-            hat_v = self.get_values_for_all_states(environment.get_all_states(), self._v_parameters)
-            _hat_v_ = environment.reshape_v(hat_v * (environment._d * len(environment._starting_positions)))
-            _hat_bw_v_ = environment.reshape_v(hat_bw_v * (environment._d * len(environment._starting_positions)))
-            _hat_fw_v_ = environment.reshape_v(hat_fw_v * (environment._d * len(environment._starting_positions)))
-            _true_v = environment.reshape_v(
-                true_v * environment._d * len(environment._starting_positions))
+            # hat_v = self.get_values_for_all_states(environment.get_all_states(), self._v_parameters)
+            # _hat_v_ = environment.reshape_v(hat_v * distr)
+            # _hat_bw_v_ = environment.reshape_v(hat_bw_v * distr)
+            # _hat_fw_v_ = environment.reshape_v(hat_fw_v * distr)
+            # _true_v = environment.reshape_v(
+            #     true_v * distr)
             # plot_v(env=environment,
             #        values=_hat_v_,
             #        logs=self._images_dir,
@@ -210,13 +213,13 @@ class LpBwFw(LpVanilla):
             #        filename="true_v_{}_{}.png".format(self.episode, self.total_steps))
 
             # rmsve = np.sqrt(np.sum(environment._d * ((true_v - hat_v) ** 2)))
-            rmsve_bw = np.sqrt(np.sum(environment._d * ((true_v - hat_bw_v) ** 2)))
-            rmsve_fw = np.sqrt(np.sum(environment._d * ((true_v - hat_fw_v) ** 2)))
+            rmsve_bw = np.sqrt(np.sum(distr * ((true_v - hat_bw_v) ** 2)))
+            rmsve_fw = np.sqrt(np.sum(distr * ((true_v - hat_fw_v) ** 2)))
 
             bw_gain = rmsve - rmsve_bw
             fw_gain = rmsve - rmsve_fw
 
-            self._bw_gain[np.ravel_multi_index(timestep.observation, (10, 10))] += bw_gain
+            self._bw_gain[np.ravel_multi_index(next_timestep.observation, (10, 10))] += bw_gain
             self._fw_gain[np.ravel_multi_index(timestep.observation, (10, 10))] += fw_gain
 
 

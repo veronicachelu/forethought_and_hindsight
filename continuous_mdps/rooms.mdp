@@ -1,0 +1,11 @@
+# Dimension H W
+10 10
+# Step_size Noise_mean Noise_var #0.05 0.0 0.01
+1 0.00 0.00
+# Reward locations
+4 6 1.0 0.0
+6 4 1.0 0.0
+1 1 1.0 0.0
+# Obstacles start_H final_H start_W final_W
+0 8 4 6
+0 5 2 3

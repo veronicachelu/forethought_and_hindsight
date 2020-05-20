@@ -46,10 +46,10 @@ flags.DEFINE_integer('model_learning_period', 1,
 flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
 flags.DEFINE_float('discount', .99, 'discounting on the agent side')
 flags.DEFINE_integer('min_replay_size', 1, 'min replay size before training.')
-flags.DEFINE_float('lr', 0.001, 'learning rate for q optimizer')
+flags.DEFINE_float('lr', 0.05, 'learning rate for q optimizer')
 flags.DEFINE_float('lr_ctrl', 0.4, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_p', 0.001, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_m',  0.01, 'learning rate for model optimizer')
+flags.DEFINE_float('lr_p', 0.05, 'learning rate for q optimizer')
+flags.DEFINE_float('lr_m',  0.05, 'learning rate for model optimizer')
 
 FLAGS = flags.FLAGS
 

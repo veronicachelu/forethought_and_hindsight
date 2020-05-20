@@ -207,7 +207,7 @@ def run_gain(agent: Agent,
                         # if aux_agent_configs["pivot"] == "c":
                         #     agent.planning_update(new_timestep)
                         # else:
-                        agent.planning_update(timestep, rmsve_before, environment, mdp_solver, space)
+                        agent.planning_update(timestep, new_timestep, rmsve_after, environment, mdp_solver, space)
 
                     agent.total_steps += 1
                     t += 1
@@ -242,9 +242,11 @@ def run_gain(agent: Agent,
                                filename="error_{}.png".format(agent.episode))
                 if space["plot_values"] and agent.episode % space["log_period"] == 0 and \
                         not space["env_config"]["non_gridworld"]:
-                    _hat_v_ = environment.reshape_v(hat_v * (environment._d * len(environment._starting_positions)))
+                    distr = np.zeros_like(environment._d)
+                    distr[environment._d > 0] = 1
+                    _hat_v_ = environment.reshape_v(hat_v * distr)
                     _true_v = environment.reshape_v(
-                        mdp_solver.get_optimal_v() * environment._d * len(environment._starting_positions))
+                        mdp_solver.get_optimal_v() * distr)
                     plot_v(env=environment,
                            values=_hat_v_,
                            logs=agent._images_dir,
@@ -258,31 +260,34 @@ def run_gain(agent: Agent,
                            env_type=space["env_config"]["env_type"],
                            filename="true_v_{}.png".format(agent.episode))
 
-                    bw_gain = environment.reshape_v(agent._bw_gain * (environment._d * len(environment._starting_positions)))
-                    fw_gain = environment.reshape_v(agent._fw_gain * (environment._d * len(environment._starting_positions)))
-                    v_gain = environment.reshape_v(agent._td_gain * (environment._d * len(environment._starting_positions)))
+                    bw_gain = environment.reshape_v(agent._bw_gain * distr)
+                    fw_gain = environment.reshape_v(agent._fw_gain * distr)
+                    v_gain = environment.reshape_v(agent._td_gain * distr)
 
-                    bw_gain = (bw_gain - np.min(bw_gain)) / (np.max(bw_gain) - np.min(bw_gain))
-                    fw_gain = (fw_gain - np.min(fw_gain)) / (np.max(fw_gain) - np.min(fw_gain))
-                    v_gain = (v_gain - np.min(v_gain)) / (np.max(v_gain) - np.min(v_gain))
-                    plot_v(env=environment,
+                    # bw_gain = (bw_gain - np.min(bw_gain)) / (np.max(bw_gain) - np.min(bw_gain))
+                    # fw_gain = (fw_gain - np.min(fw_gain)) / (np.max(fw_gain) - np.min(fw_gain))
+                    # v_gain = (v_gain - np.min(v_gain)) / (np.max(v_gain) - np.min(v_gain))
+                    plot_gain(env=environment,
                            values=bw_gain,
                            logs=agent._images_dir,
                            true_v=_true_v,
                            env_type=space["env_config"]["env_type"],
                            filename="bw_gain_{}.png".format(agent.episode))
-                    plot_v(env=environment,
+                    plot_gain(env=environment,
                            values=fw_gain,
                            logs=agent._images_dir,
                            true_v=_true_v,
                            env_type=space["env_config"]["env_type"],
                            filename="fw_gain_{}.png".format(agent.episode))
-                    plot_v(env=environment,
+                    plot_gain(env=environment,
                            values=v_gain,
                            logs=agent._images_dir,
                            true_v=_true_v,
                            env_type=space["env_config"]["env_type"],
                            filename="v_gain_{}.png".format(agent.episode))
+                    # agent._bw_gain = np.zeros((100))
+                    # agent._td_gain = np.zeros((100))
+                    # agent._fw_gain = np.zeros((100))
 
                 if space["plot_curves"] and agent.episode % space["log_period"] == 0:
                     tf.summary.scalar("train/rmsve", rmsve, step=agent.episode)

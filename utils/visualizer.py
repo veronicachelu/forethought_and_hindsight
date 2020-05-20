@@ -107,6 +107,31 @@ def plot_v(env, values, logs=None, colormap='Blues',
     if logs is not None:
         plt.savefig(os.path.join(logs, filename))
 
+def plot_gain(env, values, logs=None, colormap='Blues',
+           filename="v.png",
+           true_v=None,
+           env_type="discrete",
+           policy=None,
+           ):#vmin=-1, vmax=10):
+    plt.clf()
+    vmin = np.min(values)
+    vmax = np.max(values)
+    # plot_grid(env, env_type=env_type, vmin=vmin, vmax=vmax)
+    # if policy is not None:
+    #     plot_policy(env, policy, env_type=env_type)
+    # if true_v is not None:
+    #     vmin = np.min(true_v)
+    #     vmax = np.max(true_v)
+    # else:
+    values = values[None, ...] if len(values.shape) == 1 else values
+    plt.imshow(values, interpolation="nearest",
+               cmap=colormap, vmin=vmin, vmax=vmax)
+    plt.yticks([])
+    plt.xticks([])
+    plt.colorbar(ticks=[vmin, vmax])
+    if logs is not None:
+        plt.savefig(os.path.join(logs, filename))
+
 def plot_error(env, values, logs=None, colormap='Greys',
            filename="error.png",
            eta_pi=None,
