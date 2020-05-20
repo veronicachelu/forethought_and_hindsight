@@ -170,11 +170,12 @@ class LpVanillaPAML(Agent):
             return o
 
     def _get_sparse_features(self, o):
-        return [np.eye(100)[np.ravel_multi_index(oo, (10, 10))] for oo in o]
+        if self._feature_mapper is not None:
+            return [np.eye(100)[np.ravel_multi_index(oo, (10, 10))] for oo in o]
         # if self._sparse_feature_mapper is not None:
         #     return self._sparse_feature_mapper.get_features(o)
-        # else:
-        #     return o
+        else:
+            return o
 
     def policy(self,
                timestep: dm_env.TimeStep,
