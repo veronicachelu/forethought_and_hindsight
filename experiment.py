@@ -16,7 +16,7 @@ def run_episodic(agent: Agent,
                  aux_agent_configs,
                ):
 
-    weighted = False if space["env_config"]["non_gridworld"] else True
+    weighted = False# if space["env_config"]["non_gridworld"] else True
     with agent.writer.as_default() if space["plot_curves"] and agent._logs is not None else dummy_context_mgr():
         # agent.load_model()
         total_rmsve = 0

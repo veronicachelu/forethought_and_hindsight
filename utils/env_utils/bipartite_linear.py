@@ -5,7 +5,7 @@ from dm_env import specs
 from utils.mdp_solvers.solve_chain import ChainSolver
 import itertools
 
-class Bipartite(dm_env.Environment):
+class BipartiteLinear(dm_env.Environment):
     def __init__(self, rng=None, obs_type="tabular", nS = (5,5,5,5,5)):
         self._P = None
         self._P_absorbing = None
@@ -32,21 +32,24 @@ class Bipartite(dm_env.Environment):
         if len(nS) > 2:
             for state in self._mid_layers[-1]:
                 self._rewards[state, self._end_states] = \
-                    self._rng.normal(loc=10, scale=10.0, size=len(self._end_states))
+                    self._rng.normal(loc=0, scale=1.0, size=len(self._end_states))
         else:
             for start_state in self._start_states:
                 self._rewards[start_state, self._end_states] = \
-                    self._rng.normal(loc=10, scale=10.0, size=len(self._end_states))
+                    self._rng.normal(loc=0, scale=1.0, size=len(self._end_states))
         self._starting_distribution = self._rng.uniform(size=len(self._start_states))
         self._starting_distribution /= np.sum(self._starting_distribution)
         self._fill_P_R()
         self._reset_next_step = True
+
+        self._cPos = None
 
     def reset(self):
         """Returns the first `TimeStep` of a new episode."""
         self._reset_next_step = False
         self._state = self._rng.choice(self._start_states,
                                           p=self._starting_distribution)
+        self._cPos = [self._state, 0]
         return dm_env.restart(self._observation())
 
     def _get_next_state(self, state, action):
@@ -70,6 +73,7 @@ class Bipartite(dm_env.Environment):
         next_state = self._get_next_state(self._state, action)
         reward = self._get_next_reward(self._state, next_state)
         self._state = next_state
+        self._cPos = self._state_to_pos(self._state)
 
         if self._is_terminal():
             self._reset_next_step = True
@@ -81,6 +85,27 @@ class Bipartite(dm_env.Environment):
         if self._obs_type == "tabular":
             return specs.BoundedArray(shape=(self._nS,), dtype=np.int32,
                                   name="state", minimum=0, maximum=self._nS)
+        elif self._obs_type == "position":
+            return specs.BoundedArray(shape=(
+                len(self._starting_distribution) + len(self._mid_layers) + 2,),
+                dtype=np.int32,
+                name="state", minimum=0, maximum=1)
+
+    def _state_to_pos(self, state):
+        layer = None
+        if state in self._start_states:
+            layer = 0
+            row = np.where(self._start_states == state)[0][0]
+        elif state in self._end_states:
+            layer = len(self._mid_layers) + 1
+            row = np.where(self._end_states == state)[0][0]
+        else:
+            for l_idx, l in enumerate(self._mid_layers):
+                if state in l:
+                    layer = 1 + l_idx
+                    row = np.where(l == state)[0][0]
+
+        return [row, layer]
 
     def action_spec(self):
         return specs.DiscreteArray(
@@ -89,6 +114,9 @@ class Bipartite(dm_env.Environment):
     def _observation(self):
         if self._obs_type == "tabular":
             return self._state
+        elif self._obs_type == "position":
+            return np.concatenate([np.eye(len(self._starting_distribution))[self._cPos[0]],
+                                  np.eye(len(self._mid_layers) + 2)[self._cPos[1]]])
 
     def _fill_P_R(self):
         self._P = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
@@ -153,6 +181,7 @@ class Bipartite(dm_env.Environment):
     def get_all_states(self):
         states = []
         for s in range(self._nS):
+            self._cPos = self._state_to_pos(s)
             states.append(self._observation())
         return states
 
@@ -161,8 +190,13 @@ if __name__ == "__main__":
     # nS = 10
     # nA = 1
     discount = 0.9
-    env = Bipartite(rng=nrng, obs_type="tabular",
+    env = BipartiteLinear(rng=nrng, obs_type="position",
                  nS=(5, 1))
+    s_0 = env.reset()
+    while True:
+        s_n = env.step(0)
+        if s_n.last():
+            break
     mdp_solver = ChainSolver(env, 6, 1, discount)
     # policy = mdp_solver.get_optimal_policy()
     v = mdp_solver.get_optimal_v()

@@ -21,6 +21,7 @@ import configs.freenorm_obstacle_config as freenorm_obstacle_config
 import configs.norm05_obstacle_config as norm05_obstacle_config
 import configs.cartpole_config as cartpole_config
 import configs.bipartite_config as bipartite_config
+import configs.bipartite_linear as bipartite_linear
 import configs.bipartite_10_1_config as bipartite_10_1_config
 import configs.bipartite_1_10_config as bipartite_1_10_config
 import configs.bipartite_100_1_config as bipartite_100_1_config

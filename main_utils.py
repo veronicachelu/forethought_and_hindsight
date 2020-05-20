@@ -30,11 +30,17 @@ def get_tabular_chain_env(nrng, space, aux_agent_configs):
 
 def get_linear_chain_env(nrng, space, aux_agent_configs):
     env_class = getattr(env_utils, space["env_config"]["class"])
-    env = env_class(rng=nrng,
-                    nS=space["env_config"]["env_size"],
-                    nF=space["env_config"]["obs_size"],
-                    obs_type=space["env_config"]["obs_type"]
-                    )
+    if "obs_size" not in space["env_config"].keys():
+        env = env_class(rng=nrng,
+                        nS=space["env_config"]["env_size"],
+                        obs_type=space["env_config"]["obs_type"]
+                        )
+    else:
+        env = env_class(rng=nrng,
+                        nS=space["env_config"]["env_size"],
+                        nF=space["env_config"]["obs_size"],
+                        obs_type=space["env_config"]["obs_type"]
+                        )
     mdp_solver = ChainSolver(env, space["env_config"]["env_size"],
                              space["env_config"]["nA"], aux_agent_configs["discount"])
     env._true_v = mdp_solver.get_optimal_v()
@@ -317,6 +323,9 @@ def load_env_and_volatile_configs(env):
     elif env == "random":
         env_config = configs.random_config.env_config
         volatile_agent_config = configs.random_config.volatile_agent_config
+    elif env == "bipartite_linear":
+        env_config = configs.bipartite_linear.env_config
+        volatile_agent_config = configs.bipartite_linear.volatile_agent_config
     elif env == "shortcut":
         env_config = configs.shortcut_config.env_config
         volatile_agent_config = configs.shortcut_config.volatile_agent_config

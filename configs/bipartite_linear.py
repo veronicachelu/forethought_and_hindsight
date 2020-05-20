@@ -1,28 +1,18 @@
 import numpy as np
 env_config = {
-    "class": "ObstacleWorld",
-    "non_gridworld": False,
+    "class": "BipartiteLinear",
+    "non_gridworld": True,
     "model_class": "linear",
-    "feature_coder": {
-        "type": "rbf",
-        "ranges": [[0.0, 0.0], [10.0, 10.0]],
-        "num_tiles": [10, 10],
-        "num_centers": [4, 4],
-        "num_tilings": 1,
-        "noise": False,
-        "noise_dim": 0,
-    },
-    "env_type": "continuous",
+    "env_type": "discrete",
     "obs_type": "position",
-    "policy_type": "continuous_random",
-    "mdp_filename": "./continuous_mdps/obstacle.mdp",
-    "env_size": None,
-    "num_episodes": 50,
-    # "total_steps": 10000,
-    "control_num_episodes": 300,
-    "num_runs": 5,
+    "mdp_filename": None,
+    "policy_type": "multinomial",
+    "env_size": (100, 50, 10, 5),
+    "num_episodes": 10000,
+    "num_runs": 1,
     "stochastic": False,
-    "nA": 4
+    "feature_coder": None,
+    "nA": 1
 }
 
 volatile_agent_config = {

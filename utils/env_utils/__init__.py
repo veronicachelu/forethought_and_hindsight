@@ -12,4 +12,5 @@ from utils.env_utils.bipartite import *
 from utils.env_utils.world3d import *
 from utils.env_utils.fanin import *
 from utils.env_utils.puddleworld import *
+from utils.env_utils.bipartite_linear import *
 

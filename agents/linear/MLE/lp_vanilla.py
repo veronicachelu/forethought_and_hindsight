@@ -169,7 +169,10 @@ class LpVanilla(Agent):
             return o
 
     def _get_sparse_features(self, o):
-        return [np.eye(100)[np.ravel_multi_index(oo, (10, 10))] for oo in o]
+        if self._feature_mapper is not None:
+            return [np.eye(100)[np.ravel_multi_index(oo, (10, 10))] for oo in o]
+        else:
+            return o
         # if self._sparse_feature_mapper is not None:
         #     return self._sparse_feature_mapper.get_features(o)
         # else:
@@ -192,6 +195,8 @@ class LpVanilla(Agent):
         elif self._policy_type == "continuous_random":
             features = self._get_sparse_features(timestep.observation[None, ...])
             return self._nrng.choice(np.arange(4), p=[1/4 for _ in range(4)])
+        elif self._policy_type == "multinomial":
+            return 0
 
     def value_update(
             self,
