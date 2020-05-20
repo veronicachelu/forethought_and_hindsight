@@ -1173,4 +1173,69 @@ configs={
             "replay_capacities": [0, 0, 0, 0, 0, 0]
             },
     },
+    "bipartite_linear": {
+        "control_all": {
+            "agents": [
+                       "p_ac_fw",
+                       "c_ac_bw",
+                       "c_ac_true_bw",
+                       "p_ac_fw_PAML",
+                       "c_ac_bw_PAML",
+                       ],
+            "planning_depths": [1, 1, 1, 1, 1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 0, 0, 0, 0, 0]
+        },
+        "bw_p_fw_p_all": {
+            "agents": ["p_bw",
+                       "p_true_bw",
+                       "p_fw",
+                       "p_fw_PAML",
+                       "p_bw_PAML"
+                       ],
+            "planning_depths": [1, 1, 1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 0, 0, 0]
+        },
+         "bw_c_fw_p_all": {
+            "agents": ["c_bw",
+                       # "c_true_bw",
+                       # "c_random_bw",
+                       "p_fw",
+                       "p_fw_PAML",
+                       "c_bw_PAML",
+                       # "c_bw_random_PAML"
+                       ],
+             "planning_depths": [1, 1, 1, 1, 1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 0, 0, 0, 0, 0]
+        },
+        "bw_c_bw_p_all": {
+            "agents": ["p_bw",
+                       "c_bw",
+                       "p_true_bw",
+                       "c_true_bw",
+                       "p_bw_PAML",
+                       "c_bw_PAML"
+                       ],
+            "planning_depths": [1, 1, 1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 0, 0, 0]
+        },
+        "fw_c_fw_p_all": {
+            "agents": ["p_fw",
+                       "c_fw",
+                       "p_fw_PAML",
+                       "c_fw_PAML"
+                       ],
+            "planning_depths": [1, 1, 1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 0, 0, 0]
+        },
+        "mb_bw_c_fw_p_all": {
+            "agents": ["mb_c_bw",
+                       "mb_c_true_bw",
+                       "mb_p_fw",
+                       "mb_p_fw_PAML",
+                       "mb_c_bw_PAML"
+                       ],
+            "planning_depths": [1, 1, 1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 0, 0, 0]
+        },
+    },
 }
