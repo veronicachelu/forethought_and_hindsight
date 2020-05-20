@@ -194,6 +194,8 @@ class LpVanillaPAML(Agent):
         elif self._policy_type == "continuous_random":
             features = self._get_sparse_features(timestep.observation[None, ...])
             return self._nrng.choice(np.arange(4), p=[1/4 for _ in range(4)])
+        elif self._policy_type == "multinomial":
+            return 0
 
     def value_update(
             self,
