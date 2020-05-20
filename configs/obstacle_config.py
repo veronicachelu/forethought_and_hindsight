@@ -29,7 +29,7 @@ volatile_agent_config = {
     "vanilla": {
         "planning_depth": [0],
         "replay_capacity": [0],
-        "lr": np.array([0.01, 0.05, 0.1, 0.5, 1.0]),
+        "lr": np.array([0.005, 0.01, 0.05, 0.1, 0.5, 1.0]),
         "lr_p": [0],
         "lr_m": [0],
         "lr_ctrl": 0.4
