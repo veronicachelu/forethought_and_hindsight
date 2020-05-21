@@ -48,7 +48,6 @@ class VanillaQ(Agent):
         self._discount = discount
         self._batch_size = batch_size
         self._latent = latent
-        # self._double_input_reward_model = double_input_reward_model
         self._run_mode = "{}".format(self._run_mode)
         self._max_len = max_len
         self._final_epsilon = 0.0

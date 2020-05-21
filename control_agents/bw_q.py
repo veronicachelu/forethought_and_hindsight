@@ -22,37 +22,67 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class FwQ(VanillaQ):
+class BwQ(VanillaQ):
     def __init__(
             self,
             **kwargs
     ):
-        super(FwQ, self).__init__(**kwargs)
+        super(BwQ, self).__init__(**kwargs)
 
         self._sequence = []
         self._should_reset_sequence = False
 
-        def q_loss(q_params, transitions):
-            o_tm1, a_tm1, r_t, d_t, o_t = transitions
-            q_tm1 = self._q_network(q_params, o_tm1)
-            q_t = self._q_network(q_params, o_t)
-            batch_q_learning = jax.vmap(rlax.q_learning)
-            td_error = batch_q_learning(q_tm1, a_tm1, r_t, discount * d_t, q_t)
+        def model_loss(o_params,
+                       r_params,
+                       transitions):
+            o_tmn_target = transitions[0][0]
+            o_t = transitions[-1][-1]
+            model_o_tmn = self._o_network(o_params, o_t)
+            o_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_o_tmn, o_tmn_target))
+
+            r_input = jnp.concatenate([model_o_tmn, o_t], axis=-1)
+            model_r_tmn = self._r_network(r_params, lax.stop_gradient(r_input))
+            r_t_target = 0
+            for i, t in enumerate(transitions):
+                r_t_target += (self._discount ** i) * t[2]
+
+            r_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_r_tmn, r_t_target))
+            total_loss = o_loss + r_loss
+
+            return total_loss, {"o_loss": o_loss,
+                               "r_loss": r_loss,
+                               }
+
+        def v_planning_loss(v_params, o_params, r_params, o_t, d_t):
+            o_tmn = self._o_forward(o_params, o_t)
+            v_tmn = jnp.squeeze(self._v_network(v_params, lax.stop_gradient(o_tmn)), axis=-1)
+            r_input = jnp.concatenate([o_tmn, o_t], axis=-1)
+
+            r_tmn = self._r_forward(r_params, r_input)
+            v_t_target = jnp.squeeze(self._v_network(v_params, o_t), axis=-1)
+
+            td_error = jax.vmap(rlax.td_learning)(v_tmn, r_tmn,
+                                                  d_t * jnp.array([self._discount ** self._n]),
+                                                 v_t_target)
             return jnp.mean(td_error ** 2)
 
-        # Internalize the networks.
-        self._q_network = network["qvalue"]["net"]
-        self._q_parameters = network["qvalue"]["params"]
+        self._o_network = self._network["model"]["net"][0]
+        self._r_network = self._network["model"]["net"][2]
 
-        # This function computes dL/dTheta
-        self._q_loss_grad = jax.jit(jax.value_and_grad(q_loss))
-        self._q_forward = jax.jit(self._q_network)
+        self._o_parameters = self._network["model"]["params"][0]
+        self._r_parameters = self._network["model"]["params"][2]
 
-        # Make an Adam optimizer.
-        q_opt_init, q_opt_update, q_get_params = optimizers.adam(step_size=self._lr)
-        self._q_opt_update = jax.jit(q_opt_update)
-        self._q_opt_state = q_opt_init(self._q_parameters)
-        self._q_get_params = q_get_params
+        self._q_planning_loss_grad = jax.jit(jax.value_and_grad(q_planning_loss, 0))
+
+        self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [0, 1], has_aux=True))
+        self._o_forward = jax.jit(self._o_network)
+        self._r_forward = jax.jit(self._r_network)
+        self._model_step_schedule = optimizers.polynomial_decay(self._lr_model,
+                                                                self._exploration_decay_period, 0, 0.9)
+        model_opt_init, model_opt_update, model_get_params = optimizers.adam(step_size=self._model_step_schedule)
+        self._model_opt_update = jax.jit(model_opt_update)
+        self._model_opt_state = model_opt_init([self._o_parameters, self._r_parameters])
+        self._model_get_params = model_get_params
 
     def _get_features(self, o):
         if self._feature_mapper is not None:

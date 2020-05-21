@@ -222,10 +222,21 @@ def get_q_network(num_hidden_layers: int,
     input_size = np.prod(input_dim)
     network = {}
 
+    rng_v, rng_h, rng_o, rng_fw_o, rng_r, rng_pi = jrandom.split(rng, 6)
     q_network_init, q_network = stax.Dense(nA)
     _, q_network_params = q_network_init(rng, (-1, input_size))
     network["qvalue"] = {"net": q_network,
                         "params": q_network_params}  # layers = [stax.Flatten]
+
+    o_network, o_network_params = get_o_net(rng_o, input_size, num_units)
+    fw_o_network, fw_o_network_params = get_o_net(rng_fw_o, input_size, num_units)
+    r_network, r_network_params = get_r_net(rng_r, input_size)
+
+    network["model"] = {"net": [o_network, fw_o_network, r_network],
+                        "params": [o_network_params,
+                                   fw_o_network_params, r_network_params]
+                        }
+
 
     return network
 
