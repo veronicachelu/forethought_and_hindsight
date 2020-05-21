@@ -326,6 +326,9 @@ def load_env_and_volatile_configs(env):
     elif env == "bipartite_linear":
         env_config = configs.bipartite_linear.env_config
         volatile_agent_config = configs.bipartite_linear.volatile_agent_config
+    elif env == "wide_linear":
+        env_config = configs.wide_linear.env_config
+        volatile_agent_config = configs.wide_linear.volatile_agent_config
     elif env == "shortcut":
         env_config = configs.shortcut_config.env_config
         volatile_agent_config = configs.shortcut_config.volatile_agent_config
