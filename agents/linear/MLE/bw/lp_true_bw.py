@@ -97,7 +97,7 @@ class LpTrueBw(LpVanilla):
             v_model_error = lax.batch_matmul(v_error, v_params[None,...])
             v_grad = jnp.mean((vector_r_tmn + v_model_error), axis=0)
 
-            return -v_grad
+            return - 2 * v_grad
 
         self._v_planning_loss_grad = jax.jit(v_planning_grad)
         # self._v_planning_loss_grad = v_planning_grad
