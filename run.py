@@ -27,11 +27,11 @@ from utils import *
 # flags.DEFINE_string('agent', 'p_fw', 'what agent to run')
 # flags.DEFINE_string('agent', 'c_fw', 'what agent to run')
 # flags.DEFINE_string('agent', 'p_bw', 'what agent to run')
-# flags.DEFINE_string('agent', 'c_bw', 'what agent to run')
+flags.DEFINE_string('agent', 'c_bw', 'what agent to run')
 
 # flags.DEFINE_string('agent', 'p_true_bw', 'what agent to run')
 # flags.DEFINE_string('agent', 'p_fw_PAML', 'what agent to run')
-flags.DEFINE_string('agent', 'p_bw_PAML', 'what agent to run')
+# flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
 # flags.DEFINE_string('agent', 'c_bw_PAML', 'what agent to run')
 flags.DEFINE_string('env', 'bipartite_linear', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
@@ -50,8 +50,8 @@ flags.DEFINE_float('discount', .9, 'discounting on the agent side')
 flags.DEFINE_integer('min_replay_size', 1, 'min replay size before training.')
 flags.DEFINE_float('lr', 0.0005, 'learning rate for q optimizer')
 flags.DEFINE_float('lr_ctrl', 0.4, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_p', 0.1, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_m',  0.1, 'learning rate for model optimizer')
+flags.DEFINE_float('lr_p', 0.0005, 'learning rate for q optimizer')
+flags.DEFINE_float('lr_m',  0.005, 'learning rate for model optimizer')
 
 FLAGS = flags.FLAGS
 
