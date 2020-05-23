@@ -94,8 +94,6 @@ class LpFw(LpVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
-        if timestep.last():
-            return
         if self._n == 0:
             return
         if len(self._sequence) >= self._n:

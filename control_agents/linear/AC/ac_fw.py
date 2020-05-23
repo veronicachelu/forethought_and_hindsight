@@ -16,18 +16,18 @@ from agents.agent import Agent
 import tensorflow as tf
 import rlax
 from basis.feature_mapper import FeatureMapper
-from control_agents.ac_vanilla import ACVanilla
+from control_agents.linear.AC.ac_vanilla import ACVanilla
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class ACBw(ACVanilla):
+class ACFw(ACVanilla):
     def __init__(
             self,
             **kwargs
     ):
-        super(ACBw, self).__init__(**kwargs)
+        super(ACFw, self).__init__(**kwargs)
 
         self._sequence_model = []
         self._should_reset_sequence = False
@@ -37,34 +37,35 @@ class ACBw(ACVanilla):
                        transitions):
             o_tmn_target = transitions[0][0]
             o_t = transitions[-1][-1]
-            model_o_tmn = self._o_network(o_params, o_t)
 
-            o_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_o_tmn, o_tmn_target))
+            model_o_t = self._o_network(o_params, o_tmn_target)
 
-            r_input = jnp.concatenate([model_o_tmn, o_t], axis=-1)
+            fw_o_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_o_t, o_t))
+
+            r_input = jnp.concatenate([o_tmn_target, model_o_t], axis=-1)
             model_r_tmn = self._r_network(r_params, lax.stop_gradient(r_input))
             r_t_target = 0
             for i, t in enumerate(transitions):
                 r_t_target += (self._discount ** i) * t[2]
 
             r_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_r_tmn, r_t_target))
-            total_loss = o_loss + r_loss
+            total_loss = fw_o_loss + r_loss
 
-            return total_loss, {"bw_o_loss": o_loss,
+            return total_loss, {"fw_o_loss": fw_o_loss,
                                 "r_loss": r_loss,
                                 }
 
-        def v_planning_loss(v_params, o_params, r_params, o_t, d_t):
-            o_tmn = self._o_forward(o_params, o_t)
-            v_tmn = jnp.squeeze(self._v_network(v_params, lax.stop_gradient(o_tmn)), axis=-1)
+        def v_planning_loss(v_params, o_params, r_params, o_tmn):
+            o_t = self._o_forward(o_params, o_tmn)
+            v_tmn = jnp.squeeze(self._v_network(v_params, o_tmn), axis=-1)
             r_input = jnp.concatenate([o_tmn, o_t], axis=-1)
 
             r_tmn = self._r_forward(r_params, r_input)
             v_t_target = jnp.squeeze(self._v_network(v_params, o_t), axis=-1)
 
             td_error = jax.vmap(rlax.td_learning)(v_tmn, r_tmn,
-                                                  d_t * jnp.array([self._discount ** self._n]),
-                                                 v_t_target)
+                                                  jnp.array([self._discount ** self._n]),
+                                                  v_t_target)
             return 0.5 * jnp.mean(td_error ** 2)
 
         # Internalize the networks.
@@ -123,6 +124,8 @@ class ACBw(ACVanilla):
             action: int,
             new_timestep: dm_env.TimeStep,
     ):
+        if timestep.last():
+            return
         if self._n == 0:
             return
         if len(self._sequence_model) >= self._n:
@@ -139,7 +142,7 @@ class ACBw(ACVanilla):
 
             losses_and_grads = {"losses": {
                 "loss_total": total_loss,
-                "loss_o": losses["bw_o_loss"],
+                "loss_o": losses["fw_o_loss"],
                 "L2_norm_o": self._o_parameters_norm,
                 "L2_norm_r": self._r_parameters_norm,
                 "loss_r": losses["r_loss"],
@@ -160,17 +163,17 @@ class ACBw(ACVanilla):
     ):
         if self._n == 0:
             return
-        if timestep.discount is None:
+        if timestep.last():
             return
         features = self._get_features([timestep.observation])
         o_t = np.array(features)
-        d_t = np.array(timestep.discount)
+        # d_t = np.array([timestep.discount])
 
         # plan on batch of transitions
         loss, gradient = self._v_planning_loss_grad(self._v_parameters,
                                                     self._o_parameters,
                                                     self._r_parameters,
-                                                    o_t, d_t)
+                                                    o_t)
         self._v_opt_state = self._v_opt_update(self.episode, gradient,
                                                self._v_opt_state)
         self._v_parameters = self._v_get_params(self._v_opt_state)
@@ -257,10 +260,10 @@ class ACBw(ACVanilla):
         bonus = np.clip(bonus, 0., self._initial_epsilon - self._final_epsilon)
         self._epsilon = self._final_epsilon + bonus
         if self._logs is not None:
-            if self._max_len == -1:
-                ep = self.total_steps
-            else:
-                ep = self.episode
+            # if self._max_len == -1:
+            ep = self.total_steps
+            # else:
+            #     ep = self.episode
             if ep % self._log_period == 0:
                 tf.summary.scalar("train/epsilon",
                                   self._epsilon, step=ep)

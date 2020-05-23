@@ -38,7 +38,11 @@ def get_network(num_hidden_layers: int,
         return get_paml_pg_network(num_hidden_layers, num_units, nA,
                                 rng, input_dim, output_dim)
     if model_class == "tabular":
-        return get_tabular_network(num_hidden_layers, num_units, nA,
+        if model_family == "q" or model_family == "q_true":
+            return get_q_tabular_network(num_hidden_layers, num_units, nA,
+                                       rng, input_dim)
+        else:
+            return get_tabular_network(num_hidden_layers, num_units, nA,
                             rng, input_dim)
 
     if model_family == "MLE":
@@ -58,6 +62,9 @@ def get_network(num_hidden_layers: int,
 
     if model_family == "q":
         return get_q_network(num_hidden_layers, num_units, nA,
+                        rng, input_dim)
+    if model_family == "q_true":
+        return get_true_q_network(num_hidden_layers, num_units, nA,
                         rng, input_dim)
 
     if model_family == "PAML":
@@ -105,6 +112,30 @@ def get_tabular_network(num_hidden_layers: int,
     network["model"] = {"net": [np.zeros(shape=input_dim + (np.prod(input_dim),)),
                                 np.zeros(shape=input_dim + (np.prod(input_dim),)),
                                 np.zeros(shape=input_dim + (np.prod(input_dim),))], \
+                       "params": None
+                        }
+    return network
+
+def get_q_tabular_network(num_hidden_layers: int,
+                  num_units: int,
+                  nA: int,
+                  rng: List,
+                  input_dim: Tuple,
+                        ):
+
+    network = {}
+    network["qvalue"] = {"net": np.zeros(shape=input_dim + (nA,)),
+                        "params": None
+                        }
+    network["true_value"] = {"net": np.zeros(shape=input_dim + (nA,)),
+                        "params": None
+                        }
+    # network["model"] = {"net": [np.zeros(shape=input_dim + (nA, np.prod(input_dim),)),
+    network["model"] = {"net": [np.zeros(shape=(np.prod(input_dim), np.prod(input_dim) * nA,)),
+                                np.zeros(shape=input_dim + (nA, np.prod(input_dim),)),
+                                np.zeros(shape=input_dim + (np.prod(input_dim),)),
+                                np.zeros(shape=input_dim + (2,)),
+                                ], \
                        "params": None
                         }
     return network
@@ -168,7 +199,6 @@ def get_MLE_network(num_hidden_layers: int,
                   output_size,
                           ):
 
-    # input_size = np.prod(input_dim)
     network = {}
     rng_v, rng_r_fw, rng_o, rng_fw_o, rng_r = jrandom.split(rng, 5)
 
@@ -220,21 +250,53 @@ def get_q_network(num_hidden_layers: int,
                           ):
 
     input_size = np.prod(input_dim)
+    output_size = input_size
     network = {}
 
     rng_v, rng_h, rng_o, rng_fw_o, rng_r, rng_pi = jrandom.split(rng, 6)
-    q_network_init, q_network = stax.Dense(nA)
+    q_network_init, q_network = Dense_no_bias(nA)
     _, q_network_params = q_network_init(rng, (-1, input_size))
     network["qvalue"] = {"net": q_network,
                         "params": q_network_params}  # layers = [stax.Flatten]
 
-    o_network, o_network_params = get_o_net(rng_o, input_size, num_units)
-    fw_o_network, fw_o_network_params = get_o_net(rng_fw_o, input_size, num_units)
+    o_network, o_network_params = get_action_o_net(rng_o, input_size, output_size)
+    fw_o_network, fw_o_network_params = get_action_o_net(rng_fw_o, input_size, output_size)
     r_network, r_network_params = get_r_net(rng_r, input_size)
 
     network["model"] = {"net": [o_network, fw_o_network, r_network],
                         "params": [o_network_params,
                                    fw_o_network_params, r_network_params]
+                        }
+
+
+    return network
+
+def get_true_q_network(num_hidden_layers: int,
+                  num_units: int,
+                  nA: int,
+                  rng: List,
+                  input_dim: Tuple,
+                  # double_input_reward_model=False
+                          ):
+
+    input_size = np.prod(input_dim)
+    output_size = input_size
+    network = {}
+
+    rng_v, rng_h, rng_b, rng_a, rng_c, rng_pi = jrandom.split(rng, 6)
+    q_network_init, q_network = Dense_no_bias(nA)
+    _, q_network_params = q_network_init(rng, (-1, input_size))
+    network["qvalue"] = {"net": q_network,
+                        "params": q_network_params}  # layers = [stax.Flatten]
+
+    c_network, c_network_params = get_c_net(rng_c, input_size)
+    a_network, a_network_params = get_action_a_net(rng_a, input_size, output_size)
+    b_network, b_network_params = get_action_b_net(rng_b, input_size, output_size)
+
+    network["model"] = {"net": [b_network, a_network, c_network],
+                        "params": [b_network_params,
+                                   a_network_params,
+                                   c_network_params]
                         }
 
 

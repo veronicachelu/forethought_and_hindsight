@@ -22,8 +22,8 @@ def plot_grid(env, logs=None, env_type="discrete", vmin=None, vmax=None):
             g = env._g_tilings
         else:
             mdp = env._mdp
-            sX = env._sX
-            sY = env._sY
+            # sX = env._sX
+            # sY = env._sY
             g = env._g
         plt.figure(figsize=(3, 3))
         plt.imshow(mdp > -1, interpolation="nearest", cmap='gray')
@@ -33,7 +33,8 @@ def plot_grid(env, logs=None, env_type="discrete", vmin=None, vmax=None):
         plt.yticks([])
         # plt.title("Environment")
 
-        if sX is not None and sY is not None:
+        for sX, sY in env._starting_states:
+        # if sX is not None and sY is not None:
             plt.text(
                 sY, sX,
                 r"$\mathbf{S}$", ha='center', va='center')
@@ -89,8 +90,8 @@ def plot_v(env, values, logs=None, colormap='Blues',
            policy=None,
            ):#vmin=-1, vmax=10):
     plt.clf()
-    vmin = 1#np.min(values)
-    vmax = 0#np.max(values)
+    vmin = np.min(values)
+    vmax = np.max(values)
     # plot_grid(env, env_type=env_type, vmin=vmin, vmax=vmax)
     # if policy is not None:
     #     plot_policy(env, policy, env_type=env_type)
@@ -273,7 +274,7 @@ def plot_pi(env, pi, values, logs=None, filename=None):
     vmin = np.min(values)
     vmax = np.max(values)
     # if not non_gridworld:
-    #     plot_grid(env, env_type=env_type, vmin=vmin, vmax=vmax)
+    plot_grid(env, env_type="discrete")
     # if policy is not None:
     #     plot_policy(env, policy, env_type=env_type)
     # if true_v is not None:
@@ -281,9 +282,9 @@ def plot_pi(env, pi, values, logs=None, filename=None):
     #     vmax = np.max(true_v)
     # else:
     # values *= eta_pi
-    values = values[None, ...] if len(values.shape) == 1 else values
-    plt.imshow(values, interpolation="nearest",
-               cmap='Greys')
+    # values = values[None, ...] if len(values.shape) == 1 else values
+    # plt.imshow(values, interpolation="nearest",
+    #            cmap='Greys')
 
     # plt.title('Policy Visualization')
     action_names = [r"$\uparrow$", r"$\rightarrow$", r"$\downarrow$", r"$\leftarrow$"]

@@ -41,10 +41,10 @@ class TpFwMLE(TpVanilla):
             # fw_o_error = fw_o_target - model_o_t
             # fw_o_loss = np.mean(fw_o_error ** 2)
 
-            o_tmn_probs = self._softmax(model_o_t)
-            o_tmn_probs[o_t] -= 1
+            o_t_probs = self._softmax(model_o_t)
+            o_t_probs[o_t] -= 1
             # o_tmn_probs /= len(o_tmn_probs)
-            fw_o_error = - o_tmn_probs
+            fw_o_error = - o_t_probs
 
             r_tmn = r_params[o_tmn_target][o_t]
             r_tmn_target = 0

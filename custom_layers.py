@@ -55,15 +55,17 @@ def RewardUpdate(out_dim, W_init=glorot_normal()):
         # output = jnp.dot(input, params)
         # return output
         cross_predecessors, expected_predecessors, current = inputs
+        b = cross_predecessors.shape[0]
         params_shape = params.shape[0]
+        first_half = jnp.tile(params[:params_shape//2, :][None, ...], (b, 1, 1))
         pred_contrib = lax.batch_matmul(cross_predecessors,
-                                        params[:params_shape//2, :][None, ...])
+                                        first_half)
 
+        second_half = jnp.tile(params[params_shape//2:, :][None, ...], (b, 1, 1))
         cross_exp_pred_current = lax.batch_matmul(expected_predecessors[..., None],
                          jnp.transpose(current[..., None], axes=[0, 2, 1]))
 
-        current_contrib = lax.batch_matmul(cross_exp_pred_current,
-                                        params[params_shape//2:, :][None, ...])
+        current_contrib = lax.batch_matmul(cross_exp_pred_current, second_half)
         # first_product = jnp.squeeze(lax.batch_matmul(expected_predecessors[..., None],
         #                                              second_product), axis=-1)
         return jnp.squeeze(pred_contrib + current_contrib, axis=[-1])

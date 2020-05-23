@@ -5,7 +5,7 @@ from copy import deepcopy
 class MdpSolver:
     def __init__(self, env,
                  nS, nA, discount, feature_coder=None):
-        self._p, self._p_absorbing, self._r, self._d = env._get_dynamics(feature_coder)
+        self._p, self._p_absorbing, self._r, self._d, self._true_discount = env._get_dynamics(feature_coder)
         if feature_coder is not None:
             self._nS = np.prod(feature_coder["num_tiles"]) * feature_coder["num_tilings"]
         else:
@@ -19,6 +19,7 @@ class MdpSolver:
         self._theta = 1e-4
         self._pi = np.full((self._nS, self._nA), 1 / self._nA)
         self._assigned_pi = False
+        self._true_model = None
 
         mdp_root_path = os.path.split(os.path.split(env._path)[0])[0]
         baseline = os.path.basename(env._path)
@@ -40,6 +41,34 @@ class MdpSolver:
         ppi = np.einsum('kij, ik->ij', self._p_absorbing, self._pi)
         rpi = np.einsum('kij, kij, ik->i', self._r, self._p_absorbing, self._pi)
         self._v = np.linalg.solve(np.eye(self._r.shape[1]) - self._discount * ppi, rpi)
+
+    def get_true_model(self, pi=None):
+        if self._true_model is None:
+            if pi is None:
+                pi = self._pi
+            v = self.get_optimal_v()
+            ppi = np.einsum('kij, ik->ij', self._p, pi)
+            eta_pi = self.get_eta_pi(pi)
+            stationary = np.diag(eta_pi)
+            bw_model = np.matmul(np.matmul(np.linalg.inv(stationary), ppi.transpose()), stationary)
+            self._true_model = (bw_model, ppi, np.mean(self._r, axis=0), v)
+
+        return self._true_model
+
+    def get_true_action_model(self, pi=None):
+        if self._true_model is None:
+            # if pi is None:
+            #     pi = self._pi
+            # v = self.get_optimal_v()
+            # ppi = np.einsum('kij, ik->ij', self._p, pi)
+            p = np.transpose(self._p, axes=[1, 0, 2])
+            # r = np.transpose(self._r, axes=[1, 0, 2])
+            # eta_pi = self.get_eta_pi(pi)
+            # stationary = np.diag(eta_pi)
+            # bw_model = np.matmul(np.matmul(np.linalg.inv(stationary), ppi.transpose()), stationary)
+            self._true_model = (None, p, np.sum(self._r, axis=0), self._true_discount)
+
+        return self._true_model
 
     # def _improve_policy(self):
     #     done = True

@@ -36,8 +36,7 @@ class TpFw(TpVanilla):
 
             # forward
             model_o_t = fw_o_params[o_tmn_target]
-            fw_o_target = np.eye(np.prod(self._input_dim))[o_t] - model_o_t
-            fw_o_error = fw_o_target - model_o_t
+            fw_o_error = np.eye(np.prod(self._input_dim))[o_t] - model_o_t
             fw_o_loss = np.mean(fw_o_error ** 2)
 
             # if self._double_input_reward_model:

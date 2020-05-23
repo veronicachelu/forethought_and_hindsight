@@ -3,13 +3,25 @@ import tensorflow as tf
 
 from agents.agent import Agent
 from utils.visualizer import *
+from utils.mdp_solvers.solve_mdp import MdpSolver
 
 def run_episodic(agent: Agent,
         environment: dm_env.Environment,
         num_episodes: int,
         max_len: int,
+        space,
         aux_agent_configs
         ):
+    if space["agent_config"]["model_family"] == "q_true" and \
+                    space["env_config"]["model_class"] == "tabular":
+        mdp_solver = MdpSolver(environment, 48, space["env_config"]["nA"], aux_agent_configs["discount"])
+
+        agent._o_network, agent._fw_o_network, agent._r_network, agent._true_discount = mdp_solver.get_true_action_model()
+    # else:
+    #     mdp_solver = MdpSolver(environment, 48, space["env_config"]["nA"], aux_agent_configs["discount"])
+    #
+    #     _, _, _, agent._true_discount = mdp_solver.get_true_action_model()
+    # _, _, agent._true_r_network, agent._true_discount = mdp_solver.get_true_action_model()
     cumulative_reward = 0
     # agent.load_model()
     ep_steps = []
@@ -40,6 +52,8 @@ def run_episodic(agent: Agent,
                         agent.planning_update(timestep)
 
                 tf.summary.scalar("train/ep_steps", t, step=agent.total_steps)
+                tf.summary.scalar("train/cum_reward", cumulative_reward, step=agent.total_steps)
+                tf.summary.scalar("train/step_reward", new_timestep.reward, step=agent.total_steps)
 
                 if new_timestep.last():
                     break
@@ -54,23 +68,24 @@ def run_episodic(agent: Agent,
             ep_steps.append(t)
             ep_rewards.append(ep_reward)
 
-            # hat_v = agent.get_values_for_all_states(environment.get_all_states())
-            # hat_pi = agent.get_policy_for_all_states(environment.get_all_states())
-            # _hat_pi_ = hat_pi.reshape((10, 10))
-            # _hat_v_ = environment.reshape_v(hat_v * (environment._d * len(environment._starting_positions)))
-            # plot_v(env=environment,
-            #        values=_hat_v_,
-            #        logs=agent._images_dir,
-            #        filename="v_{}.png".format(agent.episode))
-            # plot_pi(env=environment,
-            #         pi=_hat_pi_,
-            #         values=_hat_v_,
-            #        logs=agent._images_dir,
-            #        filename="pi_{}.png".format(agent.episode))
+            if agent.episode % 1 == 0:
+                hat_v = agent.get_values_for_all_states(environment.get_all_states())
+                hat_pi = agent.get_policy_for_all_states(environment.get_all_states())
+                _hat_pi_ = environment.reshape_v(hat_pi)
+                _hat_v_ = environment.reshape_v(hat_v)
+                plot_v(env=environment,
+                       values=_hat_v_,
+                       logs=agent._images_dir,
+                       filename="v_{}.png".format(agent.episode))
+                plot_pi(env=environment,
+                        pi=_hat_pi_,
+                        values=_hat_v_,
+                       logs=agent._images_dir,
+                       filename="pi_{}.png".format(agent.episode))
 
             tf.summary.scalar("train/reward", np.mean(ep_reward), step=agent.episode)
-            tf.summary.scalar("train/avg_reward", np.mean(ep_rewards), step=agent.episode)
-            tf.summary.scalar("train/avg_steps", np.mean(ep_steps), step=agent.episode)
+            # tf.summary.scalar("train/avg_reward", np.mean(ep_rewards), step=agent.episode)
+            # tf.summary.scalar("train/avg_steps", np.mean(ep_steps), step=agent.episode)
             tf.summary.scalar("train/steps", np.mean(t), step=agent.episode)
             agent.writer.flush()
 

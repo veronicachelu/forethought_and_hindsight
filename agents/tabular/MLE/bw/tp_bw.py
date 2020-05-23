@@ -34,8 +34,7 @@ class TpBw(TpVanilla):
             o_t = transitions[-1][-1]
 
             o_tmn = o_params[o_t]
-            o_target = np.eye(np.prod(self._input_dim))[o_tmn_target] - o_tmn
-            o_error = o_target - o_tmn
+            o_error = np.eye(np.prod(self._input_dim))[o_tmn_target] - o_tmn
             o_loss = np.mean(o_error ** 2)
 
             r_tmn = r_params[o_tmn_target, o_t]

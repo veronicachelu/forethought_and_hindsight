@@ -853,8 +853,81 @@ config = {
             "model_family": "q",
             "target_networks": False,
             "class": {"linear": "VanillaQ",
-                      "tabular": ""}
+                      "tabular": "VanillaQT"}
         },
+
+    "c_bw_q": {
+        "task_type": "control",
+        "pg": False,
+        "run_mode": "c_bw_q",
+        "planning_depth": 0,
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "q",
+        "target_networks": False,
+        "class": {"linear": "BwQ",
+                  "tabular": "BwQT"}
+    },
+
+    "c_true_bw_q": {
+        "task_type": "control",
+        "pg": False,
+        "run_mode": "c_true_bw_q",
+        "planning_depth": 0,
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "q_true",
+        "target_networks": False,
+        "class": {"linear": "TrueBwQ",
+                  "tabular": "TrueBwQT"}
+    },
+    "p_bw_q": {
+        "task_type": "control",
+        "pg": False,
+        "run_mode": "p_bw_q",
+        "planning_depth": 0,
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "q",
+        "target_networks": False,
+        "class": {"linear": "BwQ",
+                  "tabular": "BwQT"}
+    },
+    "p_fw_q": {
+        "task_type": "control",
+        "pg": False,
+        "run_mode": "p_fw_q",
+        "planning_depth": 0,
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "q",
+        "target_networks": False,
+        "class": {"linear": "FwQ",
+                  "tabular": "FwQT"}
+    },
+
+    "p_true_fw_q": {
+        "task_type": "control",
+        "pg": False,
+        "run_mode": "p_true_fw_q",
+        "planning_depth": 0,
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "q_true",
+        "target_networks": False,
+        "class": {"linear": "FwQ",
+                  "tabular": "TrueFwQT"}
+    },
 
     "ac_vanilla": {
         "task_type": "control",

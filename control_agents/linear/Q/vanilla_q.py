@@ -30,6 +30,7 @@ class VanillaQ(Agent):
             batch_size: int,
             discount: float,
             lr: float,
+            lr_model: float,
             log_period: int,
             nrng,
             rng_seq,
@@ -48,14 +49,18 @@ class VanillaQ(Agent):
         self._discount = discount
         self._batch_size = batch_size
         self._latent = latent
+        self._n = 0
         self._run_mode = "{}".format(self._run_mode)
         self._max_len = max_len
         self._final_epsilon = 0.0
-        self._initial_epsilon = 0.
-        self._epsilon = 0.1
+        self._initial_epsilon = 0.5
+        self._epsilon = 0.5
         self._exploration_decay_period = exploration_decay_period
         self._nrng = nrng
         self._lr = lr
+        self._initial_lr = lr
+        self._lr_model = lr_model
+        self._initial_lr_model = lr_model
         self._warmup_steps = 0
         self._logs = logs
         self._seed = seed
@@ -99,8 +104,10 @@ class VanillaQ(Agent):
         self._q_loss_grad = jax.jit(jax.value_and_grad(q_loss))
         self._q_forward = jax.jit(self._q_network)
 
+        self._step_schedule = optimizers.polynomial_decay(self._lr,
+                                                          self._exploration_decay_period, 0, 0.9)
         # Make an Adam optimizer.
-        q_opt_init, q_opt_update, q_get_params = optimizers.adam(step_size=self._lr)
+        q_opt_init, q_opt_update, q_get_params = optimizers.adam(step_size=self._step_schedule)
         self._q_opt_update = jax.jit(q_opt_update)
         self._q_opt_state = q_opt_init(self._q_parameters)
         self._q_get_params = q_get_params
@@ -243,7 +250,7 @@ class VanillaQ(Agent):
     def _log_summaries(self, losses_and_grads, summary_name):
         if self._logs is not None:
             losses = losses_and_grads["losses"]
-            gradients = losses_and_grads["gradients"]
+            # gradients = losses_and_grads["gradients"]
             if self._max_len == -1:
                 ep = self.total_steps
             else:
@@ -251,15 +258,26 @@ class VanillaQ(Agent):
             if ep % self._log_period == 0:
                 for k, v in losses.items():
                     tf.summary.scalar("train/losses/{}/{}".format(summary_name, k),
-                                      losses[k], step=ep)
-                for k, v in gradients.items():
-                    tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
-                                      gradients[k], step=ep)
+                                      np.array(v), step=ep)
+                # for k, v in gradients.items():
+                #     tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k),
+                #                       gradients[k], step=ep)
                 self.writer.flush()
+
+    def get_qvalues_for_all_states(self, all_states):
+        features = self._get_features(all_states) if self._feature_mapper is not None else all_states
+        return np.array(self._q_forward(self._q_parameters, np.asarray(features)), np.float)
 
     def get_values_for_all_states(self, all_states):
         features = self._get_features(all_states) if self._feature_mapper is not None else all_states
-        return np.array(self._q_forward(self._q_parameters, np.asarray(features)), np.float)
+        return np.mean(np.array(self._q_forward(self._q_parameters, np.asarray(features)), np.float), -1)
+
+    def get_policy_for_all_states(self, all_states):
+        features = self._get_features(all_states) if self._feature_mapper is not None else all_states
+        q_all = np.array(self._q_forward(self._q_parameters, np.asarray(features)), np.float)
+        actions = np.argmax(q_all, axis=-1)
+
+        return np.array(actions)
 
         # losses = losses_and_grads["losses"]
         # gradients = losses_and_grads["gradients"]
@@ -292,10 +310,10 @@ class VanillaQ(Agent):
         bonus = np.clip(bonus, 0., self._initial_epsilon - self._final_epsilon)
         self._epsilon = self._final_epsilon + bonus
         if self._logs is not None:
-            # if self._max_len == -1:
-            ep = self.total_steps
-            # else:
-            #     ep = self.episode
+            if self._max_len == -1:
+                ep = self.total_steps
+            else:
+                ep = self.episode
             if ep % self._log_period == 0:
                 tf.summary.scalar("train/epsilon",
                                   self._epsilon, step=ep)

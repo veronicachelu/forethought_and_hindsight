@@ -1,5 +1,52 @@
 configs={
     "maze": {
+        "control": {
+            "agents": ["p_fw_q",
+                       "p_bw_q_top_1",
+                       "p_bw_q_top_2",
+                       "p_bw_q_top_3",
+                       "p_bw_q_top_4",
+                       "p_bw_q_top_5"],
+        },
+        "non_parametric_fw": {
+            "agents": ["fw_rnd", "fw_pri"],
+            "planning_depths": [1, 1],
+            "replay_capacities": [50, 50]
+        },
+
+        "non_parametric_fw_bw": {
+            "agents": ["bw_fw_PWMA", "bw_fw_MG"],
+            "planning_depths": [1, 1],
+            "replay_capacities": [50, 50]
+        },
+
+        "parametric": {
+            "agents": ["bw", "bw_fw", "fw"],
+            "planning_depths": [1, 1, 1],
+            "replay_capacities": [0, 0, 0],
+        },
+
+        "final": {
+            "agents": ["bw", "fw", "fw_rnd", "bw_fw_PWMA"],
+            "planning_depths": [1, 1, 1, 1],
+            "replay_capacities": [0, 0, 50, 50]
+        },
+        "all": {
+            "agents": ["bw", "bw_fw", "fw", "fw_rnd", "fw_pri",
+                       "bw_fw_PWMA", "bw_fw_MG"],
+            "planning_depths": [1, 1, 1, 1, 1, 1, 1],
+            "replay_capacities": [0, 0, 0, 50, 50, 50, 50]
+        }
+    },
+    "open_maze": {
+        "control": {
+            "agents": ["p_fw_q",
+                       "p_bw_q_top_1",
+                       "p_bw_q_top_2",
+                       "p_bw_q_top_3",
+                       "p_bw_q_top_4",
+                       "p_bw_q_top_5"],
+        },
         "non_parametric_fw": {
             "agents": ["fw_rnd", "fw_pri"],
             "planning_depths": [1, 1],

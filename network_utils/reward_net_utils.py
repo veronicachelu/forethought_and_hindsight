@@ -19,6 +19,12 @@ def get_r_net(rng_r, num_units):
 
     return r_network, r_network_params
 
+def get_action_r_net(rng_r, num_units):
+    r_network_init, r_network = Dense_no_bias(4)
+    _, r_network_params = r_network_init(rng_r, (-1, 2 * num_units))
+
+    return r_network, r_network_params
+
 def get_mult_r_net(rng_r, num_units):
     r_network_init, r_network = MultReward(num_units)
     _, r_network_params = r_network_init(rng_r, (-1, num_units, num_units))

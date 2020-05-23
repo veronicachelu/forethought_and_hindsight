@@ -16,7 +16,7 @@ from agents.agent import Agent
 import tensorflow as tf
 import rlax
 from basis.feature_mapper import FeatureMapper
-from control_agents.ac_vanilla import ACVanilla
+from control_agents.linear.AC.ac_vanilla import ACVanilla
 
 NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
