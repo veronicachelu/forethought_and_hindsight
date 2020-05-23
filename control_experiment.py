@@ -12,11 +12,11 @@ def run_episodic(agent: Agent,
         space,
         aux_agent_configs
         ):
-    if space["agent_config"]["model_family"] == "q_true" and \
-                    space["env_config"]["model_class"] == "tabular":
-        mdp_solver = MdpSolver(environment, 48, space["env_config"]["nA"], aux_agent_configs["discount"])
-
-        agent._o_network, agent._fw_o_network, agent._r_network, agent._true_discount = mdp_solver.get_true_action_model()
+    # if space["agent_config"]["model_family"] == "q_true" and \
+    #                 space["env_config"]["model_class"] == "tabular":
+    #     mdp_solver = MdpSolver(environment, 48, space["env_config"]["nA"], aux_agent_configs["discount"])
+    #
+    #     agent._o_network, agent._fw_o_network, agent._r_network, agent._true_discount = mdp_solver.get_true_action_model()
     # else:
     #     mdp_solver = MdpSolver(environment, 48, space["env_config"]["nA"], aux_agent_configs["discount"])
     #

@@ -1,5 +1,4 @@
 import numpy as np
-
 env_config = {
     "class": "MicroWorld",
     "non_gridworld": False,
@@ -7,15 +6,15 @@ env_config = {
     "env_type": "discrete",
     "obs_type": "tabular",
     "policy_type": "greedy",
-    "mdp_filename": "./mdps/maze_486.mdp",
-    "env_size": 486,
+    "mdp_filename": "./mdps/maze_80.mdp",
+    "env_size": 80,
     "num_episodes": 100,
-    "num_runs": 100,
-    "stochastic": True,
+    "control_num_episodes": 100,
+    "num_runs": 20,
+    "stochastic": False,
     "feature_coder": None,
     "nA": 4
 }
-
 
 volatile_agent_config = {
     "vanilla": {
@@ -26,52 +25,52 @@ volatile_agent_config = {
         "lr_m": [0]
     },
     "bw": {
-        "planning_depth": [1, 4, 8],
+        "planning_depth": [1, 2, 3, 4],
         "replay_capacity": [0],
-        "lr": [0.9],
-        "lr_p": [0.9],
-        "lr_m": np.linspace(0.1, 0.7, 7),
+        "lr": [0.5],
+        "lr_p": [0.5],
+        "lr_m": np.linspace(0.01, 1.0, 9),
     },
     "fw": {
         "planning_depth": [1],
         "replay_capacity": [0],
-        "lr": [0.9],
-        "lr_p": [0.9],
-        "lr_m": np.linspace(0.1, 0.7, 7),
+        "lr": [0.5],
+        "lr_p": [0.5],
+        "lr_m": np.linspace(0.01, 1.0, 9),
     },
     "bw_fw": {
         "planning_depth": [1],
         "replay_capacity": [0],
-        "lr": [0.9],
-        "lr_p": [0.9],
-        "lr_m": np.linspace(0.1, 0.7, 7),
+        "lr": [0.5],
+        "lr_p": [0.5],
+        "lr_m": np.linspace(0.01, 1.0, 9),
     },
     "bw_fw_PWMA": {
         "planning_depth": [1],
         "replay_capacity": [50],
-        "lr": [0.9],
-        "lr_p": [0.9],
-        "lr_m": np.linspace(0.1, 0.7, 7),
+        "lr": [0.5],
+        "lr_p": [0.5],
+        "lr_m": np.linspace(0.01, 0.89, 9),
     },
     "bw_fw_MG": {
         "planning_depth": [1],
         "replay_capacity": [50],
-        "lr": [0.9],
-        "lr_p": [0.9],
-        "lr_m": np.linspace(0.1, 0.7, 7),
+        "lr": [0.5],
+        "lr_p": [0.5],
+        "lr_m": np.linspace(0.01, 0.89, 9),
     },
     "fw_rnd": {
         "planning_depth": [1],
         "replay_capacity": [50],
-        "lr": [0.9],
-        "lr_p": [0.9],
-        "lr_m": np.linspace(0.1, 0.7, 7),
+        "lr": [0.5],
+        "lr_p": [0.5],
+        "lr_m": np.linspace(0.01, 0.89, 9),
     },
     "fw_pri": {
         "planning_depth": [1],
         "replay_capacity": [50],
-        "lr": [0.9],
-        "lr_p": [0.9],
-        "lr_m": np.linspace(0.1, 1.0, 10),
+        "lr": [0.5],
+        "lr_p": [0.5],
+        "lr_m": np.linspace(0.01, 0.89, 9),
     },
 }
