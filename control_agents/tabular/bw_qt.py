@@ -38,8 +38,7 @@ class BwQT(VanillaQT):
             a_tmn = transitions[0][1]
             o_t = transitions[-1][-1]
 
-            obs_size = o_tmn.shape[0]
-            oa_target_index = np.ravel_multi_index([o_tmn, a_tmn], (obs_size, 4))
+            oa_target_index = np.ravel_multi_index([o_tmn, a_tmn], (np.prod(self._input_dim), 4))
             model_o_tmn = o_params[o_t]
             oa_target = np.eye(np.prod(self._input_dim)*4)[oa_target_index]
             o_loss = self._ce(self._log_softmax(model_o_tmn), oa_target)
@@ -126,11 +125,11 @@ class BwQT(VanillaQT):
         d_t = timestep.discount
         r_t = timestep.reward
         losses = 0
-        obs_size = o_t.shape[0]
+
         probs = self._softmax(self._o_network[o_t])
         to_update = probs.argsort()[-self._top_n:][::-1]
         for oa_index in to_update:
-            prev_o, prev_a = np.unravel_index(oa_index, (obs_size, 4))
+            prev_o, prev_a = np.unravel_index(oa_index, (np.prod(self._input_dim), 4))
         # for prev_o, prev_a in itertools.product(range(np.prod(self._input_dim)), range(self._nA)):
         #     oa_index = np.ravel_multi_index([prev_o, prev_a], (48, 4))
             loss, gradient = self._q_planning_loss_grad(self._q_network,
