@@ -261,8 +261,16 @@ def plot_tensorflow_log(space, color, linestyle):
 
         x = [m[1] for m in msve]
         # if len(y_steps) == control_num_episodes:
-        all_y_over_seeds.append(np.array(y))
-        all_x_over_seeds.append(np.array(x))
+        # all_y_over_seeds.append(np.array(y))
+        # all_x_over_seeds.append(np.array(x))
+        y = np.array(y)
+        if space["crt_config"]["agent"] == "q":
+            plt.plot(x, y, label="model-free", c="gray", alpha=1, linewidth=LINEWIDTH//num_runs, linestyle="-")
+        else:
+            label = space["crt_config"]["agent"]
+            plt.plot(x, y, label=label,
+                     alpha=1, linewidth=LINEWIDTH//num_runs, color=color,
+                     linestyle=linestyle)
 
         # else:
         #     the_incomplete.append(seed)
@@ -273,36 +281,26 @@ def plot_tensorflow_log(space, color, linestyle):
     # print(those_that_are_not_99)
     #print(len(all_y_over_seeds))
     # all_y_over_seeds = [a[:99] for a in all_y_over_seeds]
-    max_size = np.max([len(a) for a in all_y_over_seeds])
-    the_incomplete_seeds = [i for i, a in enumerate(all_y_over_seeds) if len(a) != max_size]
-    print(the_incomplete_seeds)
-    all_y_over_complete_seeds = [a for i, a in enumerate(all_y_over_seeds) if len(a) == max_size]
-    the_complete_seeds = [i for i, a in enumerate(all_y_over_seeds) if len(a) == max_size]
+    # max_size = np.max([len(a) for a in all_y_over_seeds])
+    # the_incomplete_seeds = [i for i, a in enumerate(all_y_over_seeds) if len(a) != max_size]
+    # print(the_incomplete_seeds)
+    # all_y_over_complete_seeds = [a for i, a in enumerate(all_y_over_seeds) if len(a) == max_size]
+    # the_complete_seeds = [i for i, a in enumerate(all_y_over_seeds) if len(a) == max_size]
     # x = [i for i, a in zip(x, all_y_over_seeds) if len(a) == max_size]
 
-    if len(all_y_over_complete_seeds) == 0:
-        print("agent_{} has no data!".format(space["crt_config"]["agent"]))
-        return
+    # if len(all_y_over_complete_seeds) == 0:
+    #     print("agent_{} has no data!".format(space["crt_config"]["agent"]))
+    #     return
 
-    x = all_x_over_seeds[the_complete_seeds[0]]
+    # x = all_x_over_seeds[all_y_over_seeds[0]]
     # the_complete = [a for i, a in enumerate(all_y_over_seeds) if len(a) == first_seed_size]
-    mean_y_over_seeds = np.mean(all_y_over_complete_seeds, axis=0)
-    std_y_over_seeds = np.std(all_y_over_complete_seeds, axis=0)
+    # mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
+    # std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
     # mean_y_over_seeds = mean_y_over_seeds[::5]
     # std_y_over_seeds = std_y_over_seeds[::5]
     # x = x[::5]
-    if space["crt_config"]["agent"] == "q":
-        plt.plot(x, mean_y_over_seeds, label="model-free", c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
-        plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
-                         color="gray", alpha=0.07)
-    else:
-        label = space["crt_config"]["agent"]
-        plt.plot(x, mean_y_over_seeds, label=label,
-                 alpha=1, linewidth=LINEWIDTH, color=color,
-                 linestyle=linestyle)
-        plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
-                         alpha=0.07, color=color,
-                         linestyle=linestyle)
+    # for
+
 
 
 if __name__ == '__main__':
