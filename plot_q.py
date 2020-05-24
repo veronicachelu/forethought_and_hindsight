@@ -19,11 +19,11 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', os.path.join(str((os.environ['LOGS'])), 'control'), 'where to save results')
-flags.DEFINE_string('env', "medium_maze", 'where to save results')
+flags.DEFINE_string('env', "maze", 'where to save results')
 flags.DEFINE_bool('tabular', False, 'where to save results')
 flags.DEFINE_bool('mb', False, 'where to save results')
-# flags.DEFINE_bool('reward', True, 'where to save results')
-flags.DEFINE_bool('reward', False, 'where to save results')
+flags.DEFINE_bool('reward', True, 'where to save results')
+# flags.DEFINE_bool('reward', False, 'where to save results')
 # flags.DEFINE_bool('mb', False, 'where to save results')
 flags.DEFINE_string('pivoting', "control", 'where to save results')
 flags.DEFINE_float('ymin', None, 'plot up to')
@@ -238,18 +238,27 @@ def plot_tensorflow_log(space, color, linestyle):
 
         # Show all tags in the log file
         # print(event_acc.Tags())
+
+        tag_reward = 'train/cum_reward'
+        tag_steps = 'train/steps'
         if FLAGS.reward:
-            tag = 'train/cum_reward'
+            tag = tag_reward
         else:
-            tag = 'train/steps'
+            tag = tag_steps
         if not tag in event_acc.Tags()["tensors"]:
             print("no tags")
             continue
 
-        msve = event_acc.Tensors(tag)
+        msve_reward = event_acc.Tensors(tag_reward)
+        msve_steps = event_acc.Tensors(tag_steps)
 
-        y = [tf.make_ndarray(m[2]) for m in msve]
-        if len(y) == control_num_episodes:
+        y_reward = [tf.make_ndarray(m[2]) for m in msve_reward]
+        y_steps = [tf.make_ndarray(m[2]) for m in msve_steps]
+
+        y = y_reward if FLAGS.reward else y_steps
+        msve = msve_reward if FLAGS.reward else msve_steps
+
+        if len(y_steps) == control_num_episodes:
             all_y_over_seeds.append(np.array(y))
             x = [m[1] for m in msve]
         else:
