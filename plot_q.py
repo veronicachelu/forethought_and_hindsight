@@ -181,6 +181,8 @@ def main(argv):
     name = FLAGS.pivoting
     if FLAGS.mb:
         name = "mb_" + name
+    if FLAGS.reward:
+        name = name + "_reward"
 
     plt.grid()
     plt.tight_layout()
