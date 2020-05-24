@@ -241,7 +241,7 @@ def plot_tensorflow_log(space, color, linestyle):
     the_incomplete = [i for i, a in enumerate(all_y_over_seeds) if len(a) != first_seed_size]
     print(the_incomplete)
     the_complete = [i for i, a in enumerate(all_y_over_seeds) if len(a) == first_seed_size]
-    only_some = the_complete[::control_num_episodes]
+    only_some = the_complete[::(control_num_episodes//5)]
     mean_y_over_seeds = np.mean(only_some, axis=0)
     std_y_over_seeds = np.std(only_some, axis=0)
     x = x[::control_num_episodes]
