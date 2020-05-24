@@ -212,7 +212,7 @@ def plot_tensorflow_log(space, color, linestyle):
         list_of_files = glob.glob(os.path.join(logs, '*'))  # * means all if need specific format then *.csv
         if len(list_of_files) == 0:
             print("no files in folder {}".format(logs))
-            return
+            continue
         if len(list_of_files) > 1:
             print("ERROR, there should be only one file in folder {}".format(logs))
         filename = list_of_files[0]
