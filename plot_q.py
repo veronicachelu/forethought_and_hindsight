@@ -275,7 +275,7 @@ def plot_tensorflow_log(space, color, linestyle):
     # all_y_over_seeds = [a[:99] for a in all_y_over_seeds]
     max_size = np.max([len(a) for a in all_y_over_seeds])
     the_incomplete_seeds = [i for i, a in enumerate(all_y_over_seeds) if len(a) != max_size]
-    print(the_incomplete)
+    print(the_incomplete_seeds)
     all_y_over_complete_seeds = [a for i, a in enumerate(all_y_over_seeds) if len(a) == max_size]
     the_complete_seeds = [i for i, a in enumerate(all_y_over_seeds) if len(a) == max_size]
     # x = [i for i, a in zip(x, all_y_over_seeds) if len(a) == max_size]
