@@ -171,10 +171,17 @@ def main(argv):
         plt.ylim(FLAGS.ymin, FLAGS.ymax)
     plt.ylabel(yaxis, fontsize=FONTSIZE)
     plt.xlabel(xaxis, fontsize=FONTSIZE)
-    plt.legend(loc='upper right',
-               frameon=True,
-               prop={'size': FONTSIZE},
-               bbox_to_anchor=(1.1, 1.1))
+    plt.legend(
+        # loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
+        frameon=True, ncol=2, mode="expand",
+        loc='lower left',
+        borderaxespad=0.,
+        prop={'size': FONTSIZE}, bbox_to_anchor=(0., 1.02, 1., .102))
+    # bbox_to_anchor=(1.1, 1.1))
+    # plt.legend(loc='upper right',
+    #            frameon=True,
+    #            prop={'size': FONTSIZE},
+    #            bbox_to_anchor=(1.1, 1.1))
     if not os.path.exists(plots):
         os.makedirs(plots)
 
