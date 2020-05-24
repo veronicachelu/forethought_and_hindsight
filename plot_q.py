@@ -22,6 +22,8 @@ flags.DEFINE_string('logs', os.path.join(str((os.environ['LOGS'])), 'control'), 
 flags.DEFINE_string('env', "maze", 'where to save results')
 flags.DEFINE_bool('tabular', False, 'where to save results')
 flags.DEFINE_bool('mb', False, 'where to save results')
+# flags.DEFINE_bool('reward', True, 'where to save results')
+flags.DEFINE_bool('reward', False, 'where to save results')
 # flags.DEFINE_bool('mb', False, 'where to save results')
 flags.DEFINE_string('pivoting', "control", 'where to save results')
 flags.DEFINE_float('ymin', None, 'plot up to')
@@ -157,8 +159,12 @@ def main(argv):
 
         plot_for_agent(agent, env_config, logs, color, linestyle)
 
-    yaxis = 'Steps/Episode'
-    xaxis = "Episodes"
+    if FLAGS.reward:
+        yaxis = 'Cumulative Reward'
+        xaxis = "Steps"
+    else:
+        yaxis = 'Steps/Episode'
+        xaxis = "Episodes"
 
     # Set the y limits
     if FLAGS.ymin is not None and FLAGS.ymax is not None:
@@ -222,7 +228,10 @@ def plot_tensorflow_log(space, color, linestyle):
 
         # Show all tags in the log file
         # print(event_acc.Tags())
-        tag = 'train/steps'
+        if FLAGS.reward:
+            tag = 'train/cum_reward'
+        else:
+            tag = 'train/steps'
         if not tag in event_acc.Tags()["tensors"]:
             print("no tags")
             continue
@@ -234,6 +243,8 @@ def plot_tensorflow_log(space, color, linestyle):
         y = [tf.make_ndarray(m[2]) for m in msve]
         all_y_over_seeds.append(np.array(y))
 
+    # if FLAGS.reward:
+    #     plt.yscale("log")
     # those_that_are_not_99 = [i for i, a in enumerate(all_y_over_seeds) if len(a) != 199]
     # print(those_that_are_not_99)
     #print(len(all_y_over_seeds))
@@ -244,9 +255,9 @@ def plot_tensorflow_log(space, color, linestyle):
     the_complete = [a for i, a in enumerate(all_y_over_seeds) if len(a) == first_seed_size]
     mean_y_over_seeds = np.mean(the_complete, axis=0)
     std_y_over_seeds = np.std(the_complete, axis=0)
-    mean_y_over_seeds = mean_y_over_seeds[::5]
-    std_y_over_seeds = std_y_over_seeds[::5]
-    x = x[::5]
+    # mean_y_over_seeds = mean_y_over_seeds[::5]
+    # std_y_over_seeds = std_y_over_seeds[::5]
+    # x = x[::5]
     if space["crt_config"]["agent"] == "q":
         plt.plot(x, mean_y_over_seeds, label="model-free", c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
