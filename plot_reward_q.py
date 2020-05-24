@@ -29,7 +29,7 @@ flags.DEFINE_string('pivoting', "control", 'where to save results')
 flags.DEFINE_float('ymin', None, 'plot up to')
 flags.DEFINE_float('ymax', None, 'plot up to')
 flags.DEFINE_float('xmin', None, 'plot up to')
-flags.DEFINE_float('xmax', 15000, 'plot up to')
+flags.DEFINE_float('xmax', None, 'plot up to')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
 FONTSIZE = 17
