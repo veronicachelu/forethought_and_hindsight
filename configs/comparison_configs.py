@@ -222,10 +222,11 @@ configs={
         "control": {
             "agents": ["p_fw_q",
                        "p_bw_q_top_1",
-                       "p_bw_q_top_2",
-                       "p_bw_q_top_3",
-                       "p_bw_q_top_4",
-                       "p_bw_q_top_5"],
+                       # "p_bw_q_top_2",
+                       # "p_bw_q_top_3",
+                       # "p_bw_q_top_4",
+                       # "p_bw_q_top_5"
+                       ],
         },
         "final": {
             "agents": ["bw", "fw", "fw_rnd", "bw_fw_PWMA"],
