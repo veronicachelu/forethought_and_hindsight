@@ -270,15 +270,16 @@ def plot_tensorflow_log(space, color, linestyle):
     # print(those_that_are_not_99)
     #print(len(all_y_over_seeds))
     # all_y_over_seeds = [a[:99] for a in all_y_over_seeds]
-    # first_seed_size = len(all_y_over_seeds[0])
-    # the_incomplete = [i for i, a in enumerate(all_y_over_seeds) if len(a) != control_num_episodes]
+    max_size = np.max([len(a) for a in all_y_over_seeds])
+    the_incomplete = [i for i, a in enumerate(all_y_over_seeds) if len(a) != max_size]
     print(the_incomplete)
-    if len(all_y_over_seeds) == 0:
+    the_complete = [a for i, a in enumerate(all_y_over_seeds) if len(a) == max_size]
+    if len(the_complete) == 0:
         print("agent_{} has no data!".format(space["crt_config"]["agent"]))
         return
     # the_complete = [a for i, a in enumerate(all_y_over_seeds) if len(a) == first_seed_size]
-    mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
-    std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
+    mean_y_over_seeds = np.mean(the_complete, axis=0)
+    std_y_over_seeds = np.std(the_complete, axis=0)
     # mean_y_over_seeds = mean_y_over_seeds[::5]
     # std_y_over_seeds = std_y_over_seeds[::5]
     # x = x[::5]
