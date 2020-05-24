@@ -267,22 +267,24 @@ def plot_tensorflow_log(space, color, linestyle):
         all_y_over_seeds.append(np.array(y))
         all_x_over_seeds.append(np.array(x))
 
-    max_len = np.max([len(a) for a in all_x_over_seeds])
-    y_vect = np.zeros((max_len,))
-    y_vect_sq = np.zeros((max_len,))
-    nr_y_vect = np.zeros((max_len,))
-
-    for y in all_y_over_seeds:
-        for j in range(len(y)):
-            y_vect[j] += y[j]
-            y_vect_sq[j] += y[j]**2
-            nr_y_vect[j] += 1
-
-    y_vect_mean = y_vect / nr_y_vect
-    y_vect_std_1 = y_vect_sq / nr_y_vect
-    y_vect_std_2 = y_vect_mean * y_vect_mean
-    y_vect_std = y_vect_std_1 - y_vect_std_2
-    x = range(max_len)
+    min_len = np.min([len(a) for a in all_y_over_seeds])
+    # y_vect = np.zeros((max_len,))
+    # y_vect_sq = np.zeros((max_len,))
+    # nr_y_vect = np.zeros((max_len,))
+    #
+    # for y in all_y_over_seeds:
+    #     for j in range(len(y)):
+    #         y_vect[j] += y[j]
+    #         y_vect_sq[j] += y[j]**2
+    #         nr_y_vect[j] += 1
+    #
+    # y_vect_mean = y_vect / nr_y_vect
+    # y_vect_std_1 = y_vect_sq / nr_y_vect
+    # y_vect_std_2 = y_vect_mean * y_vect_mean
+    # y_vect_std = y_vect_std_1 - y_vect_std_2
+    x = range(min_len)
+    y_vect_mean = np.mean([a[:min_len] for a in all_y_over_seeds], axis=0)
+    y_vect_std = np.std([a[:min_len] for a in all_y_over_seeds], axis=0)
     if space["crt_config"]["agent"] == "q":
         plt.plot(x, y_vect_mean, label="model-free", c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         plt.fill_between(x, y_vect_mean, y_vect_mean + y_vect_std,

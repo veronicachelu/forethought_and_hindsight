@@ -26,7 +26,7 @@ flags.DEFINE_bool('reward', False, 'where to save results')
 # flags.DEFINE_bool('reward', False, 'where to save results')
 # flags.DEFINE_bool('mb', False, 'where to save results')
 flags.DEFINE_string('pivoting', "control", 'where to save results')
-flags.DEFINE_float('ymin', None, 'plot up to')
+flags.DEFINE_float('ymin', 0, 'plot up to')
 flags.DEFINE_float('ymax', 15, 'plot up to')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
