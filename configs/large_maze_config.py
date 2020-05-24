@@ -9,8 +9,8 @@ env_config = {
     "mdp_filename": "./mdps/maze_221.mdp",
     "env_size": 221,
     "num_episodes": 100,
-    "control_num_episodes": 500,
-    "num_runs": 1,
+    "control_num_episodes": 350,
+    "num_runs": 20,
     "stochastic": False,
     "feature_coder": None,
     "nA": 4
