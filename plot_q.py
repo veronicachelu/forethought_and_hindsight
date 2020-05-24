@@ -229,7 +229,8 @@ def plot_tensorflow_log(space, color, linestyle):
 
         msve = event_acc.Tensors(tag)
 
-        x = [m[1] for m in msve]
+        if seed == 0:
+            x = [m[1] for m in msve]
         y = [tf.make_ndarray(m[2]) for m in msve]
         all_y_over_seeds.append(np.array(y))
 
@@ -240,11 +241,12 @@ def plot_tensorflow_log(space, color, linestyle):
     first_seed_size = len(all_y_over_seeds[0])
     the_incomplete = [i for i, a in enumerate(all_y_over_seeds) if len(a) != first_seed_size]
     print(the_incomplete)
-    the_complete = [i for i, a in enumerate(all_y_over_seeds) if len(a) == first_seed_size]
-    only_some = the_complete[::(control_num_episodes//5)]
-    mean_y_over_seeds = np.mean(only_some, axis=0)
-    std_y_over_seeds = np.std(only_some, axis=0)
-    x = x[::control_num_episodes]
+    the_complete = [a for i, a in enumerate(all_y_over_seeds) if len(a) == first_seed_size]
+    mean_y_over_seeds = np.mean(the_complete, axis=0)
+    std_y_over_seeds = np.std(the_complete, axis=0)
+    mean_y_over_seeds = mean_y_over_seeds[::5]
+    std_y_over_seeds = std_y_over_seeds[::5]
+    x = x[::5]
     if space["crt_config"]["agent"] == "q":
         plt.plot(x, mean_y_over_seeds, label="model-free", c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
