@@ -274,6 +274,7 @@ def plot_tensorflow_log(space, color, linestyle):
     the_incomplete = [i for i, a in enumerate(all_y_over_seeds) if len(a) != max_size]
     print(the_incomplete)
     the_complete = [a for i, a in enumerate(all_y_over_seeds) if len(a) == max_size]
+    x = [i for i, a in zip(x, all_y_over_seeds) if len(a) == max_size]
     if len(the_complete) == 0:
         print("agent_{} has no data!".format(space["crt_config"]["agent"]))
         return
