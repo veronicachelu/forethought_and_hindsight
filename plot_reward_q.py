@@ -28,6 +28,8 @@ flags.DEFINE_bool('reward', True, 'where to save results')
 flags.DEFINE_string('pivoting', "control", 'where to save results')
 flags.DEFINE_float('ymin', None, 'plot up to')
 flags.DEFINE_float('ymax', None, 'plot up to')
+flags.DEFINE_float('xmin', None, 'plot up to')
+flags.DEFINE_float('xmax', 15000, 'plot up to')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
 FONTSIZE = 17
@@ -167,8 +169,14 @@ def main(argv):
         xaxis = "Episodes"
 
     # Set the y limits
-    if FLAGS.ymin is not None and FLAGS.ymax is not None:
-        plt.ylim(FLAGS.ymin, FLAGS.ymax)
+    if FLAGS.ymin is not None:
+        plt.ylim(bottom=FLAGS.ymin)
+    if FLAGS.ymax is not None:
+        plt.ylim(top=FLAGS.ymax)
+    if FLAGS.xmin is not None:
+        plt.xlim(left=FLAGS.xmin)
+    if FLAGS.xmax is not None:
+        plt.xlim(right=FLAGS.xmax)
     plt.ylabel(yaxis, fontsize=FONTSIZE)
     plt.xlabel(xaxis, fontsize=FONTSIZE)
 
