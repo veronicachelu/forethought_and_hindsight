@@ -248,7 +248,6 @@ def plot_tensorflow_log(space, color, linestyle):
 
         msve = event_acc.Tensors(tag)
 
-
         y = [tf.make_ndarray(m[2]) for m in msve]
         if len(y) == control_num_episodes:
             all_y_over_seeds.append(np.array(y))
@@ -265,6 +264,9 @@ def plot_tensorflow_log(space, color, linestyle):
     # first_seed_size = len(all_y_over_seeds[0])
     # the_incomplete = [i for i, a in enumerate(all_y_over_seeds) if len(a) != control_num_episodes]
     print(the_incomplete)
+    if len(all_y_over_seeds) == 0:
+        print("agent_{} has no data!".format(space["crt_config"]["agent"]))
+        return
     # the_complete = [a for i, a in enumerate(all_y_over_seeds) if len(a) == first_seed_size]
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
