@@ -19,7 +19,7 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', os.path.join(str((os.environ['LOGS'])), 'control'), 'where to save results')
-flags.DEFINE_string('env', "open_maze", 'where to save results')
+flags.DEFINE_string('env', "maze", 'where to save results')
 flags.DEFINE_bool('tabular', False, 'where to save results')
 flags.DEFINE_bool('mb', False, 'where to save results')
 flags.DEFINE_bool('reward', True, 'where to save results')
@@ -171,7 +171,10 @@ def main(argv):
         plt.ylim(FLAGS.ymin, FLAGS.ymax)
     plt.ylabel(yaxis, fontsize=FONTSIZE)
     plt.xlabel(xaxis, fontsize=FONTSIZE)
-    plt.legend(
+
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    plt.legend(by_label.values(), by_label.keys(),
         # loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
         frameon=True, ncol=2, mode="expand",
         loc='lower left',
@@ -261,19 +264,37 @@ def plot_tensorflow_log(space, color, linestyle):
 
         x = [m[1] for m in msve]
         # if len(y_steps) == control_num_episodes:
-        # all_y_over_seeds.append(np.array(y))
-        # all_x_over_seeds.append(np.array(x))
-        y = np.array(y)
-        if space["crt_config"]["agent"] == "q":
-            plt.plot(x, y, label="model-free", c="gray", alpha=1, linewidth=LINEWIDTH//num_runs, linestyle="-")
-        else:
-            label = space["crt_config"]["agent"]
-            plt.plot(x, y, label=label,
-                     alpha=1, linewidth=LINEWIDTH//num_runs, color=color,
-                     linestyle=linestyle)
+        all_y_over_seeds.append(np.array(y))
+        all_x_over_seeds.append(np.array(x))
 
-        # else:
-        #     the_incomplete.append(seed)
+    max_len = np.max([len(a) for a in all_x_over_seeds])
+    y_vect = np.zeros((max_len,))
+    y_vect_sq = np.zeros((max_len,))
+    nr_y_vect = np.zeros((max_len,))
+
+    for y in all_y_over_seeds:
+        for j in range(len(y)):
+            y_vect[j] += y[j]
+            y_vect_sq[j] += y[j]**2
+            nr_y_vect[j] += 1
+
+    y_vect_mean = y_vect / nr_y_vect
+    y_vect_std_1 = y_vect_sq / nr_y_vect
+    y_vect_std_2 = y_vect_mean * y_vect_mean
+    y_vect_std = y_vect_std_1 - y_vect_std_2
+    x = range(max_len)
+    if space["crt_config"]["agent"] == "q":
+        plt.plot(x, y_vect_mean, label="model-free", c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
+        plt.fill_between(x, y_vect_mean, y_vect_mean + y_vect_std,
+                         color="gray", alpha=0.07)
+    else:
+        label = space["crt_config"]["agent"]
+        plt.plot(x, y_vect_mean, label=label,
+                 alpha=1, linewidth=LINEWIDTH, color=color,
+                 linestyle=linestyle)
+        plt.fill_between(x, y_vect_mean, y_vect_mean + y_vect_std,
+                         alpha=0.07, color=color,
+                         linestyle=linestyle)
 
     # if FLAGS.reward:
     #     plt.yscale("log")

@@ -22,7 +22,7 @@ flags.DEFINE_string('logs', os.path.join(str((os.environ['LOGS'])), 'control'), 
 flags.DEFINE_string('env', "open_maze", 'where to save results')
 flags.DEFINE_bool('tabular', False, 'where to save results')
 flags.DEFINE_bool('mb', False, 'where to save results')
-flags.DEFINE_bool('reward', True, 'where to save results')
+flags.DEFINE_bool('reward', False, 'where to save results')
 # flags.DEFINE_bool('reward', False, 'where to save results')
 # flags.DEFINE_bool('mb', False, 'where to save results')
 flags.DEFINE_string('pivoting', "control", 'where to save results')
