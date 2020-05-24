@@ -284,7 +284,7 @@ def plot_tensorflow_log(space, color, linestyle):
         print("agent_{} has no data!".format(space["crt_config"]["agent"]))
         return
 
-    x = the_complete_seeds[0]
+    x = all_x_over_seeds[the_complete_seeds[0]]
     # the_complete = [a for i, a in enumerate(all_y_over_seeds) if len(a) == first_seed_size]
     mean_y_over_seeds = np.mean(all_y_over_complete_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_complete_seeds, axis=0)
