@@ -29,7 +29,7 @@ flags.DEFINE_string('pivoting', "control", 'where to save results')
 flags.DEFINE_float('ymin', None, 'plot up to')
 flags.DEFINE_float('ymax', None, 'plot up to')
 flags.DEFINE_float('xmin', None, 'plot up to')
-flags.DEFINE_float('xmax', None, 'plot up to')
+flags.DEFINE_float('xmax', 15000, 'plot up to')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
 FONTSIZE = 17
@@ -295,14 +295,14 @@ def plot_tensorflow_log(space, color, linestyle):
     y_vect_std = np.std([a[:min_len] for a in all_y_over_seeds], axis=0)
     if space["crt_config"]["agent"] == "q":
         plt.plot(x, y_vect_mean, label="model-free", c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
-        plt.fill_between(x, y_vect_mean, y_vect_mean + y_vect_std,
+        plt.fill_between(x, np.maximum(y_vect_mean - y_vect_std, np.zeros_like(y_vect_mean)), y_vect_mean + y_vect_std,
                          color="gray", alpha=0.07)
     else:
         label = space["crt_config"]["agent"]
         plt.plot(x, y_vect_mean, label=label,
                  alpha=1, linewidth=LINEWIDTH, color=color,
                  linestyle=linestyle)
-        plt.fill_between(x, y_vect_mean, y_vect_mean + y_vect_std,
+        plt.fill_between(x, np.maximum(y_vect_mean - y_vect_std, np.zeros_like(y_vect_mean)), y_vect_mean + y_vect_std,
                          alpha=0.07, color=color,
                          linestyle=linestyle)
 
