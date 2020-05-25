@@ -346,6 +346,9 @@ def load_env_and_volatile_configs(env):
     elif env == "open_maze":
         env_config = configs.open_maze_config.env_config
         volatile_agent_config = configs.open_maze_config.volatile_agent_config
+    elif env == "open_medium_maze":
+        env_config = configs.open_medium_maze_config.env_config
+        volatile_agent_config = configs.open_medium_maze_config.volatile_agent_config
     elif env == "random_maze":
         env_config = configs.random_maze_config.env_config
         volatile_agent_config = configs.random_maze_config.volatile_agent_config
