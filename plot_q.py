@@ -26,8 +26,8 @@ flags.DEFINE_bool('reward', False, 'where to save results')
 # flags.DEFINE_bool('reward', False, 'where to save results')
 # flags.DEFINE_bool('mb', False, 'where to save results')
 flags.DEFINE_string('pivoting', "control", 'where to save results')
-flags.DEFINE_float('ymin', 0, 'plot up to')
-flags.DEFINE_float('ymax', 15, 'plot up to')
+flags.DEFINE_float('ymin', None, 'plot up to')
+flags.DEFINE_float('ymax', None, 'plot up to')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
 FONTSIZE = 17
@@ -216,16 +216,13 @@ def plot_tensorflow_log(space, color, linestyle):
         'histograms': 1,
         'tensors': 200000,
     }
-
-    # all_x_over_seeds = []
-    # the_incomplete = []
+    all_y_over_seeds = []
+    all_x_over_seeds = []
+    the_incomplete = []
     num_runs = space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["control_num_episodes"]
-    all_y_over_seeds = np.zeros((control_num_episodes,))
-    all_y_sq_over_seeds = np.zeros((control_num_episodes,))
-    nr_of_valid_seeds = 0
     for seed in range(num_runs):
-        print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))
+        #print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))
         logs = os.path.join(os.path.join(space["crt_config"]["logs"],
                                          "summaries"),
                                         "seed_{}".format(seed))
@@ -249,14 +246,11 @@ def plot_tensorflow_log(space, color, linestyle):
             continue
 
         msve = event_acc.Tensors(tag)
-        y = [tf.make_ndarray(m[2]) for m in msve]
+        y_steps = [tf.make_ndarray(m[2]) for m in msve]
 
-        if len(y) == control_num_episodes:
+        if len(y_steps) == control_num_episodes:
             x = [m[1] for m in msve]
-            all_y_over_seeds += np.array(y)
-            all_y_sq_over_seeds += np.array(y) ** 2
-            nr_of_valid_seeds += 1
-            # all_x_over_seeds.append(np.array(x))
+            all_y_over_seeds.append(np.array(y_steps))
 
     # max_size = np.max([len(a) for a in all_y_over_seeds])
     # the_incomplete_seeds = [i for i, a in enumerate(all_y_over_seeds) if len(a) != max_size]
@@ -264,19 +258,15 @@ def plot_tensorflow_log(space, color, linestyle):
     # all_y_over_complete_seeds = [a for i, a in enumerate(all_y_over_seeds) if len(a) == max_size]
     # the_complete_seeds = [i for i, a in enumerate(all_y_over_seeds) if len(a) == max_size]
     #
-    if nr_of_valid_seeds == 0:
+    if len(all_y_over_seeds) == 0:
         print("agent_{} has no data!".format(space["crt_config"]["agent"]))
         return
-
-    mean_y_over_seeds = all_y_over_seeds / nr_of_valid_seeds
-    mean_y_sq_over_seeds = all_y_sq_over_seeds / nr_of_valid_seeds
-    std_y_over_seeds = mean_y_sq_over_seeds - mean_y_over_seeds ** 2
 
     # x = all_x_over_seeds[the_complete_seeds[0]]
     # x = all_x_over_seeds[the_complete_seeds[0]]
     # the_complete = [a for i, a in enumerate(all_y_over_seeds) if len(a) == first_seed_size]
-    # mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
-    # std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
+    mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
+    std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
     # mean_y_over_seeds = mean_y_over_seeds[::5]
     # std_y_over_seeds = std_y_over_seeds[::5]
     # x = x[::5]

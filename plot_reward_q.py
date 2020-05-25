@@ -19,7 +19,7 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', os.path.join(str((os.environ['LOGS'])), 'control'), 'where to save results')
-flags.DEFINE_string('env', "maze", 'where to save results')
+flags.DEFINE_string('env', "large_maze", 'where to save results')
 flags.DEFINE_bool('tabular', False, 'where to save results')
 flags.DEFINE_bool('mb', False, 'where to save results')
 flags.DEFINE_bool('reward', True, 'where to save results')

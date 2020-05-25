@@ -252,7 +252,8 @@ configs={
     },
     "large_maze": {
         "control": {
-            "agents": ["p_fw_q",
+            "agents": [
+                "p_fw_q",
                        "p_bw_q_top_1",
                        "p_bw_q_top_2",
                        "p_bw_q_top_3",
