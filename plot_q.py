@@ -19,7 +19,7 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', os.path.join(str((os.environ['LOGS'])), 'control'), 'where to save results')
-flags.DEFINE_string('env', "open_maze", 'where to save results')
+flags.DEFINE_string('env', "large_maze", 'where to save results')
 flags.DEFINE_bool('tabular', False, 'where to save results')
 flags.DEFINE_bool('mb', False, 'where to save results')
 flags.DEFINE_bool('reward', False, 'where to save results')
@@ -225,7 +225,7 @@ def plot_tensorflow_log(space, color, linestyle):
     all_y_sq_over_seeds = np.zeros((control_num_episodes,))
     nr_of_valid_seeds = 0
     for seed in range(num_runs):
-        #print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))
+        print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))
         logs = os.path.join(os.path.join(space["crt_config"]["logs"],
                                          "summaries"),
                                         "seed_{}".format(seed))
