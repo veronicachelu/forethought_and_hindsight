@@ -253,31 +253,29 @@ def plot_tensorflow_log(space, color, linestyle):
         msve_reward = event_acc.Tensors(tag_reward)
         msve_steps = event_acc.Tensors(tag_steps)
 
-        y_reward = [tf.make_ndarray(m[2]) for m in msve_reward]
         y_steps = [tf.make_ndarray(m[2]) for m in msve_steps]
-
-        y = y_reward if FLAGS.reward else y_steps
         msve = msve_reward if FLAGS.reward else msve_steps
 
-        x = [m[1] for m in msve]
-        # if len(y_steps) == control_num_episodes:
-        all_y_over_seeds.append(np.array(y))
-        all_x_over_seeds.append(np.array(x))
+        if len(y_steps) == control_num_episodes:
+            x = [m[1] for m in msve]
+            all_y_over_seeds.append(np.array(y_steps))
+            # all_x_over_seeds.append(np.array(x))
 
-    max_size = np.max([len(a) for a in all_y_over_seeds])
-    the_incomplete_seeds = [i for i, a in enumerate(all_y_over_seeds) if len(a) != max_size]
-    print(the_incomplete_seeds)
-    all_y_over_complete_seeds = [a for i, a in enumerate(all_y_over_seeds) if len(a) == max_size]
-    the_complete_seeds = [i for i, a in enumerate(all_y_over_seeds) if len(a) == max_size]
-
-    if len(all_y_over_complete_seeds) == 0:
+    # max_size = np.max([len(a) for a in all_y_over_seeds])
+    # the_incomplete_seeds = [i for i, a in enumerate(all_y_over_seeds) if len(a) != max_size]
+    # print(the_incomplete_seeds)
+    # all_y_over_complete_seeds = [a for i, a in enumerate(all_y_over_seeds) if len(a) == max_size]
+    # the_complete_seeds = [i for i, a in enumerate(all_y_over_seeds) if len(a) == max_size]
+    #
+    if len(all_y_over_seeds) == 0:
         print("agent_{} has no data!".format(space["crt_config"]["agent"]))
         return
 
-    x = all_x_over_seeds[the_complete_seeds[0]]
+    # x = all_x_over_seeds[the_complete_seeds[0]]
+    # x = all_x_over_seeds[the_complete_seeds[0]]
     # the_complete = [a for i, a in enumerate(all_y_over_seeds) if len(a) == first_seed_size]
-    mean_y_over_seeds = np.mean(all_y_over_complete_seeds, axis=0)
-    std_y_over_seeds = np.std(all_y_over_complete_seeds, axis=0)
+    mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
+    std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
     # mean_y_over_seeds = mean_y_over_seeds[::5]
     # std_y_over_seeds = std_y_over_seeds[::5]
     # x = x[::5]
