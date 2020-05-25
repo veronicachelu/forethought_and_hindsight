@@ -44,12 +44,36 @@ def run_episodic(agent: Agent,
                 agent.value_update(timestep, action, new_timestep)
 
                 ep_reward += new_timestep.reward
+                #
+                # if agent.episode % 1 == 0 and t % 100 == 0:
+                #     hat_p = agent.get_model_for_all_states(environment.get_all_states())
+                #     plot_p(env=environment,
+                #            p=hat_p,
+                #            logs=agent._images_dir,
+                #            episode=agent.episode,
+                #            timestep=t)
 
                 if agent.model_based_train():
                     if aux_agent_configs["pivot"] == "c":
                         agent.planning_update(new_timestep)
                     else:
                         agent.planning_update(timestep)
+
+                # if agent.episode % 1 == 0 and t % 100 == 0:
+                #     hat_q = agent.get_qvalues_for_all_states(environment.get_all_states())
+                #     # hat_pi = agent.get_policy_for_all_states(environment.get_all_states())
+                #     # _hat_pi_ = environment.reshape_pi(hat_pi)
+                #     # _hat_v_ = environment.reshape_v(hat_v)
+                #     _hat_q_ = environment.reshape_q(hat_q)
+                #     plot_advantage(env=environment,
+                #            action_values=_hat_q_,
+                #            logs=agent._images_dir,
+                #            filename="a_{}_{}.png".format(agent.episode, t))
+                #     plot_pi_from_q(env=environment,
+                #                    q=_hat_q_,
+                #                    logs=agent._images_dir,
+                #                    filename="pi_{}_{}.png".format(agent.episode,t))
+                #
 
                 tf.summary.scalar("train/ep_steps", t, step=agent.total_steps)
                 tf.summary.scalar("train/cum_reward", cumulative_reward, step=agent.total_steps)
@@ -68,20 +92,7 @@ def run_episodic(agent: Agent,
             ep_steps.append(t)
             ep_rewards.append(ep_reward)
 
-            # if agent.episode % 1 == 0:
-            #     hat_v = agent.get_values_for_all_states(environment.get_all_states())
-            #     hat_pi = agent.get_policy_for_all_states(environment.get_all_states())
-            #     _hat_pi_ = environment.reshape_v(hat_pi)
-            #     _hat_v_ = environment.reshape_v(hat_v)
-            #     plot_v(env=environment,
-            #            values=_hat_v_,
-            #            logs=agent._images_dir,
-            #            filename="v_{}.png".format(agent.episode))
-            #     plot_pi(env=environment,
-            #             pi=_hat_pi_,
-            #             values=_hat_v_,
-            #            logs=agent._images_dir,
-            #            filename="pi_{}.png".format(agent.episode))
+
 
             tf.summary.scalar("train/reward", np.mean(ep_reward), step=agent.episode)
             # tf.summary.scalar("train/avg_reward", np.mean(ep_rewards), step=agent.episode)

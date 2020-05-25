@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 from dm_env import specs
 from jax import numpy as jnp
-
+from copy import deepcopy
 from agents.agent import Agent
 from utils.replay import Replay
 from .qt_vanilla import VanillaQT
@@ -126,10 +126,15 @@ class BwQT(VanillaQT):
         r_t = timestep.reward
         losses = 0
 
+        # if self._q_network[15, 0] != 0:
+        #     print("BEFORE####### q_t(15,0) == {} ########".format(self._q_network[15, 0]))
+        # clone = deepcopy(self._q_network)
         probs = self._softmax(self._o_network[o_t])
         to_update = probs.argsort()[-self._top_n:][::-1]
         for oa_index in to_update:
             prev_o, prev_a = np.unravel_index(oa_index, (np.prod(self._input_dim), 4))
+            # if prev_o == o_t:
+            #     continue
         # for prev_o, prev_a in itertools.product(range(np.prod(self._input_dim)), range(self._nA)):
         #     oa_index = np.ravel_multi_index([prev_o, prev_a], (48, 4))
             loss, gradient = self._q_planning_loss_grad(self._q_network,
@@ -141,6 +146,20 @@ class BwQT(VanillaQT):
             self._q_network[prev_o, prev_a] = self._q_planning_opt_update(
                 probs[oa_index] * gradient,
                 self._q_network[prev_o, prev_a])
+
+            # if gradient > 0:
+            # if (prev_o, prev_a) == (15, 0) and clone[prev_o, prev_a] > 0:
+            #     print("Updating q({},{}) from {} with p {} g {} \n "
+            #           "(prev q_t({},{})={}, next q_t({},{})={}"
+            #           " target q_t({})={} r={})".format(
+            #         prev_o, prev_a, o_t, probs[oa_index], gradient,
+            #         prev_o, prev_a, clone[prev_o, prev_a],
+            #         prev_o, prev_a, self._q_network[prev_o, prev_a],
+            #         o_t, np.max(self._q_network[o_t]), r_t,
+            #     ))
+
+        # if self._q_network[15, 0] != 0:
+        #     print("AFTER####### q_t(15,0) == {} ########".format(self._q_network[15, 0]))
 
         losses_and_grads = {"losses": {"loss_q_planning": np.array(loss)},
                             "gradients": {}}
@@ -183,4 +202,11 @@ class BwQT(VanillaQT):
                 tf.summary.scalar("train/epsilon",
                                   self._epsilon, step=ep)
                 self.writer.flush()
+
+    def get_model_for_all_states(self, all_states):
+        state_action = np.transpose(
+            np.reshape(self._softmax(self._o_network[all_states]), (-1, np.prod(self._input_dim), 4)),
+            axes=[0, 2, 1])
+        return state_action
+
 

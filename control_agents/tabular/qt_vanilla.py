@@ -74,13 +74,13 @@ class VanillaQT(Agent):
             ce = -np.mean(nll)
             return ce
 
-        def log_softmax(x):
-            e_x = np.exp(x - np.max(x))
-            return np.log(e_x / e_x.sum())
+        def log_softmax(x, axis=-1):
+            e_x = np.exp(x - np.max(x, axis=axis, keepdims=True))
+            return np.log(e_x / e_x.sum(axis=axis, keepdims=True))
 
-        def softmax(x):
-            e_x = np.exp(x - np.max(x))
-            return e_x / e_x.sum()
+        def softmax(x, axis=-1):
+            e_x = np.exp(x - np.max(x, axis=axis, keepdims=True))
+            return e_x / e_x.sum(axis=axis, keepdims=True)
 
         self._softmax = softmax
         self._log_softmax = log_softmax
@@ -240,6 +240,9 @@ class VanillaQT(Agent):
 
     def get_values_for_all_states(self, all_states):
         return np.max(self._q_network[all_states], -1)
+
+    def get_qvalues_for_all_states(self, all_states):
+        return self._q_network[all_states]
 
     def get_policy_for_all_states(self, all_states):
         actions = np.argmax(self._q_network[all_states], axis=-1)

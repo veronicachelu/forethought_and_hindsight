@@ -76,15 +76,9 @@ class MicroWorld(dm_env.Environment):
 
     def _get_state_index(self, x, y):
         return np.ravel_multi_index((x, y), (self._height, self._width))
-        # idx = y + x * self._width
-        # return idx
 
     def _get_state_coords(self, idx):
         return np.unravel_index(idx, (self._height, self._width))
-        # y = idx % self._width
-        # x = (idx - y) / self._height
-        #
-        # return int(x), int(y)
 
     def _get_crt_state(self):
         s = self._get_state_index(self._cX, self._cY)
@@ -225,7 +219,7 @@ class MicroWorld(dm_env.Environment):
             np.array((0, 1)),
             # down
             np.array((1, 0)),
-            #left
+            # left
             np.array((0, -1)),
         ]
 
@@ -298,6 +292,9 @@ class MicroWorld(dm_env.Environment):
     def reshape_v(self, v):
         return np.reshape(v, (self._height, self._width))
 
+    def reshape_q(self, v):
+        return np.reshape(v, (self._height, self._width, self._nA))
+
     def reshape_pi(self, pi):
         return np.reshape(pi, (self._height, self._width, self._nA))
 
@@ -319,13 +316,13 @@ if __name__ == "__main__":
     nS = None
     nA = 4
     discount = 0.99
-    mdp_filename = "../../mdps/maze_48.mdp"
+    mdp_filename = "../../mdps/maze_48_open_goal.mdp"
     env = MicroWorld(path=mdp_filename, stochastic=False,
                         rng=nrng, env_size=48)
     nS = env._nS
     nA = 4
 
-    # plot_grid(env, logs=str(os.environ['LOGS']), env_type="continuous")
+    plot_grid(env, logs=str(os.environ['LOGS']), env_type="discrete")
     mdp_solver = MdpSolver(env, nS, nA, discount)
     v = mdp_solver.get_optimal_v()
     # v = env.reshape_v(v)

@@ -264,21 +264,11 @@ def plot_tensorflow_log(space, color, linestyle):
         all_y_over_seeds.append(np.array(y))
         all_x_over_seeds.append(np.array(x))
 
-        # else:
-        #     the_incomplete.append(seed)
-
-    # if FLAGS.reward:
-    #     plt.yscale("log")
-    # those_that_are_not_99 = [i for i, a in enumerate(all_y_over_seeds) if len(a) != 199]
-    # print(those_that_are_not_99)
-    #print(len(all_y_over_seeds))
-    # all_y_over_seeds = [a[:99] for a in all_y_over_seeds]
     max_size = np.max([len(a) for a in all_y_over_seeds])
     the_incomplete_seeds = [i for i, a in enumerate(all_y_over_seeds) if len(a) != max_size]
     print(the_incomplete_seeds)
     all_y_over_complete_seeds = [a for i, a in enumerate(all_y_over_seeds) if len(a) == max_size]
     the_complete_seeds = [i for i, a in enumerate(all_y_over_seeds) if len(a) == max_size]
-    # x = [i for i, a in zip(x, all_y_over_seeds) if len(a) == max_size]
 
     if len(all_y_over_complete_seeds) == 0:
         print("agent_{} has no data!".format(space["crt_config"]["agent"]))

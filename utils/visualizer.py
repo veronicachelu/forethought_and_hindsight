@@ -83,6 +83,62 @@ map_from_action_to_subplot = lambda a: (2, 6, 8, 4)[a]
 map_from_action_to_name = lambda a: ("up", "right", "down", "left")[a]
 
 
+def plot_values(values, colormap='pink', vmin=-1, vmax=10):
+  plt.imshow(values, interpolation="nearest", cmap=colormap, vmin=vmin, vmax=vmax)
+  plt.yticks([])
+  plt.xticks([])
+  plt.colorbar(ticks=[vmin, vmax])
+
+def plot_q(env, action_values, logs=None, colormap='Blues',
+           filename="q.png",
+           ):
+    plt.clf()
+    q = action_values
+    fig = plt.figure(figsize=(8, 8))
+    fig.subplots_adjust(wspace=0.3, hspace=0.3)
+    vmin = 0#np.min(action_values)
+    vmax = 1#np.max(action_values)
+    dif = vmax - vmin
+    for a in [0, 1, 2, 3]:
+        plt.subplot(3, 3, map_from_action_to_subplot(a))
+        plot_values(q[..., a], vmin=vmin, vmax=vmax)
+        action_name = map_from_action_to_name(a)
+        plt.title(r"$q(s, \mathrm{" + action_name + r"})$")
+
+    plt.subplot(3, 3, 5)
+    v = 0.9 * np.max(q, axis=-1) + 0.1 * np.mean(q, axis=-1)
+    plot_values(v, colormap='summer', vmin=vmin, vmax=vmax)
+    plt.title("$v(s)$")
+
+    if logs is not None:
+        plt.savefig(os.path.join(logs, filename))
+
+def plot_advantage(env, action_values, logs=None, colormap='Blues',
+           filename="a.png",
+           ):
+    plt.clf()
+    q = action_values
+    fig = plt.figure(figsize=(8, 8))
+    fig.subplots_adjust(wspace=0.3, hspace=0.3)
+    vmin = 0#np.min(action_values)
+    vmax = 1#np.max(action_values)
+    dif = vmax - vmin
+    adv = q - np.min(q, axis=-1, keepdims=True)
+    for a in [0, 1, 2, 3]:
+        plt.subplot(3, 3, map_from_action_to_subplot(a))
+        plot_values(adv[..., a], vmin=vmin, vmax=np.max(adv[..., a]))
+        action_name = map_from_action_to_name(a)
+        plt.title(r"$a(s, \mathrm{" + action_name + r"})$")
+
+    plt.subplot(3, 3, 5)
+    v = 0.9 * np.max(q, axis=-1) + 0.1 * np.mean(q, axis=-1)
+    plot_values(v, colormap='summer', vmin=vmin, vmax=vmax)
+    plt.title("$v(s)$")
+
+    if logs is not None:
+        plt.savefig(os.path.join(logs, filename))
+
+
 def plot_v(env, values, logs=None, colormap='Blues',
            filename="v.png",
            true_v=None,
@@ -107,6 +163,43 @@ def plot_v(env, values, logs=None, colormap='Blues',
     plt.colorbar(ticks=[vmin, vmax])
     if logs is not None:
         plt.savefig(os.path.join(logs, filename))
+
+
+def plot_p(env, p, logs=None, colormap='Blues',
+           episode=None, timestep=None,
+           ):
+
+    # vmin = np.min(action_values)
+    # vmax = np.max(action_values)
+    # dif = vmax - vmin
+    for i in range(p.shape[0]):
+        plt.clf()
+        fig = plt.figure(figsize=(8, 8))
+        fig.subplots_adjust(wspace=0.3, hspace=0.3)
+        for a in [0, 1, 2, 3]:
+            plt.subplot(3, 3, map_from_action_to_subplot(a))
+            plot_p_action(p[i, a], vmin=0, vmax=np.max(p[i, a]))
+            action_name = map_from_action_to_name(a)
+            plt.title(r"$p(s, \mathrm{" + action_name + r"})$")
+
+        plt.subplot(3, 3, 5)
+        p_mean = 0.9 * np.max(p[i], axis=0) + 0.1 * np.mean(p[i], axis=0)
+        plot_p_action(p_mean, colormap='summer')
+        plt.title("$p(s)$")
+        sX, sY = np.unravel_index(i, (6, 8))
+        plt.text(
+            sY, sX,
+            r"$\mathbf{S}$", ha='center', va='center')
+
+        if logs is not None:
+            plt.savefig(os.path.join(logs, "p_{}_{}_state_{}".format(episode, timestep, i)))
+
+def plot_p_action(values, colormap='pink', vmin=0, vmax=1):
+    values = np.reshape(values, (6, 8))
+    plt.imshow(values, interpolation="nearest", cmap=colormap, vmin=vmin, vmax=vmax)
+    plt.yticks([])
+    plt.xticks([])
+    plt.colorbar(ticks=[vmin, vmax])
 
 def plot_gain(env, values, logs=None, colormap='Blues',
            filename="v.png",
@@ -201,24 +294,24 @@ def plot_state_value(action_values):
     plt.title("$v(s)$")
 
 
-def plot_action_values(action_values):
-    q = action_values
-    fig = plt.figure(figsize=(8, 8))
-    fig.subplots_adjust(wspace=0.3, hspace=0.3)
-    vmin = np.min(action_values)
-    vmax = np.max(action_values)
-    dif = vmax - vmin
-    for a in [0, 1, 2, 3]:
-        plt.subplot(3, 3, map_from_action_to_subplot(a))
-
-        plot_v(q[..., a], vmin=vmin - 0.05 * dif, vmax=vmax + 0.05 * dif)
-        action_name = map_from_action_to_name(a)
-        plt.title(r"$q(s, \mathrm{" + action_name + r"})$")
-
-    plt.subplot(3, 3, 5)
-    v = 0.9 * np.max(q, axis=-1) + 0.1 * np.mean(q, axis=-1)
-    plot_v(v, colormap='summer', vmin=vmin, vmax=vmax)
-    plt.title("$v(s)$")
+# def plot_action_values(action_values):
+#     q = action_values
+#     fig = plt.figure(figsize=(8, 8))
+#     fig.subplots_adjust(wspace=0.3, hspace=0.3)
+#     vmin = np.min(action_values)
+#     vmax = np.max(action_values)
+#     dif = vmax - vmin
+#     for a in [0, 1, 2, 3]:
+#         plt.subplot(3, 3, map_from_action_to_subplot(a))
+#
+#         plot_v(q[..., a], vmin=np.min(q[..., a]), vmax=np.min(q[..., a]))
+#         action_name = map_from_action_to_name(a)
+#         plt.title(r"$q(s, \mathrm{" + action_name + r"})$")
+#
+#     plt.subplot(3, 3, 5)
+#     v = 0.9 * np.max(q, axis=-1) + 0.1 * np.mean(q, axis=-1)
+#     plot_v(v, colormap='summer', vmin=vmin, vmax=vmax)
+#     plt.title("$v(s)$")
 
 
 def smooth(x, window=10):
@@ -292,5 +385,18 @@ def plot_pi(env, pi, values, logs=None, filename=None):
         for j in range(pi.shape[1]):
             action_name = action_names[int(pi[i][j])]
             plt.text(j, i, action_name, ha='center', va='center')
+    if logs is not None:
+        plt.savefig(os.path.join(logs, filename))
+
+def plot_pi_from_q(env, q, logs=None, filename=None):
+    plot_grid(env, env_type="discrete")
+    q = np.reshape(q, (6, 8, 4))
+    # pi = np.argmax(q, axis=-1)
+    action_names = [r"$\uparrow$", r"$\rightarrow$", r"$\downarrow$", r"$\leftarrow$"]
+    for i in range(q.shape[0]):
+        for j in range(q.shape[1]):
+            for a in np.flatnonzero(q[i, j] == q[i, j].max()):
+                action_name = action_names[int(a)]
+                plt.text(j, i, action_name, ha='center', va='center')
     if logs is not None:
         plt.savefig(os.path.join(logs, filename))

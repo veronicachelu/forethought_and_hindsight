@@ -6,7 +6,7 @@ env_config = {
     "env_type": "discrete",
     "obs_type": "tabular",
     "policy_type": "greedy",
-    "mdp_filename": "./mdps/maze_48_open_goal.mdp",
+    "mdp_filename": "./mdps/open_maze_48.mdp",
     "env_size": 48,
     "num_episodes": 100,
     "control_num_episodes": 100,
