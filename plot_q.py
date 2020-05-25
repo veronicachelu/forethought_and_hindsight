@@ -216,11 +216,14 @@ def plot_tensorflow_log(space, color, linestyle):
         'histograms': 1,
         'tensors': 200000,
     }
-    all_y_over_seeds = []
-    all_x_over_seeds = []
-    the_incomplete = []
+
+    # all_x_over_seeds = []
+    # the_incomplete = []
     num_runs = space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["control_num_episodes"]
+    all_y_over_seeds = np.zeros((control_num_episodes,))
+    all_y_sq_over_seeds = np.zeros((control_num_episodes,))
+    nr_of_valid_seeds = 0
     for seed in range(num_runs):
         #print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))
         logs = os.path.join(os.path.join(space["crt_config"]["logs"],
@@ -240,25 +243,19 @@ def plot_tensorflow_log(space, color, linestyle):
         # Show all tags in the log file
         # print(event_acc.Tags())
 
-        tag_reward = 'train/cum_reward'
-        tag_steps = 'train/steps'
-        if FLAGS.reward:
-            tag = tag_reward
-        else:
-            tag = tag_steps
+        tag = 'train/steps'
         if not tag in event_acc.Tags()["tensors"]:
             print("no tags")
             continue
 
-        msve_reward = event_acc.Tensors(tag_reward)
-        msve_steps = event_acc.Tensors(tag_steps)
+        msve = event_acc.Tensors(tag)
+        y = [tf.make_ndarray(m[2]) for m in msve]
 
-        y_steps = [tf.make_ndarray(m[2]) for m in msve_steps]
-        msve = msve_reward if FLAGS.reward else msve_steps
-
-        if len(y_steps) == control_num_episodes:
+        if len(y) == control_num_episodes:
             x = [m[1] for m in msve]
-            all_y_over_seeds.append(np.array(y_steps))
+            all_y_over_seeds += np.array(y)
+            all_y_sq_over_seeds += np.array(y) ** 2
+            nr_of_valid_seeds += 1
             # all_x_over_seeds.append(np.array(x))
 
     # max_size = np.max([len(a) for a in all_y_over_seeds])
@@ -267,15 +264,19 @@ def plot_tensorflow_log(space, color, linestyle):
     # all_y_over_complete_seeds = [a for i, a in enumerate(all_y_over_seeds) if len(a) == max_size]
     # the_complete_seeds = [i for i, a in enumerate(all_y_over_seeds) if len(a) == max_size]
     #
-    if len(all_y_over_seeds) == 0:
+    if nr_of_valid_seeds == 0:
         print("agent_{} has no data!".format(space["crt_config"]["agent"]))
         return
+
+    mean_y_over_seeds = all_y_over_seeds / nr_of_valid_seeds
+    mean_y_sq_over_seeds = all_y_sq_over_seeds / nr_of_valid_seeds
+    std_y_over_seeds = mean_y_sq_over_seeds - mean_y_over_seeds ** 2
 
     # x = all_x_over_seeds[the_complete_seeds[0]]
     # x = all_x_over_seeds[the_complete_seeds[0]]
     # the_complete = [a for i, a in enumerate(all_y_over_seeds) if len(a) == first_seed_size]
-    mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
-    std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
+    # mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
+    # std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
     # mean_y_over_seeds = mean_y_over_seeds[::5]
     # std_y_over_seeds = std_y_over_seeds[::5]
     # x = x[::5]
