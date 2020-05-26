@@ -85,6 +85,9 @@ mb_mle_dashed = {
 }
 
 dashed = {
+          "c_bw_q": "p_bw_q",
+          "c_fw_q": "p_fw_q",
+          "c_true_fw_q": "p_true_fw_q",
           "p_bw_PAML": "p_bw",
           "c_bw_PAML": "c_bw",
           "p_fw_PAML": "p_fw",
