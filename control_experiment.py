@@ -60,20 +60,20 @@ def run_episodic(agent: Agent,
                     else:
                         agent.planning_update(timestep)
 
-                # if agent.episode % 1 == 0 and t % 100 == 0:
-                #     hat_q = agent.get_qvalues_for_all_states(environment.get_all_states())
-                #     # hat_pi = agent.get_policy_for_all_states(environment.get_all_states())
-                #     # _hat_pi_ = environment.reshape_pi(hat_pi)
-                #     # _hat_v_ = environment.reshape_v(hat_v)
-                #     _hat_q_ = environment.reshape_q(hat_q)
-                #     plot_advantage(env=environment,
-                #            action_values=_hat_q_,
-                #            logs=agent._images_dir,
-                #            filename="a_{}_{}.png".format(agent.episode, t))
-                #     plot_pi_from_q(env=environment,
-                #                    q=_hat_q_,
-                #                    logs=agent._images_dir,
-                #                    filename="pi_{}_{}.png".format(agent.episode,t))
+                if agent.episode % 1 == 0 and t % 100 == 0:
+                    hat_q = agent.get_qvalues_for_all_states(environment.get_all_states())
+                    # hat_pi = agent.get_policy_for_all_states(environment.get_all_states())
+                    # _hat_pi_ = environment.reshape_pi(hat_pi)
+                    # _hat_v_ = environment.reshape_v(hat_v)
+                    _hat_q_ = environment.reshape_q(hat_q)
+                    plot_advantage(env=environment,
+                           action_values=_hat_q_,
+                           logs=agent._images_dir,
+                           filename="a_{}_{}.png".format(agent.episode, t))
+                    plot_pi_from_q(env=environment,
+                                   q=_hat_q_,
+                                   logs=agent._images_dir,
+                                   filename="pi_{}_{}.png".format(agent.episode,t))
 
 
                 tf.summary.scalar("train/ep_steps", t, step=agent.total_steps)

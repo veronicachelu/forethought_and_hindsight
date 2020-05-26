@@ -13,9 +13,9 @@ env_config = {
     "num_runs": 10,
     "stochastic": False,
     "feature_coder": None,
-    "reward_prob": 0.5,
-    "dynamics_prob": 1.0,
+    "reward_prob": 1.0,
     "max_reward": 1.0,
+    "dynamics_prob": 0.8,
     "nA": 4
 }
 
@@ -23,7 +23,8 @@ volatile_agent_config = {
     "vanilla": {
         "planning_depth": [0],
         "replay_capacity": [0],
-        "lr_ctrl": [0.01, 0.05, 0.1, 0.5, 1.0],
+        "lr": np.linspace(0.1, 1.0, 10),
+        "lr_p": [0],
         "lr_m": [0]
     },
     "bw": {

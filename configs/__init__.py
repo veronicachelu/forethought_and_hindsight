@@ -6,6 +6,7 @@ import configs.split_config as split_config
 import configs.random_config as random_config
 import configs.maze_config as maze_config
 import configs.maze_1_config as maze_1_config
+import configs.maze_stoch_config as maze_stoch_config
 import configs.maze_01_config as maze_01_config
 import configs.maze_05_config as maze_05_config
 import configs.linear_maze_config as linear_maze_config

@@ -14,6 +14,8 @@ env_config = {
     "stochastic": False,
     "feature_coder": None,
     "reward_prob": 0.1,
+    "dynamics_prob": 1.0,
+    "max_reward": 1.0,
     "nA": 4
 }
 

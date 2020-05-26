@@ -15,10 +15,21 @@ class Actions():
     down = 2
     left = 3
 
+DIR_TO_VEC = [
+            # up
+            np.array((-1, 0)),
+            # right
+            np.array((0, 1)),
+            # down
+            np.array((1, 0)),
+            # left
+            np.array((0, -1)),
+        ]
 
 class MicroWorld(dm_env.Environment):
     def __init__(self, path=None, stochastic=False, random_restarts=False,
-                 rng=None, obs_type="tabular", reward_prob=1.0, env_size=1, max_reward=1.0):
+                 rng=None, obs_type="tabular", reward_prob=1.0,
+                 env_size=1, max_reward=1.0, dynamics_prob=1.0):
         self._str_MDP = ''
         self._height = -1
         self._width = -1
@@ -40,7 +51,7 @@ class MicroWorld(dm_env.Environment):
         self._parse_string()
         self._stochastic = stochastic
         self._random_restarts = random_restarts
-        self._slip_prob = 0.5
+        self._dynamics_prob = dynamics_prob
         # self._cX = self._sX
         # self._cY = self._sY
         self._nS = self._height * self._width
@@ -201,6 +212,18 @@ class MicroWorld(dm_env.Environment):
             board[self._cX][self._cY] = 1
             return board
 
+    def get_forward(self, i, j):
+        fwd_positions = []
+        for k in range(self._nA):
+            fwd_pos = np.array([i, j]) + DIR_TO_VEC[k]
+            fwd_i, fwd_j = fwd_pos
+            if fwd_i >= 0 and fwd_i < self._height and \
+                            fwd_j >= 0 and fwd_j < self._width and self._mdp[fwd_i][fwd_j] != -1:
+                fwd_positions.append((fwd_i, fwd_j))
+            else:
+                fwd_positions.append((i, j))
+
+        return fwd_positions
 
     def _fill_P_R(self):
         self._P = np.zeros((self._nA, self._nS, self._nS), dtype=np.float)
@@ -214,16 +237,7 @@ class MicroWorld(dm_env.Environment):
             for j in range(self._width):
                 self._index_matrix[i][j] = np.ravel_multi_index((i, j), (self._height, self._width))
 
-        DIR_TO_VEC = [
-            # up
-            np.array((-1, 0)),
-            # right
-            np.array((0, 1)),
-            # down
-            np.array((1, 0)),
-            # left
-            np.array((0, -1)),
-        ]
+
 
         for i in range(self._height):
             for j in range(self._width):
@@ -242,37 +256,41 @@ class MicroWorld(dm_env.Environment):
         for i in range(self._height):
             for j in range(self._width):
                 for k in range(self._nA):
-                    fwd_pos = np.array([i, j]) + DIR_TO_VEC[k]
-                    fwd_i, fwd_j = fwd_pos
+                    all_moves_positions = self.get_forward(i, j)
+                    all_moves_probs = [(1-self._dynamics_prob)/self.nA for move in all_moves_positions]
+                    all_moves_probs[k] += self._dynamics_prob
+
+                    # fwd_pos = np.array([i, j]) + DIR_TO_VEC[k]
+                    # fwd_i, fwd_j = fwd_pos
                     if self._mdp[i][j] != -1:
                         if not ((i, j) in self._g):
-                            if fwd_i >= 0 and fwd_i < self._height and\
-                                fwd_j >= 0 and fwd_j < self._width and self._mdp[fwd_i][fwd_j] != -1:
-                                if self._stochastic:
-                                    slip_prob = [self._slip_prob, 1 - self._slip_prob]
-                                else:
-                                    slip_prob = [0, 1]
+                            for move_position, move_prob in zip(all_moves_positions, all_moves_probs):
+                                fwd_i, fwd_j = move_position
+                            # if fwd_i >= 0 and fwd_i < self._height and\
+                            #     fwd_j >= 0 and fwd_j < self._width and self._mdp[fwd_i][fwd_j] != -1:
+
                                 # prob of transitioning to the next state
-                                self._P[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = slip_prob[1]
-                                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = slip_prob[1]
+
+                                self._P[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = move_prob
+                                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = move_prob
 
                                 # reward incurred if transitioning to the next state
                                 self._R[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = \
                                                 self._max_reward * self.reward_prob if (fwd_i, fwd_j) in self._g else 0
 
                                 # prob of slipping and staying in the current state
-                                self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = slip_prob[0]
-                                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = slip_prob[0]
+                                # self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = move_prob
+                                # self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = move_prob
 
                                 # reward incurred in the current state
-                                self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
-                                        self._max_reward * self.reward_prob if (i, j) in self._g else 0 # self._get_next_reward(i, j)
-                            else:
+                                # self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
+                                #         self._max_reward * self.reward_prob if (i, j) in self._g else 0 # self._get_next_reward(i, j)
+                            # else:
                                 # automatically staying in the current state because you bumped into the edge of the world
-                                self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
-                                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
-                                self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
-                                    self._max_reward * self.reward_prob if (i, j) in self._g else 0 #self._get_next_reward(i, j)
+                                # self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
+                                # self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
+                                # self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
+                                #     self._max_reward * self.reward_prob if (i, j) in self._g else 0 #self._get_next_reward(i, j)
                         else:
                             # the modified ergodic MDP resets to the starting state with probability 1 if at the goal
                             for si in range(self._height):

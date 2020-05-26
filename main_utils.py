@@ -148,6 +148,8 @@ def get_control_env(nrng, seed, space, aux_agent_configs):
                             stochastic=space["env_config"]["stochastic"],
                             rng=nrng,
                             reward_prob=space["env_config"]["reward_prob"],
+                            max_reward=space["env_config"]["max_reward"],
+                            dynamics_prob=space["env_config"]["dynamics_prob"],
                             obs_type=space["env_config"]["obs_type"],
                             env_size=space["env_config"]["env_size"],
                             )
@@ -348,6 +350,9 @@ def load_env_and_volatile_configs(env):
     elif env == "maze":
         env_config = configs.maze_config.env_config
         volatile_agent_config = configs.maze_config.volatile_agent_config
+    elif env == "maze_stoch":
+        env_config = configs.maze_stoch_config.env_config
+        volatile_agent_config = configs.maze_stoch_config.volatile_agent_config
     elif env == "maze_1":
         env_config = configs.maze_1_config.env_config
         volatile_agent_config = configs.maze_1_config.volatile_agent_config
