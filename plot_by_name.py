@@ -44,7 +44,7 @@ plot_configs = {
             {
                 "env": "maze_1",
                 "pivoting": "control",
-                "title": "Deterministic"
+                "title": "Deterministic",
                 "max": 40,
             },
             {
