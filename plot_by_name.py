@@ -166,16 +166,16 @@ all_agents = ["p_bw_q", "p_fw_q", "p_true_fw_q",
               "p_bw_q_1", "p_bw_q_2", "p_bw_q_3"]
 
 naming = {
-    "q": "model-free(MF)",
-    "p_bw_q": r"$MF+bw\_planning(\mathbf{x},a,{x^\prime})$",
-    "p_bw_q_1": r"$MF+bw\_planning(\mathbf{x},a,{x^\prime};top\_1)$",
-    "p_bw_q_2": r"$MF+bw\_planning(\mathbf{x},a,{x^\prime};top\_2)$",
-    "p_bw_q_3": r"$MF+bw\_planning(\mathbf{x},a,{x^\prime};top\_3)$",
-    "c_bw_q": r"$MF+bw\_planning({x},a,\mathbf{x^\prime})$",
-    "p_fw_q": r"$MF+fw\_planning(\mathbf{x},a,{x^\prime})$",
-    "c_fw_q": r"$MF+fw\_planning({x},a,\mathbf{x^\prime})$",
-    "p_true_fw_q": r"$MF+fw\_planning(\overleftarrow{\mathscr{P}}^*;\mathbf{x},a,{x^\prime})$",
-    "c_true_fw_q": r"$MF+fw\_planning(\overleftarrow{\mathscr{P}}^*;{x},a,\mathbf{x^\prime})$",
+    "q": "model-free",
+    "p_bw_q": r"$bw\_plan(\mathbf{x},a,{x}^\prime)$",
+    "p_bw_q_1": r"$bw\_plan(\mathbf{x},a,{x}^\prime;top\_1)$",
+    "p_bw_q_2": r"$bw\_plan(\mathbf{x},a,{x}^\prime;top\_2)$",
+    "p_bw_q_3": r"$bw\_plan(\mathbf{x},a,{x}^\prime;top\_3)$",
+    "c_bw_q": r"$bw\_plan({x},a,\mathbf{x}^\prime)$",
+    "p_fw_q": r"$fw\_plan(\mathbf{x},a,{x}^\prime)$",
+    "c_fw_q": r"$fw\_plan({x},a,\mathbf{x}^\prime)$",
+    "p_true_fw_q": r"$MF+fw\_plan(\overleftarrow{P}^*;\mathbf{x},a,{x}^\prime)$",
+    "c_true_fw_q": r"$MF+fw\_plan(\overleftarrow{P}^*;{x},a,\mathbf{x}^\prime)$",
 }
 
 def main(argv):
