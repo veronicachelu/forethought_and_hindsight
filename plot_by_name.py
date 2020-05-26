@@ -44,19 +44,23 @@ plot_configs = {
             {
                 "env": "maze_1",
                 "pivoting": "control",
+                "title": "Deterministic"
                 # "max": 40,
             },
             {
                 "env": "maze_05",
-                "pivoting": "control"
+                "pivoting": "control",
+                "title": "Stochastic reward (p=0.5)"
             },
             {
                 "env": "maze_01",
-                "pivoting": "control"
+                "pivoting": "control",
+                "title": "Stochastic reward (p=0.1)",
             },
             {
                 "env": "maze_stoch",
-                "pivoting": "control"
+                "pivoting": "control",
+                "title": "Stochastic transitions (p=0.5)"
             },
             {
                 "env": "maze_1",
@@ -161,6 +165,16 @@ all_agents = ["p_bw_q", "p_fw_q", "p_true_fw_q",
               "c_bw_q", "c_fw_q", "c_true_fw_q",
               "p_bw_q_1", "p_bw_q_2", "p_bw_q_3"]
 
+naming = {
+    "q": "model-free(MF)",
+    "p_bw_q": r"$MF+bw\_planning(\mathbf{x},a,{x^\prime})$",
+    "c_bw_q": r"$MF+bw\_planning({x},a,\mathbf{x^\prime})$",
+    "p_fw_q": r"$MF+fw\_planning(\mathbf{x},a,{x^\prime})$",
+    "c_fw_q": r"$MF+fw\_planning({x},a,\mathbf{x^\prime})$",
+    "p_true_fw_q": r"$MF+fw\_planning(\overleftarrow{\mathscr{P}}^*; \mathbf{x},a,{x^\prime})$",
+    "c_true_fw_q": r"$MF+fw\_planning(\overleftarrow{\mathscr{P}}^*; {x},a,\mathbf{x^\prime})$",
+}
+
 def main(argv):
     del argv  # Unused.
 
@@ -193,6 +207,8 @@ def main(argv):
                            plot_configs[FLAGS.config]["nc"]))
         max = sub["max"] if "max" in sub.keys() else None
         env = sub["env"]
+        if "title" in sub.keys():
+            ax[ii, jj].set_title(sub["title"])
         logs_dir = os.path.join(best_hyperparam_folder, env)
         if jj == 0:
             ax[ii, jj].set_ylabel(yaxis, fontsize=FONTSIZE)
@@ -344,12 +360,12 @@ def plot_tensorflow_log(space, color, linestyle, max, ax):
         x = x[:max]
         mean_y_over_seeds = mean_y_over_seeds[:max]
         std_y_over_seeds = std_y_over_seeds[:max]
+    label = naming[space["crt_config"]["agent"]]
     if space["crt_config"]["agent"] == "q":
-        line = ax.plot(x, mean_y_over_seeds, label="model-free", c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
+        line = ax.plot(x, mean_y_over_seeds, label=label, c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         ax.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
                          color="gray", alpha=0.07)
     else:
-        label = space["crt_config"]["agent"]
         line = ax.plot(x, mean_y_over_seeds, label=label,
                  alpha=1, linewidth=LINEWIDTH, color=color,
                  linestyle=linestyle)
