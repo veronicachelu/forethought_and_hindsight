@@ -37,7 +37,7 @@ flags.DEFINE_integer('min_replay_size', 1, 'min replay size before training.')
 flags.DEFINE_float('lr_ctrl', 0.1, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr_p', 0.01, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr_m',  1.0, 'learning rate for model optimizer')
-flags.DEFINE_float('lr_m',  0.7, 'learning rate for model optimizer')
+flags.DEFINE_float('lr_m',  0.9, 'learning rate for model optimizer')
 flags.DEFINE_bool('ignore_existent',  True, 'learning rate for model optimizer')
 
 FLAGS = flags.FLAGS

@@ -130,7 +130,8 @@ class BwQT(VanillaQT):
         #     print("BEFORE####### q_t(15,0) == {} ########".format(self._q_network[15, 0]))
         # clone = deepcopy(self._q_network)
         probs = self._softmax(self._o_network[o_t])
-        to_update = probs.argsort()[-self._top_n:][::-1]
+        # to_update = probs.argsort()[-self._top_n:][::-1]
+        to_update = probs.argsort()[::-1]
         for oa_index in to_update:
             prev_o, prev_a = np.unravel_index(oa_index, (np.prod(self._input_dim), 4))
             # if prev_o == o_t:

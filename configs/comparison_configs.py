@@ -1,4 +1,52 @@
 configs={
+    "maze_1": {
+            "control": {
+                "agents": ["p_fw_q",
+                           "p_bw_q",
+                           "p_true_fw_q"
+                           ],
+            },
+            "pc": {
+                "agents": ["p_fw_q",
+                           "c_fw_q",
+                           "p_true_fw_q",
+                           "c_true_fw_q",
+                           "p_bw_q",
+                           "c_bw_q"]
+            }
+    },
+    "maze_05": {
+            "control": {
+                "agents": ["p_fw_q",
+                           "p_bw_q",
+                           "p_true_fw_q"
+                           ],
+            },
+            "pc": {
+                "agents": ["p_fw_q",
+                           "c_fw_q",
+                           "p_true_fw_q",
+                           "c_true_fw_q",
+                           "p_bw_q",
+                           "c_bw_q"]
+            }
+    },
+    "maze_01": {
+            "control": {
+                "agents": ["p_fw_q",
+                           "p_bw_q",
+                           "p_true_fw_q"
+                           ],
+            },
+            "pc": {
+                "agents": ["p_fw_q",
+                           "c_fw_q",
+                           "p_true_fw_q",
+                           "c_true_fw_q",
+                           "p_bw_q",
+                           "c_bw_q"]
+            }
+    },
     "maze": {
         "control": {
             "agents": ["p_fw_q",
