@@ -257,7 +257,7 @@ class MicroWorld(dm_env.Environment):
             for j in range(self._width):
                 for k in range(self._nA):
                     all_moves_positions = self.get_forward(i, j)
-                    all_moves_probs = [(1-self._dynamics_prob)/self.nA for move in all_moves_positions]
+                    all_moves_probs = [(1-self._dynamics_prob)/self._nA for move in all_moves_positions]
                     all_moves_probs[k] += self._dynamics_prob
 
                     # fwd_pos = np.array([i, j]) + DIR_TO_VEC[k]
