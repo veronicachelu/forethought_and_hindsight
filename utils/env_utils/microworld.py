@@ -267,18 +267,18 @@ class MicroWorld(dm_env.Environment):
                     # fwd_i, fwd_j = fwd_pos
                     if self._mdp[i][j] != -1:
                         if not ((i, j) in self._g):
-                            for move_position, move_prob in zip(all_moves_positions, all_moves_probs):
+                            for actual_k, (move_position, move_prob) in enumerate(zip(all_moves_positions, all_moves_probs)):
                                 fwd_i, fwd_j = move_position
                             # if fwd_i >= 0 and fwd_i < self._height and\
                             #     fwd_j >= 0 and fwd_j < self._width and self._mdp[fwd_i][fwd_j] != -1:
 
                                 # prob of transitioning to the next state
 
-                                self._P[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = move_prob
-                                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = move_prob
+                                self._P[actual_k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] += move_prob
+                                self._P_absorbing[actual_k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] += move_prob
 
                                 # reward incurred if transitioning to the next state
-                                self._R[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = \
+                                self._R[actual_k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = \
                                                 self._max_reward * self.reward_prob if (fwd_i, fwd_j) in self._g else 0
 
                                 # prob of slipping and staying in the current state
