@@ -12,7 +12,6 @@ import configs.maze_05_config as maze_05_config
 import configs.linear_maze_config as linear_maze_config
 import configs.open_maze_config as open_maze_config
 import configs.stoch_linear_maze_config as stoch_linear_maze_config
-import configs.linear_tiny_maze_config as linear_tiny_maze_config
 import configs.medium_maze_config as medium_maze_config
 import configs.open_medium_maze_config as open_medium_maze_config
 import configs.large_maze_config as large_maze_config

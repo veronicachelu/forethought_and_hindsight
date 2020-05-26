@@ -33,6 +33,8 @@ class VanillaQ(Agent):
             lr_model: float,
             log_period: int,
             nrng,
+            top_n,
+            input_dim,
             rng_seq,
             max_len,
             exploration_decay_period: int,

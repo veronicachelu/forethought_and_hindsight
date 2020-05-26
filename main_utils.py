@@ -214,7 +214,7 @@ def get_control_agent(env, seed, nrng, nA, input_dim, space, aux_agent_configs):
         discount=aux_agent_configs["discount"],
         max_len=aux_agent_configs["max_len"],
         lr=control_space["crt_config"]["lr_ctrl"],
-        top_n=space["crt_config"]["top_n"],
+        top_n=space["crt_config"]["top_n"] if "top_n" in space["crt_config"].keys() else None,
         lr_model=control_space["crt_config"]["lr_m"],
         exploration_decay_period=exploration_decay_period,
         seed=seed,
@@ -365,9 +365,6 @@ def load_env_and_volatile_configs(env):
     elif env == "linear_maze":
         env_config = configs.linear_maze_config.env_config
         volatile_agent_config = configs.linear_maze_config.volatile_agent_config
-    elif env == "linear_tiny_maze":
-        env_config = configs.linear_tiny_maze_config.env_config
-        volatile_agent_config = configs.linear_tiny_maze_config.volatile_agent_config
     elif env == "open_maze":
         env_config = configs.open_maze_config.env_config
         volatile_agent_config = configs.open_maze_config.volatile_agent_config

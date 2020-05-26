@@ -20,7 +20,7 @@ plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 # flags.DEFINE_string('env', "bipartite_100_1", 'where to save results')
-flags.DEFINE_string('env', "obstacle", 'where to save results')
+flags.DEFINE_string('env', "linear_maze", 'where to save results')
 # flags.DEFINE_string('env', "fanin", 'where to save results')
 flags.DEFINE_bool('tabular', False, 'where to save results')
 flags.DEFINE_bool('mle', False, 'where to save results')
