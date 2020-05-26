@@ -49,7 +49,6 @@ class MicroWorld(dm_env.Environment):
         self._path = path
         self._read_file(path)
         self._parse_string()
-        self._stochastic = stochastic
         self._random_restarts = random_restarts
         self._dynamics_prob = dynamics_prob
         # self._cX = self._sX
@@ -109,11 +108,8 @@ class MicroWorld(dm_env.Environment):
     def _get_next_state(self, cPos, action):
         cX, cY = cPos
 
-        try:
-            nPos = self._rng.choice(range(self._nS),
+        nPos = self._rng.choice(range(self._nS),
                              p=self._P[action][self._index_matrix[cX][cY]])
-        except:
-            print("dasdas")
         nX, nY = self._get_state_coords(nPos)
 
         return (nX, nY)
@@ -274,8 +270,8 @@ class MicroWorld(dm_env.Environment):
 
                                 # prob of transitioning to the next state
 
-                                self._P[actual_k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] += move_prob
-                                self._P_absorbing[actual_k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] += move_prob
+                                self._P[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] += move_prob
+                                self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] += move_prob
 
                                 # reward incurred if transitioning to the next state
                                 self._R[actual_k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = \
@@ -340,7 +336,7 @@ if __name__ == "__main__":
     nA = 4
     discount = 0.99
     mdp_filename = "../../mdps/maze_48_open_goal.mdp"
-    env = MicroWorld(path=mdp_filename, stochastic=False,
+    env = MicroWorld(path=mdp_filename,
                         rng=nrng, env_size=48)
     nS = env._nS
     nA = 4

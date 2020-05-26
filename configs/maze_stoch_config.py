@@ -15,7 +15,7 @@ env_config = {
     "feature_coder": None,
     "reward_prob": 1.0,
     "max_reward": 1.0,
-    "dynamics_prob": 0.8,
+    "dynamics_prob": 0.0,
     "nA": 4
 }
 

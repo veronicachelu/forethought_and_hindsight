@@ -81,7 +81,7 @@ def main(argv):
 
         if FLAGS.ignore_existent:
             if (FLAGS.agent == "c_bw_q" or FLAGS.agent == "p_bw_q") and FLAGS.top_n > 0:
-                agent_run_mode = "{}_top_{}".format(FLAGS.agent, FLAGS.top_n)
+                agent_run_mode = "{}_{}".format(FLAGS.agent, FLAGS.top_n)
             else:
                 agent_run_mode = "{}".format(FLAGS.agent)
             agent_logs = os.path.join(logs, '{}/summaries/'.format(agent_run_mode))
