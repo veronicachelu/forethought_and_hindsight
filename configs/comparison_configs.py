@@ -1,4 +1,20 @@
 configs={
+    "maze_stoch": {
+            "control": {
+                "agents": ["p_fw_q",
+                           "p_bw_q",
+                           "p_true_fw_q"
+                           ],
+            },
+            "pc": {
+                "agents": ["p_fw_q",
+                           "c_fw_q",
+                           "p_true_fw_q",
+                           "c_true_fw_q",
+                           "p_bw_q",
+                           "c_bw_q"]
+            }
+    },
     "maze_1": {
             "control": {
                 "agents": ["p_fw_q",
