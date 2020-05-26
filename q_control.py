@@ -10,15 +10,15 @@ import network
 import utils
 from utils import *
 
-# flags.DEFINE_string('agent', 'q', 'what agent to run')
-flags.DEFINE_string('agent', 'p_bw_q', 'what agent to run')
+flags.DEFINE_string('agent', 'q', 'what agent to run')
+# flags.DEFINE_string('agent', 'p_bw_q', 'what agent to run')
 # flags.DEFINE_string('agent', 'p_fw_q', 'what agent to run')
 # flags.DEFINE_string('agent', 'c_true_bw_q', 'what agent to run')
 # flags.DEFINE_string('agent', 'q', 'what agent to run')
 # flags.DEFINE_string('agent', 'p_true_fw_q', 'what agent to run')
 # flags.DEFINE_string('agent', 'p_true_fw_q', 'what agent to run')
 # flags.DEFINE_string('env', 'maze', 'env')
-flags.DEFINE_string('env', 'maze_05', 'env')
+flags.DEFINE_string('env', 'maze_01', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', 400, 'Maximum number of time steps an episode may last (default: 100).')
@@ -34,7 +34,7 @@ flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
 flags.DEFINE_float('discount', 0.99, 'discounting on the agent side')
 flags.DEFINE_integer('min_replay_size', 1, 'min replay size before training.')
 # flags.DEFINE_float('lr', 0.4, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_ctrl', 0.1, 'learning rate for q optimizer')
+flags.DEFINE_float('lr_ctrl', 0.01, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr_p', 0.01, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr_m',  1.0, 'learning rate for model optimizer')
 flags.DEFINE_float('lr_m',  0.9, 'learning rate for model optimizer')
@@ -80,10 +80,10 @@ def main(argv):
             "crt_config": seed_config}
 
         if FLAGS.ignore_existent:
-            if FLAGS.agent == "c_bw_q" or FLAGS.agent == "p_bw_q":
-                agent_run_mode = "{}_top_{}".format(FLAGS.agent, FLAGS.top_n)
-            else:
-                agent_run_mode = "{}".format(FLAGS.agent)
+            # if FLAGS.agent == "c_bw_q" or FLAGS.agent == "p_bw_q":
+            #     agent_run_mode = "{}_top_{}".format(FLAGS.agent, FLAGS.top_n)
+            # else:
+            agent_run_mode = "{}".format(FLAGS.agent)
             agent_logs = os.path.join(logs, '{}/summaries/'.format(agent_run_mode))
             agent_logs_seed = os.path.join(agent_logs, 'seed_{}'.format(seed))
             if os.path.exists(agent_logs_seed) and \

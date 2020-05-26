@@ -28,6 +28,7 @@ flags.DEFINE_bool('reward', False, 'where to save results')
 flags.DEFINE_string('pivoting', "control", 'where to save results')
 flags.DEFINE_float('ymin', None, 'plot up to')
 flags.DEFINE_float('ymax', None, 'plot up to')
+flags.DEFINE_float('max', None, 'plot up to')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
 FONTSIZE = 17
@@ -270,6 +271,10 @@ def plot_tensorflow_log(space, color, linestyle):
     # mean_y_over_seeds = mean_y_over_seeds[::5]
     # std_y_over_seeds = std_y_over_seeds[::5]
     # x = x[::5]
+    if FLAGS.max is not None:
+        x = x[:FLAGS.max]
+        mean_y_over_seeds = mean_y_over_seeds[:FLAGS.max]
+        std_y_over_seeds = std_y_over_seeds[:FLAGS.max]
     if space["crt_config"]["agent"] == "q":
         plt.plot(x, mean_y_over_seeds, label="model-free", c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
