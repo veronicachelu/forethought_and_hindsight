@@ -26,6 +26,7 @@ def run_episodic(agent: Agent,
     # agent.load_model()
     ep_steps = []
     ep_rewards = []
+
     with agent.writer.as_default():
         for episode in np.arange(start=agent.episode, stop=num_episodes):
             # Run an episode.
@@ -93,11 +94,10 @@ def run_episodic(agent: Agent,
             ep_rewards.append(ep_reward)
 
 
-
             tf.summary.scalar("train/reward", np.mean(ep_reward), step=agent.episode)
             # tf.summary.scalar("train/avg_reward", np.mean(ep_rewards), step=agent.episode)
             # tf.summary.scalar("train/avg_steps", np.mean(ep_steps), step=agent.episode)
-            tf.summary.scalar("train/steps", np.mean(t), step=agent.episode)
+            tf.summary.scalar("train/steps", t, step=agent.episode)
             agent.writer.flush()
 
             # if agent.episode % 10 == 0:
@@ -105,10 +105,10 @@ def run_episodic(agent: Agent,
 
     # agent.save_model()
 
-    avg_steps = np.mean(ep_steps) if len(ep_steps) > 0 else None
-    avg_reward = np.mean(ep_rewards) if len(ep_rewards) > 0 else None
+    # avg_steps = np.mean(ep_steps) if len(ep_steps) > 0 else None
+    # avg_reward = np.mean(ep_rewards) if len(ep_rewards) > 0 else None
 
-    return avg_steps, avg_reward
+    return cumulative_reward, agent.total_steps
 
 def test_agent(agent, environment, num_episodes, max_len):
     cumulative_reward = 0

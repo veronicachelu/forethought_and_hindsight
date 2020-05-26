@@ -111,8 +111,8 @@ class FwQT(VanillaQT):
             o_tmn = self._sequence[0][0]
             a_tmn = self._sequence[0][1]
             o_t = self._sequence[-1][-1]
-            if self._sequence[0][2] == 1:
-                print("reward 1")
+            # if self._sequence[0][2] == 1:
+            #     print("reward 1")
             losses, gradients = self._model_loss_grad(self._fw_o_network,
                                                       self._r_network,
                                                       self._d_network,
@@ -127,8 +127,8 @@ class FwQT(VanillaQT):
             o_grad, r_grad, d_grad = gradients
             o_grad = np.linalg.norm(np.asarray(o_grad), ord=2)
             d_grad = np.linalg.norm(np.asarray(d_grad), ord=2)
-            if r_grad > 0:
-                print(r_grad)
+            # if r_grad > 0:
+            #     print(r_grad)
             losses_and_grads = {"losses": {
                 "loss": total_loss,
                 "o_loss": o_loss,
