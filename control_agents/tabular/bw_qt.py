@@ -27,7 +27,7 @@ class BwQT(VanillaQT):
         self._should_reset_sequence = False
         self._n = 1
 
-        self._run_mode = "{}_top_{}".format(self._run_mode, self._top_n)
+        self._run_mode = "{}".format(self._run_mode)
 
         self._create_summary_dirs()
 
