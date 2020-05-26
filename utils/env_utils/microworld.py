@@ -109,8 +109,11 @@ class MicroWorld(dm_env.Environment):
     def _get_next_state(self, cPos, action):
         cX, cY = cPos
 
-        nPos = self._rng.choice(range(self._nS),
-                         p=self._P[action][self._index_matrix[cX][cY]])
+        try:
+            nPos = self._rng.choice(range(self._nS),
+                             p=self._P[action][self._index_matrix[cX][cY]])
+        except:
+            print("dasdas")
         nX, nY = self._get_state_coords(nPos)
 
         return (nX, nY)
