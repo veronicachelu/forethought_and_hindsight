@@ -12,11 +12,11 @@ def run_episodic(agent: Agent,
         space,
         aux_agent_configs
         ):
-    # if space["agent_config"]["model_family"] == "q_true" and \
-    #                 space["env_config"]["model_class"] == "tabular":
-    #     mdp_solver = MdpSolver(environment, 48, space["env_config"]["nA"], aux_agent_configs["discount"])
-    #
-    #     agent._o_network, agent._fw_o_network, agent._r_network, agent._true_discount = mdp_solver.get_true_action_model()
+    if space["agent_config"]["model_family"] == "q_true" and \
+                    space["env_config"]["model_class"] == "tabular":
+        mdp_solver = MdpSolver(environment, 48, space["env_config"]["nA"], aux_agent_configs["discount"])
+        agent._o_network, agent._fw_o_network, r, agent._true_discount = mdp_solver.get_true_action_model()
+        agent._r_network = np.sum(r, axis=0)
     # else:
     #     mdp_solver = MdpSolver(environment, 48, space["env_config"]["nA"], aux_agent_configs["discount"])
     #
@@ -44,7 +44,7 @@ def run_episodic(agent: Agent,
                 agent.value_update(timestep, action, new_timestep)
 
                 ep_reward += new_timestep.reward
-                #
+
                 # if agent.episode % 1 == 0 and t % 100 == 0:
                 #     hat_p = agent.get_model_for_all_states(environment.get_all_states())
                 #     plot_p(env=environment,
@@ -73,7 +73,7 @@ def run_episodic(agent: Agent,
                 #                    q=_hat_q_,
                 #                    logs=agent._images_dir,
                 #                    filename="pi_{}_{}.png".format(agent.episode,t))
-                #
+
 
                 tf.summary.scalar("train/ep_steps", t, step=agent.total_steps)
                 tf.summary.scalar("train/cum_reward", cumulative_reward, step=agent.total_steps)

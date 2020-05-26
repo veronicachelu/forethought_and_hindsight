@@ -5,6 +5,9 @@ import configs.shortcut_config as shortcut_config
 import configs.split_config as split_config
 import configs.random_config as random_config
 import configs.maze_config as maze_config
+import configs.maze_1_config as maze_1_config
+import configs.maze_01_config as maze_01_config
+import configs.maze_05_config as maze_05_config
 import configs.linear_maze_config as linear_maze_config
 import configs.open_maze_config as open_maze_config
 import configs.stoch_linear_maze_config as stoch_linear_maze_config

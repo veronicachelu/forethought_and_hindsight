@@ -216,7 +216,7 @@ class VanillaQT(Agent):
                 ep = self.episode
             if ep % self._log_period == 0:
                 for k, v in losses.items():
-                    tf.summary.scalar("train/losses/{}/{}".format(summary_name, k), losses[k],
+                    tf.summary.scalar("train/losses/{}/{}".format(summary_name, k), np.array(v),
                                       step=ep)
                 self.writer.flush()
 

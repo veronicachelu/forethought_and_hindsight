@@ -34,18 +34,18 @@ class BwQT(VanillaQT):
         def model_loss(o_params,
                        r_params,
                        transitions):
-            o_tmn = transitions[0][0]
-            a_tmn = transitions[0][1]
+            o_tmn_target = transitions[0][0]
+            a_tmn_target = transitions[0][1]
             o_t = transitions[-1][-1]
 
-            oa_target_index = np.ravel_multi_index([o_tmn, a_tmn], (np.prod(self._input_dim), 4))
+            oa_target_index = np.ravel_multi_index([o_tmn_target, a_tmn_target], (np.prod(self._input_dim), 4))
             model_o_tmn = o_params[o_t]
             oa_target = np.eye(np.prod(self._input_dim)*4)[oa_target_index]
             o_loss = self._ce(self._log_softmax(model_o_tmn), oa_target)
             o_tmn_probs = self._softmax(model_o_tmn)
             o_tmn_probs[oa_target_index] -= 1
             o_error = - o_tmn_probs
-            model_r_t = r_params[o_tmn][o_t]
+            model_r_t = r_params[o_t]
 
             r_t_target = 0
             for i, t in enumerate(transitions):
@@ -59,7 +59,7 @@ class BwQT(VanillaQT):
 
         def q_planning_loss(q_params, r_params, x, prev_a, prev_x, r_t, d):
             q_tm1 = q_params[prev_x, prev_a]
-            r_t = r_params[prev_x, x]
+            r_t = r_params[x]
             q_t = q_params[x]
             q_target = r_t + d * (self._discount ** self._n) * np.max(q_t, axis=-1)
             td_error = (q_target - q_tm1)
@@ -90,9 +90,9 @@ class BwQT(VanillaQT):
             losses, gradients = self._model_loss_grad(self._o_network,
                                                       self._r_network,
                                                       self._sequence)
-            self._o_network[o_t], self._r_network[o_tmn, o_t] = \
+            self._o_network[o_t], self._r_network[o_t] = \
                 self._model_opt_update(gradients, [self._o_network[o_t],
-                                                   self._r_network[o_tmn, o_t]])
+                                                   self._r_network[o_t]])
             total_loss, o_loss, r_loss = losses
             o_grad, r_grad = gradients
             o_grad = np.linalg.norm(np.asarray(o_grad), ord=2)
@@ -135,8 +135,8 @@ class BwQT(VanillaQT):
             prev_o, prev_a = np.unravel_index(oa_index, (np.prod(self._input_dim), 4))
             # if prev_o == o_t:
             #     continue
-        # for prev_o, prev_a in itertools.product(range(np.prod(self._input_dim)), range(self._nA)):
-        #     oa_index = np.ravel_multi_index([prev_o, prev_a], (48, 4))
+            # for prev_o, prev_a in itertools.product(range(np.prod(self._input_dim)), range(self._nA)):
+            #     oa_index = np.ravel_multi_index([prev_o, prev_a], (48, 4))
             loss, gradient = self._q_planning_loss_grad(self._q_network,
                                                         self._r_network,
                                                         o_t, prev_a, prev_o,

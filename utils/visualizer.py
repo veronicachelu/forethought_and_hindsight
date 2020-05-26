@@ -178,13 +178,13 @@ def plot_p(env, p, logs=None, colormap='Blues',
         fig.subplots_adjust(wspace=0.3, hspace=0.3)
         for a in [0, 1, 2, 3]:
             plt.subplot(3, 3, map_from_action_to_subplot(a))
-            plot_p_action(p[i, a], vmin=0, vmax=np.max(p[i, a]))
+            plot_p_action(p[i, a], vmin=np.min(p[i, a]), vmax=np.max(p[i, a]))
             action_name = map_from_action_to_name(a)
             plt.title(r"$p(s, \mathrm{" + action_name + r"})$")
 
         plt.subplot(3, 3, 5)
         p_mean = 0.9 * np.max(p[i], axis=0) + 0.1 * np.mean(p[i], axis=0)
-        plot_p_action(p_mean, colormap='summer')
+        plot_p_action(p_mean, colormap='summer', vmin=np.min(p_mean), vmax=np.max(p_mean))
         plt.title("$p(s)$")
         sX, sY = np.unravel_index(i, (6, 8))
         plt.text(

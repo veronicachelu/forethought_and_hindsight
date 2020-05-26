@@ -18,7 +18,7 @@ class Actions():
 
 class MicroWorld(dm_env.Environment):
     def __init__(self, path=None, stochastic=False, random_restarts=False,
-                 rng=None, obs_type="tabular", env_size=1, max_reward=1.0):
+                 rng=None, obs_type="tabular", reward_prob=1.0, env_size=1, max_reward=1.0):
         self._str_MDP = ''
         self._height = -1
         self._width = -1
@@ -27,6 +27,8 @@ class MicroWorld(dm_env.Environment):
         self._adj_matrix = None
         self._nX = env_size
         self._max_reward = max_reward
+
+        self.reward_prob = reward_prob
 
         self._cX, self._cY = 0, 0
         # self._sX, self._sY = 0, 0
@@ -86,7 +88,7 @@ class MicroWorld(dm_env.Environment):
 
     def _get_next_reward(self, nX, nY):
         if (nX, nY) in self._g:
-            return self._rng.choice([0.0, self._max_reward], p=[0.9, 0.1])#
+            return self._rng.choice([0.0, self._max_reward], p=[1-self.reward_prob, self.reward_prob])#
         else:
             return 0.0
 
@@ -256,7 +258,7 @@ class MicroWorld(dm_env.Environment):
 
                                 # reward incurred if transitioning to the next state
                                 self._R[k][self._index_matrix[i][j]][self._index_matrix[fwd_i][fwd_j]] = \
-                                                self._max_reward * 0.1 if (fwd_i, fwd_j) in self._g else 0
+                                                self._max_reward * self.reward_prob if (fwd_i, fwd_j) in self._g else 0
 
                                 # prob of slipping and staying in the current state
                                 self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = slip_prob[0]
@@ -264,13 +266,13 @@ class MicroWorld(dm_env.Environment):
 
                                 # reward incurred in the current state
                                 self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
-                                        self._max_reward * 0.1 if (i, j) in self._g else 0 # self._get_next_reward(i, j)
+                                        self._max_reward * self.reward_prob if (i, j) in self._g else 0 # self._get_next_reward(i, j)
                             else:
                                 # automatically staying in the current state because you bumped into the edge of the world
                                 self._P[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
                                 self._P_absorbing[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = 1
                                 self._R[k][self._index_matrix[i][j]][self._index_matrix[i][j]] = \
-                                    self._max_reward * 0.1 if (i, j) in self._g else 0 #self._get_next_reward(i, j)
+                                    self._max_reward * self.reward_prob if (i, j) in self._g else 0 #self._get_next_reward(i, j)
                         else:
                             # the modified ergodic MDP resets to the starting state with probability 1 if at the goal
                             for si in range(self._height):

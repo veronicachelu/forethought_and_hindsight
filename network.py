@@ -133,7 +133,8 @@ def get_q_tabular_network(num_hidden_layers: int,
     # network["model"] = {"net": [np.zeros(shape=input_dim + (nA, np.prod(input_dim),)),
     network["model"] = {"net": [np.zeros(shape=(np.prod(input_dim), np.prod(input_dim) * nA,)),
                                 np.zeros(shape=input_dim + (nA, np.prod(input_dim),)),
-                                np.zeros(shape=input_dim + (np.prod(input_dim),)),
+                                np.zeros(shape=input_dim),
+                                np.zeros(shape=input_dim),
                                 np.zeros(shape=input_dim + (2,)),
                                 ], \
                        "params": None

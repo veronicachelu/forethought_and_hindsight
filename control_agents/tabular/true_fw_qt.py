@@ -32,14 +32,14 @@ class TrueFwQT(VanillaQT):
 
         def q_planning_loss(q_params, fw_o_params, r_params, x, a):
             next_x_logits = fw_o_params[x, a]
-            r = r_params[x]
+            # r = r_params[x]
             target = 0
             next_x_prob = next_x_logits
             q = q_params[x, a]
 
             for next_x in range(np.prod(self._input_dim)):
                 target += next_x_prob[next_x] * \
-                (r[next_x] + self._true_discount[next_x] * (self._discount ** self._n) * \
+                (r_params[next_x] + self._true_discount[next_x] * (self._discount ** self._n) * \
                  np.max(q_params[next_x], axis=-1))
             td_error = (target - q)
             loss = td_error ** 2

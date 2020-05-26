@@ -140,13 +140,24 @@ def get_control_env(nrng, seed, space, aux_agent_configs):
     if space["env_config"]["env_type"] == "discrete" or \
         space["env_config"]["env_type"] == "continuous" and \
         "gym" not in space["env_config"].keys():
+
         env_class = getattr(env_utils, space["env_config"]["class"])
-        env = env_class(path=space["env_config"]["mdp_filename"],
-                        stochastic=space["env_config"]["stochastic"],
-                        rng=nrng,
-                        obs_type=space["env_config"]["obs_type"],
-                        env_size=space["env_config"]["env_size"],
-                        )
+
+        if "reward_prob" in space["env_config"].keys():
+            env = env_class(path=space["env_config"]["mdp_filename"],
+                            stochastic=space["env_config"]["stochastic"],
+                            rng=nrng,
+                            reward_prob=space["env_config"]["reward_prob"],
+                            obs_type=space["env_config"]["obs_type"],
+                            env_size=space["env_config"]["env_size"],
+                            )
+        else:
+            env = env_class(path=space["env_config"]["mdp_filename"],
+                            stochastic=space["env_config"]["stochastic"],
+                            rng=nrng,
+                            obs_type=space["env_config"]["obs_type"],
+                            env_size=space["env_config"]["env_size"],
+                            )
         nS = env._nS
     elif space["env_config"]["env_type"] == "continuous":
         env_class = getattr(env_utils, space["env_config"]["class"])
@@ -337,6 +348,15 @@ def load_env_and_volatile_configs(env):
     elif env == "maze":
         env_config = configs.maze_config.env_config
         volatile_agent_config = configs.maze_config.volatile_agent_config
+    elif env == "maze_1":
+        env_config = configs.maze_1_config.env_config
+        volatile_agent_config = configs.maze_1_config.volatile_agent_config
+    elif env == "maze_05":
+        env_config = configs.maze_05_config.env_config
+        volatile_agent_config = configs.maze_05_config.volatile_agent_config
+    elif env == "maze_01":
+        env_config = configs.maze_01_config.env_config
+        volatile_agent_config = configs.maze_01_config.volatile_agent_config
     elif env == "linear_maze":
         env_config = configs.linear_maze_config.env_config
         volatile_agent_config = configs.linear_maze_config.volatile_agent_config

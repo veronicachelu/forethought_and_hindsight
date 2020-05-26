@@ -13,6 +13,7 @@ env_config = {
     "num_runs": 1,
     "stochastic": False,
     "feature_coder": None,
+    "reward_prob": 1.0,
     "nA": 4
 }
 
