@@ -284,6 +284,7 @@ def plot_tensorflow_log(space, color, linestyle):
     }
     all_y_over_seeds = []
     num_runs = space["env_config"]["num_runs"]
+    control_num_episodes = space["env_config"]["num_episodes"]
     for seed in range(num_runs):
         #print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))
         logs = os.path.join(os.path.join(space["crt_config"]["logs"],
@@ -312,17 +313,23 @@ def plot_tensorflow_log(space, color, linestyle):
 
         msve = event_acc.Tensors(tag)
 
-        x = [m[1] for m in msve]
         y = [tf.make_ndarray(m[2]) for m in msve]
-        all_y_over_seeds.append(np.array(y))
+        if len(y) == control_num_episodes:
+            x = [m[1] for m in msve]
+            all_y_over_seeds.append(np.array(y))
+
+    if len(all_y_over_seeds) == 0:
+        print("agent_{} has no data!".format(space["crt_config"]["agent"]))
+        return
 
     # those_that_are_not_99 = [i for i, a in enumerate(all_y_over_seeds) if len(a) != 199]
     # print(those_that_are_not_99)
     #print(len(all_y_over_seeds))
     # all_y_over_seeds = [a[:99] for a in all_y_over_seeds]
-    first_seed_size = len(all_y_over_seeds[0])
-    the_incomplete = [i for i, a in enumerate(all_y_over_seeds) if len(a) != first_seed_size]
-    print(the_incomplete)
+    # first_seed_size = len(all_y_over_seeds[0])
+    # the_incomplete = [i for i, a in enumerate(all_y_over_seeds) if len(a) != first_seed_size]
+    # print(the_incomplete)
+
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
     label = naming[space["crt_config"]["agent"]]
