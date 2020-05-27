@@ -24,8 +24,8 @@ flags.DEFINE_string('env', "bipartite_5L", 'where to save results')
 # flags.DEFINE_string('env', "fanin", 'where to save results')
 flags.DEFINE_bool('tabular', True, 'where to save results')
 flags.DEFINE_bool('mle', True, 'where to save results')
-flags.DEFINE_bool('mb', True, 'where to save results')
-# flags.DEFINE_bool('mb', False, 'where to save results')
+# flags.DEFINE_bool('mb', True, 'where to save results')
+flags.DEFINE_bool('mb', False, 'where to save results')
 # flags.DEFINE_bool('paml', True, 'where to save results')
 flags.DEFINE_bool('paml', False, 'where to save results')
 flags.DEFINE_string('pivoting', "bw_c_fw_p", 'where to save results')
@@ -118,27 +118,27 @@ dotted = {
 }
 
 naming = {
-    "vanilla": r"$model\_free$",
-    "mb_p_bw_MLE": r"$bw\_plan(x)$",
-    "mb_c_bw_MLE": r"$bw\_plan(x^\prime)$",
-    "mb_p_fw_MLE": r"$fw\_plan(x)$",
-    "mb_c_fw_MLE": r"$fw\_plan(x^\prime)$",
-    "mb_p_true_fw": r"$fw\_plan(P^*;x)$",
-    "mb_c_true_fw": r"$fw\_plan(P^*;x^\prime)$",
-    "mb_p_true_bw": r"$fw\_plan(\overleftarrow{P}^*;x)$",
-    "mb_c_true_bw": r"$fw\_plan(\overleftarrow{P}^*;x^\prime)$",
-    "p_bw_MLE": r"$bw\_plan(x)$",
-    "c_bw_MLE": r"$bw\_plan(x^\prime)$",
-    "p_fw_MLE": r"$fw\_plan(x)$",
-    "c_fw_MLE": r"$fw\_plan(x^\prime)$",
-    "p_true_fw": r"$fw\_plan(P^*;x)$",
-    "c_true_fw": r"$fw\_plan(P^*;x^\prime)$",
-    "p_true_bw": r"$fw\_plan(\overleftarrow{P}^*;x)$",
-    "c_true_bw": r"$fw\_plan(\overleftarrow{P}^*;x^\prime)$",
-    "p_random_bw": r"$bw\_plan(unif\ \overleftarrow{P},r^*;x)$",
-    "c_random_bw": r"$bw\_plan(unif\ \overleftarrow{P},r^*;x^\prime)$",
-    "mb_p_random_bw": r"$bw\_plan(unif\ \overleftarrow{P}r^*;x)$",
-    "mb_c_random_bw": r"$bw\_plan(unif\ \overleftarrow{P},r^*;x^\prime)$",
+    "vanilla": r"model\_free",
+    "mb_p_bw_MLE": r"bw\_plan($x$)",
+    "mb_c_bw_MLE": r"bw\_plan($x^\prime$)",
+    "mb_p_fw_MLE": r"fw\_plan($x$)",
+    "mb_c_fw_MLE": r"fw\_plan($x^\prime$)",
+    "mb_p_true_fw": r"fw\_plan($P^*;x$)",
+    "mb_c_true_fw": r"fw\_plan($P^*;x^\prime$)",
+    "mb_p_true_bw": r"bw\_plan($\overleftarrow{P}^*;x$)",
+    "mb_c_true_bw": r"bw\_plan($\overleftarrow{P}^*;x^\prime$)",
+    "p_bw_MLE": r"bw\_plan($x$)",
+    "c_bw_MLE": r"bw\_plan($x^\prime$)",
+    "p_fw_MLE": r"fw\_plan($x$)",
+    "c_fw_MLE": r"fw\_plan($x^\prime$)",
+    "p_true_fw": r"fw\_plan($P^*;x$)",
+    "c_true_fw": r"fw\_plan($P^*;x^\prime$)",
+    "p_true_bw": r"bw\_plan($\overleftarrow{P}^*;x$)",
+    "c_true_bw": r"bw\_plan($\overleftarrow{P}^*;x^\prime$)",
+    "p_random_bw": r"bw\_plan(unif $\overleftarrow{P},r^*;x$)",
+    "c_random_bw": r"bw\_plan(unif\ $\overleftarrow{P},r^*;x^\prime$)",
+    "mb_p_random_bw": r"bw\_plan(unif\ $\overleftarrow{P}r^*;x$)",
+    "mb_c_random_bw": r"bw\_plan(unif\ $\overleftarrow{P},r^*;x^\prime$)",
 }
 # dotted = ["true_bw", "true_fw", "mb_true_fw", "mb_true_bw",
 #           "true_bw_recur", "mb_true_bw_recur"]
@@ -195,13 +195,13 @@ def main(argv):
             linestyle = "-"
         elif agent in internal_dashed.keys():
             color = alg_to_color[internal_dashed[agent]]
-            linestyle = "--"
-        elif agent in internal_dotted.keys():
-            color = alg_to_color[internal_dotted[agent]]
             linestyle = ":"
-        elif agent in internal_dash_dotted.keys():
-            color = alg_to_color[internal_dash_dotted[agent]]
-            linestyle = "-."
+        # elif agent in internal_dotted.keys():
+        #     color = alg_to_color[internal_dotted[agent]]
+        #     linestyle = ":"
+        # elif agent in internal_dash_dotted.keys():
+        #     color = alg_to_color[internal_dash_dotted[agent]]
+        #     linestyle = "-."
 
         planning_depth = comparison_config["planning_depths"][i]
         max_norm = None
