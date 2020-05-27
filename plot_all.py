@@ -203,11 +203,11 @@ def main(argv):
         #     color = alg_to_color[internal_dash_dotted[agent]]
         #     linestyle = "-."
 
-        planning_depth = comparison_config["planning_depths"][i]
+        planning_depth = 1#comparison_config["planning_depths"][i]
         max_norm = None
         if FLAGS.paml and "max_norms" in comparison_config.keys():
             max_norm = comparison_config["max_norms"][i]
-        replay_capacity = comparison_config["replay_capacities"][i]
+        replay_capacity = 0#comparison_config["replay_capacities"][i]
         persistent_agent_config = configs.agent_config.config[agent]
         plot_for_agent(agent, env_config, persistent_agent_config,
                        volatile_agent_config, planning_depth,
