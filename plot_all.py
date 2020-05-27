@@ -118,7 +118,7 @@ dotted = {
 }
 
 naming = {
-    "vanilla": r"$model-free$",
+    "vanilla": r"$model\_free$",
     "mb_p_bw_MLE": r"$bw\_plan(x)$",
     "mb_c_bw_MLE": r"$bw\_plan(x^\prime)$",
     "mb_p_fw_MLE": r"$fw\_plan(x)$",
