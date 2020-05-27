@@ -32,8 +32,8 @@ flags.DEFINE_integer('max', None, 'plot up to')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 
 FLAGS = flags.FLAGS
-FONTSIZE = 12
-LINEWIDTH = 1
+FONTSIZE = 17
+LINEWIDTH = 2
 
 plot_configs = {
     "first": {
@@ -170,7 +170,7 @@ all_agents = ["p_bw_q", "p_fw_q", "p_true_fw_q",
               "p_bw_q_1", "p_bw_q_2", "p_bw_q_3"]
 
 naming = {
-    "q": "model-free",
+    "q": r"$model-free$",
     "p_bw_q": r"$bw\_plan(\mathbf{x},a,{x}^\prime)$",
     "p_bw_q_1": r"$bw\_plan(\mathbf{x},a,{x}^\prime;top\_1)$",
     "p_bw_q_2": r"$bw\_plan(\mathbf{x},a,{x}^\prime;top\_2)$",
@@ -198,7 +198,7 @@ def main(argv):
                            plot_configs[FLAGS.config]["nc"],
                            sharex='col',
                            squeeze=True, #, sharey=True,
-                           figsize=(15, 2.5),
+                           figsize=(25, 4),
                            )
     # ax.set(aspect="auto")
     unique_color_configs = [c for c in all_agents
@@ -243,10 +243,11 @@ def main(argv):
         *[*zip(*{l: h for h, l in zip(all_handles, all_labels)}.items())][::-1],
         # loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
         frameon=False,
-        ncol=plot_configs[FLAGS.config]["nc"], mode="expand",
+        ncol=plot_configs[FLAGS.config]["nc"],
+        mode="expand",
         loc='lower left',
         # borderaxespad=0.,
-        prop={'size': FONTSIZE}, bbox_to_anchor=(0., 1.02, 1., .102))
+        prop={'size': FONTSIZE}, bbox_to_anchor=(0., 1.0, 1.0, 0.1))
     # bbox_to_anchor=(1.1, 1.1))
     # plt.legend(loc='upper right',
     #            frameon=True,
