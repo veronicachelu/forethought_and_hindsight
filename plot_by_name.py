@@ -174,8 +174,8 @@ naming = {
     "c_bw_q": r"$bw\_plan({x},a,\mathbf{x}^\prime)$",
     "p_fw_q": r"$fw\_plan(\mathbf{x},a,{x}^\prime)$",
     "c_fw_q": r"$fw\_plan({x},a,\mathbf{x}^\prime)$",
-    "p_true_fw_q": r"$MF+fw\_plan(\overleftarrow{P}^*;\mathbf{x},a,{x}^\prime)$",
-    "c_true_fw_q": r"$MF+fw\_plan(\overleftarrow{P}^*;{x},a,\mathbf{x}^\prime)$",
+    "p_true_fw_q": r"$fw\_plan(P^*;\mathbf{x},a,{x}^\prime)$",
+    "c_true_fw_q": r"$fw\_plan(P^*;{x},a,\mathbf{x}^\prime)$",
 }
 
 def main(argv):
