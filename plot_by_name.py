@@ -241,7 +241,8 @@ def main(argv):
         # labels=all_labels,
         *[*zip(*{l: h for h, l in zip(all_handles, all_labels)}.items())][::-1],
         # loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
-        frameon=True, ncol=plot_configs[FLAGS.config]["nc"], mode="expand",
+        # frameon=True,
+        ncol=plot_configs[FLAGS.config]["nc"], mode="expand",
         loc='lower left',
         borderaxespad=0.,
         prop={'size': FONTSIZE}, bbox_to_anchor=(0., 1.02, 1., .102))
