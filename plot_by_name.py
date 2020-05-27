@@ -221,6 +221,7 @@ def main(argv):
             ax[i].set_ylabel(yaxis, fontsize=FONTSIZE)
         # if ii == plot_configs[FLAGS.config]["nr"] - 1:
         ax[i].set_xlabel(xaxis, fontsize=FONTSIZE)
+        ax[i].grid(True)
         plt.setp(ax[i].get_xticklabels(), visible=True)
         lines = plot(env, sub["pivoting"], logs_dir, plots_dir, ax[i], max, alg_to_color)
         handles, labels = ax[i].get_legend_handles_labels()
@@ -241,10 +242,10 @@ def main(argv):
         # labels=all_labels,
         *[*zip(*{l: h for h, l in zip(all_handles, all_labels)}.items())][::-1],
         # loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
-        # frameon=True,
+        frameon=False,
         ncol=plot_configs[FLAGS.config]["nc"], mode="expand",
         loc='lower left',
-        borderaxespad=0.,
+        # borderaxespad=0.,
         prop={'size': FONTSIZE}, bbox_to_anchor=(0., 1.02, 1., .102))
     # bbox_to_anchor=(1.1, 1.1))
     # plt.legend(loc='upper right',
@@ -260,7 +261,7 @@ def main(argv):
     # if FLAGS.reward:
     #     name = name + "_reward"
     # plt.show()
-    fig.set_grid()
+    # fig.set_grid()
     fig.tight_layout()
     fig.savefig(os.path.join(plots_dir,
                              "{}_{}.png".format("all",
