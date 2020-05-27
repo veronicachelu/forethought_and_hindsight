@@ -63,6 +63,7 @@ configs={
                            "p_true_fw_q",
                            "c_true_fw_q",
                            "p_bw_q",
+                            "p_bw_q_1",
                            "c_bw_q"]
             }
     },

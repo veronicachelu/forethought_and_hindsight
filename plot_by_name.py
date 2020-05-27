@@ -32,52 +32,56 @@ flags.DEFINE_integer('max', None, 'plot up to')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 
 FLAGS = flags.FLAGS
-FONTSIZE = 15
+FONTSIZE = 12
 LINEWIDTH = 1
 
 plot_configs = {
     "first": {
-        "nr": 2,
+        "nr": 1,
         "nc": 4,
         "subplots":
         [
+            # {
+            #     "env": "maze_1",
+            #     "pivoting": "control",
+            #
+            #     "max": 40,
+            # },
+            # # {
+            # #     "env": "maze_05",
+            # #     "pivoting": "control",
+            # #     "title": "Stochastic reward (p=0.5)"
+            # },
+            # # {
+            # #     "env": "maze_01",
+            # #     "pivoting": "control",
+            # #     "title": "Stochastic reward (p=0.1)",
+            # # },
+            # {
+            #     "env": "maze_stoch",
+            #     "pivoting": "control",
+            #     "title": "Stochastic transitions (p=0.5)"
+            # },
             {
                 "env": "maze_1",
-                "pivoting": "control",
+                "pivoting": "pc",
                 "title": "Deterministic",
                 "max": 40,
             },
             {
                 "env": "maze_05",
-                "pivoting": "control",
+                "pivoting": "pc",
                 "title": "Stochastic reward (p=0.5)"
             },
             {
                 "env": "maze_01",
-                "pivoting": "control",
+                "pivoting": "pc",
                 "title": "Stochastic reward (p=0.1)",
             },
             {
                 "env": "maze_stoch",
-                "pivoting": "control",
-                "title": "Stochastic transitions (p=0.5)"
-            },
-            {
-                "env": "maze_1",
                 "pivoting": "pc",
-                "max": 40,
-            },
-            {
-                "env": "maze_05",
-                "pivoting": "pc"
-            },
-            {
-                "env": "maze_01",
-                "pivoting": "pc"
-            },
-            {
-                "env": "maze_stoch",
-                "pivoting": "pc"
+                "title": "Stochastic transitions (p=0.5)"
             },
     ]
     }
@@ -194,7 +198,7 @@ def main(argv):
                            plot_configs[FLAGS.config]["nc"],
                            sharex='col',
                            squeeze=True, #, sharey=True,
-                           figsize=(15, 5),
+                           figsize=(15, 2.5),
                            )
     # ax.set(aspect="auto")
     unique_color_configs = [c for c in all_agents
@@ -206,20 +210,20 @@ def main(argv):
     all_handles = []
     all_labels = []
     for i, sub in enumerate(plot_configs[FLAGS.config]["subplots"]):
-        ii, jj = np.unravel_index(i, (plot_configs[FLAGS.config]["nr"],
-                           plot_configs[FLAGS.config]["nc"]))
+        # ii, jj = np.unravel_index(i, (plot_configs[FLAGS.config]["nr"],
+        #                    plot_configs[FLAGS.config]["nc"]))
         max = sub["max"] if "max" in sub.keys() else None
         env = sub["env"]
         if "title" in sub.keys():
-            ax[ii, jj].set_title(sub["title"])
+            ax[i].set_title(sub["title"], fontsize=FONTSIZE)
         logs_dir = os.path.join(best_hyperparam_folder, env)
-        if jj == 0:
-            ax[ii, jj].set_ylabel(yaxis, fontsize=FONTSIZE)
-        if ii == plot_configs[FLAGS.config]["nr"] - 1:
-            ax[ii, jj].set_xlabel(xaxis, fontsize=FONTSIZE)
-        plt.setp(ax[ii, jj].get_xticklabels(), visible=True)
-        lines = plot(env, sub["pivoting"], logs_dir, plots_dir, ax[ii, jj], max, alg_to_color)
-        handles, labels = ax[ii, jj].get_legend_handles_labels()
+        if i == 0:
+            ax[i].set_ylabel(yaxis, fontsize=FONTSIZE)
+        # if ii == plot_configs[FLAGS.config]["nr"] - 1:
+        ax[i].set_xlabel(xaxis, fontsize=FONTSIZE)
+        plt.setp(ax[i].get_xticklabels(), visible=True)
+        lines = plot(env, sub["pivoting"], logs_dir, plots_dir, ax[i], max, alg_to_color)
+        handles, labels = ax[i].get_legend_handles_labels()
         all_handles.extend(handles)
         all_labels.extend(labels)
 
