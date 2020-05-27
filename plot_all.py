@@ -20,10 +20,10 @@ plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 # flags.DEFINE_string('env', "bipartite_100_1", 'where to save results')
-flags.DEFINE_string('env', "bipartite_", 'where to save results')
+flags.DEFINE_string('env', "bipartite_5L", 'where to save results')
 # flags.DEFINE_string('env', "fanin", 'where to save results')
-flags.DEFINE_bool('tabular', False, 'where to save results')
-flags.DEFINE_bool('mle', False, 'where to save results')
+flags.DEFINE_bool('tabular', True, 'where to save results')
+flags.DEFINE_bool('mle', True, 'where to save results')
 flags.DEFINE_bool('mb', True, 'where to save results')
 # flags.DEFINE_bool('mb', False, 'where to save results')
 # flags.DEFINE_bool('paml', True, 'where to save results')
@@ -117,6 +117,29 @@ dotted = {
           "c_true_fw": "c_fw",
 }
 
+naming = {
+    "vanilla": "model-free",
+    "mb_p_bw_MLE": r"$bw\_plan(x)$",
+    "mb_c_bw_MLE": r"$bw\_plan(x^\prime)$",
+    "mb_p_fw_MLE": r"$fw\_plan(x)$",
+    "mb_c_fw_MLE": r"$fw\_plan(x^\prime)$",
+    "mb_p_true_fw": r"$fw\_plan(P^*;x)$",
+    "mb_c_true_fw": r"$fw\_plan(P^*;x^\prime)$",
+    "mb_p_true_bw": r"$fw\_plan(\overleftarrow{P}^*;x)$",
+    "mb_c_true_bw": r"$fw\_plan(\overleftarrow{P}^*;x^\prime)$",
+    "p_bw_MLE": r"$bw\_plan(x)$",
+    "c_bw_MLE": r"$bw\_plan(x^\prime)$",
+    "p_fw_MLE": r"$fw\_plan(x)$",
+    "c_fw_MLE": r"$fw\_plan(x^\prime)$",
+    "p_true_fw": r"$fw\_plan(P^*;x)$",
+    "c_true_fw": r"$fw\_plan(P^*;x^\prime)$",
+    "p_true_bw": r"$fw\_plan(\overleftarrow{P}^*;x)$",
+    "c_true_bw": r"$fw\_plan(\overleftarrow{P}^*;x^\prime)$",
+    "p_random_bw": r"$bw\_plan(unif\ \overleftarrow{P},r^*;x)$",
+    "c_random_bw": r"$bw\_plan(unif\ \overleftarrow{P},r^*;x^\prime)$",
+    "mb_p_random_bw": r"$bw\_plan(unif\ \overleftarrow{P}r^*;x)$",
+    "mb_c_random_bw": r"$bw\_plan(unif\ \overleftarrow{P},r^*;x^\prime)$",
+}
 # dotted = ["true_bw", "true_fw", "mb_true_fw", "mb_true_bw",
 #           "true_bw_recur", "mb_true_bw_recur"]
 
@@ -204,12 +227,13 @@ def main(argv):
     plt.ylabel(yaxis, fontsize=FONTSIZE)
     plt.xlabel(xaxis, fontsize=FONTSIZE)
     plt.legend(
-        # loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
-               frameon=True, ncol = 2,  mode = "expand",
-               loc = 'lower left',
+        loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
+               # frameon=True, ncol = 2,  mode = "expand",
+               # loc = 'lower left',
                borderaxespad=0.,
-               prop={'size': FONTSIZE}, bbox_to_anchor = (0., 1.02, 1., .102))
-               # bbox_to_anchor=(1.1, 1.1))
+               prop={'size': FONTSIZE},
+                # bbox_to_anchor = (0., 1.02, 1., .102))
+               bbox_to_anchor=(1.1, 1.1))
     if not os.path.exists(plots):
         os.makedirs(plots)
 
@@ -301,14 +325,14 @@ def plot_tensorflow_log(space, color, linestyle):
     print(the_incomplete)
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
+    label = naming[space["crt_config"]["agent"]]
     if space["crt_config"]["agent"] == "vanilla":
-        plt.plot(x, mean_y_over_seeds, label="model-free", c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
+        plt.plot(x, mean_y_over_seeds, label=label, c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
                          color="gray", alpha=0.07)
     else:
-        label = space["crt_config"]["agent"]
-        if FLAGS.paml and space["crt_config"]["max_norm"] is not None:
-            label += "_{}".format(space["crt_config"]["max_norm"])
+        # if FLAGS.paml and space["crt_config"]["max_norm"] is not None:
+        #     label += "_{}".format(space["crt_config"]["max_norm"])
         plt.plot(x, mean_y_over_seeds, label=label,
                  alpha=1, linewidth=LINEWIDTH, color=color,
                  linestyle=linestyle)
