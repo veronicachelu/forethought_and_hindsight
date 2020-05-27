@@ -260,7 +260,7 @@ def main(argv):
     # if FLAGS.reward:
     #     name = name + "_reward"
     # plt.show()
-    # fig.set_grid()
+    fig.set_grid()
     fig.tight_layout()
     fig.savefig(os.path.join(plots_dir,
                              "{}_{}.png".format("all",
