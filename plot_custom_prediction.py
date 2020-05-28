@@ -189,7 +189,7 @@ def main(argv):
 
     all_handles = []
     all_labels = []
-    f = lambda x, pos: f'{x/10**3:,.1f}K' if x >= 1000 else f'{x:,.0f}'
+    # f = lambda x, pos: f'{x/10**3:,.1f}K' if x >= 1000 else f'{x:,.0f}'
     for i, sub in enumerate(plot_configs[FLAGS.config]["subplots"]):
         env = sub["env"]
         if "title" in sub.keys():
@@ -205,8 +205,11 @@ def main(argv):
         #                  box.width, box.height * 0.9])
         plt.setp(ax[i].get_yticklabels(), visible=True, fontsize=TICKSIZE)
         plt.setp(ax[i].get_xticklabels(), visible=True, fontsize=TICKSIZE)
-
-        ax[i].xaxis.set_major_formatter(FuncFormatter(f))
+        ax[i].ticklabel_format(axis="x", style="sci", scilimits=(0, 0), useMathText=True)
+        # ticklabel_format(axis='x', style='sci',
+        #                        scilimits=None, useOffset=None, useLocale=None,
+        #                  useMathText=True)
+        # ax[i].xaxis.set_major_formatter(FuncFormatter(f))
         plot(env, sub["pivoting"], logs_dir, plots_dir, ax[i], alg_to_color)
         handles, labels = ax[i].get_legend_handles_labels()
         all_handles.extend(handles)
@@ -328,7 +331,7 @@ def plot_tensorflow_log(space, color, linestyle, ax):
         'tensors': 200000,
     }
     all_y_over_seeds = []
-    num_runs = space["env_config"]["num_runs"]
+    num_runs = 1#space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["num_episodes"]
 
     for seed in range(num_runs):

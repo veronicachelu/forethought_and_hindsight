@@ -11,6 +11,7 @@ import matplotlib.style as style
 import cycler
 from main_utils import *
 import glob
+from matplotlib.ticker import FuncFormatter
 style.available
 style.use('seaborn-poster') #sets the size of the charts
 # style.use('ggplot')
@@ -34,6 +35,7 @@ flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results'
 FLAGS = flags.FLAGS
 FONTSIZE = 20
 LINEWIDTH = 3
+TICKSIZE = 15
 
 plot_configs = {
     "maze": {
@@ -144,9 +146,17 @@ dotted = {
           "c_ac_true_bw": "c_ac_bw",
 }
 
-all_agents = ["p_bw_q", "p_fw_q", "p_true_fw_q",
-              "c_bw_q", "c_fw_q", "c_true_fw_q",
-              "p_bw_q_1", "p_bw_q_2", "p_bw_q_3"]
+all_agents = [
+              # "p_bw_q",
+              "p_bw_q",
+              "p_fw_q",
+              "p_true_fw_q",
+              "p_true_fw_q",
+              # "c_fw_q",
+              "p_bw_q_1",
+              # "p_bw_q_2",
+              # "p_bw_q_3"
+]
 
 naming = {
     "q": r"model_free(mf)",
@@ -200,6 +210,8 @@ def main(argv):
             ax[i].set_ylabel(yaxis, fontsize=FONTSIZE)
         # if ii == plot_configs[FLAGS.config]["nr"] - 1:
         ax[i].set_xlabel(xaxis, fontsize=FONTSIZE)
+        plt.setp(ax[i].get_yticklabels(), visible=True, fontsize=TICKSIZE)
+        plt.setp(ax[i].get_xticklabels(), visible=True, fontsize=TICKSIZE)
         ax[i].grid(True)
         plt.setp(ax[i].get_xticklabels(), visible=True)
         lines = plot(env, sub["pivoting"], logs_dir, plots_dir, ax[i], max, alg_to_color)
@@ -224,9 +236,14 @@ def main(argv):
         frameon=False,
         ncol=plot_configs[FLAGS.config]["nc"],
         mode="expand",
-        loc='lower left',
+        bbox_to_anchor=(0.5, -0.05),
+        loc='upper center',
         # borderaxespad=0.,
-        prop={'size': FONTSIZE}, bbox_to_anchor=(0., 1.0, 1.0, 0.1))
+        prop={'size': FONTSIZE},
+        # bbox_to_anchor=(0., 1.0, 1.0, 0.1)
+    )
+    # ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+    #           fancybox=True, shadow=True, ncol=5)
     # bbox_to_anchor=(1.1, 1.1))
     # plt.legend(loc='upper right',
     #            frameon=True,
@@ -243,6 +260,7 @@ def main(argv):
     # plt.show()
     # fig.set_grid()
     fig.tight_layout()
+    fig.subplots_adjust(bottom=0.3)
     fig.savefig(os.path.join(plots_dir,
                              "{}_{}.png".format("all",
                                                 "steps")),
@@ -259,10 +277,10 @@ def plot(env, pivoting, logs_dir, plots_dir, ax, max, alg_to_color):
 
     lines = []
     for i, agent in enumerate(comparison_config["agents"]):
-        if agent not in dashed.keys():
+        if agent not in dotted.keys():
             color = alg_to_color[agent]
             linestyle = "-"
-        elif agent in dashed.keys():
+        else:
             color = alg_to_color[dashed[agent]]
             linestyle = ":"
 
@@ -294,7 +312,7 @@ def plot_tensorflow_log(space, color, linestyle, max, ax):
     all_y_over_seeds = []
     all_x_over_seeds = []
     the_incomplete = []
-    num_runs = space["env_config"]["num_runs"]
+    num_runs = 1#space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["control_num_episodes"]
     for seed in range(num_runs):
         #print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))

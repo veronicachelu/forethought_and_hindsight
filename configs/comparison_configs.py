@@ -7,12 +7,15 @@ configs={
                            ],
             },
             "pc": {
-                "agents": ["p_fw_q",
-                           "c_fw_q",
-                           "p_true_fw_q",
-                           "c_true_fw_q",
-                           "p_bw_q",
-                           "c_bw_q"]
+                "agents": [
+                            "p_bw_q",
+                            "p_fw_q",
+                            # "c_fw_q",
+                            "p_true_fw_q",
+                           # "c_true_fw_q",
+
+                           # "c_bw_q"
+                ]
             }
     },
     "maze_1": {
@@ -23,12 +26,15 @@ configs={
                            ],
             },
             "pc": {
-                "agents": ["p_fw_q",
-                           "c_fw_q",
-                           "p_true_fw_q",
-                           "c_true_fw_q",
-                           "p_bw_q",
-                           "c_bw_q"]
+                 "agents": [
+                            "p_bw_q",
+                            "p_fw_q",
+                            # "c_fw_q",
+                            "p_true_fw_q",
+                           # "c_true_fw_q",
+
+                           # "c_bw_q"
+                ]
             }
     },
     "maze_05": {
@@ -39,12 +45,15 @@ configs={
                            ],
             },
             "pc": {
-                "agents": ["p_fw_q",
-                           "c_fw_q",
-                           "p_true_fw_q",
-                           "c_true_fw_q",
-                           "p_bw_q",
-                           "c_bw_q"]
+                 "agents": [
+                            "p_bw_q",
+                            "p_fw_q",
+                            # "c_fw_q",
+                            "p_true_fw_q",
+                           # "c_true_fw_q",
+
+                           # "c_bw_q"
+                ]
             }
     },
     "maze_01": {
@@ -58,13 +67,15 @@ configs={
                            ],
             },
             "pc": {
-                "agents": ["p_fw_q",
-                           "c_fw_q",
-                           "p_true_fw_q",
-                           "c_true_fw_q",
-                           "p_bw_q",
-                            "p_bw_q_1",
-                           "c_bw_q"]
+                 "agents": [
+                            "p_bw_q",
+                            "p_fw_q",
+                            # "c_fw_q",
+                            "p_true_fw_q",
+                           # "c_true_fw_q",
+
+                           # "c_bw_q"
+                ]
             }
     },
     "maze": {
