@@ -363,6 +363,7 @@ def plot_tensorflow_log(space, color, linestyle, max, ax):
     # the_complete = [a for i, a in enumerate(all_y_over_seeds) if len(a) == first_seed_size]
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
+    std_y_over_seeds /= np.sqrt(len(std_y_over_seeds))
     # mean_y_over_seeds = mean_y_over_seeds[::5]
     # std_y_over_seeds = std_y_over_seeds[::5]
     # x = x[::5]

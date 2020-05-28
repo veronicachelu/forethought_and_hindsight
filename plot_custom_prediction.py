@@ -20,31 +20,39 @@ plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 # flags.DEFINE_string('env', "bipartite_100_1", 'where to save results')
-flags.DEFINE_string('env', "bipartite_5L", 'where to save results')
+flags.DEFINE_string('config', "3_level", 'where to save results')
 # flags.DEFINE_string('env', "fanin", 'where to save results')
 flags.DEFINE_bool('tabular', True, 'where to save results')
-flags.DEFINE_bool('mle', True, 'where to save results')
-# flags.DEFINE_bool('mb', True, 'where to save results')
-flags.DEFINE_bool('mb', False, 'where to save results')
-# flags.DEFINE_bool('paml', True, 'where to save results')
-flags.DEFINE_bool('paml', False, 'where to save results')
-flags.DEFINE_string('pivoting', "bw_c_fw_p", 'where to save results')
-# flags.DEFINE_string('pivoting', "corr", 'where to save results')
-# flags.DEFINE_string('pivoting', "MLE_PAML", 'where to save results')
-flags.DEFINE_float('lr', 0.1, 'where to save results')
-# flags.DEFINE_string('env', "random_linear", 'where to save results')
 flags.DEFINE_float('ymin', None, 'plot up to')
-# flags.DEFINE_float('ymin', 0.65, 'plot up to')
 flags.DEFINE_float('ymax', None, 'plot up to')
-# flags.DEFINE_float('ymax', 1.75, 'plot up to')
 flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
-# flags.DEFINE_bool('cumulative_rmsve', True, 'n-step plot or comparison plt')
-# flags.DEFINE_integer('ˀnum_runs', 100, '')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
 FONTSIZE = 20
 LINEWIDTH = 2
 
+plot_configs = {
+    "3_level": {
+        "nr": 1,
+        "nc": 2,
+        "subplots": [
+            {
+                "env": "bipartite_100_10_1_2L",
+                "pivoting": "bw_c_fw_p",
+                "mb": True,
+                "mle": True,
+                "title": "Channeling structure \n large fan-in / small fan-out"
+            },
+            {
+                "env": "bipartite_1_10_100_2L",
+                "pivoting": "bw_c_fw_p",
+                "mb": True,
+                "mle": True,
+                "title": "Broadcasting structure \n small fan-in / large fan-out"
+            }
+        ]
+    }
+}
 mle_paml_dashed = {
     "p_fw_PAML": "p_fw_MLE",
     "p_bw_PAML": "p_bw_MLE",
@@ -143,49 +151,125 @@ naming = {
 # dotted = ["true_bw", "true_fw", "mb_true_fw", "mb_true_bw",
 #           "true_bw_recur", "mb_true_bw_recur"]
 
+all_agents = ["mb_c_bw_MLE",
+              "mb_p_fw_MLE",
+              "mb_c_true_bw",
+              "mb_p_true_fw",
+              ]
+
 def main(argv):
     del argv  # Unused.
     best_hyperparam_folder = os.path.join(FLAGS.logs, "best")
-    logs = os.path.join(best_hyperparam_folder, FLAGS.env)
-    plots = os.path.join(FLAGS.plots, FLAGS.env)
+    plots_dir = os.path.join(FLAGS.plots, FLAGS.config)
 
-    if not os.path.exists(plots):
-        os.makedirs(plots)
+    if not os.path.exists(plots_dir):
+        os.makedirs(plots_dir)
 
-    env_config, volatile_agent_config = load_env_and_volatile_configs(FLAGS.env)
+    if FLAGS.cumulative_rmsve:
+        yaxis = 'Cumulative RMSVE'
+        xaxis = "Timesteps"
+    else:
+        yaxis = 'RMSVE'
+        xaxis = "Episodes"
 
-    name = FLAGS.pivoting + "_" +"all"
-    if FLAGS.mb:
+    fig, ax = plt.subplots(plot_configs[FLAGS.config]["nr"],
+                           plot_configs[FLAGS.config]["nc"],
+                           sharex='col',
+                           squeeze=True,  # , sharey=True,
+                           figsize=(13, 5),
+                           )
+
+    unique_color_configs = [c for c in all_agents
+                            if c not in dashed.keys()]
+
+    colors = ["C{}".format(c) for c in range(len(all_agents))]
+    alg_to_color = {alg: color for alg, color in zip(unique_color_configs, colors)}
+
+    all_handles = []
+    all_labels = []
+    for i, sub in enumerate(plot_configs[FLAGS.config]["subplots"]):
+        env = sub["env"]
+        if "title" in sub.keys():
+            ax[i].set_title(sub["title"], fontsize=FONTSIZE)
+        logs_dir = os.path.join(best_hyperparam_folder, env)
+        if i == 0:
+            ax[i].set_ylabel(yaxis, fontsize=FONTSIZE)
+        ax[i].set_xlabel(xaxis, fontsize=FONTSIZE)
+        ax[i].grid(True)
+        # Shrink current axis's height by 10% on the bottom
+        # box = ax[i].get_position()
+        # ax[i].set_position([box.x0, box.y0 + box.height * 0.1,
+        #                  box.width, box.height * 0.9])
+        plt.setp(ax[i].get_xticklabels(), visible=True)
+        plot(env, sub["pivoting"], sub["mb"], sub["mle"], logs_dir, plots_dir, ax[i], alg_to_color)
+        handles, labels = ax[i].get_legend_handles_labels()
+        all_handles.extend(handles)
+        all_labels.extend(labels)
+
+    fig.legend(
+        # handles=all_handles,
+        # labels=all_labels,
+        *[*zip(*{l: h for h, l in zip(all_handles, all_labels)}.items())][::-1],
+        # loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
+        frameon=False,
+        # ncol=5,
+        # mode="expand",
+        # loc = 7,
+        # loc='lower left',
+        # loc='upper center',
+        # loc='upper left',
+        # borderaxespad=0.,
+        prop={'size': FONTSIZE},
+        bbox_to_anchor=(1.04, 0.8),
+        loc="upper center",
+        # bbox_to_anchor=(0.5, -0.05)#, 1.0, 0.1)
+        # bbox_to_anchor=(1., 1.)#, 1.0, 0.1)
+        # bbox_to_anchor=(0., 1.0, 1.0, 0.1)
+
+    )
+
+    if not os.path.exists(plots_dir):
+        os.makedirs(plots_dir)
+
+    fig.tight_layout()
+    fig.subplots_adjust(right=0.92)
+    fig.savefig(os.path.join(plots_dir,
+                             "{}_{}.png".format("all",
+                                                FLAGS.config)),
+                bbox_inches='tight',
+                )
+
+def plot(env, pivoting, mb, mle, logs_dir, plots_dir, ax, alg_to_color):
+    env_config, volatile_agent_config = load_env_and_volatile_configs(env)
+
+    name = pivoting + "_" + "all"
+    if mb:
         name = "mb_" + name
-    if FLAGS.mle:
+    if mle:
         name = name + "_mle"
 
     internal_dashed = dashed
     internal_dotted = dotted
     internal_dash_dotted = {}
-    if FLAGS.mle and FLAGS.mb:
+    if mle and mb:
         internal_dashed = mb_mle_dashed
-    elif FLAGS.mle and FLAGS.paml:
-        internal_dashed = mle_paml_dashed
-        internal_dotted = mle_paml_dotted
-        internal_dash_dotted = mle_paml_dash_dotted
-    elif FLAGS.mle:
+    elif mle:
         internal_dashed = mle_dashed
-    elif FLAGS.mb:
+    elif mb:
         internal_dashed = mb_dashed
 
-    comparison_config = configs.comparison_configs.configs[FLAGS.env][name]
+    comparison_config = configs.comparison_configs.configs[env][name]
 
-    unique_color_configs = [c for c in comparison_config["agents"]
-                            if c not in internal_dashed.keys()]
-    n = len(unique_color_configs)
-
-    colors = ["C{}".format(c) for c in range(n)]
-    alg_to_color = {alg: color for alg, color in zip(unique_color_configs, colors)}
+    # unique_color_configs = [c for c in comparison_config["agents"]
+    #                         if c not in internal_dashed.keys()]
+    # n = len(unique_color_configs)
+    #
+    # colors = ["C{}".format(c) for c in range(n)]
+    # alg_to_color = {alg: color for alg, color in zip(unique_color_configs, colors)}
 
     persistent_agent_config = configs.agent_config.config["vanilla"]
     plot_for_agent("vanilla", env_config, persistent_agent_config,
-                   volatile_agent_config, 0, 0, logs, "gray", "-")
+                   0, 0, logs_dir, "gray", "-", ax)
 
     for i, agent in enumerate(comparison_config["agents"]):
         if agent not in internal_dashed.keys() and\
@@ -196,85 +280,56 @@ def main(argv):
         elif agent in internal_dashed.keys():
             color = alg_to_color[internal_dashed[agent]]
             linestyle = ":"
-        # elif agent in internal_dotted.keys():
-        #     color = alg_to_color[internal_dotted[agent]]
-        #     linestyle = ":"
-        # elif agent in internal_dash_dotted.keys():
-        #     color = alg_to_color[internal_dash_dotted[agent]]
-        #     linestyle = "-."
 
-        planning_depth = 1#comparison_config["planning_depths"][i]
-        max_norm = None
-        if FLAGS.paml and "max_norms" in comparison_config.keys():
-            max_norm = comparison_config["max_norms"][i]
-        replay_capacity = 0#comparison_config["replay_capacities"][i]
         persistent_agent_config = configs.agent_config.config[agent]
         plot_for_agent(agent, env_config, persistent_agent_config,
-                       volatile_agent_config, planning_depth,
-                       replay_capacity, logs, color, linestyle, max_norm)
-
-
-    if FLAGS.cumulative_rmsve:
-        yaxis = 'Cumulative RMSVE'
-        xaxis = "Timesteps"
-    else:
-        yaxis = 'RMSVE'
-        xaxis = "Episodes"
-
-    # Set the y limits
-    if FLAGS.ymin is not None and FLAGS.ymax is not None:
-        plt.ylim(FLAGS.ymin, FLAGS.ymax)
-    plt.ylabel(yaxis, fontsize=FONTSIZE)
-    plt.xlabel(xaxis, fontsize=FONTSIZE)
-    plt.legend(
-        loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
-               # frameon=True, ncol = 2,  mode = "expand",
-               # loc = 'lower left',
-               borderaxespad=0.,
-               prop={'size': FONTSIZE},
-                # bbox_to_anchor = (0., 1.02, 1., .102))
-               bbox_to_anchor=(1.1, 1.1))
-    if not os.path.exists(plots):
-        os.makedirs(plots)
-
-    name = FLAGS.pivoting + "_" +"all"
-    if FLAGS.mb:
-        name = "mb_" + name
-    if FLAGS.mle:
-        name = name + "_mle"
-
-    plt.grid()
-    plt.tight_layout()
-    plt.savefig(os.path.join(plots,
-                             "{}_{}.png".format(name,
-                                                "CumRMSVE" if
-                                                FLAGS.cumulative_rmsve else
-                                                "RMSVE")))
+                        1, 0, logs_dir, color, linestyle, ax)
+    #
+    #
+    # if FLAGS.ymin is not None and FLAGS.ymax is not None:
+    #     plt.ylim(FLAGS.ymin, FLAGS.ymax)
+    # plt.ylabel(yaxis, fontsize=FONTSIZE)
+    # plt.xlabel(xaxis, fontsize=FONTSIZE)
+    # plt.legend(
+    #     loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
+    #            # frameon=True, ncol = 2,  mode = "expand",
+    #            # loc = 'lower left',
+    #            borderaxespad=0.,
+    #            prop={'size': FONTSIZE},
+    #             # bbox_to_anchor = (0., 1.02, 1., .102))
+    #            bbox_to_anchor=(1.1, 1.1))
+    # if not os.path.exists(plots):
+    #     os.makedirs(plots)
+    #
+    # name = FLAGS.pivoting + "_" +"all"
+    # if FLAGS.mb:
+    #     name = "mb_" + name
+    # if FLAGS.mle:
+    #     name = name + "_mle"
+    #
+    # plt.grid()
+    # plt.tight_layout()
+    # plt.savefig(os.path.join(plots,
+    #                          "{}_{}.png".format(name,
+    #                                             "CumRMSVE" if
+    #                                             FLAGS.cumulative_rmsve else
+    #                                             "RMSVE")))
 
 def plot_for_agent(agent, env_config, persistent_agent_config,
-                   volatile_agent_config, planning_depth, replay_capacity, logs, color, linestyle, max_norm=None):
+                   planning_depth, replay_capacity, logs, color, linestyle, ax):
     print(agent)
-    # if not FLAGS.tabular:
-    if max_norm is None or max_norm == 0:
-        log_folder_agent = os.path.join(logs, "{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth, replay_capacity))
-    else:
-        log_folder_agent = os.path.join(logs, "{}_{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth,
-                                                                replay_capacity, max_norm))
-    # else:
-    #     log_folder_agent = os.path.join(logs, "{}_{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth,
-    #                                                             replay_capacity, FLAGS.lr))
+    log_folder_agent = os.path.join(logs, "{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth, replay_capacity))
     volatile_config = {"agent": agent,
                        "planning_depth": planning_depth,
-                       "max_norm": max_norm,
                        "replay_capacity": replay_capacity,
                        "logs": log_folder_agent}
     space = {
     "env_config": env_config,
     "agent_config": persistent_agent_config,
     "crt_config": volatile_config}
-    plot_tensorflow_log(space, color, linestyle)
+    plot_tensorflow_log(space, color, linestyle, ax)
 
-def plot_tensorflow_log(space, color, linestyle):
+def plot_tensorflow_log(space, color, linestyle, ax):
     tf_size_guidance = {
         'compressedHistograms': 100000,
         'images': 0,
@@ -333,33 +388,21 @@ def plot_tensorflow_log(space, color, linestyle):
 
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
-    std_y_over_seeds /= np.sqrt(len(std_y_over_seeds))
+    # std_y_over_seeds /= np.sqrt(len(std_y_over_seeds))
     label = naming[space["crt_config"]["agent"]]
     if space["crt_config"]["agent"] == "vanilla":
-        plt.plot(x, mean_y_over_seeds, label=label, c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
-        plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
+        ax.plot(x, mean_y_over_seeds, label=label, c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
+        ax.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
                          color="gray", alpha=0.07)
     else:
         # if FLAGS.paml and space["crt_config"]["max_norm"] is not None:
         #     label += "_{}".format(space["crt_config"]["max_norm"])
-        plt.plot(x, mean_y_over_seeds, label=label,
+        ax.plot(x, mean_y_over_seeds, label=label,
                  alpha=1, linewidth=LINEWIDTH, color=color,
                  linestyle=linestyle)
-        plt.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
+        ax.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
                          alpha=0.07, color=color,
                          linestyle=linestyle)
-
-def format_name(agent, planning_perf, replay_capacity):
-    if not(planning_perf == 0):
-        if not (replay_capacity == 0):
-            return "{}_{}_{}".format(agent, planning_perf, replay_capacity)
-        else:
-            return "{}_{}".format(agent, planning_perf)
-    else:
-        if not (replay_capacity == 0):
-            return "{}_{}".format(agent, replay_capacity)
-        else:
-            return "{}".format(agent)
 
 if __name__ == '__main__':
     app.run(main)

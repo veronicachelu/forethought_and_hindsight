@@ -947,10 +947,10 @@ configs={
         },
         "bw_c_fw_p_all_mle": {
             "agents": ["c_bw_MLE",
-                       "p_bw_MLE",
-                       "c_true_bw",
+                       # "p_bw_MLE",
+                       # "c_true_bw",
                        "p_fw_MLE",
-                       "p_true_fw",
+                       # "p_true_fw",
                        ],
             "planning_depths": [1, 1, 1, 1, 1, 1, 1],
             "replay_capacities": [0, 0, 0, 0, 0, 0, 0]
@@ -976,7 +976,7 @@ configs={
         "mb_bw_c_fw_p_all_mle": {
             "agents": ["mb_c_bw_MLE",
                         # "mb_c_bwfw_MLE",
-                       "mb_c_random_bw",
+                       # "mb_c_random_bw",
                        "mb_c_true_bw",
                        # "mb_c_true_bwfw",
                        "mb_p_fw_MLE",
@@ -1080,10 +1080,10 @@ configs={
     },
         "bw_c_fw_p_all_mle": {
             "agents": ["c_bw_MLE",
-                       "p_bw_MLE",
-                       "c_true_bw",
+                       # "p_bw_MLE",
+                       # "c_true_bw",
                        "p_fw_MLE",
-                       "p_true_fw",
+                       # "p_true_fw",
                        ],
             "planning_depths": [1, 1, 1, 1, 1, 1, 1],
             "replay_capacities": [0, 0, 0, 0, 0, 0, 0]
@@ -1096,7 +1096,8 @@ configs={
             "replay_capacities": [0, 0, 0, 0, 0, 0]
         },
         "mb_bw_c_fw_p_all_mle": {
-            "agents": ["mb_c_bw_MLE", "mb_c_true_bw", "mb_c_random_bw",
+            "agents": ["mb_c_bw_MLE", "mb_c_true_bw",
+                       # "mb_c_random_bw",
                        "mb_p_fw_MLE", "mb_p_true_fw"],
             "planning_depths": [1, 1, 1, 1, 1, 1],
             "replay_capacities": [0, 0, 0, 0, 0, 0]
@@ -1122,16 +1123,18 @@ configs={
     },
         "bw_c_fw_p_all_mle": {
             "agents": ["c_bw_MLE",
-                       "p_bw_MLE",
-                       "c_true_bw",
+                       # "p_bw_MLE",
+                       # "c_true_bw",
                        "p_fw_MLE",
-                       "p_true_fw",
+                       # "p_true_fw",
                        ],
             "planning_depths": [1, 1, 1, 1, 1, 1, 1],
             "replay_capacities": [0, 0, 0, 0, 0, 0, 0]
         },
         "mb_bw_c_fw_p_all_mle": {
-            "agents": ["mb_c_bw_MLE", "mb_c_random_bw", "mb_c_true_bw",
+            "agents": ["mb_c_bw_MLE",
+                       # "mb_c_random_bw",
+                       "mb_c_true_bw",
                        "mb_p_fw_MLE", "mb_p_true_fw",],
                        # "mb_c_bw_recur_MLE", "mb_c_true_bw_recur"],
             "planning_depths": [1, 1, 1, 1, 1, 1],
@@ -1158,10 +1161,10 @@ configs={
     },
         "bw_c_fw_p_all_mle": {
             "agents": ["c_bw_MLE",
-                       "p_bw_MLE",
-                       "c_true_bw",
+                       # "p_bw_MLE",
+                       # "c_true_bw",
                        "p_fw_MLE",
-                       "p_true_fw",
+                       # "p_true_fw",
                        ],
             "planning_depths": [1, 1, 1, 1, 1, 1, 1],
             "replay_capacities": [0, 0, 0, 0, 0, 0, 0]
@@ -1174,7 +1177,9 @@ configs={
             "replay_capacities": [0, 0, 0, 0, 0, 0]
         },
         "mb_bw_c_fw_p_all_mle": {
-            "agents": ["mb_c_bw_MLE", "mb_c_random_bw", "mb_c_true_bw",
+            "agents": ["mb_c_bw_MLE",
+                       # "mb_c_random_bw",
+                       "mb_c_true_bw",
                        "mb_p_fw_MLE", "mb_p_true_fw",],
                        # "mb_c_bw_recur_MLE", "mb_c_true_bw_recur"],
             "planning_depths": [1, 1, 1, 1, 1, 1],
@@ -1201,10 +1206,10 @@ configs={
     },
         "bw_c_fw_p_all_mle": {
             "agents": ["c_bw_MLE",
-                       "p_bw_MLE",
-                       "c_true_bw",
+                       # "p_bw_MLE",
+                       # "c_true_bw",
                        "p_fw_MLE",
-                       "p_true_fw",
+                       # "p_true_fw",
                        ],
             "planning_depths": [1, 1, 1, 1, 1, 1, 1],
             "replay_capacities": [0, 0, 0, 0, 0, 0, 0]
@@ -1217,7 +1222,9 @@ configs={
             "replay_capacities": [0, 0, 0, 0, 0, 0]
         },
     "mb_bw_c_fw_p_all_mle": {
-        "agents": ["mb_c_bw_MLE", "mb_c_random_bw", "mb_c_true_bw",
+        "agents": ["mb_c_bw_MLE",
+                   # "mb_c_random_bw",
+                   "mb_c_true_bw",
                    "mb_p_fw_MLE", "mb_p_true_fw", ],
         # "mb_c_bw_recur_MLE", "mb_c_true_bw_recur"],
         "planning_depths": [1, 1, 1, 1, 1, 1],
@@ -1231,7 +1238,76 @@ configs={
             "replay_capacities": [0, 0, 0, 0, 0, 0]
         },
     },
+
 "bipartite_100_10_1_2L": {
+    "mb_corr_all_mle": {
+        "agents": ["mb_c_bw_MLE",
+                   "mb_c_bwfw_MLE",
+                   "mb_c_true_bw",
+                   "mb_c_true_bwfw",
+                   ],
+        # "mb_c_bw_recur_MLE", "mb_c_true_bw_recur"],
+        "planning_depths": [1, 1, 1, 1, 1, 1, 1],
+        "replay_capacities": [0, 0, 0, 0, 0, 0, 0]
+    },
+    "bw_c_fw_p_all_mle": {
+        "agents": ["c_bw_MLE",
+                   # "p_bw_MLE",
+                   # "c_true_bw",
+                   # "p_true_bw",
+                   "p_fw_MLE",
+                   # "c_fw_MLE",
+                   # "p_true_fw",
+                   # "c_true_fw",
+                   ],
+        "planning_depths": [1, 1, 1, 1, 1, 1, 1],
+        "replay_capacities": [0, 0, 0, 0, 0, 0, 0]
+    },
+     "mb_pc_all_mle": {
+        "agents": [
+            "mb_c_bw_MLE",
+            "mb_p_bw_MLE",
+            "mb_c_true_bw",
+            "mb_p_true_bw",
+            "mb_p_fw_MLE",
+            "mb_c_fw_MLE",
+            "mb_p_true_fw",
+            "mb_c_true_fw",
+        ],
+        # "mb_c_bw_recur_MLE", "mb_c_true_bw_recur"],
+        "planning_depths": [1, 1, 1, 1, 1, 1],
+        "replay_capacities": [0, 0, 0, 0, 0, 0]
+    },
+    "mb_bw_c_fw_p_all_mle": {
+        "agents": [
+            "mb_c_bw_MLE",
+            # "mb_c_random_bw",
+            "mb_c_true_bw",
+            "mb_p_fw_MLE",
+            "mb_p_true_fw",
+        ],
+        # "mb_c_bw_recur_MLE", "mb_c_true_bw_recur"],
+        "planning_depths": [1, 1, 1, 1, 1, 1],
+        "replay_capacities": [0, 0, 0, 0, 0, 0]
+    },
+    "MLE_PAML_all_mle": {
+        "agents": [
+            # "c_bw_MLE",
+            "p_bw_MLE",
+            "p_bw_proj_MLE",
+            "p_bw_proj_MLE",
+            # "p_fw_MLE",
+            # "c_bw_PAML",
+            "p_bw_PAML",
+            "p_bw_proj_PAML",
+            # "p_fw_PAML"
+        ],
+        "planning_depths": [1, 1, 1, 1, 1, 1],
+        "max_norms": [0, 1.0, 0.1, 0, 0, 0],
+        "replay_capacities": [0, 0, 0, 0, 0, 0]
+    },
+    },
+"bipartite_1_10_100_2L": {
     "mb_corr_all_mle": {
         "agents": ["mb_c_bw_MLE",
                    "mb_c_bwfw_MLE",
@@ -1273,7 +1349,7 @@ configs={
     "mb_bw_c_fw_p_all_mle": {
         "agents": [
             "mb_c_bw_MLE",
-            "mb_c_random_bw",
+            # "mb_c_random_bw",
             "mb_c_true_bw",
             "mb_p_fw_MLE",
             "mb_p_true_fw",
