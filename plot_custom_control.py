@@ -320,7 +320,7 @@ def plot_tensorflow_log(space, color, linestyle, max, ax):
     all_y_over_seeds = []
     all_x_over_seeds = []
     the_incomplete = []
-    num_runs = 1#space["env_config"]["num_runs"]
+    num_runs = space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["control_num_episodes"]
     for seed in range(num_runs):
         #print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))
