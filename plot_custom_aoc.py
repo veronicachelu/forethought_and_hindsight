@@ -32,7 +32,7 @@ FLAGS = flags.FLAGS
 FONTSIZE = 20
 TICKSIZE = 15
 LINEWIDTH = 3
-MARKERSIZE = 3
+MARKERSIZE = 10
 
 plottings = {
     "mb+mfmb": ["mb", "mfmb"]
