@@ -189,7 +189,7 @@ def main(argv):
 
     all_handles = []
     all_labels = []
-    f = lambda x, pos: f'{x/10**3:,.0f}K' if x >= 1000 else f'{x:,.0f}'
+    f = lambda x, pos: f'{x/10**3:,.1f}K' if x >= 1000 else f'{x:,.0f}'
     for i, sub in enumerate(plot_configs[FLAGS.config]["subplots"]):
         env = sub["env"]
         if "title" in sub.keys():

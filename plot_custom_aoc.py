@@ -32,6 +32,7 @@ FLAGS = flags.FLAGS
 FONTSIZE = 20
 TICKSIZE = 15
 LINEWIDTH = 3
+MARKERSIZE = 3
 
 plottings = {
     "mb+mfmb": ["mb", "mfmb"]
@@ -295,7 +296,7 @@ def main(argv):
             m = np.array(agent_value["means"])
             s = np.array(agent_value["stds"])
             ax[j].plot(x, m, 'v', label=naming[agent_name],
-                    c=agent_value["color"], alpha=1, linewidth=LINEWIDTH, linestyle=agent_value["linestyle"])
+                    c=agent_value["color"], alpha=1, markersize=MARKERSIZE, linewidth=LINEWIDTH, linestyle=agent_value["linestyle"])
             ax[j].fill_between(x, m - s,
                             m + s,
                             color=agent_value["color"], alpha=0.07)
@@ -407,7 +408,7 @@ def get_aoc_for_agent(agent, env_config, persistent_agent_config,
     }
     # all_y_over_seeds = []
     aocs = []
-    num_runs = space["env_config"]["num_runs"]
+    num_runs = 1#space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["num_episodes"]
 
     for seed in range(num_runs):
