@@ -139,11 +139,7 @@ dashed = {
           }
 
 dotted = {
-          "p_true_bw": "p_bw",
-          "c_true_bw": "c_bw",
-          "p_true_fw": "p_fw",
-          "c_true_fw": "c_fw",
-          "c_ac_true_bw": "c_ac_bw",
+        "p_true_fw_q": "p_fw_q",
 }
 
 all_agents = [
@@ -158,17 +154,24 @@ all_agents = [
               # "p_bw_q_3"
 ]
 
+# naming = {
+#     "q": r"model_free(mf)",
+#     "p_bw_q": r"bw_plan($\mathbf{x},a,{x}^\prime$)+mf",
+#     "p_bw_q_1": r"bw_plan($\mathbf{x},a,{x}^\prime;top\_1$)+mf",
+#     "p_bw_q_2": r"bw_plan($\mathbf{x},a,{x}^\prime;top\_2$)+mf",
+#     "p_bw_q_3": r"bw_plan($\mathbf{x},a,{x}^\prime;top\_3$)+mf",
+#     "c_bw_q": r"bw_plan(${x},a,\mathbf{x}^\prime$)+mf",
+#     "p_fw_q": r"fw_plan($\mathbf{x},a,{x}^\prime$)+mf",
+#     "c_fw_q": r"fw_plan(${x},a,\mathbf{x}^\prime$)+mf",
+#     "p_true_fw_q": r"fw_plan($P^*;\mathbf{x},a,{x}^\prime$)+mf",
+#     "c_true_fw_q": r"fw_plan($P^*;{x},a,\mathbf{x}^\prime$)+mf",
+# }
 naming = {
     "q": r"model_free(mf)",
-    "p_bw_q": r"bw_plan($\mathbf{x},a,{x}^\prime$)+mf",
-    "p_bw_q_1": r"bw_plan($\mathbf{x},a,{x}^\prime;top\_1$)+mf",
-    "p_bw_q_2": r"bw_plan($\mathbf{x},a,{x}^\prime;top\_2$)+mf",
-    "p_bw_q_3": r"bw_plan($\mathbf{x},a,{x}^\prime;top\_3$)+mf",
-    "c_bw_q": r"bw_plan(${x},a,\mathbf{x}^\prime$)+mf",
-    "p_fw_q": r"fw_plan($\mathbf{x},a,{x}^\prime$)+mf",
-    "c_fw_q": r"fw_plan(${x},a,\mathbf{x}^\prime$)+mf",
-    "p_true_fw_q": r"fw_plan($P^*;\mathbf{x},a,{x}^\prime$)+mf",
-    "c_true_fw_q": r"fw_plan($P^*;{x},a,\mathbf{x}^\prime$)+mf",
+    "p_bw_q": r"bw_plan+mf",
+    "p_bw_q_1": r"bw_plan+mf",
+    "p_fw_q": r"fw_plan+mf",
+    "p_true_fw_q": r"fw_plan($P^*$)+mf",
 }
 
 def main(argv):
@@ -187,7 +190,7 @@ def main(argv):
                            plot_configs[FLAGS.config]["nc"],
                            sharex='col',
                            squeeze=True, #, sharey=True,
-                           figsize=(25, 4),
+                           figsize=(20, 4),
                            )
     # ax.set(aspect="auto")
     unique_color_configs = [c for c in all_agents
@@ -236,8 +239,12 @@ def main(argv):
         frameon=False,
         ncol=plot_configs[FLAGS.config]["nc"],
         mode="expand",
-        bbox_to_anchor=(0.5, -0.05),
-        loc='upper center',
+        # bbox_to_anchor=(0.0, -0.05, 1.0, 0.3),
+        # loc='upper left',
+        # loc="lower right",
+        loc="upper left",
+        bbox_to_anchor=(0, 0, 1.0, 0.2),
+        # bbox_transform=fig.transFigure,
         # borderaxespad=0.,
         prop={'size': FONTSIZE},
         # bbox_to_anchor=(0., 1.0, 1.0, 0.1)
@@ -260,7 +267,7 @@ def main(argv):
     # plt.show()
     # fig.set_grid()
     fig.tight_layout()
-    fig.subplots_adjust(bottom=0.3)
+    fig.subplots_adjust(bottom=0.35)
     fig.savefig(os.path.join(plots_dir,
                              "{}_{}.png".format("all",
                                                 "steps")),
@@ -281,7 +288,7 @@ def plot(env, pivoting, logs_dir, plots_dir, ax, max, alg_to_color):
             color = alg_to_color[agent]
             linestyle = "-"
         else:
-            color = alg_to_color[dashed[agent]]
+            color = alg_to_color[dotted[agent]]
             linestyle = ":"
 
         line = plot_for_agent(agent, env_config, logs_dir, color, linestyle, max, ax)
@@ -312,7 +319,7 @@ def plot_tensorflow_log(space, color, linestyle, max, ax):
     all_y_over_seeds = []
     all_x_over_seeds = []
     the_incomplete = []
-    num_runs = 1#space["env_config"]["num_runs"]
+    num_runs = space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["control_num_episodes"]
     for seed in range(num_runs):
         #print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))
