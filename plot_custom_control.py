@@ -167,11 +167,11 @@ all_agents = [
 #     "c_true_fw_q": r"fw_plan($P^*;{x},a,\mathbf{x}^\prime$)+mf",
 # }
 naming = {
-    "q": r"model_free(mf)",
-    "p_bw_q": r"bw_plan+mf",
-    "p_bw_q_1": r"bw_plan+mf",
-    "p_fw_q": r"fw_plan+mf",
-    "p_true_fw_q": r"fw_plan($P^*$)+mf",
+    "q": r"model_free",
+    "p_bw_q": r"bw_plan($\overleftarrow{P}$)",
+    "p_bw_q_1": r"bw_plan($\overleftarrow{P}\downarrow[0]$)",
+    "p_fw_q": r"fw_plan($P$)",
+    "p_true_fw_q": r"fw_plan($P^*$)",
 }
 
 def main(argv):
@@ -199,6 +199,7 @@ def main(argv):
     colors = ["C{}".format(c) for c in range(len(all_agents))]
     alg_to_color = {alg: color for alg, color in zip(unique_color_configs, colors)}
 
+    # fig.set_title("Learning, planning & acting", fontsize=FONTSIZE)
     all_handles = []
     all_labels = []
     for i, sub in enumerate(plot_configs[FLAGS.config]["subplots"]):
@@ -319,7 +320,7 @@ def plot_tensorflow_log(space, color, linestyle, max, ax):
     all_y_over_seeds = []
     all_x_over_seeds = []
     the_incomplete = []
-    num_runs = space["env_config"]["num_runs"]
+    num_runs = 1#space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["control_num_episodes"]
     for seed in range(num_runs):
         #print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))

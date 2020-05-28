@@ -1264,8 +1264,8 @@ configs={
     "both":{
         "agents": [
             "c_bw_MLE",
-            "p_fw_MLE",
             "mb_c_true_bw",
+            "p_fw_MLE",
             "mb_p_true_fw",
         ],
     },
@@ -1340,8 +1340,8 @@ configs={
     "both":{
         "agents": [
             "c_bw_MLE",
-            "p_fw_MLE",
             "mb_c_true_bw",
+            "p_fw_MLE",
             "mb_p_true_fw",
         ],
     },
