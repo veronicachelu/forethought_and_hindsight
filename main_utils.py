@@ -305,6 +305,9 @@ def load_env_and_volatile_configs(env):
     elif env == "bipartite_100_10_1_2L":
         env_config = configs.bipartite_100_10_1_2L_config.env_config
         volatile_agent_config = configs.bipartite_100_10_1_2L_config.volatile_agent_config
+    elif env == "bipartite_1_10_100_2L":
+        env_config = configs.bipartite_1_10_100_2L_config.env_config
+        volatile_agent_config = configs.bipartite_1_10_100_2L_config.volatile_agent_config
     elif env == "world3d":
         env_config = configs.world3d_config.env_config
         volatile_agent_config = configs.world3d_config.volatile_agent_config
