@@ -451,7 +451,7 @@ def get_aoc_for_agent(agent, env_config, persistent_agent_config,
 
     mean_aoc_seeds = np.mean(aocs, axis=0)
     std_aoc_seeds = np.std(aocs, axis=0)
-    std_aoc_seeds /= np.sqrt(len(aocs))
+    # std_aoc_seeds /= np.sqrt(len(aocs))
 
     return mean_aoc_seeds, std_aoc_seeds
 
