@@ -1311,12 +1311,13 @@ configs={
         "replay_capacities": [0, 0, 0, 0, 0, 0, 0]
     },
     "bw_c_fw_p_all_mle": {
-        "agents": ["c_bw_MLE",
-                   "p_bw_MLE",
+        "agents": [
+            # "c_bw_MLE",
+            #        "p_bw_MLE",
                    # "c_true_bw",
                    # "p_true_bw",
-                   "p_fw_MLE",
-                   "c_fw_MLE",
+                   # "p_fw_MLE",
+                   # "c_fw_MLE",
                    # "p_true_fw",
                    # "c_true_fw",
                    ],

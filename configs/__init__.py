@@ -36,5 +36,6 @@ import configs.bipartite_1_100_config as bipartite_1_100_config
 import configs.bipartite_2L_config as bipartite_2L_config
 import configs.bipartite_5L_config as bipartite_5L_config
 import configs.bipartite_100_10_1_2L_config as bipartite_100_10_1_2L_config
+import configs.bipartite_1_10_100_2L_config as bipartite_1_10_100_2L_config
 import configs.fanin_config as fanin_config
 import configs.world3d_config as world3d_config
