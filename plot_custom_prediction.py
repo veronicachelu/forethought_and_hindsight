@@ -11,6 +11,7 @@ import matplotlib.style as style
 import cycler
 from main_utils import *
 import glob
+from matplotlib.ticker import FuncFormatter
 style.available
 style.use('seaborn-poster') #sets the size of the charts
 # style.use('ggplot')
@@ -29,7 +30,8 @@ flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
 FONTSIZE = 20
-LINEWIDTH = 2
+TICKSIZE = 15
+LINEWIDTH = 3
 
 plot_configs = {
     "3_level": {
@@ -38,15 +40,13 @@ plot_configs = {
         "subplots": [
             {
                 "env": "bipartite_100_10_1_2L",
-                "pivoting": "bw_c_fw_p",
-                "mb": True,
+                "pivoting": "both",
                 "mle": True,
                 "title": "Channeling structure \n large fan-in / small fan-out"
             },
             {
                 "env": "bipartite_1_10_100_2L",
-                "pivoting": "bw_c_fw_p",
-                "mb": True,
+                "pivoting": "both",
                 "mle": True,
                 "title": "Broadcasting structure \n small fan-in / large fan-out"
             }
@@ -103,6 +103,7 @@ mb_mle_dashed = {
           "mb_c_true_bw_recur": "mb_c_bw_recur_MLE",
 }
 
+
 dashed = {
           "p_bw_PAML": "p_bw",
           "c_bw_PAML": "c_bw",
@@ -119,10 +120,10 @@ dashed = {
           }
 
 dotted = {
-          "p_true_bw": "p_bw",
-          "c_true_bw": "c_bw",
-          "p_true_fw": "p_fw",
-          "c_true_fw": "c_fw",
+          "mb_p_true_bw": "p_bw_MLE",
+          "mb_c_true_bw": "c_bw_MLE",
+          "mb_p_true_fw": "p_fw_MLE",
+          "mb_c_true_fw": "c_fw_MLE",
 }
 
 naming = {
@@ -151,10 +152,11 @@ naming = {
 # dotted = ["true_bw", "true_fw", "mb_true_fw", "mb_true_bw",
 #           "true_bw_recur", "mb_true_bw_recur"]
 
-all_agents = ["mb_c_bw_MLE",
-              "mb_p_fw_MLE",
-              "mb_c_true_bw",
-              "mb_p_true_fw",
+all_agents = [
+              # "mb_c_true_bw",
+              # "mb_p_true_fw",
+              "c_bw_MLE",
+              "p_fw_MLE"
               ]
 
 def main(argv):
@@ -176,7 +178,7 @@ def main(argv):
                            plot_configs[FLAGS.config]["nc"],
                            sharex='col',
                            squeeze=True,  # , sharey=True,
-                           figsize=(13, 5),
+                           figsize=(12, 5),
                            )
 
     unique_color_configs = [c for c in all_agents
@@ -187,6 +189,7 @@ def main(argv):
 
     all_handles = []
     all_labels = []
+    f = lambda x, pos: f'{x/10**3:,.0f}K' if x >= 1000 else f'{x:,.0f}'
     for i, sub in enumerate(plot_configs[FLAGS.config]["subplots"]):
         env = sub["env"]
         if "title" in sub.keys():
@@ -200,8 +203,11 @@ def main(argv):
         # box = ax[i].get_position()
         # ax[i].set_position([box.x0, box.y0 + box.height * 0.1,
         #                  box.width, box.height * 0.9])
-        plt.setp(ax[i].get_xticklabels(), visible=True)
-        plot(env, sub["pivoting"], sub["mb"], sub["mle"], logs_dir, plots_dir, ax[i], alg_to_color)
+        plt.setp(ax[i].get_yticklabels(), visible=True, fontsize=TICKSIZE)
+        plt.setp(ax[i].get_xticklabels(), visible=True, fontsize=TICKSIZE)
+
+        ax[i].xaxis.set_major_formatter(FuncFormatter(f))
+        plot(env, sub["pivoting"], logs_dir, plots_dir, ax[i], alg_to_color)
         handles, labels = ax[i].get_legend_handles_labels()
         all_handles.extend(handles)
         all_labels.extend(labels)
@@ -220,7 +226,7 @@ def main(argv):
         # loc='upper left',
         # borderaxespad=0.,
         prop={'size': FONTSIZE},
-        bbox_to_anchor=(1.04, 0.8),
+        bbox_to_anchor=(1.03, 0.8),
         loc="upper center",
         # bbox_to_anchor=(0.5, -0.05)#, 1.0, 0.1)
         # bbox_to_anchor=(1., 1.)#, 1.0, 0.1)
@@ -232,31 +238,17 @@ def main(argv):
         os.makedirs(plots_dir)
 
     fig.tight_layout()
-    fig.subplots_adjust(right=0.92)
+    fig.subplots_adjust(right=0.90)
     fig.savefig(os.path.join(plots_dir,
                              "{}_{}.png".format("all",
                                                 FLAGS.config)),
                 bbox_inches='tight',
                 )
 
-def plot(env, pivoting, mb, mle, logs_dir, plots_dir, ax, alg_to_color):
+def plot(env, pivoting, logs_dir, plots_dir, ax, alg_to_color):
     env_config, volatile_agent_config = load_env_and_volatile_configs(env)
 
-    name = pivoting + "_" + "all"
-    if mb:
-        name = "mb_" + name
-    if mle:
-        name = name + "_mle"
-
-    internal_dashed = dashed
-    internal_dotted = dotted
-    internal_dash_dotted = {}
-    if mle and mb:
-        internal_dashed = mb_mle_dashed
-    elif mle:
-        internal_dashed = mle_dashed
-    elif mb:
-        internal_dashed = mb_dashed
+    name = pivoting
 
     comparison_config = configs.comparison_configs.configs[env][name]
 
@@ -272,13 +264,11 @@ def plot(env, pivoting, mb, mle, logs_dir, plots_dir, ax, alg_to_color):
                    0, 0, logs_dir, "gray", "-", ax)
 
     for i, agent in enumerate(comparison_config["agents"]):
-        if agent not in internal_dashed.keys() and\
-                        agent not in internal_dotted.keys() and \
-                        agent not in internal_dash_dotted.keys():
+        if agent not in dotted.keys():
             color = alg_to_color[agent]
             linestyle = "-"
-        elif agent in internal_dashed.keys():
-            color = alg_to_color[internal_dashed[agent]]
+        else:
+            color = alg_to_color[dotted[agent]]
             linestyle = ":"
 
         persistent_agent_config = configs.agent_config.config[agent]
@@ -391,18 +381,21 @@ def plot_tensorflow_log(space, color, linestyle, ax):
     # std_y_over_seeds /= np.sqrt(len(std_y_over_seeds))
     label = naming[space["crt_config"]["agent"]]
     if space["crt_config"]["agent"] == "vanilla":
-        ax.plot(x, mean_y_over_seeds, label=label, c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
+        g = ax.plot(x, mean_y_over_seeds, label=label, c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         ax.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
                          color="gray", alpha=0.07)
     else:
         # if FLAGS.paml and space["crt_config"]["max_norm"] is not None:
         #     label += "_{}".format(space["crt_config"]["max_norm"])
-        ax.plot(x, mean_y_over_seeds, label=label,
+        g = ax.plot(x, mean_y_over_seeds, label=label,
                  alpha=1, linewidth=LINEWIDTH, color=color,
                  linestyle=linestyle)
         ax.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
                          alpha=0.07, color=color,
                          linestyle=linestyle)
+
+    # xlabels = ['{:,.2f}'.format(x) + 'K' for x in g.get_xticks() / 1000]
+    # g.set_xticklabels(xlabels)
 
 if __name__ == '__main__':
     app.run(main)

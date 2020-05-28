@@ -30,7 +30,8 @@ flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
 FONTSIZE = 20
-LINEWIDTH = 2
+TICKSIZE = 15
+LINEWIDTH = 3
 
 plottings = {
     "mb+mfmb": ["mb", "mfmb"]
@@ -236,8 +237,10 @@ def main(argv):
     fig, ax = plt.subplots(1,
                            2,
                            squeeze=True,  # , sharey=True,
-                           figsize=(10, 5),
+                           figsize=(12, 5),
                            )
+    all_handles = []
+    all_labels = []
 
     for j, p in enumerate(plottings[FLAGS.plotting]):
         plot_config = plot_configs[p]
@@ -247,8 +250,6 @@ def main(argv):
                                 if c not in dashed.keys()]
 
         alg_to_color = {alg: color for alg, color in zip(unique_color_configs, colors)}
-        all_handles = []
-        all_labels = []
         x = []
         env_to_xlabel = {"bipartite_100_1": "100/1",
                          "bipartite_10_1": "10/1",
@@ -262,7 +263,7 @@ def main(argv):
                          "bipartite_1_10": {"min": np.infty, "max": -np.infty},
                          "bipartite_1_100": {"min": np.infty, "max": -np.infty},
                            }
-        ax[j].set_title(plot_config["title"])
+        ax[j].set_title(plot_config["title"], fontsize=FONTSIZE)
         for i, res in enumerate(plot_config["results"]):
             env = res["env"]
             logs_dir = os.path.join(best_hyperparam_folder, env)
@@ -293,7 +294,7 @@ def main(argv):
         for agent_name, agent_value in y.items():
             m = np.array(agent_value["means"])
             s = np.array(agent_value["stds"])
-            ax[j].plot(x, m, label=naming[agent_name],
+            ax[j].plot(x, m, 'v', label=naming[agent_name],
                     c=agent_value["color"], alpha=1, linewidth=LINEWIDTH, linestyle=agent_value["linestyle"])
             ax[j].fill_between(x, m - s,
                             m + s,
@@ -303,6 +304,8 @@ def main(argv):
         all_handles.extend(handles)
         all_labels.extend(labels)
         ax[j].set_xlabel(xaxis, fontsize=FONTSIZE)
+        plt.setp(ax[j].get_yticklabels(), visible=True, fontsize=TICKSIZE)
+        plt.setp(ax[j].get_xticklabels(), visible=True, fontsize=TICKSIZE)
         ax[j].grid(True)
 
     ax[0].set_ylabel(yaxis, fontsize=FONTSIZE)
@@ -312,7 +315,7 @@ def main(argv):
         # labels=all_labels,
         *[*zip(*{l: h for h, l in zip(all_handles, all_labels)}.items())][::-1],
         # loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
-        frameon=True,
+        frameon=False,
         # ncol=5,
         # mode="expand",
         # loc = 7,
@@ -321,7 +324,7 @@ def main(argv):
         # loc='upper left',
         # borderaxespad=0.,
         prop={'size': FONTSIZE},
-        bbox_to_anchor=(1., 0.7),
+        bbox_to_anchor=(1.02, 0.8),
         loc="upper center",
         # bbox_to_anchor=(0.5, -0.05)#, 1.0, 0.1)
         # bbox_to_anchor=(1., 1.)#, 1.0, 0.1)
@@ -330,7 +333,7 @@ def main(argv):
     )
 
     fig.tight_layout()
-    fig.subplots_adjust(right=0.97)
+    fig.subplots_adjust(right=0.90)
     fig.savefig(os.path.join(plots_dir,
                              "{}_{}.png".format("aoc",
                                                 FLAGS.plotting)),
@@ -447,6 +450,7 @@ def get_aoc_for_agent(agent, env_config, persistent_agent_config,
 
     mean_aoc_seeds = np.mean(aocs, axis=0)
     std_aoc_seeds = np.std(aocs, axis=0)
+    std_aoc_seeds /= np.sqrt(len(aocs))
 
     return mean_aoc_seeds, std_aoc_seeds
 

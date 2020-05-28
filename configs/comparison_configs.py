@@ -1250,6 +1250,14 @@ configs={
         "planning_depths": [1, 1, 1, 1, 1, 1, 1],
         "replay_capacities": [0, 0, 0, 0, 0, 0, 0]
     },
+    "both":{
+        "agents": [
+            "c_bw_MLE",
+            "p_fw_MLE",
+            "mb_c_true_bw",
+            "mb_p_true_fw",
+        ],
+    },
     "bw_c_fw_p_all_mle": {
         "agents": ["c_bw_MLE",
                    # "p_bw_MLE",
@@ -1317,6 +1325,14 @@ configs={
         # "mb_c_bw_recur_MLE", "mb_c_true_bw_recur"],
         "planning_depths": [1, 1, 1, 1, 1, 1, 1],
         "replay_capacities": [0, 0, 0, 0, 0, 0, 0]
+    },
+    "both":{
+        "agents": [
+            "c_bw_MLE",
+            "p_fw_MLE",
+            "mb_c_true_bw",
+            "mb_p_true_fw",
+        ],
     },
     "bw_c_fw_p_all_mle": {
         "agents": ["c_bw_MLE",
