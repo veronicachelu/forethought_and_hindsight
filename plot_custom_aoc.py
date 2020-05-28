@@ -408,7 +408,7 @@ def get_aoc_for_agent(agent, env_config, persistent_agent_config,
     }
     # all_y_over_seeds = []
     aocs = []
-    num_runs = 1#space["env_config"]["num_runs"]
+    num_runs = space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["num_episodes"]
 
     for seed in range(num_runs):

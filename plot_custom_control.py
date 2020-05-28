@@ -19,7 +19,7 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', os.path.join(str((os.environ['LOGS'])), 'control'), 'where to save results')
-flags.DEFINE_string('config', "first", 'where to save results')
+flags.DEFINE_string('config', "maze", 'where to save results')
 flags.DEFINE_bool('tabular', False, 'where to save results')
 flags.DEFINE_bool('mb', False, 'where to save results')
 flags.DEFINE_bool('reward', False, 'where to save results')
@@ -32,36 +32,15 @@ flags.DEFINE_integer('max', None, 'plot up to')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 
 FLAGS = flags.FLAGS
-FONTSIZE = 17
-LINEWIDTH = 2
+FONTSIZE = 20
+LINEWIDTH = 3
 
 plot_configs = {
-    "first": {
+    "maze": {
         "nr": 1,
         "nc": 4,
         "subplots":
         [
-            # {
-            #     "env": "maze_1",
-            #     "pivoting": "control",
-            #
-            #     "max": 40,
-            # },
-            # # {
-            # #     "env": "maze_05",
-            # #     "pivoting": "control",
-            # #     "title": "Stochastic reward (p=0.5)"
-            # },
-            # # {
-            # #     "env": "maze_01",
-            # #     "pivoting": "control",
-            # #     "title": "Stochastic reward (p=0.1)",
-            # # },
-            # {
-            #     "env": "maze_stoch",
-            #     "pivoting": "control",
-            #     "title": "Stochastic transitions (p=0.5)"
-            # },
             {
                 "env": "maze_1",
                 "pivoting": "pc",
