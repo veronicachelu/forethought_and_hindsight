@@ -1245,12 +1245,12 @@ configs={
     "bw_c_fw_p_all_mle": {
         "agents": ["c_bw_MLE",
                    "p_bw_MLE",
-                   "c_true_bw",
-                   "p_true_bw",
+                   # "c_true_bw",
+                   # "p_true_bw",
                    "p_fw_MLE",
                    "c_fw_MLE",
-                   "p_true_fw",
-                   "c_true_fw",
+                   # "p_true_fw",
+                   # "c_true_fw",
                    ],
         "planning_depths": [1, 1, 1, 1, 1, 1, 1],
         "replay_capacities": [0, 0, 0, 0, 0, 0, 0]
@@ -1313,12 +1313,12 @@ configs={
     "bw_c_fw_p_all_mle": {
         "agents": ["c_bw_MLE",
                    "p_bw_MLE",
-                   "c_true_bw",
-                   "p_true_bw",
+                   # "c_true_bw",
+                   # "p_true_bw",
                    "p_fw_MLE",
                    "c_fw_MLE",
-                   "p_true_fw",
-                   "c_true_fw",
+                   # "p_true_fw",
+                   # "c_true_fw",
                    ],
         "planning_depths": [1, 1, 1, 1, 1, 1, 1],
         "replay_capacities": [0, 0, 0, 0, 0, 0, 0]
