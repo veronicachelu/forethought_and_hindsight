@@ -378,6 +378,7 @@ def plot_tensorflow_log(space, color, linestyle, ax):
         print("agent_{} has no data!".format(space["crt_config"]["agent"]))
         return
 
+    print("num runs {}, actual seeds {}".format(num_runs, len(all_y_over_seeds)))
     # those_that_are_not_99 = [i for i, a in enumerate(all_y_over_seeds) if len(a) != 199]
     # print(those_that_are_not_99)
     #print(len(all_y_over_seeds))
