@@ -29,7 +29,7 @@ flags.DEFINE_float('ymax', None, 'plot up to')
 flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
-FONTSIZE = 20
+FONTSIZE = 23
 TICKSIZE = 15
 LINEWIDTH = 3
 
@@ -388,11 +388,12 @@ def plot_tensorflow_log(space, color, linestyle, ax):
 
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
+    ste_y_over_seeds = np.divide(std_y_over_seeds, np.sqrt(num_runs))
     # std_y_over_seeds /= np.sqrt(len(std_y_over_seeds))
     label = naming[space["crt_config"]["agent"]]
     if space["crt_config"]["agent"] == "vanilla":
         g = ax.plot(x, mean_y_over_seeds, label=label, c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
-        ax.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
+        ax.fill_between(x, mean_y_over_seeds - ste_y_over_seeds, mean_y_over_seeds + ste_y_over_seeds,
                          color="gray", alpha=0.07)
     else:
         # if FLAGS.paml and space["crt_config"]["max_norm"] is not None:
@@ -400,7 +401,7 @@ def plot_tensorflow_log(space, color, linestyle, ax):
         g = ax.plot(x, mean_y_over_seeds, label=label,
                  alpha=1, linewidth=LINEWIDTH, color=color,
                  linestyle=linestyle)
-        ax.fill_between(x, mean_y_over_seeds - std_y_over_seeds, mean_y_over_seeds + std_y_over_seeds,
+        ax.fill_between(x, mean_y_over_seeds - ste_y_over_seeds, mean_y_over_seeds + ste_y_over_seeds,
                          alpha=0.07, color=color,
                          linestyle=linestyle)
 
