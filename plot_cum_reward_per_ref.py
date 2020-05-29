@@ -33,137 +33,52 @@ TICKSIZE = 15
 LINEWIDTH = 3
 
 plot_configs = {
-    "3_level": {
+    "cum_reward": {
         "nr": 1,
         "nc": 2,
         "subplots": [
             {
-                "env": "bipartite_100_10_1_2L",
-                "pivoting": "both",
-                "mle": True,
-                "title": "Channeling structure \n large fan-in / small fan-out"
+                "env": "maze_1",
+                "pivoting": "ref",
+                "title": "Learning \& Planning"
             },
             {
-                "env": "bipartite_1_10_100_2L",
-                "pivoting": "both",
-                "mle": True,
-                "title": "Broadcasting structure \n small fan-in / large fan-out"
+                "env": "maze_1",
+                "pivoting": "mb_ref",
+                "title": "Pure Planning"
             }
         ]
     }
 }
-mle_paml_dashed = {
-    "p_fw_PAML": "p_fw_MLE",
-    "p_bw_PAML": "p_bw_MLE",
-          # "p_fw_proj_PAML": "p_fw_PAML",
-          # "p_bw_proj_PAML": "p_bw_PAML",
-          # "p_bw_proj_MLE": "p_bw_MLE",
-          # "p_fw_proj_MLE": "p_fw_MLE",
-}
-
-mle_paml_dotted = {
-    "p_fw_proj_PAML": "p_fw_proj_MLE",
-    "p_bw_proj_PAML": "p_bw_proj_MLE"
-}
-
-mle_paml_dash_dotted = {}
-# mle_paml_dash_dotted = {
-#     "p_bw_proj_MLE": "p_bw_MLE",
-#     "p_fw_proj_MLE": "p_fw_MLE"
-# }
-
-mle_dashed = {
-          "p_true_bw_recur": "p_bw_recur_MLE",
-          "c_true_bw_recur": "c_bw_recur_MLE",
-          "p_true_bw": "p_bw_MLE",
-          "c_true_bw": "c_bw_MLE",
-          "p_true_fw": "p_fw_MLE",
-          "c_true_fw": "c_fw_MLE",
-          # "p_bw_PAML": "p_bw_MLE",
-          # "c_bw_PAML": "c_bw_MLE",
-          # "p_fw_PAML": "p_fw_MLE",
-          # "c_fw_PAML": "c_fw_MLE",
-          }
-mb_dashed = {
-          "mb_c_true_bw": "mb_c_bw",
-          "mb_p_true_bw": "mb_p_bw",
-          "mb_p_true_fw": "mb_p_fw",
-          "mb_c_true_fw": "mb_c_fw",
-          "mb_p_true_bw_recur": "mb_p_bw_recur",
-          "mb_c_true_bw_recur": "mb_c_bw_recur",
-          }
-mb_mle_dashed = {
-          "mb_p_true_bw": "mb_p_bw_MLE",
-          "mb_c_true_bw": "mb_c_bw_MLE",
-          "mb_c_true_bwfw": "mb_c_bwfw_MLE",
-          "mb_p_true_fw": "mb_p_fw_MLE",
-          "mb_c_true_fw": "mb_c_fw_MLE",
-          "mb_p_true_bw_recur": "mb_p_bw_recur_MLE",
-          "mb_c_true_bw_recur": "mb_c_bw_recur_MLE",
-}
-
-
-dashed = {
-          "p_bw_PAML": "p_bw",
-          "c_bw_PAML": "c_bw",
-          "p_fw_PAML": "p_fw",
-          "c_fw_PAML": "c_fw",
-
-          # "p_bw_PAML_MLE": "p_bw",
-          # "c_bw_PAML_MLE": "c_bw",
-          # "p_fw_PAML_MLE": "p_fw",
-          # "c_fw_PAML_MLE": "c_fw",
-          # "p_true_bw_recur": "p_bw_recur",
-          # "c_true_bw_recur": "c_bw_recur",
-
-          }
-
 dotted = {
-          "mb_c_true_bw": "c_bw_MLE",
-          "mb_p_true_bw": "p_bw_MLE",
-          "mb_p_true_fw": "p_fw_MLE",
-          "mb_c_true_fw": "c_fw_MLE",
+          "c_bw_q": "p_bw_q",
+          "c_fw_q": "p_fw_q",
+          "mb_c_bw_q": "mb_p_bw_q",
+          "mb_c_fw_q": "mb_p_fw_q",
 }
 
-# naming = {
-#     "vanilla": r"model_free(mf)",
-#     "mb_p_bw_MLE": r"bw_plan($x$)",
-#     "mb_c_bw_MLE": r"bw_plan($x^\prime$)",
-#     "mb_p_fw_MLE": r"fw_plan($x$)",
-#     "mb_c_fw_MLE": r"fw_plan($x^\prime$)",
-#     "mb_p_true_fw": r"fw_plan($P^*;x$)",
-#     "mb_c_true_fw": r"fw_plan($P^*;x^\prime$)",
-#     "mb_p_true_bw": r"bw plan($\overleftarrow{P}^*;x$)",
-#     "mb_c_true_bw": r"bw plan($\overleftarrow{P}^*;x^\prime$)",
-#     "p_bw_MLE": r"bw_plan($x$)+mf",
-#     "c_bw_MLE": r"bw_plan($x^\prime$)+mf",
-#     "p_fw_MLE": r"fw_plan($x$)+mf",
-#     "c_fw_MLE": r"fw_plan($x^\prime$)+mf",
-#     "p_true_fw": r"fw_plan($P^*;x$)+mf",
-#     "c_true_fw": r"fw_plan($P^*;x^\prime$)+mf",
-#     "p_true_bw": r"bw_plan($\overleftarrow{P}^*;x$)+mf",
-#     "c_true_bw": r"bw_plan($\overleftarrow{P}^*;x^\prime$)+mf",
-#     "p_random_bw": r"bw_plan(unif $\overleftarrow{P},r^*;x$)+mf",
-#     "c_random_bw": r"bw_plan(unif $\overleftarrow{P},r^*;x^\prime$)+mf",
-#     "mb_p_random_bw": r"bw_plan(unif $\overleftarrow{P}r^*;x$)",
-#     "mb_c_random_bw": r"bw_plan(unif $\overleftarrow{P},r^*;x^\prime$)",
-# }
 naming = {
-    "vanilla": r"model_free(mf)",
-    "c_bw_MLE": r"mf+bw_plan($P^*$)",
-    "mb_c_true_bw": r"bw plan($\overleftarrow{P}^*$)",
-    "mb_p_true_fw": r"fw_plan($P^*$)",
-    "p_fw_MLE": r"mf+fw_plan($\overleftarrow{P}$)",
+    "p_bw_q": r"bw_plan($\mathbf{x},a,{x}^\prime$)",
+    "c_bw_q": r"bw_plan(${x},a,\mathbf{x}^\prime$)",
+    "p_fw_q": r"fw_plan($\mathbf{x},a,{x}^\prime$)",
+    "c_fw_q": r"fw_plan(${x},a,\mathbf{x}^\prime$)",
+    "mb_p_bw_q": r"bw_plan($\mathbf{x},a,{x}^\prime$)",
+    "mb_c_bw_q": r"bw_plan(${x},a,\mathbf{x}^\prime$)",
+    "mb_p_fw_q": r"fw_plan($\mathbf{x},a,{x}^\prime$)",
+    "mb_c_fw_q": r"fw_plan(${x},a,\mathbf{x}^\prime$)",
 }
 # dotted = ["true_bw", "true_fw", "mb_true_fw", "mb_true_bw",
 #           "true_bw_recur", "mb_true_bw_recur"]
-
-all_agents = [
-              # "mb_c_true_bw",
-              # "mb_p_true_fw",
-              "c_bw_MLE",
-              "p_fw_MLE"
-              ]
+all_agents_per_config = {
+    "ref": [
+          "p_bw_q",
+          "p_fw_q",
+          ],
+    "mb_ref": [
+         "mb_p_bw_q",
+         "mb_p_fw_q",
+    ]
+}
 
 def main(argv):
     del argv  # Unused.
@@ -173,12 +88,8 @@ def main(argv):
     if not os.path.exists(plots_dir):
         os.makedirs(plots_dir)
 
-    if FLAGS.cumulative_rmsve:
-        yaxis = 'Cumulative RMSVE'
-        xaxis = "Timesteps"
-    else:
-        yaxis = 'RMSVE'
-        xaxis = "Episodes"
+    yaxis = 'Cumulative Reward'
+    xaxis = "Timesteps"
 
     fig, ax = plt.subplots(plot_configs[FLAGS.config]["nr"],
                            plot_configs[FLAGS.config]["nc"],
@@ -187,16 +98,16 @@ def main(argv):
                            figsize=(12, 5),
                            )
 
-    unique_color_configs = [c for c in all_agents
-                            if c not in dashed.keys()]
-
-    colors = ["C{}".format(c) for c in range(len(all_agents))]
-    alg_to_color = {alg: color for alg, color in zip(unique_color_configs, colors)}
 
     all_handles = []
     all_labels = []
     # f = lambda x, pos: f'{x/10**3:,.1f}K' if x >= 1000 else f'{x:,.0f}'
     for i, sub in enumerate(plot_configs[FLAGS.config]["subplots"]):
+        unique_color_configs = [c for c in all_agents_per_config[sub["env"]]
+                                if c not in dotted.keys()]
+        colors = ["C{}".format(c) for c in range(len(all_agents_per_config[sub["env"]]))]
+        alg_to_color = {alg: color for alg, color in zip(unique_color_configs, colors)}
+
         env = sub["env"]
         if "title" in sub.keys():
             ax[i].set_title(sub["title"], fontsize=FONTSIZE)
@@ -283,36 +194,7 @@ def plot(env, pivoting, logs_dir, plots_dir, ax, alg_to_color):
         persistent_agent_config = configs.agent_config.config[agent]
         plot_for_agent(agent, env_config, persistent_agent_config,
                         1, 0, logs_dir, color, linestyle, ax)
-    #
-    #
-    # if FLAGS.ymin is not None and FLAGS.ymax is not None:
-    #     plt.ylim(FLAGS.ymin, FLAGS.ymax)
-    # plt.ylabel(yaxis, fontsize=FONTSIZE)
-    # plt.xlabel(xaxis, fontsize=FONTSIZE)
-    # plt.legend(
-    #     loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
-    #            # frameon=True, ncol = 2,  mode = "expand",
-    #            # loc = 'lower left',
-    #            borderaxespad=0.,
-    #            prop={'size': FONTSIZE},
-    #             # bbox_to_anchor = (0., 1.02, 1., .102))
-    #            bbox_to_anchor=(1.1, 1.1))
-    # if not os.path.exists(plots):
-    #     os.makedirs(plots)
-    #
-    # name = FLAGS.pivoting + "_" +"all"
-    # if FLAGS.mb:
-    #     name = "mb_" + name
-    # if FLAGS.mle:
-    #     name = name + "_mle"
-    #
-    # plt.grid()
-    # plt.tight_layout()
-    # plt.savefig(os.path.join(plots,
-    #                          "{}_{}.png".format(name,
-    #                                             "CumRMSVE" if
-    #                                             FLAGS.cumulative_rmsve else
-    #                                             "RMSVE")))
+
 
 def plot_for_agent(agent, env_config, persistent_agent_config,
                    planning_depth, replay_capacity, logs, color, linestyle, ax):
@@ -376,14 +258,6 @@ def plot_tensorflow_log(space, color, linestyle, ax):
     if len(all_y_over_seeds) == 0:
         print("agent_{} has no data!".format(space["crt_config"]["agent"]))
         return
-
-    # those_that_are_not_99 = [i for i, a in enumerate(all_y_over_seeds) if len(a) != 199]
-    # print(those_that_are_not_99)
-    #print(len(all_y_over_seeds))
-    # all_y_over_seeds = [a[:99] for a in all_y_over_seeds]
-    # first_seed_size = len(all_y_over_seeds[0])
-    # the_incomplete = [i for i, a in enumerate(all_y_over_seeds) if len(a) != first_seed_size]
-    # print(the_incomplete)
 
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
