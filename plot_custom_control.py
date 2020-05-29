@@ -47,7 +47,6 @@ plot_configs = {
                 "env": "maze_1",
                 "pivoting": "pc",
                 "title": "Deterministic",
-                "max": 40,
             },
             {
                 "env": "maze_stoch",
