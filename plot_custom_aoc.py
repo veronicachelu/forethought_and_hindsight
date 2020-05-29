@@ -29,7 +29,7 @@ flags.DEFINE_float('ymax', None, 'plot up to')
 flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
-FONTSIZE = 20
+FONTSIZE = 23
 TICKSIZE = 15
 LINEWIDTH = 3
 MARKERSIZE = 10
@@ -249,7 +249,7 @@ def main(argv):
     fig, ax = plt.subplots(1,
                            2,
                            squeeze=True,  # , sharey=True,
-                           figsize=(12, 5),
+                           figsize=(15, 5),
                            )
     all_handles = []
     all_labels = []
@@ -310,7 +310,7 @@ def main(argv):
                     c=agent_value["color"], alpha=1, markersize=MARKERSIZE, linewidth=LINEWIDTH, linestyle=agent_value["linestyle"])
             ax[j].fill_between(x, m - s,
                             m + s,
-                            color=agent_value["color"], alpha=0.07)
+                            color=agent_value["color"], alpha=0.1)
 
         handles, labels = ax[j].get_legend_handles_labels()
         all_handles.extend(handles)
@@ -462,9 +462,9 @@ def get_aoc_for_agent(agent, env_config, persistent_agent_config,
 
     mean_aoc_seeds = np.mean(aocs, axis=0)
     std_aoc_seeds = np.std(aocs, axis=0)
-    # std_aoc_seeds /= np.sqrt(len(aocs))
+    ste_aoc_seeds = std_aoc_seeds / np.sqrt(num_runs)
 
-    return mean_aoc_seeds, std_aoc_seeds
+    return mean_aoc_seeds, ste_aoc_seeds
 
 if __name__ == '__main__':
     app.run(main)
