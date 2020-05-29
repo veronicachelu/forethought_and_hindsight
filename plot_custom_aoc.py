@@ -214,9 +214,9 @@ dotted = {
 naming = {
     "vanilla": r"model_free",
     "mb_c_bw_MLE": r"bw_plan($\overleftarrow{P}$)",
-    "mb_c_fw_MLE": r"fw_plan($P$)",
-    "mb_p_true_fw": r"fw_plan($P^*$)",
+    "mb_p_fw_MLE": r"fw_plan($P$)",
     "mb_c_true_bw": r"bw plan($\overleftarrow{P}^*$)",
+    "mb_p_true_fw": r"fw_plan($P^*$)",
     "c_bw_MLE": r"bw_plan($\overleftarrow{P}$)",
     "p_fw_MLE": r"fw_plan($P^*$)",
 }
