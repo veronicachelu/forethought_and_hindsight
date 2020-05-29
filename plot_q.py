@@ -34,86 +34,92 @@ FLAGS = flags.FLAGS
 FONTSIZE = 17
 LINEWIDTH = 2
 
-mle_paml_dashed = {
-    "p_fw_PAML": "p_fw_MLE",
-    "p_bw_PAML": "p_bw_MLE",
-          # "p_fw_proj_PAML": "p_fw_PAML",
-          # "p_bw_proj_PAML": "p_bw_PAML",
-          # "p_bw_proj_MLE": "p_bw_MLE",
-          # "p_fw_proj_MLE": "p_fw_MLE",
-}
-
-mle_paml_dotted = {
-    "p_fw_proj_PAML": "p_fw_proj_MLE",
-    "p_bw_proj_PAML": "p_bw_proj_MLE"
-}
-
-mle_paml_dash_dotted = {}
+# mle_paml_dashed = {
+#     "p_fw_PAML": "p_fw_MLE",
+#     "p_bw_PAML": "p_bw_MLE",
+#           # "p_fw_proj_PAML": "p_fw_PAML",
+#           # "p_bw_proj_PAML": "p_bw_PAML",
+#           # "p_bw_proj_MLE": "p_bw_MLE",
+#           # "p_fw_proj_MLE": "p_fw_MLE",
+# }
+#
+# mle_paml_dotted = {
+#     "p_fw_proj_PAML": "p_fw_proj_MLE",
+#     "p_bw_proj_PAML": "p_bw_proj_MLE"
+# }
+#
+# mle_paml_dash_dotted = {}
 # mle_paml_dash_dotted = {
 #     "p_bw_proj_MLE": "p_bw_MLE",
 #     "p_fw_proj_MLE": "p_fw_MLE"
 # }
+#
+# mle_dashed = {
+#           "p_true_bw_recur": "p_bw_recur_MLE",
+#           "c_true_bw_recur": "c_bw_recur_MLE",
+#           "p_true_bw": "p_bw_MLE",
+#           "c_true_bw": "c_bw_MLE",
+#           "p_true_fw": "p_fw_MLE",
+#           "c_true_fw": "c_fw_MLE",
+#           # "p_bw_PAML": "p_bw_MLE",
+#           # "c_bw_PAML": "c_bw_MLE",
+#           # "p_fw_PAML": "p_fw_MLE",
+#           # "c_fw_PAML": "c_fw_MLE",
+#           }
+# mb_dashed = {
+#           "mb_c_true_bw": "mb_c_bw",
+#           "mb_p_true_bw": "mb_p_bw",
+#           "mb_p_true_fw": "mb_p_fw",
+#           "mb_c_true_fw": "mb_c_fw",
+#           "mb_p_true_bw_recur": "mb_p_bw_recur",
+#           "mb_c_true_bw_recur": "mb_c_bw_recur",
+#           }
+# mb_mle_dashed = {
+#           "mb_p_true_bw": "mb_p_bw_MLE",
+#           "mb_c_true_bw": "mb_c_bw_MLE",
+#           "mb_c_true_bwfw": "mb_c_bwfw_MLE",
+#           "mb_p_true_fw": "mb_p_fw_MLE",
+#           "mb_c_true_fw": "mb_c_fw_MLE",
+#           "mb_p_true_bw_recur": "mb_p_bw_recur_MLE",
+#           "mb_c_true_bw_recur": "mb_c_bw_recur_MLE",
+# }
+#
+# dashed = {
+#           "c_bw_q": "p_bw_q",
+#           "c_fw_q": "p_fw_q",
+#           "c_true_fw_q": "p_true_fw_q",
+#           "p_bw_PAML": "p_bw",
+#           "c_bw_PAML": "c_bw",
+#           "p_fw_PAML": "p_fw",
+#           "c_fw_PAML": "c_fw",
+#
+#           "c_ac_bw_PAML": "c_ac_bw",
+#           "p_ac_fw_PAML": "p_ac_fw",
+#
+#           # "p_bw_PAML_MLE": "p_bw",
+#           # "c_bw_PAML_MLE": "c_bw",
+#           # "p_fw_PAML_MLE": "p_fw",
+#           # "c_fw_PAML_MLE": "c_fw",
+#           # "p_true_bw_recur": "p_bw_recur",
+#           # "c_true_bw_recur": "c_bw_recur",
+#
+#           }
 
-mle_dashed = {
-          "p_true_bw_recur": "p_bw_recur_MLE",
-          "c_true_bw_recur": "c_bw_recur_MLE",
-          "p_true_bw": "p_bw_MLE",
-          "c_true_bw": "c_bw_MLE",
-          "p_true_fw": "p_fw_MLE",
-          "c_true_fw": "c_fw_MLE",
-          # "p_bw_PAML": "p_bw_MLE",
-          # "c_bw_PAML": "c_bw_MLE",
-          # "p_fw_PAML": "p_fw_MLE",
-          # "c_fw_PAML": "c_fw_MLE",
-          }
-mb_dashed = {
-          "mb_c_true_bw": "mb_c_bw",
-          "mb_p_true_bw": "mb_p_bw",
-          "mb_p_true_fw": "mb_p_fw",
-          "mb_c_true_fw": "mb_c_fw",
-          "mb_p_true_bw_recur": "mb_p_bw_recur",
-          "mb_c_true_bw_recur": "mb_c_bw_recur",
-          }
-mb_mle_dashed = {
-          "mb_p_true_bw": "mb_p_bw_MLE",
-          "mb_c_true_bw": "mb_c_bw_MLE",
-          "mb_c_true_bwfw": "mb_c_bwfw_MLE",
-          "mb_p_true_fw": "mb_p_fw_MLE",
-          "mb_c_true_fw": "mb_c_fw_MLE",
-          "mb_p_true_bw_recur": "mb_p_bw_recur_MLE",
-          "mb_c_true_bw_recur": "mb_c_bw_recur_MLE",
+mb_dotted = {
+
 }
-
-dashed = {
-          "c_bw_q": "p_bw_q",
-          "c_fw_q": "p_fw_q",
-          "c_true_fw_q": "p_true_fw_q",
-          "p_bw_PAML": "p_bw",
-          "c_bw_PAML": "c_bw",
-          "p_fw_PAML": "p_fw",
-          "c_fw_PAML": "c_fw",
-
-          "c_ac_bw_PAML": "c_ac_bw",
-          "p_ac_fw_PAML": "p_ac_fw",
-
-          # "p_bw_PAML_MLE": "p_bw",
-          # "c_bw_PAML_MLE": "c_bw",
-          # "p_fw_PAML_MLE": "p_fw",
-          # "c_fw_PAML_MLE": "c_fw",
-          # "p_true_bw_recur": "p_bw_recur",
-          # "c_true_bw_recur": "c_bw_recur",
-
-          }
-
 dotted = {
-          "p_true_bw": "p_bw",
-          "c_true_bw": "c_bw",
-          "p_true_fw": "p_fw",
-          "c_true_fw": "c_fw",
-          "c_ac_true_bw": "c_ac_bw",
+          "p_bw_q": "c_bw_q",
+          "p_fw_q": "c_fw_q",
+          # "p_true_fw": "p_fw",
+          # "c_true_fw": "c_fw",
+          # "c_ac_true_bw": "c_ac_bw",
 }
 
-
+mb_dotted = {
+          "mb_p_bw_q": "mb_c_bw_q",
+          "mb_p_fw_q": "mb_c_fw_q",
+          }
 
 
 def main(argv):
@@ -131,16 +137,17 @@ def main(argv):
     if FLAGS.mb:
         name = "mb_" + name
 
-    internal_dashed = dashed
-    internal_dotted = dotted
-    internal_dash_dotted = {}
+    # internal_dashed = dashed
+    # internal_dotted = dotted
+    # internal_dash_dotted = {}
+
     if FLAGS.mb:
-        internal_dashed = mb_dashed
+        dotted = mb_dotted
 
     comparison_config = configs.comparison_configs.configs[FLAGS.env][name]
 
     unique_color_configs = [c for c in comparison_config["agents"]
-                            if c not in internal_dashed.keys()]
+                            if c not in dotted.keys()]
     n = len(unique_color_configs)
 
     colors = ["C{}".format(c) for c in range(n)]
@@ -149,20 +156,26 @@ def main(argv):
     plot_for_agent("q", env_config, logs, "gray", "-")
 
     for i, agent in enumerate(comparison_config["agents"]):
-        if agent not in internal_dashed.keys() and\
-                        agent not in internal_dotted.keys() and \
-                        agent not in internal_dash_dotted.keys():
+        if agent not in dotted.keys():
             color = alg_to_color[agent]
             linestyle = "-"
-        elif agent in internal_dashed.keys():
-            color = alg_to_color[internal_dashed[agent]]
-            linestyle = "--"
-        elif agent in internal_dotted.keys():
-            color = alg_to_color[internal_dotted[agent]]
+        else:
+            color = alg_to_color[dotted[agent]]
             linestyle = ":"
-        elif agent in internal_dash_dotted.keys():
-            color = alg_to_color[internal_dash_dotted[agent]]
-            linestyle = "-."
+        # if agent not in internal_dashed.keys() and\
+        #                 # agent not in internal_dotted.keys() and \
+        #                 # agent not in internal_dash_dotted.keys():
+        #     color = alg_to_color[agent]
+        #     linestyle = "-"
+        # elif agent in internal_dashed.keys():
+        #     color = alg_to_color[internal_dashed[agent]]
+        #     linestyle = "--"
+        # elif agent in internal_dotted.keys():
+        #     color = alg_to_color[internal_dotted[agent]]
+        #     linestyle = ":"
+        # elif agent in internal_dash_dotted.keys():
+        #     color = alg_to_color[internal_dash_dotted[agent]]
+        #     linestyle = "-."
 
         plot_for_agent(agent, env_config, logs, color, linestyle)
 
