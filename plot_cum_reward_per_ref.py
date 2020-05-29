@@ -132,28 +132,7 @@ def main(argv):
         all_handles.extend(handles)
         all_labels.extend(labels)
 
-    # fig.legend(
-    #     # handles=all_handles,
-    #     # labels=all_labels,
-    #     *[*zip(*{l: h for h, l in zip(all_handles, all_labels)}.items())][::-1],
-    #     # loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
-    #     frameon=False,
-    #     # ncol=5,
-    #     # mode="expand",
-    #     # loc = 7,
-    #     # loc='lower left',
-    #     # loc='upper center',
-    #     # loc='upper left',
-    #     # borderaxespad=0.,
-    #     prop={'size': FONTSIZE},
-    #     bbox_to_anchor=(1.03, 0.8),
-    #     loc="upper center",
-    #     # bbox_to_anchor=(0.5, -0.05)#, 1.0, 0.1)
-    #     # bbox_to_anchor=(1., 1.)#, 1.0, 0.1)
-    #     # bbox_to_anchor=(0., 1.0, 1.0, 0.1)
-    #
-    # )
-    ax[0].legend(
+    fig.legend(
         # handles=all_handles,
         # labels=all_labels,
         *[*zip(*{l: h for h, l in zip(all_handles, all_labels)}.items())][::-1],
@@ -167,20 +146,41 @@ def main(argv):
         # loc='upper left',
         # borderaxespad=0.,
         prop={'size': FONTSIZE},
-        bbox_to_anchor=(1.5, 0.6),
+        bbox_to_anchor=(1.03, 0.8),
         loc="upper center",
         # bbox_to_anchor=(0.5, -0.05)#, 1.0, 0.1)
         # bbox_to_anchor=(1., 1.)#, 1.0, 0.1)
         # bbox_to_anchor=(0., 1.0, 1.0, 0.1)
 
     )
+    # ax[0].legend(
+    #     # handles=all_handles,
+    #     # labels=all_labels,
+    #     *[*zip(*{l: h for h, l in zip(all_handles, all_labels)}.items())][::-1],
+    #     # loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
+    #     frameon=False,
+    #     # ncol=5,
+    #     # mode="expand",
+    #     # loc = 7,
+    #     # loc='lower left',
+    #     # loc='upper center',
+    #     # loc='upper left',
+    #     # borderaxespad=0.,
+    #     prop={'size': FONTSIZE},
+    #     bbox_to_anchor=(1.5, 0.6),
+    #     loc="upper center",
+    #     # bbox_to_anchor=(0.5, -0.05)#, 1.0, 0.1)
+    #     # bbox_to_anchor=(1., 1.)#, 1.0, 0.1)
+    #     # bbox_to_anchor=(0., 1.0, 1.0, 0.1)
+    #
+    # )
 
     if not os.path.exists(plots_dir):
         os.makedirs(plots_dir)
 
-    # fig.tight_layout()
-    # fig.subplots_adjust(right=0.90)
-    fig.tight_layout(pad=0.0, w_pad=0.9, h_pad=0.0)
+    fig.tight_layout()
+    fig.subplots_adjust(right=0.90)
+    # fig.tight_layout(pad=0.0, w_pad=0.9, h_pad=0.0)
     fig.savefig(os.path.join(plots_dir,
                              "{}_{}.png".format("all",
                                                 FLAGS.config)),
