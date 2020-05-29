@@ -19,7 +19,7 @@ style.use("default")
 plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
-flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
+flags.DEFINE_string('logs', os.path.join(str((os.environ['LOGS'])), 'control'), 'where to save results')
 # flags.DEFINE_string('env', "bipartite_100_1", 'where to save results')
 flags.DEFINE_string('config', "cum_reward", 'where to save results')
 # flags.DEFINE_string('env', "fanin", 'where to save results')
@@ -40,7 +40,7 @@ plot_configs = {
             {
                 "env": "maze_1",
                 "pivoting": "ref",
-                "title": "Learning \& Planning"
+                "title": "Learning & Planning"
             },
             {
                 "env": "maze_1",
@@ -82,7 +82,7 @@ all_agents_per_config = {
 
 def main(argv):
     del argv  # Unused.
-    best_hyperparam_folder = os.path.join(FLAGS.logs, "best")
+    best_hyperparam_folder = FLAGS.logs
     plots_dir = os.path.join(FLAGS.plots, FLAGS.config)
 
     if not os.path.exists(plots_dir):
@@ -95,7 +95,7 @@ def main(argv):
                            plot_configs[FLAGS.config]["nc"],
                            sharex='col',
                            squeeze=True,  # , sharey=True,
-                           figsize=(12, 5),
+                           figsize=(15, 5),
                            )
 
 
@@ -103,9 +103,9 @@ def main(argv):
     all_labels = []
     # f = lambda x, pos: f'{x/10**3:,.1f}K' if x >= 1000 else f'{x:,.0f}'
     for i, sub in enumerate(plot_configs[FLAGS.config]["subplots"]):
-        unique_color_configs = [c for c in all_agents_per_config[sub["env"]]
+        unique_color_configs = [c for c in all_agents_per_config[sub["pivoting"]]
                                 if c not in dotted.keys()]
-        colors = ["C{}".format(c) for c in range(len(all_agents_per_config[sub["env"]]))]
+        colors = ["C{}".format(c) for c in range(len(all_agents_per_config[sub["pivoting"]]))]
         alg_to_color = {alg: color for alg, color in zip(unique_color_configs, colors)}
 
         env = sub["env"]
@@ -132,7 +132,28 @@ def main(argv):
         all_handles.extend(handles)
         all_labels.extend(labels)
 
-    fig.legend(
+    # fig.legend(
+    #     # handles=all_handles,
+    #     # labels=all_labels,
+    #     *[*zip(*{l: h for h, l in zip(all_handles, all_labels)}.items())][::-1],
+    #     # loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
+    #     frameon=False,
+    #     # ncol=5,
+    #     # mode="expand",
+    #     # loc = 7,
+    #     # loc='lower left',
+    #     # loc='upper center',
+    #     # loc='upper left',
+    #     # borderaxespad=0.,
+    #     prop={'size': FONTSIZE},
+    #     bbox_to_anchor=(1.03, 0.8),
+    #     loc="upper center",
+    #     # bbox_to_anchor=(0.5, -0.05)#, 1.0, 0.1)
+    #     # bbox_to_anchor=(1., 1.)#, 1.0, 0.1)
+    #     # bbox_to_anchor=(0., 1.0, 1.0, 0.1)
+    #
+    # )
+    ax[0].legend(
         # handles=all_handles,
         # labels=all_labels,
         *[*zip(*{l: h for h, l in zip(all_handles, all_labels)}.items())][::-1],
@@ -146,7 +167,7 @@ def main(argv):
         # loc='upper left',
         # borderaxespad=0.,
         prop={'size': FONTSIZE},
-        bbox_to_anchor=(1.03, 0.8),
+        bbox_to_anchor=(1.5, 0.6),
         loc="upper center",
         # bbox_to_anchor=(0.5, -0.05)#, 1.0, 0.1)
         # bbox_to_anchor=(1., 1.)#, 1.0, 0.1)
@@ -157,8 +178,9 @@ def main(argv):
     if not os.path.exists(plots_dir):
         os.makedirs(plots_dir)
 
-    fig.tight_layout()
-    fig.subplots_adjust(right=0.90)
+    # fig.tight_layout()
+    # fig.subplots_adjust(right=0.90)
+    fig.tight_layout(pad=0.0, w_pad=1, h_pad=0.0)
     fig.savefig(os.path.join(plots_dir,
                              "{}_{}.png".format("all",
                                                 FLAGS.config)),
@@ -172,16 +194,10 @@ def plot(env, pivoting, logs_dir, plots_dir, ax, alg_to_color):
 
     comparison_config = configs.comparison_configs.configs[env][name]
 
-    # unique_color_configs = [c for c in comparison_config["agents"]
-    #                         if c not in internal_dashed.keys()]
-    # n = len(unique_color_configs)
-    #
-    # colors = ["C{}".format(c) for c in range(n)]
-    # alg_to_color = {alg: color for alg, color in zip(unique_color_configs, colors)}
 
     persistent_agent_config = configs.agent_config.config["vanilla"]
-    plot_for_agent("vanilla", env_config, persistent_agent_config,
-                   0, 0, logs_dir, "gray", "-", ax)
+    plot_for_agent("q", env_config, persistent_agent_config,
+                   logs_dir, "gray", "-", ax)
 
     for i, agent in enumerate(comparison_config["agents"]):
         if agent not in dotted.keys():
@@ -193,16 +209,13 @@ def plot(env, pivoting, logs_dir, plots_dir, ax, alg_to_color):
 
         persistent_agent_config = configs.agent_config.config[agent]
         plot_for_agent(agent, env_config, persistent_agent_config,
-                        1, 0, logs_dir, color, linestyle, ax)
+                        logs_dir, color, linestyle, ax)
 
 
-def plot_for_agent(agent, env_config, persistent_agent_config,
-                   planning_depth, replay_capacity, logs, color, linestyle, ax):
+def plot_for_agent(agent, env_config, persistent_agent_config, logs_dir, color, linestyle, ax):
     print(agent)
-    log_folder_agent = os.path.join(logs, "{}_{}_{}".format(persistent_agent_config["run_mode"], planning_depth, replay_capacity))
+    log_folder_agent = os.path.join(logs_dir, "{}".format(agent))
     volatile_config = {"agent": agent,
-                       "planning_depth": planning_depth,
-                       "replay_capacity": replay_capacity,
                        "logs": log_folder_agent}
     space = {
     "env_config": env_config,
@@ -220,7 +233,7 @@ def plot_tensorflow_log(space, color, linestyle, ax):
     }
     all_y_over_seeds = []
     all_x_over_seeds = []
-    num_runs = space["env_config"]["num_runs"]
+    num_runs = 1#space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["num_episodes"]
 
     for seed in range(num_runs):
@@ -243,10 +256,7 @@ def plot_tensorflow_log(space, color, linestyle, ax):
         # print(event_acc.Tags())
         tag_reward = 'train/cum_reward'
         tag_steps = 'train/steps'
-        if FLAGS.reward:
-            tag = tag_reward
-        else:
-            tag = tag_steps
+        tag = tag_reward
         if not tag in event_acc.Tags()["tensors"]:
             print("no tags")
             continue
@@ -257,8 +267,8 @@ def plot_tensorflow_log(space, color, linestyle, ax):
         y_reward = [tf.make_ndarray(m[2]) for m in msve_reward]
         y_steps = [tf.make_ndarray(m[2]) for m in msve_steps]
 
-        y = y_reward if FLAGS.reward else y_steps
-        msve = msve_reward if FLAGS.reward else msve_steps
+        y = y_reward
+        msve = msve_reward
 
         x = [m[1] for m in msve]
 
@@ -279,7 +289,7 @@ def plot_tensorflow_log(space, color, linestyle, ax):
     y_vect_ste = np.divide(y_vect_std, np.sqrt(num_runs))
 
     label = naming[space["crt_config"]["agent"]]
-    if space["crt_config"]["agent"] == "vanilla":
+    if space["crt_config"]["agent"] == "q":
         g = ax.plot(x, y_vect_mean, label=label, c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         ax.fill_between(x, y_vect_mean - y_vect_ste, y_vect_mean + y_vect_ste,
                          color="gray", alpha=0.1)

@@ -51,17 +51,17 @@ plot_configs = {
             {
                 "env": "maze_stoch",
                 "pivoting": "pc",
-                "title": "Stochastic transitions (p=0.5)"
+                "title": "Stochastic transitions \n (random move w/ p=0.5)"
             },
             {
                 "env": "maze_05",
                 "pivoting": "pc",
-                "title": "Stochastic reward (p=0.5)"
+                "title": "Stochastic reward \n (r(G)=+1 w/ p=0.5)"
             },
             {
                 "env": "maze_01",
                 "pivoting": "pc",
-                "title": "Stochastic reward (p=0.1)",
+                "title": "Stochastic reward \n (r(G)=+1 w/ p=0.1)",
             },
     ]
     }
