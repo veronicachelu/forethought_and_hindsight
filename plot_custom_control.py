@@ -39,8 +39,8 @@ TICKSIZE = 15
 
 plot_configs = {
     "maze": {
-        "nr": 1,
-        "nc": 4,
+        "nr": 2,
+        "nc": 2,
         "subplots":
         [
             {
@@ -48,6 +48,11 @@ plot_configs = {
                 "pivoting": "pc",
                 "title": "Deterministic",
                 "max": 40,
+            },
+            {
+                "env": "maze_stoch",
+                "pivoting": "pc",
+                "title": "Stochastic transitions (p=0.5)"
             },
             {
                 "env": "maze_05",
@@ -58,11 +63,6 @@ plot_configs = {
                 "env": "maze_01",
                 "pivoting": "pc",
                 "title": "Stochastic reward (p=0.1)",
-            },
-            {
-                "env": "maze_stoch",
-                "pivoting": "pc",
-                "title": "Stochastic transitions (p=0.5)"
             },
     ]
     }
@@ -189,8 +189,9 @@ def main(argv):
     fig, ax = plt.subplots(plot_configs[FLAGS.config]["nr"],
                            plot_configs[FLAGS.config]["nc"],
                            sharex='col',
-                           squeeze=True, #, sharey=True,
-                           figsize=(20, 4),
+                           sharey='row',
+                           squeeze=True,
+                           figsize=(12, 8),
                            )
     # ax.set(aspect="auto")
     unique_color_configs = [c for c in all_agents
@@ -202,24 +203,30 @@ def main(argv):
     # fig.set_title("Learning, planning & acting", fontsize=FONTSIZE)
     all_handles = []
     all_labels = []
-    for i, sub in enumerate(plot_configs[FLAGS.config]["subplots"]):
+    for ii, sub in enumerate(plot_configs[FLAGS.config]["subplots"]):
         # ii, jj = np.unravel_index(i, (plot_configs[FLAGS.config]["nr"],
         #                    plot_configs[FLAGS.config]["nc"]))
+        i, j = np.unravel_index(ii, (plot_configs[FLAGS.config]["nr"],
+                                     plot_configs[FLAGS.config]["nc"]))
         max = sub["max"] if "max" in sub.keys() else None
         env = sub["env"]
         if "title" in sub.keys():
-            ax[i].set_title(sub["title"], fontsize=FONTSIZE)
+            ax[i, j].set_title(sub["title"], fontsize=FONTSIZE)
         logs_dir = os.path.join(best_hyperparam_folder, env)
-        if i == 0:
-            ax[i].set_ylabel(yaxis, fontsize=FONTSIZE)
+
+        if j == 0:
+            ax[i, j].set_ylabel(yaxis, fontsize=FONTSIZE)
+
+        plt.setp(ax[i, j].get_yticklabels(), visible=True, fontsize=TICKSIZE)
         # if ii == plot_configs[FLAGS.config]["nr"] - 1:
-        ax[i].set_xlabel(xaxis, fontsize=FONTSIZE)
-        plt.setp(ax[i].get_yticklabels(), visible=True, fontsize=TICKSIZE)
-        plt.setp(ax[i].get_xticklabels(), visible=True, fontsize=TICKSIZE)
-        ax[i].grid(True)
-        plt.setp(ax[i].get_xticklabels(), visible=True)
-        lines = plot(env, sub["pivoting"], logs_dir, plots_dir, ax[i], max, alg_to_color)
-        handles, labels = ax[i].get_legend_handles_labels()
+        if i == plot_configs[FLAGS.config]["nr"] - 1:
+            ax[i, j].set_xlabel(xaxis, fontsize=FONTSIZE)
+        plt.setp(ax[i, j].get_xticklabels(), visible=True, fontsize=TICKSIZE)
+
+        ax[i, j].grid(True)
+
+        lines = plot(env, sub["pivoting"], logs_dir, plots_dir, ax[i, j], max, alg_to_color)
+        handles, labels = ax[i, j].get_legend_handles_labels()
         all_handles.extend(handles)
         all_labels.extend(labels)
 
@@ -238,18 +245,26 @@ def main(argv):
         *[*zip(*{l: h for h, l in zip(all_handles, all_labels)}.items())][::-1],
         # loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
         frameon=False,
-        ncol=plot_configs[FLAGS.config]["nc"],
-        mode="expand",
-        # bbox_to_anchor=(0.0, -0.05, 1.0, 0.3),
-        # loc='upper left',
-        # loc="lower right",
-        loc="upper left",
-        bbox_to_anchor=(0, 0, 1.0, 0.2),
-        # bbox_transform=fig.transFigure,
-        # borderaxespad=0.,
-        prop={'size': FONTSIZE},
+    #     ncol=plot_configs[FLAGS.config]["nc"],
+    #     mode="expand",
+    #     # bbox_to_anchor=(0.0, -0.05, 1.0, 0.3),
+    #     # loc='upper left',
+    #     # loc="lower right",
+    #     loc="upper left",
+    #     bbox_to_anchor=(0, 0, 1.0, 0.2),
+    #     # bbox_transform=fig.transFigure,
+    #     # borderaxespad=0.,
+    #     prop={'size': FONTSIZE},
+    #     # bbox_to_anchor=(0., 1.0, 1.0, 0.1)
+      prop={'size': FONTSIZE},
+        bbox_to_anchor=(1.03, 0.5),
+        loc="upper center",
+        # bbox_to_anchor=(0.5, -0.05)#, 1.0, 0.1)
+        # bbox_to_anchor=(1., 1.)#, 1.0, 0.1)
         # bbox_to_anchor=(0., 1.0, 1.0, 0.1)
+
     )
+    # )
     # ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
     #           fancybox=True, shadow=True, ncol=5)
     # bbox_to_anchor=(1.1, 1.1))
@@ -268,7 +283,7 @@ def main(argv):
     # plt.show()
     # fig.set_grid()
     fig.tight_layout()
-    fig.subplots_adjust(bottom=0.35)
+    fig.subplots_adjust(right=0.90)
     fig.savefig(os.path.join(plots_dir,
                              "{}_{}.png".format("all",
                                                 "steps")),
