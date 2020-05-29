@@ -11,14 +11,14 @@ import utils
 from utils import *
 
 # flags.DEFINE_string('agent', 'q', 'what agent to run')
-flags.DEFINE_string('agent', 'p_bw_q', 'what agent to run')
+flags.DEFINE_string('agent', 'mb_c_fw_q', 'what agent to run')
 # flags.DEFINE_string('agent', 'p_fw_q', 'what agent to run')
 # flags.DEFINE_string('agent', 'c_true_bw_q', 'what agent to run')
 # flags.DEFINE_string('agent', 'q', 'what agent to run')
 # flags.DEFINE_string('agent', 'p_true_fw_q', 'what agent to run')
 # flags.DEFINE_string('agent', 'p_true_fw_q', 'what agent to run')
 # flags.DEFINE_string('env', 'maze', 'env')
-flags.DEFINE_string('env', 'maze_stoch', 'env')
+flags.DEFINE_string('env', 'maze_1', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
 flags.DEFINE_integer('max_len', 400, 'Maximum number of time steps an episode may last (default: 100).')
@@ -34,10 +34,10 @@ flags.DEFINE_integer('batch_size', 1, 'size of batches sampled from replay')
 flags.DEFINE_float('discount', 0.99, 'discounting on the agent side')
 flags.DEFINE_integer('min_replay_size', 1, 'min replay size before training.')
 # flags.DEFINE_float('lr', 0.4, 'learning rate for q optimizer')
-flags.DEFINE_float('lr_ctrl', 0.1, 'learning rate for q optimizer')
+flags.DEFINE_float('lr_ctrl', 1.0, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr_p', 0.01, 'learning rate for q optimizer')
 # flags.DEFINE_float('lr_m',  1.0, 'learning rate for model optimizer')
-flags.DEFINE_float('lr_m',  0.5, 'learning rate for model optimizer')
+flags.DEFINE_float('lr_m',  1.0, 'learning rate for model optimizer')
 flags.DEFINE_bool('ignore_existent',  True, 'learning rate for model optimizer')
 
 FLAGS = flags.FLAGS
@@ -100,10 +100,20 @@ def run_objective(space):
                          "planning_period": FLAGS.planning_period,
                          "max_len": FLAGS.max_len,
                          "log_period": FLAGS.log_period}
+    aux_agent_configs["mb"] = True if space["crt_config"]["agent"].split("_")[0] == "mb" else False
+
     if space["crt_config"]["agent"].split("_")[0] == "mb":
         aux_agent_configs["pivot"] = space["crt_config"]["agent"].split("_")[1]
+        if space["crt_config"]["agent"].split("_")[2] == "true":
+            aux_agent_configs["agent_type"] = "bw" if space["crt_config"]["agent"].split("_")[3] == "bw" else "fw"
+        else:
+            aux_agent_configs["agent_type"] = "bw" if space["crt_config"]["agent"].split("_")[2] == "bw" else "fw"
     else:
         aux_agent_configs["pivot"] = space["crt_config"]["agent"].split("_")[0]
+        if space["crt_config"]["agent"].split("_")[1] == "true":
+            aux_agent_configs["agent_type"] = "bw" if space["crt_config"]["agent"].split("_")[2] == "bw" else "fw"
+        else:
+            aux_agent_configs["agent_type"] = "bw" if space["crt_config"]["agent"].split("_")[1] == "bw" else "fw"
 
     seed = space["crt_config"]["seed"]
 

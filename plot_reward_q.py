@@ -19,13 +19,13 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', os.path.join(str((os.environ['LOGS'])), 'control'), 'where to save results')
-flags.DEFINE_string('env', "large_maze", 'where to save results')
+flags.DEFINE_string('env', "maze_1", 'where to save results')
 flags.DEFINE_bool('tabular', False, 'where to save results')
 flags.DEFINE_bool('mb', False, 'where to save results')
 flags.DEFINE_bool('reward', True, 'where to save results')
 # flags.DEFINE_bool('reward', False, 'where to save results')
 # flags.DEFINE_bool('mb', False, 'where to save results')
-flags.DEFINE_string('pivoting', "control", 'where to save results')
+flags.DEFINE_string('pivoting', "mb_ref", 'where to save results')
 flags.DEFINE_float('ymin', None, 'plot up to')
 flags.DEFINE_float('ymax', None, 'plot up to')
 flags.DEFINE_float('xmin', None, 'plot up to')
@@ -271,6 +271,8 @@ def plot_tensorflow_log(space, color, linestyle):
         msve = msve_reward if FLAGS.reward else msve_steps
 
         x = [m[1] for m in msve]
+
+        y = [tf.make_ndarray(m[2]) for m in msve]
         # if len(y_steps) == control_num_episodes:
         all_y_over_seeds.append(np.array(y))
         all_x_over_seeds.append(np.array(x))

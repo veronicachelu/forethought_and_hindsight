@@ -884,6 +884,20 @@ config = {
         "class": {"linear": "BwQ",
                   "tabular": "BwQT"}
     },
+    "mb_c_bw_q": {
+        "task_type": "control",
+        "pg": False,
+        "run_mode": "mb_c_bw_q",
+        "planning_depth": 0,
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "q",
+        "target_networks": False,
+        "class": {"linear": "BwQ",
+                  "tabular": "BwQT"}
+    },
 
     "c_true_bw_q": {
         "task_type": "control",
@@ -913,6 +927,20 @@ config = {
         "class": {"linear": "BwQ",
                   "tabular": "BwQT"}
     },
+    "mb_p_bw_q": {
+        "task_type": "control",
+        "pg": False,
+        "run_mode": "mb_p_bw_q",
+        "planning_depth": 0,
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "q",
+        "target_networks": False,
+        "class": {"linear": "BwQ",
+                  "tabular": "BwQT"}
+    },
     "p_fw_q": {
         "task_type": "control",
         "pg": False,
@@ -927,10 +955,38 @@ config = {
         "class": {"linear": "FwQ",
                   "tabular": "FwQT"}
     },
+    "mb_p_fw_q": {
+        "task_type": "control",
+        "pg": False,
+        "run_mode": "mb_p_fw_q",
+        "planning_depth": 0,
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "q",
+        "target_networks": False,
+        "class": {"linear": "FwQ",
+                  "tabular": "FwQT"}
+    },
     "c_fw_q": {
         "task_type": "control",
         "pg": False,
         "run_mode": "c_fw_q",
+        "planning_depth": 0,
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "q",
+        "target_networks": False,
+        "class": {"linear": "FwQ",
+                  "tabular": "FwQT"}
+    },
+    "mb_c_fw_q": {
+        "task_type": "control",
+        "pg": False,
+        "run_mode": "mb_c_fw_q",
         "planning_depth": 0,
         "planning_iter": 1,
         "latent": False,

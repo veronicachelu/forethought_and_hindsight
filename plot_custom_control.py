@@ -33,7 +33,7 @@ flags.DEFINE_integer('max', None, 'plot up to')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 
 FLAGS = flags.FLAGS
-FONTSIZE = 20
+FONTSIZE = 23
 LINEWIDTH = 3
 TICKSIZE = 15
 
@@ -382,7 +382,7 @@ def plot_tensorflow_log(space, color, linestyle, max, ax):
     # the_complete = [a for i, a in enumerate(all_y_over_seeds) if len(a) == first_seed_size]
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
-    std_y_over_seeds = np.divide(std_y_over_seeds, np.sqrt(10))
+    ste_y_over_seeds = np.divide(std_y_over_seeds, np.sqrt(num_runs))
     # mean_y_over_seeds = mean_y_over_seeds[::5]
     # std_y_over_seeds = std_y_over_seeds[::5]
     # x = x[::5]
@@ -393,14 +393,14 @@ def plot_tensorflow_log(space, color, linestyle, max, ax):
     label = naming[space["crt_config"]["agent"]]
     if space["crt_config"]["agent"] == "q":
         line = ax.plot(x, mean_y_over_seeds, label=label, c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
-        ax.fill_between(x, mean_y_over_seeds - 2*std_y_over_seeds, mean_y_over_seeds + 2*std_y_over_seeds,
-                         color="gray", alpha=0.1)
+        ax.fill_between(x, mean_y_over_seeds - ste_y_over_seeds, mean_y_over_seeds + ste_y_over_seeds,
+                         color="gray", alpha=0.07)
     else:
         line = ax.plot(x, mean_y_over_seeds, label=label,
                  alpha=1, linewidth=LINEWIDTH, color=color,
                  linestyle=linestyle)
-        ax.fill_between(x, mean_y_over_seeds - 2*std_y_over_seeds, mean_y_over_seeds + 2*std_y_over_seeds,
-                         alpha=0.1, color=color,
+        ax.fill_between(x, mean_y_over_seeds - ste_y_over_seeds, mean_y_over_seeds + ste_y_over_seeds,
+                         alpha=0.07, color=color,
                          linestyle=linestyle)
 
     return line

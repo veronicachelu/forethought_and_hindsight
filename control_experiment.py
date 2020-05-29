@@ -42,7 +42,8 @@ def run_episodic(agent: Agent,
                 if agent.model_based_train():
                     agent.model_update(timestep, action, new_timestep)
 
-                agent.value_update(timestep, action, new_timestep)
+                if agent.model_free_train() and not aux_agent_configs["mb"]:
+                    agent.value_update(timestep, action, new_timestep)
 
                 ep_reward += new_timestep.reward
 
@@ -55,6 +56,12 @@ def run_episodic(agent: Agent,
                 #            timestep=t)
 
                 if agent.model_based_train():
+                    if aux_agent_configs["mb"] and \
+                        aux_agent_configs["pivot"] == "c" and\
+                        timestep.discount is None and\
+                       aux_agent_configs["agent_type"] == "fw":
+                        agent.planning_update(timestep)
+
                     if aux_agent_configs["pivot"] == "c":
                         agent.planning_update(new_timestep)
                     else:
@@ -81,6 +88,10 @@ def run_episodic(agent: Agent,
                 tf.summary.scalar("train/step_reward", new_timestep.reward, step=agent.total_steps)
 
                 if new_timestep.last():
+                    if aux_agent_configs["mb"] and aux_agent_configs["pivot"] == "p" and\
+                        aux_agent_configs["agent_type"] == "bw":
+                        agent.planning_update(new_timestep)
+
                     break
 
                 timestep = new_timestep

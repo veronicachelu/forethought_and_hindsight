@@ -27,6 +27,14 @@ configs={
                     "c_fw_q",
                     ]
             },
+            "mb_ref": {
+                "agents": [
+                    "mb_p_bw_q",
+                    "mb_c_bw_q",
+                    "mb_p_fw_q",
+                    "mb_c_fw_q",
+                    ]
+            },
             "control": {
                 "agents": ["p_fw_q",
                            "p_bw_q",
