@@ -222,7 +222,7 @@ def main(argv):
         all_handles.extend(handles)
         all_labels.extend(labels)
 
-    fig.legend(
+    ax[0].legend(
         # handles=all_handles,
         # labels=all_labels,
         *[*zip(*{l: h for h, l in zip(all_handles, all_labels)}.items())][::-1],
@@ -236,7 +236,7 @@ def main(argv):
         # loc='upper left',
         # borderaxespad=0.,
         prop={'size': FONTSIZE},
-        bbox_to_anchor=(1.03, 0.8),
+        bbox_to_anchor=(1.04, 0.8),
         loc="upper center",
         # bbox_to_anchor=(0.5, -0.05)#, 1.0, 0.1)
         # bbox_to_anchor=(1., 1.)#, 1.0, 0.1)
@@ -389,7 +389,7 @@ def plot_tensorflow_log(space, color, linestyle, ax):
 
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
-    ste_y_over_seeds = 2 * np.divide(std_y_over_seeds, np.sqrt(num_runs))
+    ste_y_over_seeds = np.divide(std_y_over_seeds, np.sqrt(num_runs))
     # std_y_over_seeds /= np.sqrt(len(std_y_over_seeds))
     label = naming[space["crt_config"]["agent"]]
     if space["crt_config"]["agent"] == "vanilla":
