@@ -392,18 +392,18 @@ def plot_tensorflow_log(space, color, linestyle, max, ax):
         std_y_over_seeds = std_y_over_seeds[:max]
         ste_y_over_seeds = np.divide(std_y_over_seeds, np.sqrt(num_runs))
 
-    ste_y_over_seeds *= 2
+    # ste_y_over_seeds *= 2
     label = naming[space["crt_config"]["agent"]]
     if space["crt_config"]["agent"] == "q":
         line = ax.plot(x, mean_y_over_seeds, label=label, c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         ax.fill_between(x, mean_y_over_seeds - ste_y_over_seeds, mean_y_over_seeds + ste_y_over_seeds,
-                         color="gray", alpha=0.2)
+                         color="gray", alpha=0.1)
     else:
         line = ax.plot(x, mean_y_over_seeds, label=label,
                  alpha=1, linewidth=LINEWIDTH, color=color,
                  linestyle=linestyle)
         ax.fill_between(x, mean_y_over_seeds - ste_y_over_seeds, mean_y_over_seeds + ste_y_over_seeds,
-                         alpha=0.2, color=color,
+                         alpha=0.1, color=color,
                          linestyle=linestyle)
 
     return line

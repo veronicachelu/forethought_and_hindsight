@@ -185,7 +185,7 @@ def main(argv):
                            plot_configs[FLAGS.config]["nc"],
                            sharex='col',
                            squeeze=True,  # , sharey=True,
-                           figsize=(12, 5),
+                           figsize=(15, 5),
                            )
 
     unique_color_configs = [c for c in all_agents
@@ -236,7 +236,7 @@ def main(argv):
         # loc='upper left',
         # borderaxespad=0.,
         prop={'size': FONTSIZE},
-        bbox_to_anchor=(1.04, 0.8),
+        bbox_to_anchor=(1.5, 0.6),
         loc="upper center",
         # bbox_to_anchor=(0.5, -0.05)#, 1.0, 0.1)
         # bbox_to_anchor=(1., 1.)#, 1.0, 0.1)
@@ -247,8 +247,9 @@ def main(argv):
     if not os.path.exists(plots_dir):
         os.makedirs(plots_dir)
 
-    fig.tight_layout()
-    fig.subplots_adjust(right=0.90)
+    fig.tight_layout(pad=0.0, w_pad=1, h_pad=0.0)
+    # fig.tight_layout()
+    # fig.subplots_adjust(right=0.90)
     fig.savefig(os.path.join(plots_dir,
                              "{}_{}.png".format("all",
                                                 FLAGS.config)),
@@ -390,12 +391,13 @@ def plot_tensorflow_log(space, color, linestyle, ax):
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
     ste_y_over_seeds = np.divide(std_y_over_seeds, np.sqrt(num_runs))
+    ste_y_over_seeds *= 2
     # std_y_over_seeds /= np.sqrt(len(std_y_over_seeds))
     label = naming[space["crt_config"]["agent"]]
     if space["crt_config"]["agent"] == "vanilla":
         g = ax.plot(x, mean_y_over_seeds, label=label, c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         ax.fill_between(x, mean_y_over_seeds - ste_y_over_seeds, mean_y_over_seeds + ste_y_over_seeds,
-                         color="gray", alpha=0.2)
+                         color="gray", alpha=0.1)
     else:
         # if FLAGS.paml and space["crt_config"]["max_norm"] is not None:
         #     label += "_{}".format(space["crt_config"]["max_norm"])
@@ -403,7 +405,7 @@ def plot_tensorflow_log(space, color, linestyle, ax):
                  alpha=1, linewidth=LINEWIDTH, color=color,
                  linestyle=linestyle)
         ax.fill_between(x, mean_y_over_seeds - ste_y_over_seeds, mean_y_over_seeds + ste_y_over_seeds,
-                         alpha=0.2, color=color,
+                         alpha=0.1, color=color,
                          linestyle=linestyle)
 
     # xlabels = ['{:,.2f}'.format(x) + 'K' for x in g.get_xticks() / 1000]

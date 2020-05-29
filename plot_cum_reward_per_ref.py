@@ -219,6 +219,7 @@ def plot_tensorflow_log(space, color, linestyle, ax):
         'tensors': 200000,
     }
     all_y_over_seeds = []
+    all_x_over_seeds = []
     num_runs = space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["num_episodes"]
 
@@ -240,42 +241,56 @@ def plot_tensorflow_log(space, color, linestyle, ax):
 
         # Show all tags in the log file
         # print(event_acc.Tags())
-        if FLAGS.cumulative_rmsve:
-            tag = 'train/total_rmsve'
+        tag_reward = 'train/cum_reward'
+        tag_steps = 'train/steps'
+        if FLAGS.reward:
+            tag = tag_reward
         else:
-            tag = 'train/rmsve'
+            tag = tag_steps
         if not tag in event_acc.Tags()["tensors"]:
             print("no tags")
             continue
 
-        msve = event_acc.Tensors(tag)
+        msve_reward = event_acc.Tensors(tag_reward)
+        msve_steps = event_acc.Tensors(tag_steps)
+
+        y_reward = [tf.make_ndarray(m[2]) for m in msve_reward]
+        y_steps = [tf.make_ndarray(m[2]) for m in msve_steps]
+
+        y = y_reward if FLAGS.reward else y_steps
+        msve = msve_reward if FLAGS.reward else msve_steps
+
+        x = [m[1] for m in msve]
 
         y = [tf.make_ndarray(m[2]) for m in msve]
-        if len(y) == control_num_episodes:
-            x = [m[1] for m in msve]
-            all_y_over_seeds.append(np.array(y))
+        # if len(y_steps) == control_num_episodes:
+        all_y_over_seeds.append(np.array(y))
+        all_x_over_seeds.append(np.array(x))
 
     if len(all_y_over_seeds) == 0:
         print("agent_{} has no data!".format(space["crt_config"]["agent"]))
         return
 
-    mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
-    std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
-    ste_y_over_seeds = np.divide(std_y_over_seeds, np.sqrt(num_runs))
-    # std_y_over_seeds /= np.sqrt(len(std_y_over_seeds))
+    min_len = np.min([len(a) for a in all_y_over_seeds])
+
+    x = range(min_len)
+    y_vect_mean = np.mean([a[:min_len] for a in all_y_over_seeds], axis=0)
+    y_vect_std = np.std([a[:min_len] for a in all_y_over_seeds], axis=0)
+    y_vect_ste = np.divide(y_vect_std, np.sqrt(num_runs))
+
     label = naming[space["crt_config"]["agent"]]
     if space["crt_config"]["agent"] == "vanilla":
-        g = ax.plot(x, mean_y_over_seeds, label=label, c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
-        ax.fill_between(x, mean_y_over_seeds - ste_y_over_seeds, mean_y_over_seeds + ste_y_over_seeds,
-                         color="gray", alpha=0.07)
+        g = ax.plot(x, y_vect_mean, label=label, c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
+        ax.fill_between(x, y_vect_mean - y_vect_ste, y_vect_mean + y_vect_ste,
+                         color="gray", alpha=0.1)
     else:
         # if FLAGS.paml and space["crt_config"]["max_norm"] is not None:
         #     label += "_{}".format(space["crt_config"]["max_norm"])
-        g = ax.plot(x, mean_y_over_seeds, label=label,
+        g = ax.plot(x, y_vect_mean, label=label,
                  alpha=1, linewidth=LINEWIDTH, color=color,
                  linestyle=linestyle)
-        ax.fill_between(x, mean_y_over_seeds - ste_y_over_seeds, mean_y_over_seeds + ste_y_over_seeds,
-                         alpha=0.07, color=color,
+        ax.fill_between(x, y_vect_mean - y_vect_ste, y_vect_mean + y_vect_ste,
+                         alpha=0.1, color=color,
                          linestyle=linestyle)
 
     # xlabels = ['{:,.2f}'.format(x) + 'K' for x in g.get_xticks() / 1000]
