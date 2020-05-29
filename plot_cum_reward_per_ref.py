@@ -21,12 +21,11 @@ plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 # flags.DEFINE_string('env', "bipartite_100_1", 'where to save results')
-flags.DEFINE_string('config', "3_level", 'where to save results')
+flags.DEFINE_string('config', "cum_reward", 'where to save results')
 # flags.DEFINE_string('env', "fanin", 'where to save results')
 flags.DEFINE_bool('tabular', True, 'where to save results')
 flags.DEFINE_float('ymin', None, 'plot up to')
 flags.DEFINE_float('ymax', None, 'plot up to')
-flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
 FONTSIZE = 23
@@ -388,13 +387,13 @@ def plot_tensorflow_log(space, color, linestyle, ax):
 
     mean_y_over_seeds = np.mean(all_y_over_seeds, axis=0)
     std_y_over_seeds = np.std(all_y_over_seeds, axis=0)
-    ste_y_over_seeds = 2 * np.divide(std_y_over_seeds, np.sqrt(num_runs))
+    ste_y_over_seeds = np.divide(std_y_over_seeds, np.sqrt(num_runs))
     # std_y_over_seeds /= np.sqrt(len(std_y_over_seeds))
     label = naming[space["crt_config"]["agent"]]
     if space["crt_config"]["agent"] == "vanilla":
         g = ax.plot(x, mean_y_over_seeds, label=label, c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         ax.fill_between(x, mean_y_over_seeds - ste_y_over_seeds, mean_y_over_seeds + ste_y_over_seeds,
-                         color="gray", alpha=0.2)
+                         color="gray", alpha=0.07)
     else:
         # if FLAGS.paml and space["crt_config"]["max_norm"] is not None:
         #     label += "_{}".format(space["crt_config"]["max_norm"])
@@ -402,7 +401,7 @@ def plot_tensorflow_log(space, color, linestyle, ax):
                  alpha=1, linewidth=LINEWIDTH, color=color,
                  linestyle=linestyle)
         ax.fill_between(x, mean_y_over_seeds - ste_y_over_seeds, mean_y_over_seeds + ste_y_over_seeds,
-                         alpha=0.2, color=color,
+                         alpha=0.07, color=color,
                          linestyle=linestyle)
 
     # xlabels = ['{:,.2f}'.format(x) + 'K' for x in g.get_xticks() / 1000]
