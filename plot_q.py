@@ -137,18 +137,18 @@ def main(argv):
     if FLAGS.mb:
         name = "mb_" + name
 
-    internal_dashed = dotted
+    internal_dotted = dotted
     # internal_dashed = dashed
     # internal_dotted = dotted
     # internal_dash_dotted = {}
 
     if FLAGS.mb:
-        internal_dashed = mb_dotted
+        internal_dotted = mb_dotted
 
     comparison_config = configs.comparison_configs.configs[FLAGS.env][name]
 
     unique_color_configs = [c for c in comparison_config["agents"]
-                            if c not in internal_dashed.keys()]
+                            if c not in internal_dotted.keys()]
     n = len(unique_color_configs)
 
     colors = ["C{}".format(c) for c in range(n)]
@@ -157,11 +157,11 @@ def main(argv):
     plot_for_agent("q", env_config, logs, "gray", "-")
 
     for i, agent in enumerate(comparison_config["agents"]):
-        if agent not in internal_dashed.keys():
+        if agent not in internal_dotted.keys():
             color = alg_to_color[agent]
             linestyle = "-"
         else:
-            color = alg_to_color[internal_dashed[agent]]
+            color = alg_to_color[internal_dotted[agent]]
             linestyle = ":"
         # if agent not in internal_dashed.keys() and\
         #                 # agent not in internal_dotted.keys() and \
