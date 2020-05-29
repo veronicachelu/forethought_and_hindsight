@@ -20,10 +20,12 @@ configs={
     },
     "maze_1": {
             "ref": {
+                "agents": [
                 "p_bw_q",
                 "c_bw_q"
                 "p_fw_q",
                 "c_fw_q",
+                ]
             },
             "control": {
                 "agents": ["p_fw_q",
