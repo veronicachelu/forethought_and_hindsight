@@ -95,7 +95,7 @@ def main(argv):
                            plot_configs[FLAGS.config]["nc"],
                            sharex='col',
                            squeeze=True,  # , sharey=True,
-                           figsize=(15, 5),
+                           figsize=(12, 5),
                            )
 
 
