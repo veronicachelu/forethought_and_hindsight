@@ -25,7 +25,7 @@ flags.DEFINE_bool('mb', False, 'where to save results')
 flags.DEFINE_bool('reward', True, 'where to save results')
 # flags.DEFINE_bool('reward', False, 'where to save results')
 # flags.DEFINE_bool('mb', False, 'where to save results')
-flags.DEFINE_string('pivoting', "mb_ref", 'where to save results')
+flags.DEFINE_string('pivoting', "ref", 'where to save results')
 flags.DEFINE_float('ymin', None, 'plot up to')
 flags.DEFINE_float('ymax', None, 'plot up to')
 flags.DEFINE_float('xmin', None, 'plot up to')
@@ -230,7 +230,7 @@ def plot_tensorflow_log(space, color, linestyle):
     all_y_over_seeds = []
     all_x_over_seeds = []
     the_incomplete = []
-    num_runs = space["env_config"]["num_runs"]
+    num_runs = 1#space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["control_num_episodes"]
     for seed in range(num_runs):
         #print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))

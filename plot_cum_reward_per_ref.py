@@ -180,7 +180,7 @@ def main(argv):
 
     # fig.tight_layout()
     # fig.subplots_adjust(right=0.90)
-    fig.tight_layout(pad=0.0, w_pad=1, h_pad=0.0)
+    fig.tight_layout(pad=0.0, w_pad=0.9, h_pad=0.0)
     fig.savefig(os.path.join(plots_dir,
                              "{}_{}.png".format("all",
                                                 FLAGS.config)),
@@ -196,8 +196,8 @@ def plot(env, pivoting, logs_dir, plots_dir, ax, alg_to_color):
 
 
     persistent_agent_config = configs.agent_config.config["vanilla"]
-    plot_for_agent("q", env_config, persistent_agent_config,
-                   logs_dir, "gray", "-", ax)
+    # plot_for_agent("q", env_config, persistent_agent_config,
+    #                logs_dir, "gray", "-", ax)
 
     for i, agent in enumerate(comparison_config["agents"]):
         if agent not in dotted.keys():
@@ -233,7 +233,7 @@ def plot_tensorflow_log(space, color, linestyle, ax):
     }
     all_y_over_seeds = []
     all_x_over_seeds = []
-    num_runs = 1#space["env_config"]["num_runs"]
+    num_runs = space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["num_episodes"]
 
     for seed in range(num_runs):
