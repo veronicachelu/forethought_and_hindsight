@@ -146,7 +146,7 @@ def main(argv):
         # loc='upper left',
         # borderaxespad=0.,
         prop={'size': FONTSIZE},
-        bbox_to_anchor=(1.03, 0.8),
+        bbox_to_anchor=(1.03, 0.6),
         loc="upper center",
         # bbox_to_anchor=(0.5, -0.05)#, 1.0, 0.1)
         # bbox_to_anchor=(1., 1.)#, 1.0, 0.1)
@@ -179,7 +179,7 @@ def main(argv):
         os.makedirs(plots_dir)
 
     fig.tight_layout()
-    fig.subplots_adjust(right=0.90)
+    fig.subplots_adjust(right=0.88)
     # fig.tight_layout(pad=0.0, w_pad=0.9, h_pad=0.0)
     fig.savefig(os.path.join(plots_dir,
                              "{}_{}.png".format("all",
