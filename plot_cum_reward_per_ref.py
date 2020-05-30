@@ -132,6 +132,8 @@ def main(argv):
         all_handles.extend(handles)
         all_labels.extend(labels)
 
+    xlabels = ax[1].get_xticklabels()
+    ax[0].set_xticklabels(xlabels)
     fig.legend(
         # handles=all_handles,
         # labels=all_labels,

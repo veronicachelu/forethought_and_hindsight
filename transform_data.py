@@ -243,16 +243,12 @@ def main(argv):
     if not os.path.exists(plots_dir):
         os.makedirs(plots_dir)
 
-    yaxis = 'AUC(RMSVE)'
-    xaxis = "FanIn/FanOut"
-
     fig, ax = plt.subplots(1,
                            2,
-                           squeeze=True,  # , sharey=True,
+                           squeeze=True,
                            figsize=(12, 5),
                            )
-    all_handles = []
-    all_labels = []
+    all_data = {}
 
     for j, p in enumerate(plottings[FLAGS.plotting]):
         plot_config = plot_configs[p]
@@ -262,95 +258,20 @@ def main(argv):
                                 if c not in dashed.keys()]
 
         alg_to_color = {alg: color for alg, color in zip(unique_color_configs, colors)}
-        x = []
-        env_to_xlabel = {"bipartite_100_1": "100/1",
-                         "bipartite_10_1": "10/1",
-                         "bipartite": "1/1",
-                         "bipartite_1_10": "1/10",
-                         "bipartite_1_100": "1/100"}
-        y = {}
-        ref_aoc_per_env = {"bipartite_100_1": {"min": np.infty, "max": -np.infty},
-                         "bipartite_10_1": {"min": np.infty, "max": -np.infty},
-                         "bipartite": {"min": np.infty, "max": -np.infty},
-                         "bipartite_1_10": {"min": np.infty, "max": -np.infty},
-                         "bipartite_1_100": {"min": np.infty, "max": -np.infty},
-                           }
         ax[j].set_title(plot_config["title"], fontsize=FONTSIZE)
+        config_data = {}
         for i, res in enumerate(plot_config["results"]):
             env = res["env"]
             logs_dir = os.path.join(best_hyperparam_folder, env)
-            agents_aocs = get_aoc(env, res["pivoting"], res["mb"], res["mle"], logs_dir, alg_to_color)
-            for agent in agents_aocs.keys():
-                if agent not in y:
-                    y[agent] = {"means": [], "stds": []}
-                y[agent]["means"].append(agents_aocs[agent][0])
-                y[agent]["stds"].append(agents_aocs[agent][1])
-                y[agent]["color"] = agents_aocs[agent][2]
-                y[agent]["linestyle"] = agents_aocs[agent][3]
-                ref_aoc_per_env[env]["min"] = np.minimum(ref_aoc_per_env[env]["min"], agents_aocs[agent][0])
-                ref_aoc_per_env[env]["max"] = np.maximum(ref_aoc_per_env[env]["max"], agents_aocs[agent][0])
-            x.append(env_to_xlabel[env])
+            agents_data = get_aoc(env, res["pivoting"], res["mb"], res["mle"], logs_dir, alg_to_color)
+            config_data[env] = agents_data
+        all_data[p] = config_data
 
-        # for agent in y.keys():
-        #     for i, env in enumerate(ref_aoc_per_env.keys()):
-                # y[agent]["means"][i] = (y[agent]["means"][i] - ref_aoc_per_env[env]["min"])/\
-                # (ref_aoc_per_env[env]["max"] - ref_aoc_per_env[env]["min"])
-                # y[agent]["stds"][i] = (y[agent]["stds"][i]) / \
-                #                        (ref_aoc_per_env[env]["max"] - ref_aoc_per_env[env]["min"])
-                # y[agent]["means"][i] = (y[agent]["means"][i])/\
-                #               (ref_aoc_per_env[env]["max"] - ref_aoc_per_env[env]["min"])
 
         if not os.path.exists(plots_dir):
             os.makedirs(plots_dir)
 
-        for agent_name, agent_value in y.items():
-            m = np.array(agent_value["means"])
-            s = np.array(agent_value["stds"])
-            ax[j].plot(x, m, 'v', label=naming[agent_name],
-                    c=agent_value["color"], alpha=1, markersize=MARKERSIZE, linewidth=LINEWIDTH, linestyle=agent_value["linestyle"])
-            ax[j].fill_between(x, m - s,
-                            m + s,
-                            color=agent_value["color"], alpha=0.1)
-
-        handles, labels = ax[j].get_legend_handles_labels()
-        all_handles.extend(handles)
-        all_labels.extend(labels)
-        ax[j].set_xlabel(xaxis, fontsize=FONTSIZE)
-        plt.setp(ax[j].get_yticklabels(), visible=True, fontsize=TICKSIZE)
-        plt.setp(ax[j].get_xticklabels(), visible=True, fontsize=TICKSIZE)
-        ax[j].grid(True)
-
-    ax[0].set_ylabel(yaxis, fontsize=FONTSIZE)
-
-    fig.legend(
-        # handles=all_handles,
-        # labels=all_labels,
-        *[*zip(*{l: h for h, l in zip(all_handles, all_labels)}.items())][::-1],
-        # loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
-        frameon=False,
-        # ncol=5,
-        # mode="expand",
-        # loc = 7,
-        # loc='lower left',
-        # loc='upper center',
-        # loc='upper left',
-        # borderaxespad=0.,
-        prop={'size': FONTSIZE},
-        bbox_to_anchor=(1.02, 0.8),
-        loc="upper center",
-        # bbox_to_anchor=(0.5, -0.05)#, 1.0, 0.1)
-        # bbox_to_anchor=(1., 1.)#, 1.0, 0.1)
-        # bbox_to_anchor=(0., 1.0, 1.0, 0.1)
-
-    )
-
-    fig.tight_layout()
-    fig.subplots_adjust(right=0.90)
-    fig.savefig(os.path.join(plots_dir,
-                             "{}_{}.png".format("aoc_unnorm",
-                                                FLAGS.plotting)),
-                bbox_inches='tight',
-                )
+    np.save(os.path.join(plots_dir, "auc_data.npy"), all_data)
 
 def get_aoc(env, pivoting, mb, mle, logs_dir, alg_to_color):
     env_config, volatile_agent_config = load_env_and_volatile_configs(env)
@@ -361,41 +282,23 @@ def get_aoc(env, pivoting, mb, mle, logs_dir, alg_to_color):
     if mle:
         name = name + "_mle"
 
-    internal_dashed = dashed
-    internal_dotted = dotted
-    internal_dash_dotted = {}
-    if mle and mb:
-        internal_dashed = mb_mle_dashed
-    elif mle:
-        internal_dashed = mle_dashed
-    elif mb:
-        internal_dashed = mb_dashed
-
-    agents_aocs = {}
+    agents_data = {}
 
     comparison_config = configs.comparison_configs.configs[env][name]
     persistent_agent_config = configs.agent_config.config["vanilla"]
 
-    mean, std = get_aoc_for_agent("vanilla", env_config, persistent_agent_config,
+    xs, ys = get_aoc_for_agent("vanilla", env_config, persistent_agent_config,
                    0, 0, logs_dir)
-    agents_aocs["vanilla"] = [mean, std, "grey", "-"]
+
+    agents_data["model_free"] = np.array([xs, ys])
 
     for i, agent in enumerate(comparison_config["agents"]):
-        if agent not in internal_dashed.keys() and\
-                        agent not in internal_dotted.keys() and \
-                        agent not in internal_dash_dotted.keys():
-            color = alg_to_color[agent]
-            linestyle = "-"
-        elif agent in internal_dashed.keys():
-            color = alg_to_color[internal_dashed[agent]]
-            linestyle = ":"
-
         persistent_agent_config = configs.agent_config.config[agent]
-        mean, std = get_aoc_for_agent(agent, env_config, persistent_agent_config,
+        xs, ys = get_aoc_for_agent(agent, env_config, persistent_agent_config,
                         1, 0, logs_dir)
-        agents_aocs[agent] = [mean, std, color, linestyle]
+        agents_data[agent] = np.array([xs, ys])
 
-    return agents_aocs
+    return agents_data
 
 def get_aoc_for_agent(agent, env_config, persistent_agent_config,
                    planning_depth, replay_capacity, logs):
@@ -417,11 +320,12 @@ def get_aoc_for_agent(agent, env_config, persistent_agent_config,
         'histograms': 1,
         'tensors': 200000,
     }
-    # all_y_over_seeds = []
-    aocs = []
+
     num_runs = space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["num_episodes"]
 
+    xs = []
+    ys = []
     for seed in range(num_runs):
         #print("seed_{}_agent_{}".format(seed, space["crt_config"]["agent"]))
         logs = os.path.join(os.path.join(space["crt_config"]["logs"],
@@ -440,10 +344,7 @@ def get_aoc_for_agent(agent, env_config, persistent_agent_config,
 
         # Show all tags in the log file
         # print(event_acc.Tags())
-        if FLAGS.cumulative_rmsve:
-            tag = 'train/total_rmsve'
-        else:
-            tag = 'train/rmsve'
+        tag = 'train/rmsve'
         if not tag in event_acc.Tags()["tensors"]:
             print("no tags")
             continue
@@ -453,18 +354,11 @@ def get_aoc_for_agent(agent, env_config, persistent_agent_config,
         y = [tf.make_ndarray(m[2]) for m in msve]
         if len(y) == control_num_episodes:
             x = [m[1] for m in msve]
-            # all_y_over_seeds.append(np.array(y))
-            aocs.append(sklearn.metrics.auc(x, y))
+            xs.append(np.array(x))
+            ys.append(np.array(y))
 
-    if len(aocs) == 0:
-        print("agent_{} has no data!".format(space["crt_config"]["agent"]))
-        return
 
-    mean_aoc_seeds = np.mean(aocs, axis=0)
-    std_aoc_seeds = np.std(aocs, axis=0)
-    ste_aoc_seeds = np.divide(std_aoc_seeds, np.sqrt(num_runs))
-
-    return mean_aoc_seeds, ste_aoc_seeds
+    return np.array(xs), np.array(ys)
 
 if __name__ == '__main__':
     app.run(main)
