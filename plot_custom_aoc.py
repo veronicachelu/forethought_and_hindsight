@@ -336,7 +336,7 @@ def main(argv):
         # loc='upper left',
         # borderaxespad=0.,
         prop={'size': FONTSIZE},
-        bbox_to_anchor=(1.02, 0.5),
+        bbox_to_anchor=(1.02, 0.7),
         loc="upper center",
         # bbox_to_anchor=(0.5, -0.05)#, 1.0, 0.1)
         # bbox_to_anchor=(1., 1.)#, 1.0, 0.1)
