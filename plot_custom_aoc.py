@@ -310,7 +310,7 @@ def main(argv):
                     c=agent_value["color"], alpha=1, markersize=MARKERSIZE, linewidth=LINEWIDTH, linestyle=agent_value["linestyle"])
             ax[j].fill_between(x, m - s,
                             m + s,
-                            color=agent_value["color"], alpha=0.1)
+                            color=agent_value["color"], alpha=0.2)
 
         handles, labels = ax[j].get_legend_handles_labels()
         all_handles.extend(handles)

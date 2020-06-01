@@ -294,7 +294,7 @@ def plot_tensorflow_log(space, color, linestyle, ax):
     if space["crt_config"]["agent"] == "q":
         g = ax.plot(x, y_vect_mean, label=label, c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         ax.fill_between(x, y_vect_mean - y_vect_ste, y_vect_mean + y_vect_ste,
-                         color="gray", alpha=0.1)
+                         color="gray", alpha=0.2)
     else:
         # if FLAGS.paml and space["crt_config"]["max_norm"] is not None:
         #     label += "_{}".format(space["crt_config"]["max_norm"])
@@ -302,7 +302,7 @@ def plot_tensorflow_log(space, color, linestyle, ax):
                  alpha=1, linewidth=LINEWIDTH, color=color,
                  linestyle=linestyle)
         ax.fill_between(x, y_vect_mean - y_vect_ste, y_vect_mean + y_vect_ste,
-                         alpha=0.1, color=color,
+                         alpha=0.2, color=color,
                          linestyle=linestyle)
 
     # xlabels = ['{:,.2f}'.format(x) + 'K' for x in g.get_xticks() / 1000]

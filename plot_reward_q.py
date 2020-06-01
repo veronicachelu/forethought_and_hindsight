@@ -298,14 +298,14 @@ def plot_tensorflow_log(space, color, linestyle):
     if space["crt_config"]["agent"] == "q":
         plt.plot(x, y_vect_mean, label="model-free", c="gray", alpha=1, linewidth=LINEWIDTH, linestyle="-")
         plt.fill_between(x, np.maximum(y_vect_mean - y_vect_std, np.zeros_like(y_vect_mean)), y_vect_mean + y_vect_std,
-                         color="gray", alpha=0.07)
+                         color="gray", alpha=0.2)
     else:
         label = space["crt_config"]["agent"]
         plt.plot(x, y_vect_mean, label=label,
                  alpha=1, linewidth=LINEWIDTH, color=color,
                  linestyle=linestyle)
         plt.fill_between(x, np.maximum(y_vect_mean - y_vect_std, np.zeros_like(y_vect_mean)), y_vect_mean + y_vect_std,
-                         alpha=0.07, color=color,
+                         alpha=0.2, color=color,
                          linestyle=linestyle)
 
     # if FLAGS.reward:
