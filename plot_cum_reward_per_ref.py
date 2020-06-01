@@ -28,7 +28,7 @@ flags.DEFINE_float('ymin', None, 'plot up to')
 flags.DEFINE_float('ymax', None, 'plot up to')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
-FONTSIZE = 23
+FONTSIZE = 25
 TICKSIZE = 15
 LINEWIDTH = 3
 

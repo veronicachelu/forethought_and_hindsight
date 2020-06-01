@@ -33,7 +33,7 @@ flags.DEFINE_integer('max', None, 'plot up to')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 
 FLAGS = flags.FLAGS
-FONTSIZE = 23
+FONTSIZE = 25
 LINEWIDTH = 3
 TICKSIZE = 15
 
