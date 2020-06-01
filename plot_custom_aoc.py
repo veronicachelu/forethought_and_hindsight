@@ -29,7 +29,7 @@ flags.DEFINE_float('ymax', None, 'plot up to')
 flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
-FONTSIZE = 23
+FONTSIZE = 25
 TICKSIZE = 15
 LINEWIDTH = 3
 MARKERSIZE = 10
