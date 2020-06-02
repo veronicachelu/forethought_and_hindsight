@@ -29,7 +29,7 @@ flags.DEFINE_float('ymax', None, 'plot up to')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
 FONTSIZE = 25
-TICKSIZE = 15
+TICKSIZE = 16
 LINEWIDTH = 3
 
 plot_configs = {
@@ -181,7 +181,7 @@ def main(argv):
         os.makedirs(plots_dir)
 
     fig.tight_layout()
-    fig.subplots_adjust(right=0.88)
+    fig.subplots_adjust(right=0.84)
     # fig.tight_layout(pad=0.0, w_pad=0.9, h_pad=0.0)
     fig.savefig(os.path.join(plots_dir,
                              "{}_{}.png".format("all",
@@ -235,7 +235,7 @@ def plot_tensorflow_log(space, color, linestyle, ax):
     }
     all_y_over_seeds = []
     all_x_over_seeds = []
-    num_runs = space["env_config"]["num_runs"]
+    num_runs = 1#space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["num_episodes"]
 
     for seed in range(num_runs):

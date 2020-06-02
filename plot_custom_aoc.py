@@ -30,7 +30,7 @@ flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
 FONTSIZE = 25
-TICKSIZE = 15
+TICKSIZE = 16
 LINEWIDTH = 3
 MARKERSIZE = 10
 
@@ -275,7 +275,7 @@ def main(argv):
                          "bipartite_1_10": {"min": np.infty, "max": -np.infty},
                          "bipartite_1_100": {"min": np.infty, "max": -np.infty},
                            }
-        ax[j].set_title(plot_config["title"], fontsize=FONTSIZE)
+        ax[j].set_title(plot_config["title"], fontsize=FONTSIZE, y=1.05)
         for i, res in enumerate(plot_config["results"]):
             env = res["env"]
             logs_dir = os.path.join(best_hyperparam_folder, env)
@@ -336,7 +336,7 @@ def main(argv):
         # loc='upper left',
         # borderaxespad=0.,
         prop={'size': FONTSIZE},
-        bbox_to_anchor=(1.02, 0.7),
+        bbox_to_anchor=(1.02, 0.8),
         loc="upper center",
         # bbox_to_anchor=(0.5, -0.05)#, 1.0, 0.1)
         # bbox_to_anchor=(1., 1.)#, 1.0, 0.1)
@@ -345,7 +345,7 @@ def main(argv):
     )
 
     fig.tight_layout()
-    fig.subplots_adjust(right=0.90)
+    fig.subplots_adjust(right=0.88)
     fig.savefig(os.path.join(plots_dir,
                              "{}_{}.png".format("aoc",
                                                 FLAGS.plotting)),
@@ -419,7 +419,7 @@ def get_aoc_for_agent(agent, env_config, persistent_agent_config,
     }
     # all_y_over_seeds = []
     aocs = []
-    num_runs = space["env_config"]["num_runs"]
+    num_runs = 1#space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["num_episodes"]
 
     for seed in range(num_runs):

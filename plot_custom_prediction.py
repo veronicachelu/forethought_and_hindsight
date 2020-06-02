@@ -30,7 +30,7 @@ flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
 FONTSIZE = 25
-TICKSIZE = 15
+TICKSIZE = 16
 LINEWIDTH = 3
 
 plot_configs = {
@@ -42,13 +42,13 @@ plot_configs = {
                 "env": "bipartite_100_10_1_2L",
                 "pivoting": "both",
                 "mle": True,
-                "title": "Channeling structure \n large fan-in / small fan-out"
+                "title": "Channeling  \n\nfan-in/fan-out"
             },
             {
                 "env": "bipartite_1_10_100_2L",
                 "pivoting": "both",
                 "mle": True,
-                "title": "Broadcasting structure \n small fan-in / large fan-out"
+                "title": "Broadcasting  \n\nfan-in/fan-out"
             }
         ]
     }
@@ -185,7 +185,7 @@ def main(argv):
                            plot_configs[FLAGS.config]["nc"],
                            sharex='col',
                            squeeze=True,  # , sharey=True,
-                           figsize=(15, 5),
+                           figsize=(12, 5),
                            )
 
     unique_color_configs = [c for c in all_agents
@@ -200,7 +200,7 @@ def main(argv):
     for i, sub in enumerate(plot_configs[FLAGS.config]["subplots"]):
         env = sub["env"]
         if "title" in sub.keys():
-            ax[i].set_title(sub["title"], fontsize=FONTSIZE)
+            ax[i].set_title(sub["title"], fontsize=FONTSIZE, loc='left')#, y=1.05)
         logs_dir = os.path.join(best_hyperparam_folder, env)
         if i == 0:
             ax[i].set_ylabel(yaxis, fontsize=FONTSIZE)
@@ -222,7 +222,28 @@ def main(argv):
         all_handles.extend(handles)
         all_labels.extend(labels)
 
-    ax[0].legend(
+    # ax[0].legend(
+    #     # handles=all_handles,
+    #     # labels=all_labels,
+    #     *[*zip(*{l: h for h, l in zip(all_handles, all_labels)}.items())][::-1],
+    #     # loc='lower right' if FLAGS.cumulative_rmsve else 'upper right',
+    #     frameon=False,
+    #     # ncol=5,
+    #     # mode="expand",
+    #     # loc = 7,
+    #     # loc='lower left',
+    #     # loc='upper center',
+    #     # loc='upper left',
+    #     # borderaxespad=0.,
+    #     prop={'size': FONTSIZE},
+    #     bbox_to_anchor=(1.5, 0.7),
+    #     loc="upper center",
+    #     # bbox_to_anchor=(0.5, -0.05)#, 1.0, 0.1)
+    #     # bbox_to_anchor=(1., 1.)#, 1.0, 0.1)
+    #     # bbox_to_anchor=(0., 1.0, 1.0, 0.1)
+    #
+    # )
+    fig.legend(
         # handles=all_handles,
         # labels=all_labels,
         *[*zip(*{l: h for h, l in zip(all_handles, all_labels)}.items())][::-1],
@@ -236,7 +257,7 @@ def main(argv):
         # loc='upper left',
         # borderaxespad=0.,
         prop={'size': FONTSIZE},
-        bbox_to_anchor=(1.5, 0.7),
+        bbox_to_anchor=(1.02, 0.8),
         loc="upper center",
         # bbox_to_anchor=(0.5, -0.05)#, 1.0, 0.1)
         # bbox_to_anchor=(1., 1.)#, 1.0, 0.1)
@@ -247,7 +268,9 @@ def main(argv):
     if not os.path.exists(plots_dir):
         os.makedirs(plots_dir)
 
-    fig.tight_layout(pad=0.0, w_pad=1, h_pad=0.0)
+    # fig.tight_layout(pad=0.0, w_pad=1, h_pad=0.0)
+    fig.tight_layout()
+    fig.subplots_adjust(right=0.85)
     # fig.tight_layout()
     # fig.subplots_adjust(right=0.90)
     fig.savefig(os.path.join(plots_dir,
@@ -339,7 +362,7 @@ def plot_tensorflow_log(space, color, linestyle, ax):
         'tensors': 200000,
     }
     all_y_over_seeds = []
-    num_runs = space["env_config"]["num_runs"]
+    num_runs = 1#space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["num_episodes"]
 
     for seed in range(num_runs):

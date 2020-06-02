@@ -35,7 +35,7 @@ flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results'
 FLAGS = flags.FLAGS
 FONTSIZE = 25
 LINEWIDTH = 3
-TICKSIZE = 15
+TICKSIZE = 16
 
 plot_configs = {
     "maze": {
