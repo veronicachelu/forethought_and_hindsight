@@ -115,76 +115,80 @@ plot_configs = {
         ]
     }
 }
-mle_paml_dashed = {
-    "p_fw_PAML": "p_fw_MLE",
-    "p_bw_PAML": "p_bw_MLE",
-          # "p_fw_proj_PAML": "p_fw_PAML",
-          # "p_bw_proj_PAML": "p_bw_PAML",
-          # "p_bw_proj_MLE": "p_bw_MLE",
-          # "p_fw_proj_MLE": "p_fw_MLE",
-}
-
-mle_paml_dotted = {
-    "p_fw_proj_PAML": "p_fw_proj_MLE",
-    "p_bw_proj_PAML": "p_bw_proj_MLE"
-}
-
-mle_paml_dash_dotted = {}
-# mle_paml_dash_dotted = {
-#     "p_bw_proj_MLE": "p_bw_MLE",
-#     "p_fw_proj_MLE": "p_fw_MLE"
+# mle_paml_dashed = {
+#     "p_fw_PAML": "p_fw_MLE",
+#     "p_bw_PAML": "p_bw_MLE",
+#           # "p_fw_proj_PAML": "p_fw_PAML",
+#           # "p_bw_proj_PAML": "p_bw_PAML",
+#           # "p_bw_proj_MLE": "p_bw_MLE",
+#           # "p_fw_proj_MLE": "p_fw_MLE",
 # }
-
-mle_dashed = {
-          "p_true_bw_recur": "p_bw_recur_MLE",
-          "c_true_bw_recur": "c_bw_recur_MLE",
-          "p_true_bw": "p_bw_MLE",
-          "c_true_bw": "c_bw_MLE",
-          "p_true_fw": "p_fw_MLE",
-          "c_true_fw": "c_fw_MLE",
-          # "p_bw_PAML": "p_bw_MLE",
-          # "c_bw_PAML": "c_bw_MLE",
-          # "p_fw_PAML": "p_fw_MLE",
-          # "c_fw_PAML": "c_fw_MLE",
-          }
-mb_dashed = {
-          "mb_c_true_bw": "mb_c_bw",
-          "mb_p_true_bw": "mb_p_bw",
-          "mb_p_true_fw": "mb_p_fw",
-          "mb_c_true_fw": "mb_c_fw",
-          "mb_p_true_bw_recur": "mb_p_bw_recur",
-          "mb_c_true_bw_recur": "mb_c_bw_recur",
-          }
-mb_mle_dashed = {
-          "mb_p_true_bw": "mb_p_bw_MLE",
-          "mb_c_true_bw": "mb_c_bw_MLE",
-          "mb_c_true_bwfw": "mb_c_bwfw_MLE",
-          "mb_p_true_fw": "mb_p_fw_MLE",
-          "mb_c_true_fw": "mb_c_fw_MLE",
-          "mb_p_true_bw_recur": "mb_p_bw_recur_MLE",
-          "mb_c_true_bw_recur": "mb_c_bw_recur_MLE",
-}
-
-dashed = {
-          "p_bw_PAML": "p_bw",
-          "c_bw_PAML": "c_bw",
-          "p_fw_PAML": "p_fw",
-          "c_fw_PAML": "c_fw",
-
-          # "p_bw_PAML_MLE": "p_bw",
-          # "c_bw_PAML_MLE": "c_bw",
-          # "p_fw_PAML_MLE": "p_fw",
-          # "c_fw_PAML_MLE": "c_fw",
-          # "p_true_bw_recur": "p_bw_recur",
-          # "c_true_bw_recur": "c_bw_recur",
-
-          }
+#
+# mle_paml_dotted = {
+#     "p_fw_proj_PAML": "p_fw_proj_MLE",
+#     "p_bw_proj_PAML": "p_bw_proj_MLE"
+# }
+#
+# mle_paml_dash_dotted = {}
+# # mle_paml_dash_dotted = {
+# #     "p_bw_proj_MLE": "p_bw_MLE",
+# #     "p_fw_proj_MLE": "p_fw_MLE"
+# # }
+#
+# mle_dashed = {
+#           "p_true_bw_recur": "p_bw_recur_MLE",
+#           "c_true_bw_recur": "c_bw_recur_MLE",
+#           "p_true_bw": "p_bw_MLE",
+#           "c_true_bw": "c_bw_MLE",
+#           "p_true_fw": "p_fw_MLE",
+#           "c_true_fw": "c_fw_MLE",
+#           # "p_bw_PAML": "p_bw_MLE",
+#           # "c_bw_PAML": "c_bw_MLE",
+#           # "p_fw_PAML": "p_fw_MLE",
+#           # "c_fw_PAML": "c_fw_MLE",
+#           }
+# mb_dashed = {
+#           "mb_c_true_bw": "mb_c_bw",
+#           "mb_p_true_bw": "mb_p_bw",
+#           "mb_p_true_fw": "mb_p_fw",
+#           "mb_c_true_fw": "mb_c_fw",
+#           "mb_p_true_bw_recur": "mb_p_bw_recur",
+#           "mb_c_true_bw_recur": "mb_c_bw_recur",
+#           }
+# mb_mle_dashed = {
+#           "mb_p_true_bw": "mb_p_bw_MLE",
+#           "mb_c_true_bw": "mb_c_bw_MLE",
+#           "mb_c_true_bwfw": "mb_c_bwfw_MLE",
+#           "mb_p_true_fw": "mb_p_fw_MLE",
+#           "mb_c_true_fw": "mb_c_fw_MLE",
+#           "mb_p_true_bw_recur": "mb_p_bw_recur_MLE",
+#           "mb_c_true_bw_recur": "mb_c_bw_recur_MLE",
+# }
+#
+# dashed = {
+#           "p_bw_PAML": "p_bw",
+#           "c_bw_PAML": "c_bw",
+#           "p_fw_PAML": "p_fw",
+#           "c_fw_PAML": "c_fw",
+#
+#           # "p_bw_PAML_MLE": "p_bw",
+#           # "c_bw_PAML_MLE": "c_bw",
+#           # "p_fw_PAML_MLE": "p_fw",
+#           # "c_fw_PAML_MLE": "c_fw",
+#           # "p_true_bw_recur": "p_bw_recur",
+#           # "c_true_bw_recur": "c_bw_recur",
+#
+#           }
 
 dotted = {
           "p_true_bw": "p_bw",
           "c_true_bw": "c_bw",
           "p_true_fw": "p_fw",
           "c_true_fw": "c_fw",
+        "mb_p_true_bw": "mb_p_bw_MLE",
+        "mb_c_true_bw": "mb_c_bw_MLE",
+        "mb_p_true_fw": "mb_p_fw_MLE",
+        "mb_c_true_fw": "mb_c_fw_MLE",
 }
 
 # naming = {
@@ -218,14 +222,15 @@ naming = {
     "mb_c_true_bw": r"bw plan($\overleftarrow{P}^*$)",
     "mb_p_true_fw": r"fw_plan($P^*$)",
     "c_bw_MLE": r"bw_plan($\overleftarrow{P}$)",
-    "p_fw_MLE": r"fw_plan($P^*$)",
+    "p_fw_MLE": r"fw_plan($P$)",
 }
 
 # dotted = ["true_bw", "true_fw", "mb_true_fw", "mb_true_bw",
 #           "true_bw_recur", "mb_true_bw_recur"]
 
 all_agents = {
-        "mb": ["mb_c_bw_MLE",
+        "mb": [
+              "mb_c_bw_MLE",
               "mb_p_fw_MLE",
               "mb_c_true_bw",
               "mb_p_true_fw",
@@ -259,7 +264,7 @@ def main(argv):
         all_agents_for_plotting = all_agents[p]
         colors = ["C{}".format(c) for c in range(len(all_agents_for_plotting))]
         unique_color_configs = [c for c in all_agents_for_plotting
-                                if c not in dashed.keys()]
+                                if c not in dotted.keys()]
 
         alg_to_color = {alg: color for alg, color in zip(unique_color_configs, colors)}
         x = []
@@ -307,12 +312,14 @@ def main(argv):
             m = np.array(agent_value["means"])
             s = np.array(agent_value["stds"])
             ax[j].plot(x, m, 'v', label=naming[agent_name],
-                    c=agent_value["color"], alpha=1, markersize=MARKERSIZE, linewidth=LINEWIDTH, linestyle=agent_value["linestyle"])
+                    c=agent_value["color"], alpha=1, markersize=MARKERSIZE,
+                       linewidth=LINEWIDTH, linestyle=agent_value["linestyle"])
             ax[j].fill_between(x, m - 2*s,
                             m + 2*s,
                             color=agent_value["color"], alpha=0.1)
             ax[j].set_yscale('log')
 
+            print("Linestyle is {} for {} with naming {}".format(agent_value["linestyle"], agent_name, naming[agent_name]))
         handles, labels = ax[j].get_legend_handles_labels()
         all_handles.extend(handles)
         all_labels.extend(labels)
@@ -362,15 +369,15 @@ def get_aoc(env, pivoting, mb, mle, logs_dir, alg_to_color):
     if mle:
         name = name + "_mle"
 
-    internal_dashed = dashed
-    internal_dotted = dotted
-    internal_dash_dotted = {}
-    if mle and mb:
-        internal_dashed = mb_mle_dashed
-    elif mle:
-        internal_dashed = mle_dashed
-    elif mb:
-        internal_dashed = mb_dashed
+    # internal_dashed = dashed
+    # internal_dotted = dotted
+    # internal_dash_dotted = {}
+    # if mle and mb:
+    #     internal_dashed = mb_mle_dashed
+    # elif mle:
+    #     internal_dashed = mle_dashed
+    # elif mb:
+    #     internal_dashed = mb_dashed
 
     agents_aocs = {}
 
@@ -382,13 +389,14 @@ def get_aoc(env, pivoting, mb, mle, logs_dir, alg_to_color):
     agents_aocs["vanilla"] = [mean, std, "grey", "-"]
 
     for i, agent in enumerate(comparison_config["agents"]):
-        if agent not in internal_dashed.keys() and\
-                        agent not in internal_dotted.keys() and \
-                        agent not in internal_dash_dotted.keys():
+        if agent not in dotted.keys():
+            # and\
+                        # agent not in internal_dotted.keys() and \
+                        # agent not in internal_dash_dotted.keys():
             color = alg_to_color[agent]
             linestyle = "-"
-        elif agent in internal_dashed.keys():
-            color = alg_to_color[internal_dashed[agent]]
+        else:
+            color = alg_to_color[dotted[agent]]
             linestyle = ":"
 
         persistent_agent_config = configs.agent_config.config[agent]
@@ -420,7 +428,7 @@ def get_aoc_for_agent(agent, env_config, persistent_agent_config,
     }
     # all_y_over_seeds = []
     aocs = []
-    num_runs = 2#space["env_config"]["num_runs"]
+    num_runs = 1#space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["num_episodes"]
 
     for seed in range(num_runs):

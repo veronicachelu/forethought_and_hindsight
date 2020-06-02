@@ -218,7 +218,7 @@ naming = {
     "mb_c_true_bw": r"bw plan($\overleftarrow{P}^*$)",
     "mb_p_true_fw": r"fw_plan($P^*$)",
     "c_bw_MLE": r"bw_plan($\overleftarrow{P}$)",
-    "p_fw_MLE": r"fw_plan($P^*$)",
+    "p_fw_MLE": r"fw_plan($P$)",
 }
 
 # dotted = ["true_bw", "true_fw", "mb_true_fw", "mb_true_bw",
