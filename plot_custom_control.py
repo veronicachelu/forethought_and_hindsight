@@ -166,9 +166,22 @@ dashed = {
 
 dotted = {
         "p_true_fw_q": "p_fw_q",
+        "c_true_fw_q": "c_fw_q",
 }
 
-all_agents = [
+all_agents = \
+    {"maze": [
+              # "p_bw_q",
+              "p_bw_q",
+              "p_fw_q",
+              "p_true_fw_q",
+              "p_true_fw_q",
+              # "c_fw_q",
+              "p_bw_q_1",
+              # "p_bw_q_2",
+              # "p_bw_q_3"
+        ],
+        "maze_2": [
               # "p_bw_q",
               "p_bw_q",
               "p_fw_q",
@@ -179,6 +192,7 @@ all_agents = [
               # "p_bw_q_2",
               # "p_bw_q_3"
 ]
+    }
 
 # naming = {
 #     "q": r"model_free(mf)",
@@ -197,7 +211,9 @@ naming = {
     "p_bw_q": r"bw_plan($\overleftarrow{P}$)",
     "p_bw_q_1": r"bw_plan($\overleftarrow{P}\downarrow[0]$)",
     "p_fw_q": r"fw_plan($P$)",
+    "c_fw_q": r"fw_plan($P$)",
     "p_true_fw_q": r"fw_plan($P^*$)",
+    "c_true_fw_q": r"fw_plan($P^*$)",
 }
 
 def main(argv):
@@ -220,10 +236,10 @@ def main(argv):
                            figsize=(12, 8),
                            )
     # ax.set(aspect="auto")
-    unique_color_configs = [c for c in all_agents
+    unique_color_configs = [c for c in all_agents[FLAGS.config]
                             if c not in dashed.keys()]
 
-    colors = ["C{}".format(c) for c in range(len(all_agents))]
+    colors = ["C{}".format(c) for c in range(len(all_agents[FLAGS.config]))]
     alg_to_color = {alg: color for alg, color in zip(unique_color_configs, colors)}
 
     # fig.set_title("Learning, planning & acting", fontsize=FONTSIZE)
