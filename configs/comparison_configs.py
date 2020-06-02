@@ -16,7 +16,19 @@ configs={
 
                            # "c_bw_q"
                 ]
+            },
+            "cc": {
+                "agents": [
+                            "p_bw_q",
+                            # "p_fw_q",
+                            "c_fw_q",
+                            # "p_true_fw_q",
+                           "c_true_fw_q",
+
+                           # "c_bw_q"
+                ]
             }
+
     },
     "maze_1": {
             "ref": {
@@ -51,6 +63,17 @@ configs={
 
                            # "c_bw_q"
                 ]
+            },
+            "cc": {
+                "agents": [
+                            "p_bw_q",
+                            # "p_fw_q",
+                            "c_fw_q",
+                            # "p_true_fw_q",
+                           "c_true_fw_q",
+
+                           # "c_bw_q"
+                ]
             }
     },
     "maze_05": {
@@ -67,6 +90,17 @@ configs={
                             # "c_fw_q",
                             "p_true_fw_q",
                            # "c_true_fw_q",
+
+                           # "c_bw_q"
+                ]
+            },
+            "cc": {
+                "agents": [
+                            "p_bw_q",
+                            # "p_fw_q",
+                            "c_fw_q",
+                            # "p_true_fw_q",
+                           "c_true_fw_q",
 
                            # "c_bw_q"
                 ]
@@ -89,6 +123,17 @@ configs={
                             # "c_fw_q",
                             "p_true_fw_q",
                            # "c_true_fw_q",
+
+                           # "c_bw_q"
+                ]
+            },
+            "cc": {
+                "agents": [
+                            "p_bw_q",
+                            # "p_fw_q",
+                            "c_fw_q",
+                            # "p_true_fw_q",
+                           "c_true_fw_q",
 
                            # "c_bw_q"
                 ]

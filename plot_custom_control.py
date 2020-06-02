@@ -20,7 +20,7 @@ plt.rcParams.update({'axes.titlesize': 'large'})
 plt.rcParams.update({'axes.labelsize': 'large'})
 
 flags.DEFINE_string('logs', os.path.join(str((os.environ['LOGS'])), 'control'), 'where to save results')
-flags.DEFINE_string('config', "maze", 'where to save results')
+flags.DEFINE_string('config', "maze2", 'where to save results')
 flags.DEFINE_bool('tabular', False, 'where to save results')
 flags.DEFINE_bool('mb', False, 'where to save results')
 flags.DEFINE_bool('reward', False, 'where to save results')
@@ -61,6 +61,33 @@ plot_configs = {
             {
                 "env": "maze_01",
                 "pivoting": "pc",
+                "title": "Stochastic reward \n (r(G)=+1 w/ p=0.1)",
+            },
+    ]
+    },
+    "maze2": {
+        "nr": 2,
+        "nc": 2,
+        "subplots":
+        [
+            {
+                "env": "maze_1",
+                "pivoting": "cc",
+                "title": "Deterministic",
+            },
+            {
+                "env": "maze_stoch",
+                "pivoting": "cc",
+                "title": "Stochastic transitions \n (random move w/ p=0.5)"
+            },
+            {
+                "env": "maze_05",
+                "pivoting": "cc",
+                "title": "Stochastic reward \n (r(G)=+1 w/ p=0.5)"
+            },
+            {
+                "env": "maze_01",
+                "pivoting": "cc",
                 "title": "Stochastic reward \n (r(G)=+1 w/ p=0.1)",
             },
     ]
