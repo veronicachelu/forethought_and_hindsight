@@ -143,26 +143,26 @@ mb_mle_dashed = {
           "mb_c_true_bw_recur": "mb_c_bw_recur_MLE",
 }
 
-dashed = {
-          "c_bw_q": "p_bw_q",
-          "c_fw_q": "p_fw_q",
-          "c_true_fw_q": "p_true_fw_q",
-          "p_bw_PAML": "p_bw",
-          "c_bw_PAML": "c_bw",
-          "p_fw_PAML": "p_fw",
-          "c_fw_PAML": "c_fw",
-
-          "c_ac_bw_PAML": "c_ac_bw",
-          "p_ac_fw_PAML": "p_ac_fw",
-
-          # "p_bw_PAML_MLE": "p_bw",
-          # "c_bw_PAML_MLE": "c_bw",
-          # "p_fw_PAML_MLE": "p_fw",
-          # "c_fw_PAML_MLE": "c_fw",
-          # "p_true_bw_recur": "p_bw_recur",
-          # "c_true_bw_recur": "c_bw_recur",
-
-          }
+# dashed = {}
+          # "c_bw_q": "p_bw_q",
+          # "c_fw_q": "p_fw_q",
+          # "c_true_fw_q": "p_true_fw_q",
+          # "p_bw_PAML": "p_bw",
+          # "c_bw_PAML": "c_bw",
+          # "p_fw_PAML": "p_fw",
+          # "c_fw_PAML": "c_fw",
+          #
+          # "c_ac_bw_PAML": "c_ac_bw",
+          # "p_ac_fw_PAML": "p_ac_fw",
+          #
+          # # "p_bw_PAML_MLE": "p_bw",
+          # # "c_bw_PAML_MLE": "c_bw",
+          # # "p_fw_PAML_MLE": "p_fw",
+          # # "c_fw_PAML_MLE": "c_fw",
+          # # "p_true_bw_recur": "p_bw_recur",
+          # # "c_true_bw_recur": "c_bw_recur",
+          #
+          # }
 
 dotted = {
         "p_true_fw_q": "p_fw_q",
@@ -232,7 +232,7 @@ def main(argv):
                            )
     # ax.set(aspect="auto")
     unique_color_configs = [c for c in all_agents[FLAGS.config]
-                            if c not in dashed.keys()]
+                            if c not in dotted.keys()]
 
     colors = ["C{}".format(c) for c in range(len(all_agents[FLAGS.config]))]
     alg_to_color = {alg: color for alg, color in zip(unique_color_configs, colors)}
