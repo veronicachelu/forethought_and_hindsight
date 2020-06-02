@@ -95,7 +95,7 @@ def main(argv):
                            plot_configs[FLAGS.config]["nc"],
                            sharex='col',
                            squeeze=True,  # , sharey=True,
-                           figsize=(12, 5),
+                           figsize=(11, 5),
                            )
 
 
@@ -132,8 +132,8 @@ def main(argv):
         all_handles.extend(handles)
         all_labels.extend(labels)
 
-    xlabels = ax[1].get_xticklabels()
-    ax[0].set_xticklabels(xlabels)
+    # xlabels = ax[1].get_xticklabels()
+    # ax[0].set_xticklabels(xlabels)
     fig.legend(
         # handles=all_handles,
         # labels=all_labels,
@@ -181,7 +181,7 @@ def main(argv):
         os.makedirs(plots_dir)
 
     fig.tight_layout()
-    fig.subplots_adjust(right=0.84)
+    fig.subplots_adjust(right=0.86)
     # fig.tight_layout(pad=0.0, w_pad=0.9, h_pad=0.0)
     fig.savefig(os.path.join(plots_dir,
                              "{}_{}.png".format("all",
