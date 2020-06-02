@@ -345,7 +345,7 @@ def main(argv):
     )
 
     fig.tight_layout()
-    fig.subplots_adjust(right=0.86)
+    fig.subplots_adjust(right=0.87)
     fig.savefig(os.path.join(plots_dir,
                              "{}_{}.png".format("aoc",
                                                 FLAGS.plotting)),
