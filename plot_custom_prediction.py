@@ -42,7 +42,7 @@ plot_configs = {
                 "env": "bipartite_100_10_1_2L",
                 "pivoting": "both",
                 "mle": True,
-                "title": "Channeling  \n\nfan-in/fan-out"
+                "title": "Channelling  \n\nfan-in/fan-out"
             },
             {
                 "env": "bipartite_1_10_100_2L",
