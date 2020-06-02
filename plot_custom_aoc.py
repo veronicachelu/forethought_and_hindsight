@@ -249,7 +249,7 @@ def main(argv):
     fig, ax = plt.subplots(1,
                            2,
                            squeeze=True,  # , sharey=True,
-                           figsize=(12, 5),
+                           figsize=(11, 5),
                            )
     all_handles = []
     all_labels = []
@@ -345,7 +345,7 @@ def main(argv):
     )
 
     fig.tight_layout()
-    fig.subplots_adjust(right=0.88)
+    fig.subplots_adjust(right=0.89)
     fig.savefig(os.path.join(plots_dir,
                              "{}_{}.png".format("aoc",
                                                 FLAGS.plotting)),
