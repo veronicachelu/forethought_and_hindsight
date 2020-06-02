@@ -217,11 +217,13 @@ def main(argv):
         #                        scilimits=None, useOffset=None, useLocale=None,
         #                  useMathText=True)
         # ax[i].xaxis.set_major_formatter(FuncFormatter(f))
+        ax[i].set_yscale('log')
         plot(env, sub["pivoting"], logs_dir, plots_dir, ax[i], alg_to_color)
         handles, labels = ax[i].get_legend_handles_labels()
         all_handles.extend(handles)
         all_labels.extend(labels)
 
+    # plt.yscale("log")
     # ax[0].legend(
     #     # handles=all_handles,
     #     # labels=all_labels,
@@ -362,7 +364,7 @@ def plot_tensorflow_log(space, color, linestyle, ax):
         'tensors': 200000,
     }
     all_y_over_seeds = []
-    num_runs = space["env_config"]["num_runs"]
+    num_runs = 1#space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["num_episodes"]
 
     for seed in range(num_runs):

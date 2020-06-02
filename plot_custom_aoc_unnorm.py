@@ -29,8 +29,8 @@ flags.DEFINE_float('ymax', None, 'plot up to')
 flags.DEFINE_bool('cumulative_rmsve', False, 'n-step plot or comparison plt')
 flags.DEFINE_string('plots', str((os.environ['PLOTS'])), 'where to save results')
 FLAGS = flags.FLAGS
-FONTSIZE = 23
-TICKSIZE = 15
+FONTSIZE = 25
+TICKSIZE = 16
 LINEWIDTH = 3
 MARKERSIZE = 10
 
@@ -249,7 +249,7 @@ def main(argv):
     fig, ax = plt.subplots(1,
                            2,
                            squeeze=True,  # , sharey=True,
-                           figsize=(12, 5),
+                           figsize=(11, 5),
                            )
     all_handles = []
     all_labels = []
@@ -275,7 +275,7 @@ def main(argv):
                          "bipartite_1_10": {"min": np.infty, "max": -np.infty},
                          "bipartite_1_100": {"min": np.infty, "max": -np.infty},
                            }
-        ax[j].set_title(plot_config["title"], fontsize=FONTSIZE)
+        ax[j].set_title(plot_config["title"], fontsize=FONTSIZE, y=1.05)
         for i, res in enumerate(plot_config["results"]):
             env = res["env"]
             logs_dir = os.path.join(best_hyperparam_folder, env)
@@ -345,7 +345,7 @@ def main(argv):
     )
 
     fig.tight_layout()
-    fig.subplots_adjust(right=0.90)
+    fig.subplots_adjust(right=0.87)
     fig.savefig(os.path.join(plots_dir,
                              "{}_{}.png".format("aoc_unnorm",
                                                 FLAGS.plotting)),
