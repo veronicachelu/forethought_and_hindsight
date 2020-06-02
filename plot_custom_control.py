@@ -181,7 +181,7 @@ all_agents = \
               # "p_bw_q_2",
               # "p_bw_q_3"
         ],
-        "maze_2": [
+        "maze2": [
               # "p_bw_q",
               "p_bw_q",
               "p_fw_q",
