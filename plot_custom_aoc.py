@@ -309,7 +309,7 @@ def main(argv):
             ax[j].plot(x, m, 'v', label=naming[agent_name],
                     c=agent_value["color"], alpha=1, markersize=MARKERSIZE, linewidth=LINEWIDTH, linestyle=agent_value["linestyle"])
             ax[j].fill_between(x, np.maximum(m - s, 0),
-                            m + s,
+                               np.maximum(m + s, 1),
                             color=agent_value["color"], alpha=0.2)
 
         handles, labels = ax[j].get_legend_handles_labels()
