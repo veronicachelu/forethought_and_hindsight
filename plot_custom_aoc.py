@@ -249,7 +249,7 @@ def main(argv):
     fig, ax = plt.subplots(1,
                            2,
                            squeeze=True,  # , sharey=True,
-                           figsize=(12, 5),
+                           figsize=(11, 5),
                            )
     all_handles = []
     all_labels = []
