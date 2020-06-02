@@ -308,9 +308,10 @@ def main(argv):
             s = np.array(agent_value["stds"])
             ax[j].plot(x, m, 'v', label=naming[agent_name],
                     c=agent_value["color"], alpha=1, markersize=MARKERSIZE, linewidth=LINEWIDTH, linestyle=agent_value["linestyle"])
-            ax[j].fill_between(x, m - s,
-                            m + s,
+            ax[j].fill_between(x, m - 2*s,
+                            m + 2*s,
                             color=agent_value["color"], alpha=0.1)
+            ax[j].set_yscale('log')
 
         handles, labels = ax[j].get_legend_handles_labels()
         all_handles.extend(handles)
@@ -319,7 +320,6 @@ def main(argv):
         plt.setp(ax[j].get_yticklabels(), visible=True, fontsize=TICKSIZE)
         plt.setp(ax[j].get_xticklabels(), visible=True, fontsize=TICKSIZE)
         ax[j].grid(True)
-        ax[j].set_yscale('log')
 
     ax[0].set_ylabel(yaxis, fontsize=FONTSIZE)
 
@@ -420,7 +420,7 @@ def get_aoc_for_agent(agent, env_config, persistent_agent_config,
     }
     # all_y_over_seeds = []
     aocs = []
-    num_runs = space["env_config"]["num_runs"]
+    num_runs = 2#space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["num_episodes"]
 
     for seed in range(num_runs):
