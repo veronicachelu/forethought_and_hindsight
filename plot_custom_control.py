@@ -184,13 +184,8 @@ all_agents = \
         "maze2": [
               # "p_bw_q",
               "p_bw_q",
-              "p_fw_q",
-              "p_true_fw_q",
-              "p_true_fw_q",
-              # "c_fw_q",
-              "p_bw_q_1",
-              # "p_bw_q_2",
-              # "p_bw_q_3"
+              "c_fw_q",
+              "c_true_fw_q",
 ]
     }
 
