@@ -308,7 +308,7 @@ def main(argv):
             s = np.array(agent_value["stds"])
             ax[j].plot(x, m, 'v', label=naming[agent_name],
                     c=agent_value["color"], alpha=1, markersize=MARKERSIZE, linewidth=LINEWIDTH, linestyle=agent_value["linestyle"])
-            ax[j].fill_between(x, m - s,
+            ax[j].fill_between(x, np.maximum(m - s, 0),
                             m + s,
                             color=agent_value["color"], alpha=0.2)
 
@@ -419,7 +419,7 @@ def get_aoc_for_agent(agent, env_config, persistent_agent_config,
     }
     # all_y_over_seeds = []
     aocs = []
-    num_runs = space["env_config"]["num_runs"]
+    num_runs = 1#space["env_config"]["num_runs"]
     control_num_episodes = space["env_config"]["num_episodes"]
 
     for seed in range(num_runs):
