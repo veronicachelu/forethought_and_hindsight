@@ -164,8 +164,8 @@ all_agents = \
 # }
 naming = {
     "q": r"model_free",
-    "p_bw_q": r"bw_plan($\overleftarrow{P}_{\text{MLE}}$)",
-    "p_bw_PAML_q": r"bw_plan($\overleftarrow{P}_{\text{PAML}}$)",
+    "p_bw_q": r"bw_plan($\overleftarrow{P}_{MLE}}$)",
+    "p_bw_PAML_q": r"bw_plan($\overleftarrow{P}_{{PAML}}$)",
 }
 
 def main(argv):
