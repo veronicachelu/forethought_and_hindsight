@@ -1,5 +1,11 @@
 configs={
     "maze_stoch": {
+            "paml": {
+                "agents": [
+                    "p_bw_q",
+                    "p_bw_PAML_q",
+                    ]
+            },
             "control": {
                 "agents": ["p_fw_q",
                            "p_bw_q",
@@ -31,6 +37,12 @@ configs={
 
     },
     "maze_1": {
+            "paml": {
+                "agents": [
+                    "p_bw_q",
+                    "p_bw_PAML_q",
+                    ]
+            },
             "ref": {
                 "agents": [
                     "p_bw_q",
@@ -77,6 +89,12 @@ configs={
             }
     },
     "maze_05": {
+            "paml": {
+                "agents": [
+                    "p_bw_q",
+                    "p_bw_PAML_q",
+                    ]
+            },
             "control": {
                 "agents": ["p_fw_q",
                            "p_bw_q",
@@ -107,6 +125,12 @@ configs={
             }
     },
     "maze_01": {
+            "paml": {
+                "agents": [
+                    "p_bw_q",
+                    "p_bw_PAML_q",
+                    ]
+            },
             "control": {
                 "agents": ["p_fw_q",
                            "p_bw_q",
