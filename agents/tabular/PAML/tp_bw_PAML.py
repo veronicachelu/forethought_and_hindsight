@@ -55,7 +55,8 @@ class TpBwPAML(TpVanilla):
                         v_params[o_t] - v_params[o_tmn_target]
             real_Delta = np.eye(x_shape)[o_tmn_target] * real_td_error
 
-            cov = np.outer(td_errors, P) - np.outer(P * td_errors, P)
+            # cov = np.outer(td_errors, P) - np.outer(P * td_errors, P)
+            cov = P * np.diag(td_errors) - np.outer(P * td_errors, P)
 
             o_error = np.matmul((real_Delta - model_Delta), cov)
             # o_error /= len(o_error)

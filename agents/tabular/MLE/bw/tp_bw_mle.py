@@ -84,7 +84,7 @@ class TpBwMLE(TpVanilla):
         if self._n == 0:
             return
         if len(self._sequence) >= self._n:
-            o_tmn = self._sequence[0][0]
+            o_tmn = self._aggregate(self._sequence[0][0])
             o_t = self._sequence[-1][-1]
             losses, gradients = self._model_loss_grad(self._o_network, self._r_network, self._sequence)
 

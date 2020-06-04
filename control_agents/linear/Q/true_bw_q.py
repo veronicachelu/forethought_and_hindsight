@@ -75,13 +75,16 @@ class TrueBwQ(VanillaQ):
 
         def q_planning_grad(q_params, a_params, b_params, c_params, x, d):
             x_per_a = jnp.tile(jnp.expand_dims(x, 1), (1, self._nA, 1))
-            d_per_a = jnp.tile(jnp.expand_dims(jnp.array([(self._discount ** self._n)]) * d, 1), (1, self._nA))
+            d_per_a = jnp.tile(jnp.expand_dims(jnp.array([(self._discount ** self._n)]) * d, 1),
+                               (1, self._nA))
             d_per_a_flat = jnp.reshape(d_per_a, (-1))
+
             exp_prev_x_per_a = self._b_forward(b_params, x)
             cross_prev_x_per_a = self._a_forward(a_params, x)
             b, na, nf = exp_prev_x_per_a.shape
             exp_prev_x = jnp.reshape(exp_prev_x_per_a, (-1, nf))
             cross_prev_x = jnp.reshape(cross_prev_x_per_a, (-1, nf, nf))
+
             x_flat = jnp.reshape(x_per_a, (-1, nf))
 
             vector_r_flat = self._c_network(c_params,
@@ -99,6 +102,7 @@ class TrueBwQ(VanillaQ):
             max_q = jnp.max(self._q_forward(q_params, x), axis=-1)
             max_q_per_a = jnp.tile(jnp.expand_dims(max_q, 1), (1, self._nA))
             max_q_per_a_flat = jnp.reshape(max_q_per_a, (-1))
+
             vector_max_q_per_a_flat = d_per_a_flat[..., None] * exp_prev_x * max_q_per_a_flat[..., None]
             vector_max_q_per_a = jnp.reshape(vector_max_q_per_a_flat, (b, na, nf, 1))
 
@@ -107,7 +111,9 @@ class TrueBwQ(VanillaQ):
             a_per_a = jnp.tile(jnp.expand_dims(jnp.arange(self._nA), 0),
                                (b, 1))
             the_as = jnp.reshape(a_per_a, (-1))
-            vector_prev_q = jax.vmap(lambda q, a: q[jnp.arange(nf), a], in_axes=(0, 0), out_axes=(0))(vector_prev_q_flat, the_as)
+            vector_prev_q_flat = jnp.transpose(vector_prev_q_flat, axes=[0, 2, 1])
+            vector_prev_q = jax.vmap(lambda q, a: q[a],
+                                     in_axes=(0, 0), out_axes=(0))(vector_prev_q_flat, the_as)
             vector_prev_q_per_a = jnp.reshape(vector_prev_q, (b, na, nf, 1))
 
             q_grad = jnp.mean((vector_r_per_a + vector_max_q_per_a - vector_prev_q_per_a), axis=[0, 1])

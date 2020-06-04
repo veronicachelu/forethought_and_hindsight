@@ -10,8 +10,9 @@ import network
 import utils
 from utils import *
 
-# flags.DEFINE_string('agent', 'q', 'what agent to run')
-flags.DEFINE_string('agent', 'mb_c_fw_q', 'what agent to run')
+flags.DEFINE_string('agent', 'q', 'what agent to run')
+# flags.DEFINE_string('agent', 'mb_c_fw_q', 'what agent to run')
+# flags.DEFINE_string('agent', 'p_bw_PAML_q', 'what agent to run')
 # flags.DEFINE_string('agent', 'p_fw_q', 'what agent to run')
 # flags.DEFINE_string('agent', 'c_true_bw_q', 'what agent to run')
 # flags.DEFINE_string('agent', 'q', 'what agent to run')
@@ -102,18 +103,23 @@ def run_objective(space):
                          "log_period": FLAGS.log_period}
     aux_agent_configs["mb"] = True if space["crt_config"]["agent"].split("_")[0] == "mb" else False
 
-    if space["crt_config"]["agent"].split("_")[0] == "mb":
-        aux_agent_configs["pivot"] = space["crt_config"]["agent"].split("_")[1]
-        if space["crt_config"]["agent"].split("_")[2] == "true":
-            aux_agent_configs["agent_type"] = "bw" if space["crt_config"]["agent"].split("_")[3] == "bw" else "fw"
-        else:
-            aux_agent_configs["agent_type"] = "bw" if space["crt_config"]["agent"].split("_")[2] == "bw" else "fw"
+    if space["crt_config"]["agent"] == "q":
+        aux_agent_configs["mb"] = False
+        aux_agent_configs["agent_type"] = "q"
+        aux_agent_configs["pivot"] = "q"
     else:
-        aux_agent_configs["pivot"] = space["crt_config"]["agent"].split("_")[0]
-        if space["crt_config"]["agent"].split("_")[1] == "true":
-            aux_agent_configs["agent_type"] = "bw" if space["crt_config"]["agent"].split("_")[2] == "bw" else "fw"
+        if space["crt_config"]["agent"].split("_")[0] == "mb":
+            aux_agent_configs["pivot"] = space["crt_config"]["agent"].split("_")[1]
+            if space["crt_config"]["agent"].split("_")[2] == "true":
+                aux_agent_configs["agent_type"] = "bw" if space["crt_config"]["agent"].split("_")[3] == "bw" else "fw"
+            else:
+                aux_agent_configs["agent_type"] = "bw" if space["crt_config"]["agent"].split("_")[2] == "bw" else "fw"
         else:
-            aux_agent_configs["agent_type"] = "bw" if space["crt_config"]["agent"].split("_")[1] == "bw" else "fw"
+            aux_agent_configs["pivot"] = space["crt_config"]["agent"].split("_")[0]
+            if space["crt_config"]["agent"].split("_")[1] == "true":
+                aux_agent_configs["agent_type"] = "bw" if space["crt_config"]["agent"].split("_")[2] == "bw" else "fw"
+            else:
+                aux_agent_configs["agent_type"] = "bw" if space["crt_config"]["agent"].split("_")[1] == "bw" else "fw"
 
     seed = space["crt_config"]["seed"]
 

@@ -45,8 +45,9 @@ class BwQ(VanillaQ):
 
             o_loss = jnp.mean(jax.vmap(rlax.l2_loss)(model_o_tmn, o_tmn))
 
-            r_input = jnp.concatenate([model_o_tmn, o_t], axis=-1)
-            model_r_tmn = self._r_network(r_params, lax.stop_gradient(r_input))
+            # r_input = jnp.concatenate([model_o_tmn, o_t], axis=-1)
+            # model_r_tmn = self._r_network(r_params, lax.stop_gradient(r_input))
+            model_r_tmn = self._r_network(r_params, o_t)
             r_t_target = 0
             for i, t in enumerate(transitions):
                 r_t_target += (self._discount ** i) * t[2]
@@ -59,17 +60,28 @@ class BwQ(VanillaQ):
                                }
 
         def q_planning_loss(q_params, o_params, r_params, x, d):
+            # tile the input observation x nA
             x_per_a = jnp.tile(jnp.expand_dims(x, 1), (1, self._nA, 1))
+            # tile gamma x nA
             d_per_a = jnp.tile(jnp.expand_dims(d, 1), (1, self._nA))
+
+            # model output nA x nF
             prev_x_per_a = self._o_forward(o_params, x)
             b, na, nf = prev_x_per_a.shape
+            # flatten predecessor nA * nF
             prev_x = jnp.reshape(prev_x_per_a, (-1, nf))
+            # flatten current nA * nF
             x_flat = jnp.reshape(x_per_a, (-1, nf))
-            r_input_flat = jnp.concatenate([prev_x, x_flat], axis=-1)
-            r_t_flat = self._r_forward(r_params, r_input_flat)
+            # r_input_flat = jnp.concatenate([prev_x, x_flat], axis=-1)
+            # flattened reward nA * nF
+            # r_t_flat = self._r_forward(r_params, r_input_flat)
+            r_t_flat = self._r_forward(r_params, x_flat)
+            # reward nA x nF
             r_per_a = jnp.reshape(r_t_flat, (b, na))
 
+            # q at all flatten predecessor states and actions x
             prev_q = self._q_forward(q_params, prev_x)
+            # all actions in batch
             a_per_a = jnp.tile(jnp.expand_dims(jnp.arange(self._nA), 0),
                                (b, 1))
             the_as = jnp.reshape(a_per_a, (-1))
@@ -92,8 +104,8 @@ class BwQ(VanillaQ):
         self._o_parameters = self._network["model"]["params"][0]
         self._r_parameters = self._network["model"]["params"][2]
 
-        self._q_planning_loss_grad = jax.jit(jax.value_and_grad(q_planning_loss, 0))
-        # self._q_planning_loss_grad = jax.value_and_grad(q_planning_loss, 0)
+        # self._q_planning_loss_grad = jax.jit(jax.value_and_grad(q_planning_loss, 0))
+        self._q_planning_loss_grad = jax.value_and_grad(q_planning_loss, 0)
 
         self._model_loss_grad = jax.jit(jax.value_and_grad(model_loss, [0, 1], has_aux=True))
         # self._model_loss_grad = jax.value_and_grad(model_loss, [0, 1], has_aux=True)
@@ -106,6 +118,9 @@ class BwQ(VanillaQ):
         self._model_opt_state = model_opt_init([self._o_parameters, self._r_parameters])
         self._model_get_params = model_get_params
 
+    def get_model_for_all_states(self, all_states):
+        features = self._get_features(all_states) if self._feature_mapper is not None else all_states
+        return np.array(self._o_forward(self._o_parameters, np.asarray(features)), np.float)
 
     def model_update(
             self,
@@ -115,6 +130,7 @@ class BwQ(VanillaQ):
     ):
         if self._n == 0:
             return
+
         if len(self._sequence) >= self._n:
             (total_loss, losses), gradients = self._model_loss_grad(self._o_parameters,
                                                    self._r_parameters,
@@ -187,4 +203,6 @@ class BwQ(VanillaQ):
 
         if new_timestep.discount == 0:
             self._should_reset_sequence = True
+
+
 

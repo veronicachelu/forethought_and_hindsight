@@ -218,6 +218,20 @@ config = {
         "class": {"linear": "LpBw",
                   "tabular": "TpBw"},
     },
+    "c_bw": {
+        "task_type": "prediction",
+        "control_agent": "q",
+        "pg": False,
+        "run_mode": "c_bw",
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "MLE",
+        "target_networks": False,
+        "class": {"linear": "LpBw",
+                  "tabular": "TpBw"},
+    },
     "p_true_bw": {
         "task_type": "prediction",
         "control_agent": "q",
@@ -926,6 +940,20 @@ config = {
         "target_networks": False,
         "class": {"linear": "BwQ",
                   "tabular": "BwQT"}
+    },
+    "p_bw_PAML_q": {
+        "task_type": "control",
+        "pg": False,
+        "run_mode": "p_bw_PAML_q",
+        "planning_depth": 0,
+        "planning_iter": 1,
+        "latent": False,
+        "num_hidden_layers": 0,
+        "num_units": 0,
+        "model_family": "q",
+        "target_networks": False,
+        "class": {"linear": "BwPAMLQ",
+                  "tabular": "BwPAMLQT"}
     },
     "mb_p_bw_q": {
         "task_type": "control",

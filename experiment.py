@@ -55,19 +55,6 @@ def run_episodic(agent: Agent,
                 agent.total_steps += 1
                 t += 1
 
-                # if (space["env_config"]["env_type"] == "continuous" and \
-                #     space["env_config"]["policy_type"] == "estimate"):
-                #         # or \
-                #     # (space["env_config"]["env_type"] == "continuous" and
-                #     # space["env_config"]["policy_type"] == "continuous_greedy" and \
-                #     #   space["env_config"]["stochastic"]) and t % 10 == 0:
-                #     hat_v = agent.get_value_for_state(timestep.observation)
-                #     v = mdp_solver.get_value_for_state(agent, copy_env,
-                #                                        timestep)
-                #     hat_error = np.abs(v - hat_v)
-                #     step_rmsve = np.power(v - hat_v, 2)
-                #     rmsve += step_rmsve
-
                 if new_timestep.last() or (aux_agent_configs["max_len"] is not None and \
                                                    t == aux_agent_configs["max_len"]):
                     break
@@ -75,16 +62,9 @@ def run_episodic(agent: Agent,
                 prev_timestep = timestep
                 timestep = new_timestep
 
-            # if space["env_config"]["env_type"] != "continuous":
-                # or \
-                    # (space["env_config"]["env_type"] == "continuous" and
-                    # space["env_config"]["policy_type"] == "continuous_greedy"):
             hat_v = agent._v_network if space["env_config"]["model_class"] == "tabular" \
                 else agent.get_values_for_all_states(environment.get_all_states())
-            # hat_error = np.abs(mdp_solver.get_optimal_v() - hat_v)
             rmsve = get_rmsve(environment, mdp_solver, hat_v, mdp_solver.get_optimal_v(), weighted=weighted)
-            # else:
-            #     rmsve /= t
 
             total_rmsve += rmsve
             total_reward += rewards
@@ -147,9 +127,9 @@ def run_episodic(agent: Agent,
                 tf.summary.scalar("train/steps", t, step=agent.episode)
                 tf.summary.scalar("train/total_rmsve", total_rmsve, step=agent.total_steps)
                 tf.summary.scalar("train/total_reward", total_reward, step=agent.total_steps)
-                tf.summary.scalar("train/avg_rmsve", np.mean(ep_rmsves), step=agent.episode)
-                tf.summary.scalar("train/avg_reward", np.mean(ep_rewards), step=agent.episode)
-                tf.summary.scalar("train/avg_steps", np.mean(ep_steps, dtype=int), step=agent.episode)
+                # tf.summary.scalar("train/avg_rmsve", np.mean(ep_rmsves), step=agent.episode)
+                # tf.summary.scalar("train/avg_reward", np.mean(ep_rewards), step=agent.episode)
+                # tf.summary.scalar("train/avg_steps", np.mean(ep_steps, dtype=int), step=agent.episode)
                 agent.writer.flush()
 
             agent.episode += 1

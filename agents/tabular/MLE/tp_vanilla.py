@@ -45,6 +45,7 @@ class TpVanilla(Agent):
             logs: str = "logs",
             policy_type=None,
             feature_coder=None,
+            model_partitions=None,
             # double_input_reward_model=False
     ):
         super().__init__()
@@ -79,7 +80,16 @@ class TpVanilla(Agent):
         self._seed = seed
         self._max_len = max_len
         self._input_dim = input_dim
+        self._model_partitions = model_partitions
         self._log_period = log_period
+        self._N = input_dim
+        self._M = input_dim // model_partitions
+
+        def aggregate(x):
+            return x // self._M
+
+        def diffuse(x):
+            return x * self._M + np.range(self._M)
 
         def cross_entropy(logprobs, targets):
             target_class = np.argmax(targets, axis=-1)

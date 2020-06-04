@@ -96,8 +96,8 @@ def plot_q(env, action_values, logs=None, colormap='Blues',
     q = action_values
     fig = plt.figure(figsize=(8, 8))
     fig.subplots_adjust(wspace=0.3, hspace=0.3)
-    vmin = 0#np.min(action_values)
-    vmax = 1#np.max(action_values)
+    vmin = np.min(action_values)
+    vmax = np.max(action_values)
     dif = vmax - vmin
     for a in [0, 1, 2, 3]:
         plt.subplot(3, 3, map_from_action_to_subplot(a))
@@ -120,13 +120,13 @@ def plot_advantage(env, action_values, logs=None, colormap='Blues',
     q = action_values
     fig = plt.figure(figsize=(8, 8))
     fig.subplots_adjust(wspace=0.3, hspace=0.3)
-    vmin = 0#np.min(action_values)
-    vmax = 1#np.max(action_values)
+    vmin = np.min(action_values)
+    vmax = np.max(action_values)
     dif = vmax - vmin
     adv = q - np.min(q, axis=-1, keepdims=True)
     for a in [0, 1, 2, 3]:
         plt.subplot(3, 3, map_from_action_to_subplot(a))
-        plot_values(adv[..., a], vmin=vmin, vmax=np.max(adv[..., a]))
+        plot_values(adv[..., a], vmin=np.min(adv[..., a]), vmax=np.max(adv[..., a]))
         action_name = map_from_action_to_name(a)
         plt.title(r"$a(s, \mathrm{" + action_name + r"})$")
 
@@ -192,7 +192,7 @@ def plot_p(env, p, logs=None, colormap='Blues',
             r"$\mathbf{S}$", ha='center', va='center')
 
         if logs is not None:
-            plt.savefig(os.path.join(logs, "p_{}_{}_state_{}".format(episode, timestep, i)))
+            plt.savefig(os.path.join(logs, "p_{}_state_{}".format(episode, i)))
 
 def plot_p_action(values, colormap='pink', vmin=0, vmax=1):
     values = np.reshape(values, (6, 8))
@@ -390,7 +390,7 @@ def plot_pi(env, pi, values, logs=None, filename=None):
 
 def plot_pi_from_q(env, q, logs=None, filename=None):
     plot_grid(env, env_type="discrete")
-    q = np.reshape(q, (6, 8, 4))
+    # q = np.reshape(q, (6, 8, 4))
     # pi = np.argmax(q, axis=-1)
     action_names = [r"$\uparrow$", r"$\rightarrow$", r"$\downarrow$", r"$\leftarrow$"]
     for i in range(q.shape[0]):

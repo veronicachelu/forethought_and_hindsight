@@ -59,16 +59,18 @@ def get_gridworld_env(nrng, space, aux_agent_configs):
                     )
     nS = env._nS
     mdp_solver = MdpSolver(env, nS, space["env_config"]["nA"], aux_agent_configs["discount"])
-    if space["env_config"]["policy_type"] == "greedy":
-        pi = mdp_solver.get_optimal_policy()
-        policy = lambda x, nrng: np.argmax(pi[x])
-    else:
-        pi = mdp_solver.get_optimal_policy()
-        max_indices = np.argmax(pi, -1)
-        pi[np.arange(env._nS), :] = space["env_config"]["epsilon"] / space["env_config"]["nA"]
-        pi[np.arange(env._nS), max_indices] += 1 - space["env_config"]["epsilon"]
-        mdp_solver._pi = pi
-        policy = lambda x, nrng: nrng.choice(range(env._nA), p=pi[x])
+    # if space["env_config"]["policy_type"] == "greedy":
+    #     pi = mdp_solver.get_optimal_policy()
+    #     policy = lambda x, nrng: np.argmax(pi[x])
+    # else:
+    #     pi = mdp_solver.get_optimal_policy()
+    #     max_indices = np.argmax(pi, -1)
+    #     pi[np.arange(env._nS), :] = space["env_config"]["epsilon"] / space["env_config"]["nA"]
+    #     pi[np.arange(env._nS), max_indices] += 1 - space["env_config"]["epsilon"]
+    #     mdp_solver._pi = pi
+    # policy = lambda x, nrng: nrng.choice(range(env._nA), p=pi[x])
+
+    policy = lambda nrng: nrng.choice(range(env._nA), p=env._nA * [1 / env._nA])
     env._true_v = mdp_solver.get_optimal_v()
 
     return env, nS, policy, mdp_solver

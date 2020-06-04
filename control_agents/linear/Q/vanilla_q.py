@@ -104,6 +104,7 @@ class VanillaQ(Agent):
 
         # This function computes dL/dTheta
         self._q_loss_grad = jax.jit(jax.value_and_grad(q_loss))
+        # self._q_loss_grad = jax.value_and_grad(q_loss)
         self._q_forward = jax.jit(self._q_network)
 
         self._step_schedule = optimizers.polynomial_decay(self._lr,
@@ -165,27 +166,6 @@ class VanillaQ(Agent):
             prev_timestep=None
     ):
         pass
-        # replay_sample = self._replay.sample(32)
-        # features = self._get_features([replay_sample[0]])
-        # next_features = self._get_features([replay_sample[4]])
-        # transitions = [np.array(features),
-        #                np.array([replay_sample[1]]),
-        #                np.array([replay_sample[2]]),
-        #                np.array([replay_sample[3]]),
-        #                np.array(next_features)]
-        #
-        # loss, gradient = self._q_loss_grad(self._q_parameters,
-        #                                    transitions)
-        # self._q_opt_state = self._q_opt_update(self.episode, gradient,
-        #                                        self._q_opt_state)
-        # self._q_parameters = self._q_get_params(self._q_opt_state)
-        #
-        # losses_and_grads = {"losses": {"loss_v_planning": np.array(loss),
-        #                                },
-        #                     "gradients": {"grad_norm_v_planning": np.sum(
-        #                         np.sum([np.linalg.norm(np.asarray(g), ord=2) for g in gradient]))}}
-        # self._log_summaries(losses_and_grads, "value_planning")
-        #
 
     def model_based_train(self):
         return True
@@ -241,13 +221,6 @@ class VanillaQ(Agent):
         features = self._get_features([timestep.observation])
         next_features = self._get_features([new_timestep.observation])
 
-        # self._replay.add([
-        #     features,
-        #     action,
-        #     new_timestep.reward,
-        #     new_timestep.discount,
-        #     next_features,
-        # ])
 
     def _log_summaries(self, losses_and_grads, summary_name):
         if self._logs is not None:
@@ -281,32 +254,8 @@ class VanillaQ(Agent):
 
         return np.array(actions)
 
-        # losses = losses_and_grads["losses"]
-        # gradients = losses_and_grads["gradients"]
-        #
-        # if self.episode % self._log_period == 0:
-        #     for k, v in losses.items():
-        #         tf.summary.scalar("train/losses/{}/{}".format(summary_name, k), losses[k], step=self.episode)
-        #     for k, v in gradients.items():
-        #         tf.summary.scalar("train/gradients/{}/{}".format(summary_name, k), gradients[k], step=self.episode)
-        #     self.writer.flush()
 
     def update_hyper_params(self, episode, total_episodes):
-        # decay_period, step, warmup_steps, epsilon):
-        """Returns the current epsilon for the agent's epsilon-greedy policy.
-        This follows the Nature DQN schedule of a linearly decaying epsilon (Mnih et
-        al., 2015). The schedule is as follows:
-          Begin at 1. until warmup_steps steps have been taken; then
-          Linearly decay epsilon from 1. to epsilon in decay_period steps; and then
-          Use epsilon from there on.
-        Args:
-          decay_period: float, the period over which epsilon is decayed.
-          step: int, the number of training steps completed so far.
-          warmup_steps: int, the number of steps taken before epsilon is decayed.
-          epsilon: float, the final value to which to decay the epsilon parameter.
-        Returns:
-          A float, the current epsilon value computed according to the schedule.
-        """
         steps_left = total_episodes + 0 - episode
         bonus = (self._initial_epsilon - self._final_epsilon) * steps_left / total_episodes
         bonus = np.clip(bonus, 0., self._initial_epsilon - self._final_epsilon)

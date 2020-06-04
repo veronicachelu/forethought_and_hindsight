@@ -111,7 +111,8 @@ def get_tabular_network(num_hidden_layers: int,
                         }
     network["model"] = {"net": [np.zeros(shape=input_dim + (np.prod(input_dim),)),
                                 np.zeros(shape=input_dim + (np.prod(input_dim),)),
-                                np.zeros(shape=input_dim + (np.prod(input_dim),))], \
+                                np.zeros(shape=input_dim + (np.prod(input_dim),)), \
+                                np.zeros(shape=input_dim)], \
                        "params": None
                         }
     return network

@@ -15,7 +15,8 @@ def get_r_net(rng_r, num_units):
     layers.append(Reshape((-1)))
 
     r_network_init, r_network = stax.serial(*layers)
-    _, r_network_params = r_network_init(rng_r, (-1, 2 * num_units))
+    # _, r_network_params = r_network_init(rng_r, (-1, 2 * num_units))
+    _, r_network_params = r_network_init(rng_r, (-1, num_units))
 
     return r_network, r_network_params
 
