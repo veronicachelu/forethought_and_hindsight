@@ -2,7 +2,12 @@ logs
 tf_ckpts
 tf_summaries
 .DS_Store
+.DS_Store/
+.idea
 .idea/
 **/*/__pycache__/*
+**/*/.DS_Store/*
+**/*/.DS_Store
+**/*/.DS_Store/
 */*.pyc
 policies

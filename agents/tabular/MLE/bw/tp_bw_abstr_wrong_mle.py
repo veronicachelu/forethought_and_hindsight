@@ -15,13 +15,13 @@ NetworkParameters = Sequence[Sequence[jnp.DeviceArray]]
 Network = Callable[[NetworkParameters, Any], jnp.DeviceArray]
 
 
-class TpBwPAML(TpVanilla):
+class TpBwAbstrWMLE(TpVanilla):
     def __init__(
             self,
             **kwargs
     ):
 
-        super(TpBwPAML, self).__init__(**kwargs)
+        super(TpBwAbstrWMLE, self).__init__(**kwargs)
         self._sequence = []
         self._should_reset_sequence = False
 
@@ -29,17 +29,35 @@ class TpBwPAML(TpVanilla):
         self._fw_o_network = self._network["model"]["net"][1]
         self._r_network = self._network["model"]["net"][2]
 
-        # Internalize the networks.
-        self._true_v_network = self._network["true_value"]["net"]
-        self._true_v_parameters = self._network["true_value"]["params"]
-
+        self._abstraction = [
+                [0.5, 0.5, 0, 0, 0, 0],
+                [0, 0, 0.5, 0.5, 0, 0],
+                [0, 0, 0, 0, 1, 1],
+                [0, 0, 0, 0, 1, 1],
+            ]
         def model_loss(v_params, o_params, r_params, transitions):
             o_tmn_target = transitions[0][0]
             o_t = transitions[-1][-1]
-            x_shape = np.prod(self._input_dim)
-            P = self._softmax(o_params[o_t])
+            abstract_o_tmn = self._abstract(o_tmn_target)
+            abstract_o_t = self._abstract(o_t)
+            abstr_shape = 4
+            model_o_tmn = o_params[abstract_o_t]
+            P = self._softmax(model_o_tmn)
+            o_target = np.eye(abstr_shape)[abstract_o_tmn]
+
+            abstract_o_loss = self._ce(self._log_softmax(model_o_tmn), o_target)
+
+            abstract_o_tmn_probs = P
+            abstract_o_tmn_probs[abstract_o_tmn] -= 1
+            # o_tmn_probs /= len(o_tmn_probs)
+            abstract_o_error = - abstract_o_tmn_probs
+
+            # o_target = np.eye(np.prod(self._input_dim))[o_tmn_target] - o_tmn
+            # o_error = o_target - o_tmn
+            # o_loss = np.mean(o_error ** 2)
 
             r_tmn = r_params[o_tmn_target, o_t]
+
             r_tmn_target = 0
             for i, t in enumerate(transitions):
                 r_tmn_target += (self._discount ** i) * t[2]
@@ -47,39 +65,76 @@ class TpBwPAML(TpVanilla):
             r_error = r_tmn_target - r_tmn
             r_loss = np.mean(r_error ** 2)
 
+            total_error = abstract_o_loss + r_loss
+
+            ### PAML LOSS ###
+            x_shape = np.prod(self._input_dim)
             td_errors = np.array(r_params[np.arange(x_shape), o_t] +
                                  (self._discount ** self._n) * \
                                  v_params[o_t] - v_params[np.arange(x_shape)])
-            model_Delta = P * td_errors
-            real_td_error = r_tmn_target + (self._discount ** self._n) *\
-                        v_params[o_t] - v_params[o_tmn_target]
-            real_Delta = np.eye(x_shape)[o_tmn_target] * real_td_error
+
+            abstract_td_errors = np.matmul(self._abstraction, td_errors)
+            abstract_o_tmn = self._abstract(o_tmn_target)
+            abstract_v_params = np.matmul(self._abstraction, v_params)
+
+            model_Delta = P * abstract_td_errors
+
+            real_abstract_td_error = r_tmn_target + (self._discount ** self._n) * \
+                                                    abstract_v_params[abstract_o_t] - abstract_v_params[abstract_o_tmn]
+
+            real_Delta = np.eye(abstr_shape)[abstract_o_t] * real_abstract_td_error
 
             # cov = np.outer(td_errors, P) - np.outer(P * td_errors, P)
-            cov = P * np.diag(td_errors) - np.outer(P * td_errors, P)
+            cov = P * np.diag(abstract_td_errors) - np.outer(P * abstract_td_errors, P)
+            PAML_loss = np.mean((real_Delta - model_Delta) ** 2)
 
-            o_error = np.matmul((real_Delta - model_Delta), cov)
-            # o_error /= len(o_error)
-            o_loss = np.mean((real_Delta - model_Delta) ** 2)
-            total_error = o_loss + r_loss
-
-            return (total_error, o_loss, r_loss), (o_error, r_error)
+            return (total_error, abstract_o_loss, r_loss, PAML_loss), (abstract_o_error, r_error)
 
         self._model_loss_grad = model_loss
         self._model_opt_update = lambda gradients, params:\
             [param + self._lr_model * grad for grad, param in zip(gradients, params)]
 
         def v_planning_loss(v_params, r_params, o_t, o_tmn, d_t):
-            v_tmn = v_params[o_tmn]
+            abstract_o_t = self._abstract(o_t)
+            abstract_o_tmn = self._abstract(o_tmn)
+            abstract_v_params = np.matmul(self._abstraction, v_params)
+            # v_tmn = v_params[o_tmn]
+            v_tmn = abstract_v_params[abstract_o_tmn]
+            v_t = abstract_v_params[abstract_o_t]
             r_tmn = r_params[o_tmn, o_t]
             td_error = (r_tmn + d_t * (self._discount ** self._n) *
-                        v_params[o_t] - v_tmn)
+                        v_t - v_tmn)
 
             loss = td_error ** 2
 
             return loss, td_error
 
         self._v_planning_loss_grad = v_planning_loss
+
+        def v_loss(v_params, transitions):
+            o_tm1, a_tm1, r_t, d_t, o_t = transitions
+            abstract_o_t = self._abstract(o_t)
+            abstract_o_tmn = self._abstract(o_tm1)
+            abstract_v_params = np.matmul(self._abstraction, v_params)
+
+            v_tm1 = abstract_v_params[abstract_o_tmn]
+            v_t = abstract_v_params[abstract_o_t]
+            v_target = r_t + d_t * self._discount * v_t
+            td_error = (v_target - v_tm1)
+            return np.mean(td_error ** 2), td_error
+
+        self._v_loss_grad = v_loss
+
+    def _abstract(self, x):
+        # return x // 2
+        mapping = [0, 0, 1, 1, 2, 3]
+        return mapping[x]
+
+    def _aggregate(self, x):
+        # return x * self._M + np.arange(self._M)
+
+        mapping = [[0, 1], [2, 3], [0, 1], [2, 3], [4], [5]]
+        return mapping[x]
 
     def model_update(
             self,
@@ -92,22 +147,29 @@ class TpBwPAML(TpVanilla):
         if len(self._sequence) >= self._n:
             o_tmn = self._sequence[0][0]
             o_t = self._sequence[-1][-1]
-            losses, gradients = self._model_loss_grad(self._v_network, self._o_network, self._r_network, self._sequence)
+            losses, gradients = self._model_loss_grad(self._v_network,
+                                                      self._o_network,
+                                                      self._r_network,
+                                                      self._sequence)
 
-            self._o_network[o_t], self._r_network[o_tmn, o_t] = \
-                self._model_opt_update(gradients, [self._o_network[o_t],
-                                               self._r_network[o_tmn, o_t]])
-            total_loss, o_loss, r_loss = losses
+            abstract_o_t = self._abstract(o_t)
+            self._o_network[abstract_o_t], self._r_network[o_tmn, o_t] = \
+                self._model_opt_update(gradients, [self._o_network[abstract_o_t],
+                                                   self._r_network[o_tmn, o_t]])
+            total_loss, o_loss, r_loss, PAML_loss = losses
             o_grad, r_grad = gradients
             o_grad = np.linalg.norm(np.asarray(o_grad), ord=2)
+            o_norm = np.max(np.linalg.norm(np.asarray(self._o_network), ord=2, axis=-1))
             losses_and_grads = {"losses": {
                 "loss": total_loss,
-                "o_loss": o_loss,
+                "o_loss": PAML_loss,
                 "r_loss": r_loss,
                 "o_grad": o_grad,
+                "o_norm": o_norm,
                 "r_grad": r_grad,
             },
             }
+            # print("max_param_norm {}".format(o_norm))
             self._log_summaries(losses_and_grads, "model")
             self._sequence = self._sequence[1:]
 
@@ -118,26 +180,33 @@ class TpBwPAML(TpVanilla):
     def planning_update(
             self,
             timestep: dm_env.TimeStep,
-            prev_timestep=None,
+            prev_timestep=None
     ):
         if timestep.discount is None:
             return
 
         o_t = np.array(timestep.observation)
         d_t = np.array(timestep.discount)
-        losses = 0
-        o_tmn = self._o_network[o_t]
-        o_tmn = self._softmax(o_tmn)
+        abstract_o_t = self._abstract(o_t)
+        P = self._softmax(self._o_network[abstract_o_t])
+
+        delta = np.zeros(shape=(np.prod(self._input_dim),))
+        losses = np.zeros(shape=(np.prod(self._input_dim),))
         for prev_o_tmn in range(np.prod(self._input_dim)):
             loss, gradient = self._v_planning_loss_grad(self._v_network,
                                                            self._r_network,
                                                            o_t, prev_o_tmn, d_t)
-            losses += loss
-            self._v_network[prev_o_tmn] = self._v_planning_opt_update(
-                o_tmn[prev_o_tmn] * gradient,
-                self._v_network[prev_o_tmn])
+            delta[prev_o_tmn] = gradient
+            losses[prev_o_tmn] = loss
+        abstract_v = np.matmul(self._abstraction, delta)
+        abstract_loss = np.matmul(self._abstraction, losses)
+        for prev_o_tmn in range(4):
+            all_in_abstraction = self._aggregate(prev_o_tmn)
+            self._v_network[all_in_abstraction] = self._v_planning_opt_update(
+                P[prev_o_tmn] * abstract_v[prev_o_tmn],
+                self._v_network[all_in_abstraction])
 
-        losses_and_grads = {"losses": {"loss_v_planning": np.array(loss)},
+        losses_and_grads = {"losses": {"loss_v_planning": np.sum(abstract_loss)},
                             }
         self._log_summaries(losses_and_grads, "value_planning")
 
@@ -161,6 +230,29 @@ class TpBwPAML(TpVanilla):
                 print("Restored from {}".format(checkpoint))
             else:
                 print("Initializing from scratch.")
+
+
+    def value_update(
+            self,
+            timestep: dm_env.TimeStep,
+            action: int,
+            new_timestep: dm_env.TimeStep,
+    ):
+        o_tm1 = np.array(timestep.observation)
+        a_tm1 = np.array(action)
+        r_t = np.array(new_timestep.reward)
+        d_t = np.array(new_timestep.discount)
+        o_t = np.array(new_timestep.observation)
+        transitions = [o_tm1, a_tm1, r_t, d_t, o_t]
+
+        loss, gradient = self._v_loss_grad(self._v_network, transitions)
+        abstract_o_t = self._abstract(o_tm1)
+        all_in_abstraction = self._aggregate(abstract_o_t)
+        self._v_network[all_in_abstraction] = self._v_opt_update(gradient, self._v_network[all_in_abstraction])
+
+        losses_and_grads = {"losses": {"loss_v": np.array(loss)},
+                            }
+        self._log_summaries(losses_and_grads, "value")
 
     def save_model(self):
         if self._logs is not None:

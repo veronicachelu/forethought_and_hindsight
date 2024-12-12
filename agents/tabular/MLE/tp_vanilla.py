@@ -82,14 +82,9 @@ class TpVanilla(Agent):
         self._input_dim = input_dim
         self._model_partitions = model_partitions
         self._log_period = log_period
-        self._N = input_dim
-        self._M = input_dim // model_partitions
+        self._N = 4
+        self._M = 2
 
-        def aggregate(x):
-            return x // self._M
-
-        def diffuse(x):
-            return x * self._M + np.range(self._M)
 
         def cross_entropy(logprobs, targets):
             target_class = np.argmax(targets, axis=-1)

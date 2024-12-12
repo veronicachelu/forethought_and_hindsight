@@ -23,10 +23,11 @@ from utils import *
 # flags.DEFINE_string('agent', 'c_bw_MLE', 'what agent to run')
 # flags.DEFINE_string('agent', 'p_true_fw', 'what agent to run')
 # flags.DEFINE_string('agent', 'mb_c_bw_PAML', 'what agent to run')
-flags.DEFINE_string('agent', 'p_bw_PAML', 'what agent to run')
+# flags.DEFINE_string('agent', 'c_bw_abstr_w_MLE', 'what agent to run')
+flags.DEFINE_string('agent', 'c_bw_abstr_r_PAML', 'what agent to run')
 # flags.DEFINE_string('agent', 'vanilla', 'what agent to run')
 # flags.DEFINE_string('env', 'bipartite', 'env')
-flags.DEFINE_string('env', 'bipartite_100_10_1_2L', 'env')
+flags.DEFINE_string('env', 'partition_wrong', 'env')
 # flags.DEFINE_string('env', 'bipartite_5L', 'env')
 flags.DEFINE_string('logs', str((os.environ['LOGS'])), 'where to save results')
 flags.DEFINE_integer('log_period', 1, 'Log summaries every .... episodes.')
@@ -79,7 +80,7 @@ def main(argv):
         aux_agent_configs["pivot"] = agent["agent"].split("_")[1]
     else:
         aux_agent_configs["pivot"] = agent["agent"].split("_")[0]
-    run_agent(FLAGS.env, agent, logs, aux_agent_configs, ignore_existent=True)
+    run_agent(FLAGS.env, agent, logs, aux_agent_configs, ignore_existent=False)
 
 
 if __name__ == '__main__':

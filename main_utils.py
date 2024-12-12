@@ -301,6 +301,15 @@ def load_env_and_volatile_configs(env):
     if env == "repeat":
         env_config = configs.repeat_config.env_config
         volatile_agent_config = configs.repeat_config.volatile_agent_config
+    elif env == "partition_right":
+        env_config = configs.partition_right_config.env_config
+        volatile_agent_config = configs.partition_right_config.volatile_agent_config
+    elif env == "partition_wrong":
+        env_config = configs.partition_wrong_config.env_config
+        volatile_agent_config = configs.partition_wrong_config.volatile_agent_config
+    elif env == "bipartite":
+        env_config = configs.bipartite_config.env_config
+        volatile_agent_config = configs.bipartite_config.volatile_agent_config
     elif env == "split":
         env_config = configs.split_config.env_config
         volatile_agent_config = configs.split_config.volatile_agent_config
